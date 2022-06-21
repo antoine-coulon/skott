@@ -26,6 +26,8 @@
   },
   "rules": {
     "indent": "off",
+    "no-useless-constructor": "off",
+    "no-empty-function": "off",
     "brace-style": "off",
     "id-length": "off",
     "no-empty": ["error", { "allowEmptyCatch": true }],
