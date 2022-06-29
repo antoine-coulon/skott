@@ -6,7 +6,7 @@ specifiers:
   '@types/mocha': ^9.0.0
   '@types/node': ^16.11.12
   chai: ^4.3.4
-  digraph-js: ^1.0.5
+  digraph-js: ^1.1.1
   eslint: ^8.4.1
   eslint-config-prettier: ^8.3.0
   eslint-import-resolver-typescript: ^2.5.0
@@ -22,7 +22,8 @@ specifiers:
   typescript: ^4.5.2
 
 dependencies:
-  digraph-js: 1.0.5
+  builtin-modules: 3.3.0
+  digraph-js: 1.1.1
   estree-walker: 3.0.1
   meriyah: 4.2.1
 
@@ -878,12 +879,9 @@ packages:
     engines: {node: '>=0.3.1'}
     dev: true
 
-  /digraph-js/1.0.5:
-    resolution: {integrity: sha512-c4X2QBpNN/fjjRYmnr7V89HQg6VJDS2oAoFSOZwqCwVTKGVq8a2Z+4TPHZ8ayxiW4A+e/Lx5BAVDg0jwSqrvmw==}
+  /digraph-js/1.1.1:
+    resolution: {integrity: sha512-YC3Jhn7ieLeqQo8QRTHjAnuTdC5WHOybvwa577A8qNhgHlUJpOAeZ6NLprNqTkL9rHATx3eEWewZRpLNaSxf2g==}
     engines: {node: '>=16.0.0'}
-    dependencies:
-      lodash.difference: 4.5.0
-      lodash.uniqby: 4.7.0
     dev: false
 
   /dir-glob/3.0.1:
@@ -1681,17 +1679,9 @@ packages:
       p-locate: 5.0.0
     dev: true
 
-  /lodash.difference/4.5.0:
-    resolution: {integrity: sha512-dS2j+W26TQ7taQBGN8Lbbq04ssV3emRw4NY58WErlTO29pIqS0HmoT5aJ9+TUQ1N3G+JOZSji4eugsWwGp9yPA==}
-    dev: false
-
   /lodash.merge/4.6.2:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
     dev: true
-
-  /lodash.uniqby/4.7.0:
-    resolution: {integrity: sha512-e/zcLx6CSbmaEgFHCA7BnoQKyCtKMxnuWrJygbwPs/AIn+IMKl66L8/s+wBUn5LRw2pZx3bUHibiV1b6aTWIww==}
-    dev: false
 
   /log-symbols/4.1.0:
     resolution: {integrity: sha512-8XPvpAA8uyhfteu8pIvQxpJZ7SYYdpUivZpGy6sFsBuKRY/7rQGavedeB8aK+Zkyq6upMFVL/9AW6vOYzfRyLg==}
