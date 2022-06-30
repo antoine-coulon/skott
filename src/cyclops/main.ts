@@ -6,6 +6,11 @@ import { parseScript } from "meriyah";
 
 import { FileReader, FileSystemReader } from "../file-reader/index.js";
 
+import {
+  isBuiltinModule,
+  isThirdPartyModule
+} from "./module-import-checker.js";
+
 type CyclopsNode = VertexDefinition<{ size: number }>;
 
 export interface CyclopsConfig {
@@ -83,6 +88,13 @@ export class Cyclops {
     }
 
     for (const importIdentifier of importIdentifiers.values()) {
+      if (
+        isBuiltinModule(importIdentifier) ||
+        isThirdPartyModule(importIdentifier)
+      ) {
+        continue;
+      }
+
       const fullFilePathFromEntrypoint = path.join(
         path.dirname(rootDir),
         importIdentifier

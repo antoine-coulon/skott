@@ -23,7 +23,7 @@ async function buildProjectStructureUsingInMemoryFileExplorer(
   return cyclops.buildProjectStructure();
 }
 
-describe("When traversing a JavaScript project", () => {
+describe("When traversing a Node.js project", () => {
   describe("When the project uses ECMAScript modules", () => {
     describe("When extracting import statements in the root file", () => {
       describe("When the file does not have any import statements", () => {
@@ -157,6 +157,87 @@ describe("When traversing a JavaScript project", () => {
             circularDependencies: [],
             hasCircularDependencies: false
           });
+        });
+      });
+
+      describe("When the file contains imports of Node.js core modules", () => {
+        it("should ignore Node.js core modules imports by default", async () => {
+          const fakeFileSystem = {
+            "index.js": `
+              import { readFile } from "fs/promises";
+              import { join } from "node:path";
+              import { setImmediate } from "node:timers/promises";
+              
+              import * as foobar from "./foobar.js";
+
+              console.log(foobar.foo.doSomething());
+            `,
+            "foobar.js": `
+              export const foo = { doSomething: () => 'Hello, world!' };
+            `
+          };
+
+          memfs.vol.fromJSON(fakeFileSystem, "./");
+
+          const projectStructure =
+            await buildProjectStructureUsingInMemoryFileExplorer("index.js");
+
+          expect(projectStructure.graph).to.be.deep.equal({
+            "index.js": {
+              adjacentTo: ["foobar.js"],
+              id: "index.js",
+              body: { size: 0 }
+            },
+            "foobar.js": {
+              adjacentTo: [],
+              id: "foobar.js",
+              body: { size: 0 }
+            }
+          });
+          expect(projectStructure.files).to.be.deep.equal([
+            "index.js",
+            "foobar.js"
+          ]);
+        });
+      });
+
+      describe("When the file imports third-party libraries", () => {
+        it("should ignore third-party libraries imports by default", async () => {
+          const fakeFileSystem = {
+            "index.js": `
+              import { parseScript } from "meriyah";
+              import * as vuln from "@nodesecure/vuln";
+
+              import * as foobar from "./foobar.js";
+
+              console.log(foobar.foo.doSomething());
+            `,
+            "foobar.js": `
+              export const foo = { doSomething: () => 'Hello, world!' };
+            `
+          };
+
+          memfs.vol.fromJSON(fakeFileSystem, "./");
+
+          const projectStructure =
+            await buildProjectStructureUsingInMemoryFileExplorer("index.js");
+
+          expect(projectStructure.graph).to.be.deep.equal({
+            "index.js": {
+              adjacentTo: ["foobar.js"],
+              id: "index.js",
+              body: { size: 0 }
+            },
+            "foobar.js": {
+              adjacentTo: [],
+              id: "foobar.js",
+              body: { size: 0 }
+            }
+          });
+          expect(projectStructure.files).to.be.deep.equal([
+            "index.js",
+            "foobar.js"
+          ]);
         });
       });
 

@@ -5,6 +5,7 @@ specifiers:
   '@types/chai': ^4.3.0
   '@types/mocha': ^9.0.0
   '@types/node': ^16.11.12
+  builtin-modules: ^3.3.0
   chai: ^4.3.4
   digraph-js: ^1.1.1
   eslint: ^8.4.1
@@ -675,6 +676,11 @@ packages:
       node-releases: 2.0.5
       update-browserslist-db: 1.0.4_browserslist@4.21.0
     dev: true
+
+  /builtin-modules/3.3.0:
+    resolution: {integrity: sha512-zhaCDicdLuWN5UbN5IMnFqNMhNfo919sH85y2/ea+5Yg9TsTkeZxpL+JLbp6cgYFS4sRLp3YV4S6yDuqVWHYOw==}
+    engines: {node: '>=6'}
+    dev: false
 
   /call-bind/1.0.2:
     resolution: {integrity: sha512-7O+FbCihrB5WGbFYesctwmTKae6rOiIzmz1icreWJ+0aA7LJfuqhEso2T9ncpcFtzMQtzXf2QGGueWJGTYsqrA==}
