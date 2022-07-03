@@ -62,7 +62,7 @@ export class Cyclops {
     };
   }
 
-  private async followImportStatementsFromFile(
+  private async followModuleDeclarationsFromFile(
     rootDir: string,
     fileContent: string
   ): Promise<void> {
@@ -71,33 +71,54 @@ export class Cyclops {
       return;
     }
 
-    const importIdentifiers = new Set<string>();
+    const moduleDeclarations = new Set<string>();
     const node = parseScript(fileContent, { module: true });
     const isRootNode = node.type === "Program";
 
     walk(isRootNode ? node.body : node, {
       enter(node) {
+        /**
+         * Searching for named exports with no local variable binding such as
+         * export { foo } from "./foo.js" as this export from another file is creating
+         * a link between the two files.
+         *
+         * A named export with a local variable binding is not interesting as
+         * it doesn't create a link between files:
+         * const foo = () => {};
+         * export { foo };
+         */
+        if (node.type === "ExportNamedDeclaration" && node.source) {
+          moduleDeclarations.add(node.source.value);
+        }
+
+        // export * as foo from "./foo.js";
+        // export * from "./foo.js"
+        if (node.type === "ExportAllDeclaration") {
+          moduleDeclarations.add(node.source.value);
+        }
+
+        // Every type of import can be caught using the same node type
         if (node.type === "ImportDeclaration") {
-          importIdentifiers.add(node.source.value);
+          moduleDeclarations.add(node.source.value);
         }
       }
     });
 
-    if (importIdentifiers.size === 0) {
+    if (moduleDeclarations.size === 0) {
       return;
     }
 
-    for (const importIdentifier of importIdentifiers.values()) {
+    for (const moduleDeclaration of moduleDeclarations.values()) {
       if (
-        isBuiltinModule(importIdentifier) ||
-        isThirdPartyModule(importIdentifier)
+        isBuiltinModule(moduleDeclaration) ||
+        isThirdPartyModule(moduleDeclaration)
       ) {
         continue;
       }
 
       const fullFilePathFromEntrypoint = path.join(
         path.dirname(rootDir),
-        importIdentifier
+        moduleDeclaration
       );
 
       this.addNode(fullFilePathFromEntrypoint);
@@ -110,7 +131,7 @@ export class Cyclops {
         fullFilePathFromEntrypoint
       );
 
-      await this.followImportStatementsFromFile(
+      await this.followModuleDeclarationsFromFile(
         fullFilePathFromEntrypoint,
         nextFileToExplore
       );
@@ -123,7 +144,7 @@ export class Cyclops {
     const rootFileContent = await this.fileReader.read(this.config.entrypoint);
     const rootDirPath = this.config.entrypoint;
 
-    await this.followImportStatementsFromFile(rootDirPath, rootFileContent);
+    await this.followModuleDeclarationsFromFile(rootDirPath, rootFileContent);
 
     const projectStructure = this.#projectGraph.toDict();
     const projectFileList = Object.keys(projectStructure);
