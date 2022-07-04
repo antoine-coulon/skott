@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "builtin-modules": "^3.3.0",
-    "digraph-js": "^1.1.1",
+    "digraph-js": "^1.2.1",
     "estree-walker": "^3.0.1",
     "meriyah": "^4.2.1"
   },
