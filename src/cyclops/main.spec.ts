@@ -1,4 +1,5 @@
 /* eslint-disable no-sync */
+
 import { expect } from "chai";
 import * as memfs from "memfs";
 
@@ -19,8 +20,9 @@ async function buildProjectStructureUsingInMemoryFileExplorer(
   entrypoint: string
 ): Promise<CyclopsStructure> {
   const cyclops = new Cyclops({ entrypoint }, new InMemoryFileReader());
+  const cyclopsInstance = await cyclops.initialize();
 
-  return cyclops.buildProjectStructure();
+  return cyclopsInstance.getStructure();
 }
 
 describe("When traversing a Node.js project", () => {
@@ -384,58 +386,155 @@ describe("When traversing a Node.js project", () => {
         });
 
         describe("When there is an indirect circular dependency involving many files imports", () => {
-          it("should find the cycle and keep traversing other nodes", async () => {
-            const fakeFileSystem = {
-              "a.js": `
+          describe("When all the files are involved in the cycle", () => {
+            it("should find the cycle and traverse+link all nodes involved in the cycle", async () => {
+              const fakeFileSystem = {
+                "a.js": `
               import { b } from "./b.js";
               export const a = () => b();
             `,
-              "b.js": `
+                "b.js": `
               import { c } from "./c.js";
               export const b = { doSomething: () => bar() };
             `,
-              "c.js": `
+                "c.js": `
               import { d } from "./d.js";
               export const c = { doSomething: () => {} };
             `,
-              "d.js": `
+                "d.js": `
               import { a } from "./a.js";
               export const d = { doSomething: () => {} };
             `
-            };
+              };
 
-            memfs.vol.fromJSON(fakeFileSystem, "./");
+              memfs.vol.fromJSON(fakeFileSystem, "./");
 
-            const { graph, hasCircularDependencies, circularDependencies } =
-              await buildProjectStructureUsingInMemoryFileExplorer("a.js");
+              const { graph, hasCircularDependencies, circularDependencies } =
+                await buildProjectStructureUsingInMemoryFileExplorer("a.js");
 
-            expect(graph).to.deep.equal({
-              "a.js": {
-                id: "a.js",
-                adjacentTo: ["b.js"],
-                body: { size: 0 }
-              },
-              "b.js": {
-                id: "b.js",
-                adjacentTo: ["c.js"],
-                body: { size: 0 }
-              },
-              "c.js": {
-                id: "c.js",
-                adjacentTo: ["d.js"],
-                body: { size: 0 }
-              },
-              "d.js": {
-                id: "d.js",
-                adjacentTo: ["a.js"],
-                body: { size: 0 }
-              }
+              expect(graph).to.deep.equal({
+                "a.js": {
+                  id: "a.js",
+                  adjacentTo: ["b.js"],
+                  body: { size: 0 }
+                },
+                "b.js": {
+                  id: "b.js",
+                  adjacentTo: ["c.js"],
+                  body: { size: 0 }
+                },
+                "c.js": {
+                  id: "c.js",
+                  adjacentTo: ["d.js"],
+                  body: { size: 0 }
+                },
+                "d.js": {
+                  id: "d.js",
+                  adjacentTo: ["a.js"],
+                  body: { size: 0 }
+                }
+              });
+
+              expect(hasCircularDependencies).to.equal(true);
+              expect(circularDependencies).to.deep.equal([
+                ["b.js", "c.js", "d.js", "a.js"]
+              ]);
             });
+          });
 
-            expect(hasCircularDependencies).to.equal(true);
-            expect(circularDependencies).to.deep.equal([
-              ["b.js", "c.js", "d.js", "a.js"]
-            ]);
+          describe("When only some of the files are involved in the cycle", () => {
+            it("should find the cycle and keep traversing+linking other nodes not involved in the cycle", async () => {
+              const fakeFileSystem = {
+                "index.js": `
+                  import * as _ from "./src/feature.js";
+                `,
+                "src/feature.js": `
+                  import * as _ from "./constants.js";
+                  import * as _ from "./utils/index.js";
+                  import * as _ from "./other-feature.js";
+                `,
+                "src/constants.js": ``,
+                "src/utils/index.js": `
+                  import { doSomethingUtil } from "./doSomethingUtil.js";
+                `,
+                "src/utils/doSomethingUtil.js": `
+                  import { anything } from "./index.js";
+                `,
+                "src/other-feature.js": `
+                  import { scripts } from "./last-feature.js";
+                  import { utils } from "./utils/index.js";
+                `,
+                "src/last-feature.js": ``
+              };
+
+              memfs.vol.fromJSON(fakeFileSystem, "./");
+
+              const {
+                graph,
+                circularDependencies,
+                hasCircularDependencies,
+                files
+              } = await buildProjectStructureUsingInMemoryFileExplorer(
+                "index.js"
+              );
+
+              expect(graph).to.deep.equal({
+                "index.js": {
+                  id: "index.js",
+                  adjacentTo: ["src/feature.js"],
+                  body: { size: 0 }
+                },
+                "src/feature.js": {
+                  id: "src/feature.js",
+                  adjacentTo: [
+                    "src/constants.js",
+                    "src/utils/index.js",
+                    "src/other-feature.js"
+                  ],
+                  body: { size: 0 }
+                },
+                "src/constants.js": {
+                  id: "src/constants.js",
+                  adjacentTo: [],
+                  body: { size: 0 }
+                },
+                "src/utils/index.js": {
+                  id: "src/utils/index.js",
+                  adjacentTo: ["src/utils/doSomethingUtil.js"],
+                  body: { size: 0 }
+                },
+                "src/utils/doSomethingUtil.js": {
+                  id: "src/utils/doSomethingUtil.js",
+                  adjacentTo: ["src/utils/index.js"],
+                  body: { size: 0 }
+                },
+                "src/other-feature.js": {
+                  id: "src/other-feature.js",
+                  adjacentTo: ["src/last-feature.js", "src/utils/index.js"],
+                  body: { size: 0 }
+                },
+                "src/last-feature.js": {
+                  id: "src/last-feature.js",
+                  adjacentTo: [],
+                  body: { size: 0 }
+                }
+              });
+
+              expect(files).to.deep.equal([
+                "index.js",
+                "src/feature.js",
+                "src/constants.js",
+                "src/utils/index.js",
+                "src/utils/doSomethingUtil.js",
+                "src/other-feature.js",
+                "src/last-feature.js"
+              ]);
+
+              expect(hasCircularDependencies).to.equal(true);
+              expect(circularDependencies).to.deep.equal([
+                ["src/utils/doSomethingUtil.js", "src/utils/index.js"]
+              ]);
+            });
           });
         });
       });

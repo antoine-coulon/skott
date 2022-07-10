@@ -16,10 +16,34 @@
 
 ## Examples
 
+To initialize the dependency graph, the default exported function must be used first.
+Once executed, the default function returns a set of functions to retrieve some
+information about the graph just built.
+
+
 ```javascript
 import cyclops from "cyclops";
 
-const { graph, files, circularDependencies } = await cyclops({
+const { getStructure, getCircularDependencies, hasCircularDependencies } = await cyclops({
   entrypoint: "index.js"
 });
+
+const { graph, files } = getStructure();
+console.log(graph); // logs { "index.js": { id: "index.js", adjacentTo: [], body: {...} } };
+console.log(files); // logs [ "index.js" ]
+```
+
+Or simply search for circular dependencies
+
+```javascript
+import cyclops from "cyclops";
+
+const { getCircularDependencies } = await cyclops({
+  entrypoint: "index.js"
+});
+
+// Imagine that starting from "index.js" cyclops detects a circular dependency
+// between "core.js" and "utils.js" files
+
+console.log(getCircularDependencies()); // logs [ [ "core.js", "utils.js" ] ]
 ```

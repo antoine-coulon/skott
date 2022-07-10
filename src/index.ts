@@ -1,9 +1,9 @@
-import { Cyclops, CyclopsConfig, CyclopsStructure } from "./cyclops/main.js";
+import { Cyclops, CyclopsConfig, CyclopsInstance } from "./cyclops/main.js";
 
 export default async function cyclops(
   config: CyclopsConfig
-): Promise<CyclopsStructure> {
-  const cyclosGraph = new Cyclops(config);
+): Promise<CyclopsInstance> {
+  const cyclopsInstance = await new Cyclops(config).initialize();
 
-  return cyclosGraph.buildProjectStructure();
+  return cyclopsInstance;
 }
