@@ -8,12 +8,13 @@
 >
 > **cyclops** is meant to represent all the file tree structure but was designed to only include dependencies that are currently being used in the project based on the entrypoint. Consequently unused files won't be included in the graph structure.
 
-
 * ✅ Works for JavaScript (EcmaScript and CommonJS modules)
 * ✅ Deeply detects circular dependencies in an efficient way
 * ✅ Deeply collect all dependencies on which a graph node depends on  
 * ✅ Deeply search for parent dependencies of a given node
 * ✅ Parent and child dependencies traversals
+* ✅ Node.js core, binary and JSON modules are excluded by default
+* ✅ Third-party libraries are excluded by default
 
 ## Examples
 
