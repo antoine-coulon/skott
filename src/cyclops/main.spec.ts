@@ -26,7 +26,7 @@ async function buildProjectStructureUsingInMemoryFileExplorer(
   return cyclopsInstance.getStructure();
 }
 
-describe("When traversing a Node.js project", () => {
+describe("When traversing a JavaScript/Node.js project", () => {
   describe("When building the project structure", () => {
     describe("When the file does not have any module declarations", () => {
       it("cyclops should build a graph with only the root node", async () => {
@@ -51,6 +51,30 @@ describe("When traversing a Node.js project", () => {
           hasCircularDependencies: false,
           leaves: ["index.js"]
         });
+      });
+    });
+
+    describe("When the file contains imports that are not initially JavaScript modules", () => {
+      it("should process only with JavaScript modules", async () => {
+        const fakeFileSystem = {
+          "index.js": `
+            const foo = require("./javascript-module.js");
+            const staticFile = require("./db.json");
+            const binaryModule = require("./binary.node");
+          `,
+          "javascript-module.js": "console.log('Hello, world!');",
+          "binaryModule.node": "",
+          "staticFile.json": "{}"
+        };
+        memfs.vol.fromJSON(fakeFileSystem, "./");
+
+        const projectStructure =
+          await buildProjectStructureUsingInMemoryFileExplorer("index.js");
+
+        expect(projectStructure.files).to.deep.equal([
+          "index.js",
+          "javascript-module.js"
+        ]);
       });
     });
 

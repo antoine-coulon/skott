@@ -28,6 +28,14 @@ export function isThirdPartyModule(module: string): boolean {
   return !module.startsWith(".");
 }
 
+export function isJSONModule(module: string): boolean {
+  return module.endsWith(".json");
+}
+
+export function isBinaryModule(module: string): boolean {
+  return module.endsWith(".node");
+}
+
 const kExpectedModuleExtensions = new Set([".js", ".mjs", ".cjs"]);
 
 export function isJavaScriptModule(module: string): boolean {

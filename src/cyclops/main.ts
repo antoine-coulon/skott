@@ -10,7 +10,9 @@ import { isCommonJSModuleImport } from "./modules/cjs.js";
 import { isEcmaScriptModuleImport } from "./modules/esm.js";
 import {
   adaptModuleExtension,
+  isBinaryModule,
   isBuiltinModule,
+  isJSONModule,
   isThirdPartyModule
 } from "./modules/import-checker.js";
 
@@ -99,7 +101,9 @@ export class Cyclops {
     for (const moduleDeclaration of moduleDeclarations.values()) {
       if (
         isBuiltinModule(moduleDeclaration) ||
-        isThirdPartyModule(moduleDeclaration)
+        isThirdPartyModule(moduleDeclaration) ||
+        isBinaryModule(moduleDeclaration) ||
+        isJSONModule(moduleDeclaration)
       ) {
         continue;
       }
