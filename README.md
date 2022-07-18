@@ -6,7 +6,7 @@
 
 > **Note**
 >
-> Unlike [madge](https://github.com/pahen/madge), **cyclops** is not meant to represent all the file tree structure but was designed to only include dependencies that are currently being used in the project based on the entrypoint.
+> **cyclops** is meant to represent all the file tree structure but was designed to only include dependencies that are currently being used in the project based on the entrypoint. Consequently unused files won't be included in the graph structure.
 
 
 * ✅ Works for JavaScript (ES6 and CommonJS modules)
@@ -20,11 +20,10 @@ To initialize the dependency graph, the default exported function must be used f
 Once executed, the default function returns a set of functions to retrieve some
 information about the graph just built.
 
-
 ```javascript
 import cyclops from "cyclops";
 
-const { getStructure, getCircularDependencies, hasCircularDependencies } = await cyclops({
+const { getStructure } = await cyclops({
   entrypoint: "index.js"
 });
 
@@ -33,12 +32,11 @@ console.log(graph); // logs { "index.js": { id: "index.js", adjacentTo: [], bod
 console.log(files); // logs [ "index.js" ]
 ```
 
-Or simply search for circular dependencies
-
+**Search for circular dependencies**
 ```javascript
 import cyclops from "cyclops";
 
-const { getCircularDependencies } = await cyclops({
+const { getCircularDependencies, hasCircularDependencies } = await cyclops({
   entrypoint: "index.js"
 });
 
@@ -46,4 +44,23 @@ const { getCircularDependencies } = await cyclops({
 // between "core.js" and "utils.js" files
 
 console.log(getCircularDependencies()); // logs [ [ "core.js", "utils.js" ] ]
+console.log(hasCircularDependencies()); // logs "true"
+```
+
+**Search for leaves (nodes with no children i.e: dependency)**
+
+leaf.js
+```javascript
+console.log("I'm a leaf because I have no dependency");
+```
+
+index.js
+```javascript
+import cyclops from "cyclops";
+
+const { findLeaves } = await cyclops({
+  entrypoint: "leaf.js"
+});
+
+console.log(findLeaves()); // logs [ "leaf.js" ]
 ```

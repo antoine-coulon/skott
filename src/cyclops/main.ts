@@ -22,11 +22,13 @@ export interface CyclopsStructure {
   files: string[];
   circularDependencies: string[][];
   hasCircularDependencies: boolean;
+  leaves: string[];
 }
 
 export interface CyclopsInstance {
   getStructure: () => CyclopsStructure;
-  getCircularDependencies: () => string[][];
+  findLeaves: () => string[];
+  findCircularDependencies: () => string[][];
   hasCircularDependencies: () => boolean;
 }
 
@@ -142,29 +144,37 @@ export class Cyclops {
     return this.#projectGraph.findCycles();
   }
 
+  private findLeaves(): string[] {
+    return Object.entries(this.#projectGraph.toDict())
+      .filter(([_, node]) => node.adjacentTo.length === 0)
+      .map(([leafId]) => leafId);
+  }
+
   private makeProjectStructure(): CyclopsStructure {
     const projectStructure = this.#projectGraph.toDict();
 
     return {
       graph: projectStructure,
       files: Object.keys(projectStructure),
+      leaves: this.findLeaves(),
       circularDependencies: this.circularDependencies(),
       hasCircularDependencies: this.hasCircularDependencies()
     };
   }
 
   public async initialize(): Promise<CyclopsInstance> {
-    this.addNode(this.config.entrypoint);
+    const { entrypoint } = this.config;
+    const rootFileContent = await this.fileReader.read(entrypoint);
+    const rootDirPath = entrypoint;
 
-    const rootFileContent = await this.fileReader.read(this.config.entrypoint);
-    const rootDirPath = this.config.entrypoint;
-
+    this.addNode(entrypoint);
     await this.followModuleDeclarationsFromFile(rootDirPath, rootFileContent);
 
     return {
       getStructure: this.makeProjectStructure.bind(this),
-      getCircularDependencies: this.circularDependencies.bind(this),
-      hasCircularDependencies: this.hasCircularDependencies.bind(this)
+      findCircularDependencies: this.circularDependencies.bind(this),
+      hasCircularDependencies: this.hasCircularDependencies.bind(this),
+      findLeaves: this.findLeaves.bind(this)
     };
   }
 }
