@@ -112,20 +112,22 @@ export class Cyclops {
         path.join(path.dirname(rootDir), moduleDeclaration)
       );
 
-      this.addNode(fullFilePathFromEntrypoint);
-      this.linkNodes({
-        from: rootDir,
-        to: fullFilePathFromEntrypoint
-      });
+      try {
+        const nextFileContentToExplore = await this.fileReader.read(
+          fullFilePathFromEntrypoint
+        );
 
-      const nextFileContentToExplore = await this.fileReader.read(
-        fullFilePathFromEntrypoint
-      );
+        this.addNode(fullFilePathFromEntrypoint);
+        this.linkNodes({
+          from: rootDir,
+          to: fullFilePathFromEntrypoint
+        });
 
-      await this.followModuleDeclarationsFromFile(
-        fullFilePathFromEntrypoint,
-        nextFileContentToExplore
-      );
+        await this.followModuleDeclarationsFromFile(
+          fullFilePathFromEntrypoint,
+          nextFileContentToExplore
+        );
+      } catch {}
     }
   }
 

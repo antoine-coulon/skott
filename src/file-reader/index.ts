@@ -1,4 +1,5 @@
-import fs from "fs/promises";
+import { R_OK } from "node:constants";
+import fs from "node:fs/promises";
 
 export interface FileReader {
   read: (filename: string) => Promise<string>;
@@ -6,6 +7,6 @@ export interface FileReader {
 
 export class FileSystemReader implements FileReader {
   read(filename: string): Promise<string> {
-    return fs.readFile(filename, "utf-8");
+    return fs.readFile(filename, { encoding: "utf-8", flag: R_OK });
   }
 }
