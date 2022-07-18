@@ -6,15 +6,19 @@ import { parseScript } from "meriyah";
 
 import { FileReader, FileSystemReader } from "../file-reader/index.js";
 
+import { isCommonJSModuleImport } from "./modules/cjs.js";
+import { isEcmaScriptModuleImport } from "./modules/esm.js";
 import {
+  adaptModuleExtension,
   isBuiltinModule,
   isThirdPartyModule
-} from "./module-import-checker.js";
+} from "./modules/import-checker.js";
 
 type CyclopsNode = VertexDefinition<{ size: number }>;
 
 export interface CyclopsConfig {
   entrypoint: string;
+  module: boolean;
 }
 
 export interface CyclopsStructure {
@@ -68,33 +72,19 @@ export class Cyclops {
     }
 
     const moduleDeclarations = new Set<string>();
-    const node = parseScript(fileContent, { module: true });
+    const node = parseScript(fileContent, {
+      module: this.config.module,
+      next: true
+    });
     const isRootNode = node.type === "Program";
 
     walk(isRootNode ? node.body : node, {
       enter(node) {
-        /**
-         * Searching for named exports with no local variable binding such as
-         * export { foo } from "./foo.js" as this export from another file is creating
-         * a link between the two files.
-         *
-         * A named export with a local variable binding is not interesting as
-         * it doesn't create a link between files:
-         * const foo = () => {};
-         * export { foo };
-         */
-        if (node.type === "ExportNamedDeclaration" && node.source) {
-          moduleDeclarations.add(node.source.value);
+        if (isCommonJSModuleImport(node)) {
+          moduleDeclarations.add(node.arguments[0].value);
         }
 
-        // export * as foo from "./foo.js";
-        // export * from "./foo.js"
-        if (node.type === "ExportAllDeclaration") {
-          moduleDeclarations.add(node.source.value);
-        }
-
-        // Every type of import can be caught using the same node type
-        if (node.type === "ImportDeclaration") {
+        if (isEcmaScriptModuleImport(node)) {
           moduleDeclarations.add(node.source.value);
         }
       }
@@ -114,9 +104,8 @@ export class Cyclops {
         continue;
       }
 
-      const fullFilePathFromEntrypoint = path.join(
-        path.dirname(rootDir),
-        moduleDeclaration
+      const fullFilePathFromEntrypoint = adaptModuleExtension(
+        path.join(path.dirname(rootDir), moduleDeclaration)
       );
 
       this.addNode(fullFilePathFromEntrypoint);
@@ -163,7 +152,7 @@ export class Cyclops {
   }
 
   public async initialize(): Promise<CyclopsInstance> {
-    const { entrypoint } = this.config;
+    const entrypoint = adaptModuleExtension(this.config.entrypoint);
     const rootFileContent = await this.fileReader.read(entrypoint);
     const rootDirPath = entrypoint;
 

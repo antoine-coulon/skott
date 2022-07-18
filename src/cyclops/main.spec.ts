@@ -17,9 +17,10 @@ class InMemoryFileReader implements FileReader {
 }
 
 async function buildProjectStructureUsingInMemoryFileExplorer(
-  entrypoint: string
+  entrypoint: string,
+  module = true
 ): Promise<CyclopsStructure> {
-  const cyclops = new Cyclops({ entrypoint }, new InMemoryFileReader());
+  const cyclops = new Cyclops({ entrypoint, module }, new InMemoryFileReader());
   const cyclopsInstance = await cyclops.initialize();
 
   return cyclopsInstance.getStructure();
@@ -27,45 +28,46 @@ async function buildProjectStructureUsingInMemoryFileExplorer(
 
 describe("When traversing a Node.js project", () => {
   describe("When building the project structure", () => {
+    describe("When the file does not have any module declarations", () => {
+      it("cyclops should build a graph with only the root node", async () => {
+        const fakeFileSystem = {
+          "index.js": "console.log('Hello, world!');"
+        };
+        memfs.vol.fromJSON(fakeFileSystem, "./");
+
+        const projectStructure =
+          await buildProjectStructureUsingInMemoryFileExplorer("index.js");
+
+        expect(projectStructure).to.be.deep.equal({
+          graph: {
+            "index.js": {
+              adjacentTo: [],
+              id: "index.js",
+              body: { size: 0 }
+            }
+          },
+          files: ["index.js"],
+          circularDependencies: [],
+          hasCircularDependencies: false,
+          leaves: ["index.js"]
+        });
+      });
+    });
+
     describe("When the project uses ECMAScript modules", () => {
       describe("When extracting module declarations starting from the root file", () => {
-        describe("When the file does not have any module declarations", () => {
-          it("cyclops should build a graph with only the root node", async () => {
-            const fakeFileSystem = {
-              "index.js": "console.log('Hello, world!');"
-            };
-            memfs.vol.fromJSON(fakeFileSystem, "./");
-
-            const projectStructure =
-              await buildProjectStructureUsingInMemoryFileExplorer("index.js");
-
-            expect(projectStructure).to.be.deep.equal({
-              graph: {
-                "index.js": {
-                  adjacentTo: [],
-                  id: "index.js",
-                  body: { size: 0 }
-                }
-              },
-              files: ["index.js"],
-              circularDependencies: [],
-              hasCircularDependencies: false,
-              leaves: ["index.js"]
-            });
-          });
-        });
         describe("When extracting import declarations", () => {
           describe("When the file has one import declaration", () => {
             it("cyclops should build the graph with two nodes and one link", async () => {
               const fakeFileSystem = {
                 "index.js": `
-            import { foo } from "./src/foo.js";
-    
-            console.log(foo.doSomething());
-          `,
+                  import { foo } from "./src/foo.js";
+          
+                  console.log(foo.doSomething());
+                `,
                 "src/foo.js": `
-              export const foo = { doSomething: () => 'Hello, world!' };
-            `
+                  export const foo = { doSomething: () => 'Hello, world!' };
+                `
               };
 
               memfs.vol.fromJSON(fakeFileSystem, "./");
@@ -100,25 +102,25 @@ describe("When traversing a Node.js project", () => {
             it("cyclops should build the graph with all nodes and links", async () => {
               const fakeFileSystem = {
                 "index.js": `
-              import { foo } from "./src/foo.js";
-              console.log(foo.doSomething());
-            `,
+                  import { foo } from "./src/foo.js";
+                  console.log(foo.doSomething());
+                `,
                 "src/foo.js": `
-              import { bar } from "./bar.js";
-              export const foo = { doSomething: () => bar() };
-            `,
+                  import { bar } from "./bar.js";
+                  export const foo = { doSomething: () => bar() };
+                `,
                 "src/bar.js": `
-              import { baz } from './lib/baz/index.js';
-              export const bar = () => 'Hello, world!';
-            `,
+                  import { baz } from './lib/baz/index.js';
+                  export const bar = () => 'Hello, world!';
+                `,
                 "src/lib/baz/index.js": `
-              import lol from "../../lol/index.js";
-              export const baz = () => 'Hello, baz!';
-            `,
+                  import lol from "../../lol/index.js";
+                  export const baz = () => 'Hello, baz!';
+                `,
                 "src/lol/index.js": `
-              const lol = () => 'Hello, baz!';
-              export default lol;
-            `
+                  const lol = () => 'Hello, baz!';
+                  export default lol;
+                `
               };
 
               memfs.vol.fromJSON(fakeFileSystem, "./");
@@ -174,17 +176,17 @@ describe("When traversing a Node.js project", () => {
             it("should ignore Node.js core modules imports by default", async () => {
               const fakeFileSystem = {
                 "index.js": `
-              import { readFile } from "fs/promises";
-              import { join } from "node:path";
-              import { setImmediate } from "node:timers/promises";
-              
-              import * as foobar from "./foobar.js";
+                  import { readFile } from "fs/promises";
+                  import { join } from "node:path";
+                  import { setImmediate } from "node:timers/promises";
+                  
+                  import * as foobar from "./foobar.js";
 
-              console.log(foobar.foo.doSomething());
-            `,
+                  console.log(foobar.foo.doSomething());
+                `,
                 "foobar.js": `
-              export const foo = { doSomething: () => 'Hello, world!' };
-            `
+                  export const foo = { doSomething: () => 'Hello, world!' };
+                `
               };
 
               memfs.vol.fromJSON(fakeFileSystem, "./");
@@ -217,16 +219,16 @@ describe("When traversing a Node.js project", () => {
             it("should ignore third-party libraries imports by default", async () => {
               const fakeFileSystem = {
                 "index.js": `
-              import { parseScript } from "meriyah";
-              import * as vuln from "@nodesecure/vuln";
+                  import { parseScript } from "meriyah";
+                  import * as vuln from "@nodesecure/vuln";
 
-              import * as foobar from "./foobar.js";
+                  import * as foobar from "./foobar.js";
 
-              console.log(foobar.foo.doSomething());
-            `,
+                  console.log(foobar.foo.doSomething());
+                `,
                 "foobar.js": `
-              export const foo = { doSomething: () => 'Hello, world!' };
-            `
+                  export const foo = { doSomething: () => 'Hello, world!' };
+                `
               };
 
               memfs.vol.fromJSON(fakeFileSystem, "./");
@@ -261,15 +263,15 @@ describe("When traversing a Node.js project", () => {
             it("should extract all related export declarations", async () => {
               const fakeFileSystem = {
                 "index.js": `
-              export * from "./foobar.js";
-              export * as foo from "./foo.js";
-            `,
+                  export * from "./foobar.js";
+                  export * as foo from "./foo.js";
+                `,
                 "foobar.js": `
-              export const foo = { doSomething: () => 'Hello, world!' };
-            `,
+                  export const foo = { doSomething: () => 'Hello, world!' };
+                `,
                 "foo.js": `
-              export const foo = { doSomething: () => 'Hello, world!' };
-            `
+                  export const foo = { doSomething: () => 'Hello, world!' };
+                `
               };
 
               memfs.vol.fromJSON(fakeFileSystem, "./");
@@ -308,18 +310,18 @@ describe("When traversing a Node.js project", () => {
             it("should only extract named exports with a source", async () => {
               const fakeFileSystem = {
                 "index.js": `
-              export { foobar } from "./foobar.js";
-            `,
+                  export { foobar } from "./foobar.js";
+                `,
                 "foobar.js": `
-              import { foo } from "./foo.js"
-              export const foobar = { doSomething: () => 'Hello, world!' };
-            `,
+                  import { foo } from "./foo.js"
+                  export const foobar = { doSomething: () => 'Hello, world!' };
+                `,
                 "foo.js": `
-              export const foo = { doSomething: () => foobar() };
+                  export const foo = { doSomething: () => foobar() };
 
-              const foo2 = { doSomething: () => foobar() };
-              export { foo2 };
-            `
+                  const foo2 = { doSomething: () => foobar() };
+                  export { foo2 };
+                `
               };
 
               memfs.vol.fromJSON(fakeFileSystem, "./");
@@ -360,17 +362,17 @@ describe("When traversing a Node.js project", () => {
             it("should find the cycle and keep traversing other nodes", async () => {
               const fakeFileSystem = {
                 "a.js": `
-              import { b } from "./b.js";
-              export const a = () => b();
-            `,
+                  import { b } from "./b.js";
+                  export const a = () => b();
+                `,
                 "b.js": `
-              import { a } from "./a.js";
-              import { c } from "./c.js";
-              export const b = { doSomething: () => bar() };
-            `,
+                  import { a } from "./a.js";
+                  import { c } from "./c.js";
+                  export const b = { doSomething: () => bar() };
+                `,
                 "c.js": `
-              export const c = { doSomething: () => {} };
-            `
+                  export const c = { doSomething: () => {} };
+                `
               };
 
               memfs.vol.fromJSON(fakeFileSystem, "./");
@@ -406,21 +408,21 @@ describe("When traversing a Node.js project", () => {
               it("should find the cycle and traverse+link all nodes involved in the cycle", async () => {
                 const fakeFileSystem = {
                   "a.js": `
-              import { b } from "./b.js";
-              export const a = () => b();
-            `,
+                    import { b } from "./b.js";
+                    export const a = () => b();
+                  `,
                   "b.js": `
-              import { c } from "./c.js";
-              export const b = { doSomething: () => bar() };
-            `,
+                    import { c } from "./c.js";
+                    export const b = { doSomething: () => bar() };
+                  `,
                   "c.js": `
-              import { d } from "./d.js";
-              export const c = { doSomething: () => {} };
-            `,
+                    import { d } from "./d.js";
+                    export const c = { doSomething: () => {} };
+                  `,
                   "d.js": `
-              import { a } from "./a.js";
-              export const d = { doSomething: () => {} };
-            `
+                    import { a } from "./a.js";
+                    export const d = { doSomething: () => {} };
+                  `
                 };
 
                 memfs.vol.fromJSON(fakeFileSystem, "./");
@@ -570,6 +572,81 @@ describe("When traversing a Node.js project", () => {
 
           expect(leaves).to.be.deep.equal(["file2.js"]);
         });
+      });
+    });
+
+    describe("When the project uses CommonJS modules", () => {
+      describe("When extracting import declarations", () => {
+        const mixOfScenariosWithRequireImports = [
+          {
+            description:
+              "When the file has one require identifier without the file extension",
+            requireIdentifier: `require("./src/foo")`,
+            expectedFinalFileExtension: "js"
+          },
+          {
+            description:
+              "When the file has one require identifier with a .js extension",
+            requireIdentifier: `require("./src/foo.js")`,
+            expectedFinalFileExtension: "js"
+          },
+          {
+            description:
+              "When the file has one require identifier with a .cjs extension",
+            requireIdentifier: `require("./src/foo.cjs")`,
+            expectedFinalFileExtension: "cjs"
+          }
+        ];
+
+        for (const scenarioWithRequireImport of mixOfScenariosWithRequireImports) {
+          it(scenarioWithRequireImport.description, async () => {
+            const fakeFileSystem = {
+              "index.js": `
+                const { foo } = ${scenarioWithRequireImport.requireIdentifier};
+        
+                console.log(foo.doSomething());
+              `,
+              [`src/foo.${scenarioWithRequireImport.expectedFinalFileExtension}`]: `
+                module.exports.foo = { doSomething: () => 'Hello, world!' };
+              `
+            };
+
+            memfs.vol.fromJSON(fakeFileSystem, "./");
+
+            const projectStructure =
+              await buildProjectStructureUsingInMemoryFileExplorer(
+                "index.js",
+                false
+              );
+
+            expect(projectStructure).to.be.deep.equal({
+              graph: {
+                "index.js": {
+                  adjacentTo: [
+                    `src/foo.${scenarioWithRequireImport.expectedFinalFileExtension}`
+                  ],
+                  id: `index.js`,
+                  body: { size: 0 }
+                },
+                [`src/foo.${scenarioWithRequireImport.expectedFinalFileExtension}`]:
+                  {
+                    adjacentTo: [],
+                    id: `src/foo.${scenarioWithRequireImport.expectedFinalFileExtension}`,
+                    body: { size: 0 }
+                  }
+              },
+              files: [
+                `index.js`,
+                `src/foo.${scenarioWithRequireImport.expectedFinalFileExtension}`
+              ],
+              circularDependencies: [],
+              hasCircularDependencies: false,
+              leaves: [
+                `src/foo.${scenarioWithRequireImport.expectedFinalFileExtension}`
+              ]
+            });
+          });
+        }
       });
     });
   });

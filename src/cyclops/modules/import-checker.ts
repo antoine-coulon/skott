@@ -1,3 +1,5 @@
+import path from "node:path";
+
 import builtinModules from "builtin-modules";
 
 const NODE_PROTOCOL = "node:";
@@ -24,4 +26,18 @@ export function isBuiltinModule(module: string): boolean {
 
 export function isThirdPartyModule(module: string): boolean {
   return !module.startsWith(".");
+}
+
+const kExpectedModuleExtensions = new Set([".js", ".mjs", ".cjs"]);
+
+export function isJavaScriptModule(module: string): boolean {
+  return kExpectedModuleExtensions.has(path.extname(module));
+}
+
+export function adaptModuleExtension(module: string): string {
+  if (isJavaScriptModule(module)) {
+    return module;
+  }
+
+  return module.concat(".js");
 }
