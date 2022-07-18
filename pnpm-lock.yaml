@@ -7,7 +7,7 @@ specifiers:
   '@types/node': ^16.11.12
   builtin-modules: ^3.3.0
   chai: ^4.3.4
-  digraph-js: ^1.2.1
+  digraph-js: ^1.3.0
   eslint: ^8.4.1
   eslint-config-prettier: ^8.3.0
   eslint-import-resolver-typescript: ^2.5.0
@@ -24,7 +24,7 @@ specifiers:
 
 dependencies:
   builtin-modules: 3.3.0
-  digraph-js: 1.2.1
+  digraph-js: 1.3.0
   estree-walker: 3.0.1
   meriyah: 4.2.1
 
@@ -885,8 +885,8 @@ packages:
     engines: {node: '>=0.3.1'}
     dev: true
 
-  /digraph-js/1.2.1:
-    resolution: {integrity: sha512-+U+4YZ7mdQOUa/nMHPS/vy1zd0KT5A2KZ2l9zCmobsKXByAx4Gi81xv60Ku3lHYIWQb8HshnqUcYgNzWvGpNMQ==}
+  /digraph-js/1.3.0:
+    resolution: {integrity: sha512-b3loJM4Re0EY8NHJ0qa2n/IyFBNg4YMWmYMNb2FPc3SWW+gYnwU6CijjWOBd1PaO46sQZy2CIMPD2BxgFBl/NQ==}
     engines: {node: '>=16.0.0'}
     dev: false
 
