@@ -36,6 +36,7 @@ export interface CyclopsInstance {
   findLeaves: () => string[];
   findCircularDependencies: () => string[][];
   hasCircularDependencies: () => boolean;
+  findParentsOf: (node: string) => string[];
 }
 
 export class Cyclops {
@@ -145,6 +146,10 @@ export class Cyclops {
       .map(([leafId]) => leafId);
   }
 
+  private findParentsOf(node: string): string[] {
+    return this.#projectGraph.getDeepUpperDependencies(node);
+  }
+
   private makeProjectStructure(): CyclopsStructure {
     const projectStructure = this.#projectGraph.toDict();
 
@@ -169,7 +174,8 @@ export class Cyclops {
       getStructure: this.makeProjectStructure.bind(this),
       findCircularDependencies: this.circularDependencies.bind(this),
       hasCircularDependencies: this.hasCircularDependencies.bind(this),
-      findLeaves: this.findLeaves.bind(this)
+      findLeaves: this.findLeaves.bind(this),
+      findParentsOf: this.findParentsOf.bind(this)
     };
   }
 }

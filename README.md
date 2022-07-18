@@ -12,6 +12,7 @@
 * ✅ Works for JavaScript (EcmaScript and CommonJS modules)
 * ✅ Deeply detects circular dependencies in an efficient way
 * ✅ Deeply collect all dependencies on which a graph node depends on  
+* ✅ Deeply search for parent dependencies of a given node
 * ✅ Parent and child dependencies traversals
 
 ## Examples
@@ -63,4 +64,29 @@ const { findLeaves } = await cyclops({
 });
 
 console.log(findLeaves()); // logs [ "leaf.js" ]
+```
+
+**Deeply search for parent dependencies of a given node**
+
+children.js
+```javascript
+export const childrenFunction = () => {};
+```
+
+parent.js
+```javascript
+import { childrenFunction } from "./children.js";
+
+childrenFunction();
+```
+
+index.js
+```javascript
+import cyclops from "cyclops";
+
+const { findParentsOf } = await cyclops({
+  entrypoint: "parent.js"
+});
+
+console.log(findParentsOf("children.js")); // logs [ "parent.js" ]
 ```

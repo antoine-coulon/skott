@@ -587,22 +587,6 @@ describe("When traversing a JavaScript/Node.js project", () => {
             });
           });
         });
-
-        describe("When searching for leaves", () => {
-          it("should only return nodes identifiers with no children", async () => {
-            const fakeFileSystem = {
-              "index.js": "export * from './file1.js';",
-              "file1.js": "import { F2 } from './file2.js';",
-              "file2.js": "export const F2 = 10;"
-            };
-            memfs.vol.fromJSON(fakeFileSystem, "./");
-
-            const { leaves } =
-              await buildProjectStructureUsingInMemoryFileExplorer("index.js");
-
-            expect(leaves).to.be.deep.equal(["file2.js"]);
-          });
-        });
       });
 
       describe("When the project uses CommonJS modules", () => {
@@ -677,6 +661,67 @@ describe("When traversing a JavaScript/Node.js project", () => {
               });
             });
           }
+        });
+      });
+
+      describe("When searching for leaves", () => {
+        it("should only return nodes identifiers with no children", async () => {
+          const fakeFileSystem = {
+            "index.js": "export * from './file1.js';",
+            "file1.js": "import { F2 } from './file2.js';",
+            "file2.js": "export const F2 = 10;"
+          };
+          memfs.vol.fromJSON(fakeFileSystem, "./");
+
+          const { leaves } =
+            await buildProjectStructureUsingInMemoryFileExplorer("index.js");
+
+          expect(leaves).to.be.deep.equal(["file2.js"]);
+        });
+      });
+
+      describe("When deeply searching for parents of a given node", () => {
+        it("should traverse the graph bottom-to-top and collect every file depending on the target", async () => {
+          const fakeFileSystem = {
+            "a.js": `
+              import { b } from "./b.js";
+              export const a = () => b();
+            `,
+            "b.js": `
+              import { c } from "./c.js";
+              export const b = { doSomething: () => bar() };
+            `,
+            "c.js": `
+              import { d } from "./d.js";
+              import { x } from "./x.js";
+              export const c = { doSomething: () => {} };
+            `,
+            "x.js": `
+              export const x = { doSomething: () => {} };
+            `,
+            "d.js": `
+              export const d = { doSomething: () => {} };
+            `
+          };
+
+          memfs.vol.fromJSON(fakeFileSystem, "./");
+
+          const cyclops = new Cyclops(
+            { entrypoint: "a.js", module: true },
+            new InMemoryFileReader()
+          );
+
+          const cyclopsInstance = await cyclops.initialize();
+          expect(cyclopsInstance.findParentsOf("d.js")).to.deep.equal([
+            "c.js",
+            "b.js",
+            "a.js"
+          ]);
+          expect(cyclopsInstance.findParentsOf("c.js")).to.deep.equal([
+            "b.js",
+            "a.js"
+          ]);
+          expect(cyclopsInstance.findParentsOf("a.js")).to.deep.equal([]);
         });
       });
     });
