@@ -15,11 +15,10 @@ import {
   isThirdPartyModule
 } from "./modules/import-checker.js";
 
-type CyclopsNode = VertexDefinition<{ size: number }>;
+export type CyclopsNode = VertexDefinition<{ size: number }>;
 
 export interface CyclopsConfig {
   entrypoint: string;
-  module: boolean;
   circularMaxDepth?: number;
   includeBaseDir: boolean;
 }
@@ -42,7 +41,6 @@ export interface CyclopsInstance {
 
 const defaultConfig = {
   entrypoint: "",
-  module: true,
   includeBaseDir: false,
   circularMaxDepth: Number.POSITIVE_INFINITY
 };
@@ -145,7 +143,7 @@ export class Cyclops {
 
     const moduleDeclarations = new Set<string>();
     const node = parseScript(fileContent, {
-      module: this.config.module,
+      module: true,
       next: true
     });
     const isRootNode = node.type === "Program";

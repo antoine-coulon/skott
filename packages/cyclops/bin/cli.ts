@@ -8,18 +8,26 @@ import kleur from "kleur";
 import sade from "sade";
 
 import cyclops from "../index.js";
+import { CyclopsNode } from "../src/cyclops.js";
 import { findWorkspaceEntrypointModule } from "../src/workspace/index.js";
+
+const kLeftSeparator = "└──";
 
 function isDirectory(nodePath: string): boolean {
   return path.extname(nodePath) === "";
 }
 
-function renderProjectFileSystem(
+function makeIndents(numberOfIndents: number): string {
+  return Array.from({ length: numberOfIndents }, () => " ").join("");
+}
+
+function displayAsFileTree(
   treeStructure: TreeStructure,
+  filesInvolvedInCycles: string[],
   whitespaces = 0
 ): void {
-  const leftLevelSeparator = whitespaces === 0 ? "" : "└──";
-  const indents = Array.from({ length: whitespaces }, () => " ").join("");
+  const leftLevelSeparator = whitespaces === 0 ? "" : kLeftSeparator;
+  const indents = makeIndents(whitespaces);
   for (const [node, subNodes] of Object.entries(treeStructure)) {
     if (isDirectory(node)) {
       console.log(
@@ -30,24 +38,60 @@ function renderProjectFileSystem(
         `${indents} ${leftLevelSeparator} ${kleur.bold().blue(node)}`
       );
     }
-    renderProjectFileSystem(subNodes, whitespaces + 2);
+    displayAsFileTree(subNodes, filesInvolvedInCycles, whitespaces + 2);
+  }
+}
+
+function displayAsGraph(
+  graph: Record<string, CyclopsNode>,
+  filesInvolvedInCycles: string[]
+): void {
+  const leftArrow = `${kLeftSeparator}>`;
+  for (const [nodeId, nodeValue] of Object.entries(graph)) {
+    console.log();
+
+    if (filesInvolvedInCycles.includes(nodeId)) {
+      console.log(
+        `${makeIndents(1)} ${kleur.red().underline().bold(nodeId)} 🔄`
+      );
+    } else {
+      console.log(`${makeIndents(1)} ${kleur.blue().underline().bold(nodeId)}`);
+    }
+
+    for (const subNode of nodeValue.adjacentTo) {
+      console.log(kleur.bold().yellow(`${makeIndents(3)} │`));
+      if (filesInvolvedInCycles.includes(subNode)) {
+        const subNodeWithWarning = `${subNode} 🔄`;
+        console.log(
+          `${makeIndents(3)} ${kleur.bold().yellow(leftArrow)} ${kleur
+            .bold()
+            .red(subNodeWithWarning)} `
+        );
+      } else {
+        console.log(
+          `${makeIndents(3)} ${kleur.bold().yellow(leftArrow)} ${kleur
+            .bold()
+            .white(subNode)}`
+        );
+      }
+    }
   }
 }
 
 type CliOptions = {
-  module: string;
   circular: number;
   includeBaseDir: boolean;
+  displayMode: string;
 };
 
-async function displayGraphStructure(
+async function displayCyclops(
   entrypoint: string,
   options: CliOptions
 ): Promise<void> {
   const entrypointModule =
     entrypoint ?? (await findWorkspaceEntrypointModule());
   console.log(
-    `\n${kleur.red().italic().bold("Cyclops")} entrypoint: ${kleur
+    `\n👁 ${kleur.red().bold(" Cyclops")} entrypoint: ${kleur
       .yellow()
       .underline()
       .bold(`${entrypointModule}`)}`
@@ -56,12 +100,11 @@ async function displayGraphStructure(
   const start = performance.now();
   const instance = await cyclops({
     entrypoint: entrypointModule,
-    module: options.module === "esm",
     circularMaxDepth: Number.POSITIVE_INFINITY,
     includeBaseDir: options.includeBaseDir
   });
   const timeTook = `${(performance.now() - start).toFixed(3)}ms`;
-  const { files, graph } = instance.getStructure();
+  const { files, graph, circularDependencies } = instance.getStructure();
   const filesWord = files.length > 1 ? "files" : "file";
   console.log(
     `\nProcessed ${kleur.bold().green(files.length)} ${filesWord} (${kleur
@@ -69,18 +112,24 @@ async function displayGraphStructure(
       .bold(timeTook)})`
   );
 
-  const flattenedFilesPaths = Object.values(graph).flatMap((rootValue) => [
-    rootValue.id,
-    ...rootValue.adjacentTo
-  ]);
+  const filesInvolvedInCircularDependencies = circularDependencies.flat(1);
 
-  const treeStructure = makeTreeStructure(flattenedFilesPaths);
-  console.log();
-  renderProjectFileSystem(treeStructure);
+  if (options.displayMode === "file-tree") {
+    const flattenedFilesPaths = Object.values(graph).flatMap((rootValue) => [
+      rootValue.id,
+      ...rootValue.adjacentTo
+    ]);
+    const treeStructure = makeTreeStructure(flattenedFilesPaths);
+    console.log();
+    displayAsFileTree(treeStructure, filesInvolvedInCircularDependencies);
+  } else {
+    displayAsGraph(graph, filesInvolvedInCircularDependencies);
+  }
 }
 
-sade("cyclops <entrypoint>", true)
-  .describe("Build the whole project file tree")
+const cli = sade("cyclops <entrypoint>", true)
+  .describe("Start the cyclops analysis to build entirely the graph")
+
   .option(
     "-b, --includeBaseDir",
     "Include the base directory name for each graph node",
@@ -92,10 +141,13 @@ sade("cyclops <entrypoint>", true)
     Number.POSITIVE_INFINITY
   )
   .option(
-    "-m, --module",
-    "Module system used in the project, can be either 'cjs or 'esm'",
-    "esm"
+    "d, --displayMode",
+    "Either display the result of the analysis as a graph or as a file-tree",
+    "graph"
   )
-  .example("./node_modules/.bin/cyclops src/index.js --circular --module=esm")
-  .action(displayGraphStructure)
-  .parse(process.argv);
+  .example(
+    "./node_modules/.bin/cyclops src/index.js --circular --displayMode=file-tree"
+  )
+  .action(displayCyclops);
+
+cli.parse(process.argv);

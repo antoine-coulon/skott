@@ -18,13 +18,11 @@ class InMemoryFileReader implements FileReader {
 
 async function buildProjectStructureUsingInMemoryFileExplorer(
   entrypoint: string,
-  module = true,
   includeBaseDir = false
 ): Promise<CyclopsStructure> {
   const cyclops = new Cyclops(
     {
       entrypoint,
-      module,
       circularMaxDepth: Number.POSITIVE_INFINITY,
       includeBaseDir
     },
@@ -157,7 +155,6 @@ describe("When traversing a JavaScript/Node.js project", () => {
           const projectStructure =
             await buildProjectStructureUsingInMemoryFileExplorer(
               "my-app-folder/my-project/index.js",
-              true,
               true
             );
 
@@ -989,7 +986,6 @@ describe("When traversing a JavaScript/Node.js project", () => {
           const cyclops = new Cyclops(
             {
               entrypoint: "a.js",
-              module: true,
               circularMaxDepth: Number.POSITIVE_INFINITY,
               includeBaseDir: false
             },
