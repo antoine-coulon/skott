@@ -79,7 +79,7 @@ function displayAsGraph(
 }
 
 type CliOptions = {
-  circular: number;
+  circularMaxDepth: number;
   includeBaseDir: boolean;
   displayMode: string;
 };
@@ -100,7 +100,7 @@ async function displayCyclops(
   const start = performance.now();
   const instance = await cyclops({
     entrypoint: entrypointModule,
-    circularMaxDepth: Number.POSITIVE_INFINITY,
+    circularMaxDepth: options.circularMaxDepth ?? Number.POSITIVE_INFINITY,
     includeBaseDir: options.includeBaseDir
   });
   const timeTook = `${(performance.now() - start).toFixed(3)}ms`;
@@ -111,6 +111,17 @@ async function displayCyclops(
       .magenta()
       .bold(timeTook)})`
   );
+
+  if (circularDependencies.length > 0) {
+    console.log(kleur.bold().red(`\n ✖ circular dependencies found:`));
+
+    circularDependencies.forEach((circularDependency) => {
+      const cyclicIndex = kleur.bold().yellow(`•`);
+      console.log(
+        `\n ${cyclicIndex} ${kleur.bold().red(circularDependency.join(" -> "))}`
+      );
+    });
+  }
 
   const filesInvolvedInCircularDependencies = circularDependencies.flat(1);
 
@@ -128,7 +139,7 @@ async function displayCyclops(
 }
 
 const cli = sade("cyclops <entrypoint>", true)
-  .describe("Start the cyclops analysis to build entirely the graph")
+  .describe("Start the cyclops analysis to fully build the graph")
 
   .option(
     "-b, --includeBaseDir",
@@ -136,8 +147,8 @@ const cli = sade("cyclops <entrypoint>", true)
     false
   )
   .option(
-    "-c, --circular",
-    "Show circular dependencies found in the file tree",
+    "-c, --circularMaxDepth",
+    "Define the max depth of the nested circular dependencies search",
     Number.POSITIVE_INFINITY
   )
   .option(
