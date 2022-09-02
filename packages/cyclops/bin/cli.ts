@@ -82,6 +82,7 @@ type CliOptions = {
   circularMaxDepth: number;
   includeBaseDir: boolean;
   displayMode: string;
+  exitCodeOnCircularDependencies: number;
 };
 
 async function displayCyclops(
@@ -91,7 +92,7 @@ async function displayCyclops(
   const entrypointModule =
     entrypoint ?? (await findWorkspaceEntrypointModule());
   console.log(
-    `\n👁 ${kleur.red().bold(" Cyclops")} entrypoint: ${kleur
+    `\n👁 ${kleur.blue().bold(" Cyclops")} entrypoint: ${kleur
       .yellow()
       .underline()
       .bold(`${entrypointModule}`)}`
@@ -121,6 +122,7 @@ async function displayCyclops(
         `\n ${cyclicIndex} ${kleur.bold().red(circularDependency.join(" -> "))}`
       );
     });
+    process.exitCode = options.exitCodeOnCircularDependencies;
   } else {
     console.log(
       `${kleur
@@ -150,6 +152,14 @@ async function displayCyclops(
   }
 }
 
+process.on("exit", (code) => {
+  console.log(
+    `\n ${kleur.bold().blue("Cyclops")} exited with code ${kleur
+      .bold()
+      .yellow(code)}`
+  );
+});
+
 const cli = sade("cyclops <entrypoint>", true)
   .describe("Start the cyclops analysis to fully build the graph")
 
@@ -167,6 +177,11 @@ const cli = sade("cyclops <entrypoint>", true)
     "d, --displayMode",
     "Either display the result of the analysis as a graph, as a file-tree or raw",
     "graph"
+  )
+  .option(
+    "e, --exitCodeOnCircularDependencies",
+    "Either display the result of the analysis as a graph or as a file-tree",
+    1
   )
   .example(
     "./node_modules/.bin/cyclops src/index.js --circular --displayMode=file-tree"
