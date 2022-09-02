@@ -121,6 +121,18 @@ async function displayCyclops(
         `\n ${cyclicIndex} ${kleur.bold().red(circularDependency.join(" -> "))}`
       );
     });
+  } else {
+    console.log(
+      `${kleur
+        .bold()
+        .green("\n ✓ no circular dependencies found")} (depth=${kleur
+        .bold()
+        .yellow(options.circularMaxDepth)})`
+    );
+  }
+
+  if (options.displayMode === "raw") {
+    return;
   }
 
   const filesInvolvedInCircularDependencies = circularDependencies.flat(1);
@@ -153,7 +165,7 @@ const cli = sade("cyclops <entrypoint>", true)
   )
   .option(
     "d, --displayMode",
-    "Either display the result of the analysis as a graph or as a file-tree",
+    "Either display the result of the analysis as a graph, as a file-tree or raw",
     "graph"
   )
   .example(
