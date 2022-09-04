@@ -6,7 +6,7 @@
   "type": "module",
   "author": "Antoine Coulon",
   "dependencies": {
-    "skott": "workspace:^0.0.1"
+    "skott": "workspace:*"
   },
   "keywords": [
     "javascript",

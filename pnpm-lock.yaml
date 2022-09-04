@@ -57,7 +57,7 @@ importers:
       eslint-plugin-import: ^2.26.0
       eslint-plugin-prettier: ^4.0.0
       estree-walker: ^3.0.1
-      fs-tree-structure: workspace:*
+      fs-tree-structure: 0.0.1
       kleur: ^4.1.5
       memfs: ^3.4.6
       meriyah: ^4.2.1
@@ -112,7 +112,7 @@ importers:
       eslint-plugin-import: ^2.26.0
       eslint-plugin-prettier: ^4.0.0
       estree-walker: ^3.0.1
-      fs-tree-structure: workspace:*
+      fs-tree-structure: workspace:^0.0.1
       kleur: ^4.1.5
       memfs: ^3.4.6
       meriyah: ^4.2.1
@@ -153,9 +153,9 @@ importers:
 
   webapp:
     specifiers:
-      skott: workspace:^0.0.1
+      skott: workspace:*
     dependencies:
-      skott: link:../packages/skott/dist
+      skott: link:../packages/skott
 
 packages:
 
