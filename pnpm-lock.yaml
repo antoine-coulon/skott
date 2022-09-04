@@ -155,7 +155,7 @@ importers:
     specifiers:
       skott: workspace:^0.0.1
     dependencies:
-      skott: link:../packages/skott
+      skott: link:../packages/skott/dist
 
 packages:
 
