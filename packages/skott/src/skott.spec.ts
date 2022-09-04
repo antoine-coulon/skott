@@ -4,8 +4,8 @@
 import { expect } from "chai";
 import * as memfs from "memfs";
 
-import { Cyclops, CyclopsStructure } from "./cyclops";
 import { FileReader } from "./filesystem/file-reader.js";
+import { Skott, SkottStructure } from "./skott";
 
 class InMemoryFileReader implements FileReader {
   read(filename: string): Promise<string> {
@@ -19,8 +19,8 @@ class InMemoryFileReader implements FileReader {
 async function buildProjectStructureUsingInMemoryFileExplorer(
   entrypoint: string,
   includeBaseDir = false
-): Promise<CyclopsStructure> {
-  const cyclops = new Cyclops(
+): Promise<SkottStructure> {
+  const skott = new Skott(
     {
       entrypoint,
       circularMaxDepth: Number.POSITIVE_INFINITY,
@@ -28,9 +28,9 @@ async function buildProjectStructureUsingInMemoryFileExplorer(
     },
     new InMemoryFileReader()
   );
-  const cyclopsInstance = await cyclops.initialize();
+  const skottInstance = await skott.initialize();
 
-  return cyclopsInstance.getStructure();
+  return skottInstance.getStructure();
 }
 
 describe("When traversing a JavaScript/Node.js project", () => {
@@ -191,7 +191,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
 
     describe("When the looked up file exists and can be read", () => {
       describe("When the file does not have any module declarations", () => {
-        it("cyclops should build a graph with only the root node", async () => {
+        it("skott should build a graph with only the root node", async () => {
           const fakeFileSystem = {
             "index.js": "console.log('Hello, world!');"
           };
@@ -244,7 +244,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
         describe("When extracting module declarations starting from the root file", () => {
           describe("When extracting import declarations", () => {
             describe("When the file has one import declaration", () => {
-              it("cyclops should build the graph with two nodes and one link", async () => {
+              it("skott should build the graph with two nodes and one link", async () => {
                 const fakeFileSystem = {
                   "index.js": `
                     import { foo } from "./src/foo.js";
@@ -285,7 +285,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
             });
 
             describe("When the project has four nested import declarations", () => {
-              it("cyclops should build the graph with all nodes and links", async () => {
+              it("skott should build the graph with all nodes and links", async () => {
                 const fakeFileSystem = {
                   "index.js": `
                     import { foo } from "./src/foo.js";
@@ -983,7 +983,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
 
           memfs.vol.fromJSON(fakeFileSystem, "./");
 
-          const cyclops = new Cyclops(
+          const skott = new Skott(
             {
               entrypoint: "a.js",
               circularMaxDepth: Number.POSITIVE_INFINITY,
@@ -992,17 +992,17 @@ describe("When traversing a JavaScript/Node.js project", () => {
             new InMemoryFileReader()
           );
 
-          const cyclopsInstance = await cyclops.initialize();
-          expect(cyclopsInstance.findParentsOf("d.js")).to.deep.equal([
+          const skottInstance = await skott.initialize();
+          expect(skottInstance.findParentsOf("d.js")).to.deep.equal([
             "c.js",
             "b.js",
             "a.js"
           ]);
-          expect(cyclopsInstance.findParentsOf("c.js")).to.deep.equal([
+          expect(skottInstance.findParentsOf("c.js")).to.deep.equal([
             "b.js",
             "a.js"
           ]);
-          expect(cyclopsInstance.findParentsOf("a.js")).to.deep.equal([]);
+          expect(skottInstance.findParentsOf("a.js")).to.deep.equal([]);
         });
       });
     });

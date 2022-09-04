@@ -7,8 +7,8 @@ import { makeTreeStructure, TreeStructure } from "fs-tree-structure";
 import kleur from "kleur";
 import sade from "sade";
 
-import cyclops from "../index.js";
-import { CyclopsNode } from "../src/cyclops.js";
+import skott from "../index.js";
+import { SkottNode } from "../src/skott.js";
 import { findWorkspaceEntrypointModule } from "../src/workspace/index.js";
 
 const kLeftSeparator = "└──";
@@ -43,7 +43,7 @@ function displayAsFileTree(
 }
 
 function displayAsGraph(
-  graph: Record<string, CyclopsNode>,
+  graph: Record<string, SkottNode>,
   filesInvolvedInCycles: string[]
 ): void {
   const leftArrow = `${kLeftSeparator}>`;
@@ -85,21 +85,21 @@ type CliOptions = {
   exitCodeOnCircularDependencies: number;
 };
 
-async function displayCyclops(
+async function displaySkott(
   entrypoint: string,
   options: CliOptions
 ): Promise<void> {
   const entrypointModule =
     entrypoint ?? (await findWorkspaceEntrypointModule());
   console.log(
-    `\n👁 ${kleur.blue().bold(" Cyclops")} entrypoint: ${kleur
+    `\n👁 ${kleur.blue().bold(" Skott")} entrypoint: ${kleur
       .yellow()
       .underline()
       .bold(`${entrypointModule}`)}`
   );
 
   const start = performance.now();
-  const instance = await cyclops({
+  const instance = await skott({
     entrypoint: entrypointModule,
     circularMaxDepth: options.circularMaxDepth ?? Number.POSITIVE_INFINITY,
     includeBaseDir: options.includeBaseDir
@@ -154,14 +154,14 @@ async function displayCyclops(
 
 process.on("exit", (code) => {
   console.log(
-    `\n ${kleur.bold().blue("Cyclops")} exited with code ${kleur
+    `\n ${kleur.bold().blue("Skott")} exited with code ${kleur
       .bold()
       .yellow(code)}`
   );
 });
 
-const cli = sade("cyclops <entrypoint>", true)
-  .describe("Start the cyclops analysis to fully build the graph")
+const cli = sade("skott <entrypoint>", true)
+  .describe("Start the Skott analysis to fully build the graph")
 
   .option(
     "-b, --includeBaseDir",
@@ -184,8 +184,8 @@ const cli = sade("cyclops <entrypoint>", true)
     1
   )
   .example(
-    "./node_modules/.bin/cyclops src/index.js --circular --displayMode=file-tree"
+    "./node_modules/.bin/skott src/index.js --circular --displayMode=file-tree"
   )
-  .action(displayCyclops);
+  .action(displaySkott);
 
 cli.parse(process.argv);

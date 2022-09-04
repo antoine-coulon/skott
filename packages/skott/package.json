@@ -1,10 +1,10 @@
 {
-  "name": "cyclops",
+  "name": "skott",
   "version": "0.0.1",
   "description": "Automatically construct and visualize Graphs generated from your Node.js project",
   "main": "dist/index.js",
   "bin": {
-    "cyclops": "./dist/bin/cli.js"
+    "skott": "./dist/bin/cli.js"
   },
   "type": "module",
   "exports": {

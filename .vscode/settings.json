@@ -1,6 +1,6 @@
 {
   "eslint.workingDirectories": [
-    "./packages/cyclops",
+    "./packages/skott",
     "./packages/fs-tree-structure"
   ]
 }

@@ -15,24 +15,24 @@ import {
   isThirdPartyModule
 } from "./modules/import-checker.js";
 
-export type CyclopsNode = VertexDefinition<{ size: number }>;
+export type SkottNode = VertexDefinition<{ size: number }>;
 
-export interface CyclopsConfig {
+export interface SkottConfig {
   entrypoint: string;
   circularMaxDepth?: number;
   includeBaseDir: boolean;
 }
 
-export interface CyclopsStructure {
-  graph: Record<string, CyclopsNode>;
+export interface SkottStructure {
+  graph: Record<string, SkottNode>;
   files: string[];
   circularDependencies: string[][];
   hasCircularDependencies: boolean;
   leaves: string[];
 }
 
-export interface CyclopsInstance {
-  getStructure: () => CyclopsStructure;
+export interface SkottInstance {
+  getStructure: () => SkottStructure;
   findLeaves: () => string[];
   findCircularDependencies: () => string[][];
   hasCircularDependencies: () => boolean;
@@ -45,18 +45,18 @@ const defaultConfig = {
   circularMaxDepth: Number.POSITIVE_INFINITY
 };
 
-export class Cyclops {
-  #projectGraph = new DiGraph<CyclopsNode>();
+export class Skott {
+  #projectGraph = new DiGraph<SkottNode>();
   #visitedNodes = new Set<string>();
   #baseDir = "";
 
   constructor(
-    private readonly config: CyclopsConfig = defaultConfig,
+    private readonly config: SkottConfig = defaultConfig,
     private readonly fileReader: FileReader = new FileSystemReader()
   ) {
     if (!this.config.entrypoint) {
       throw new Error(
-        "An entrypoint must be provided to Cyclops to build the graph"
+        "An entrypoint must be provided to Skott to build the graph"
       );
     }
   }
@@ -222,7 +222,7 @@ export class Cyclops {
     return this.#projectGraph.getDeepUpperDependencies(node);
   }
 
-  private makeProjectStructure(): CyclopsStructure {
+  private makeProjectStructure(): SkottStructure {
     const projectStructure = this.#projectGraph.toDict();
 
     return {
@@ -234,7 +234,7 @@ export class Cyclops {
     };
   }
 
-  public async initialize(): Promise<CyclopsInstance> {
+  public async initialize(): Promise<SkottInstance> {
     const entrypointModulePath = await resolveImportedModulePath(
       this.config.entrypoint,
       this.fileReader
