@@ -6,6 +6,6 @@
     "sourceMap": true,
     "resolveJsonModule": true
   },
-  "include": ["src", "bin", "lib", "./package.json"],
+  "include": ["src", "bin", "lib"],
   "exclude": ["src/**/*.spec.ts"]
 }
