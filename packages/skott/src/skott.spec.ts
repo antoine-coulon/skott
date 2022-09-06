@@ -1,5 +1,4 @@
 /* eslint-disable max-lines */
-/* eslint-disable no-sync */
 
 import { expect } from "chai";
 import * as memfs from "memfs";
@@ -10,9 +9,13 @@ import { Skott, SkottStructure } from "./skott";
 class InMemoryFileReader implements FileReader {
   read(filename: string): Promise<string> {
     return new Promise((resolve) => {
+      /* eslint-disable no-sync */
       // @ts-expect-error - Will be a string as its decoded in utf-8
       resolve(memfs.fs.readFileSync(filename, "utf-8"));
     });
+  }
+  stats(_filename: string): Promise<number> {
+    return new Promise((resolve) => resolve(0));
   }
 }
 
@@ -24,7 +27,10 @@ async function buildProjectStructureUsingInMemoryFileExplorer(
     {
       entrypoint,
       circularMaxDepth: Number.POSITIVE_INFINITY,
-      includeBaseDir
+      includeBaseDir,
+      dependencyTracking: {
+        thirdParty: false
+      }
     },
     new InMemoryFileReader()
   );
@@ -33,6 +39,11 @@ async function buildProjectStructureUsingInMemoryFileExplorer(
   return skottInstance.getStructure();
 }
 
+const fakeBody = {
+  size: 0,
+  thirdPartyDependencies: []
+};
+
 describe("When traversing a JavaScript/Node.js project", () => {
   describe("When building the project structure", () => {
     describe("When specifying a dirname while providing the entrypoint", () => {
@@ -40,11 +51,11 @@ describe("When traversing a JavaScript/Node.js project", () => {
         it("should remove by default the dirname from all relative paths of the graph", async () => {
           const fakeFileSystem = {
             "my-app-folder/my-project/index.js": `
-            import { createHtml } './apps/dashboard/index.js';
-            render(createHtml());
+              import { createHtml } './apps/dashboard/index.js';
+              render(createHtml());
             `,
             "my-app-folder/my-project/libs/temporal/index.js": `
-            export const compareAsc = (d1, d2) => {};
+              export const compareAsc = (d1, d2) => {};
             `,
             "my-app-folder/my-project/apps/dashboard/index.js": `
               import { compareAsc } from "../../libs/temporal/index.js";
@@ -64,17 +75,17 @@ describe("When traversing a JavaScript/Node.js project", () => {
               "index.js": {
                 adjacentTo: ["apps/dashboard/index.js"],
                 id: "index.js",
-                body: { size: 0 }
+                body: fakeBody
               },
               "apps/dashboard/index.js": {
                 adjacentTo: ["libs/temporal/index.js"],
                 id: "apps/dashboard/index.js",
-                body: { size: 0 }
+                body: fakeBody
               },
               "libs/temporal/index.js": {
                 adjacentTo: [],
                 id: "libs/temporal/index.js",
-                body: { size: 0 }
+                body: fakeBody
               }
             },
             files: [
@@ -112,17 +123,17 @@ describe("When traversing a JavaScript/Node.js project", () => {
                 "index.js": {
                   adjacentTo: ["../lib2/feature/index.js"],
                   id: "index.js",
-                  body: { size: 0 }
+                  body: fakeBody
                 },
                 "../lib2/feature/index.js": {
                   adjacentTo: ["../util.js"],
                   id: "../lib2/feature/index.js",
-                  body: { size: 0 }
+                  body: fakeBody
                 },
                 "../util.js": {
                   adjacentTo: [],
                   id: "../util.js",
-                  body: { size: 0 }
+                  body: fakeBody
                 }
               },
               files: ["index.js", "../lib2/feature/index.js", "../util.js"],
@@ -163,17 +174,17 @@ describe("When traversing a JavaScript/Node.js project", () => {
               "my-app-folder/my-project/index.js": {
                 adjacentTo: ["my-app-folder/apps/dashboard/index.js"],
                 id: "my-app-folder/my-project/index.js",
-                body: { size: 0 }
+                body: fakeBody
               },
               "my-app-folder/apps/dashboard/index.js": {
                 adjacentTo: ["my-app-folder/my-project/libs/temporal/index.js"],
                 id: "my-app-folder/apps/dashboard/index.js",
-                body: { size: 0 }
+                body: fakeBody
               },
               "my-app-folder/my-project/libs/temporal/index.js": {
                 adjacentTo: [],
                 id: "my-app-folder/my-project/libs/temporal/index.js",
-                body: { size: 0 }
+                body: fakeBody
               }
             },
             files: [
@@ -205,7 +216,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
               "index.js": {
                 adjacentTo: [],
                 id: "index.js",
-                body: { size: 0 }
+                body: fakeBody
               }
             },
             files: ["index.js"],
@@ -268,12 +279,12 @@ describe("When traversing a JavaScript/Node.js project", () => {
                     "index.js": {
                       adjacentTo: ["src/foo.js"],
                       id: "index.js",
-                      body: { size: 0 }
+                      body: fakeBody
                     },
                     "src/foo.js": {
                       adjacentTo: [],
                       id: "src/foo.js",
-                      body: { size: 0 }
+                      body: fakeBody
                     }
                   },
                   files: ["index.js", "src/foo.js"],
@@ -321,27 +332,27 @@ describe("When traversing a JavaScript/Node.js project", () => {
                     "index.js": {
                       adjacentTo: ["src/foo.js"],
                       id: "index.js",
-                      body: { size: 0 }
+                      body: fakeBody
                     },
                     "src/foo.js": {
                       adjacentTo: ["src/bar.js"],
                       id: "src/foo.js",
-                      body: { size: 0 }
+                      body: fakeBody
                     },
                     "src/bar.js": {
                       adjacentTo: ["src/lib/baz/index.js"],
                       id: "src/bar.js",
-                      body: { size: 0 }
+                      body: fakeBody
                     },
                     "src/lib/baz/index.js": {
                       adjacentTo: ["src/lol/index.js"],
                       id: "src/lib/baz/index.js",
-                      body: { size: 0 }
+                      body: fakeBody
                     },
                     "src/lol/index.js": {
                       adjacentTo: [],
                       id: "src/lol/index.js",
-                      body: { size: 0 }
+                      body: fakeBody
                     }
                   },
                   files: [
@@ -386,12 +397,12 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   "index.js": {
                     adjacentTo: ["foobar.js"],
                     id: "index.js",
-                    body: { size: 0 }
+                    body: fakeBody
                   },
                   "foobar.js": {
                     adjacentTo: [],
                     id: "foobar.js",
-                    body: { size: 0 }
+                    body: fakeBody
                   }
                 });
                 expect(projectStructure.files).to.be.deep.equal([
@@ -428,12 +439,12 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   "index.js": {
                     adjacentTo: ["foobar.js"],
                     id: "index.js",
-                    body: { size: 0 }
+                    body: fakeBody
                   },
                   "foobar.js": {
                     adjacentTo: [],
                     id: "foobar.js",
-                    body: { size: 0 }
+                    body: fakeBody
                   }
                 });
                 expect(projectStructure.files).to.be.deep.equal([
@@ -471,17 +482,17 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   "index.js": {
                     adjacentTo: ["foobar.js", "foo.js"],
                     id: "index.js",
-                    body: { size: 0 }
+                    body: fakeBody
                   },
                   "foobar.js": {
                     adjacentTo: [],
                     id: "foobar.js",
-                    body: { size: 0 }
+                    body: fakeBody
                   },
                   "foo.js": {
                     adjacentTo: [],
                     id: "foo.js",
-                    body: { size: 0 }
+                    body: fakeBody
                   }
                 });
                 expect(projectStructure.files).to.be.deep.equal([
@@ -521,17 +532,17 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   "index.js": {
                     adjacentTo: ["foobar.js"],
                     id: "index.js",
-                    body: { size: 0 }
+                    body: fakeBody
                   },
                   "foobar.js": {
                     adjacentTo: ["foo.js"],
                     id: "foobar.js",
-                    body: { size: 0 }
+                    body: fakeBody
                   },
                   "foo.js": {
                     adjacentTo: [],
                     id: "foo.js",
-                    body: { size: 0 }
+                    body: fakeBody
                   }
                 });
                 expect(projectStructure.files).to.be.deep.equal([
@@ -570,17 +581,17 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   "a.js": {
                     id: "a.js",
                     adjacentTo: ["b.js"],
-                    body: { size: 0 }
+                    body: fakeBody
                   },
                   "b.js": {
                     id: "b.js",
                     adjacentTo: ["a.js", "c.js"],
-                    body: { size: 0 }
+                    body: fakeBody
                   },
                   "c.js": {
                     id: "c.js",
                     adjacentTo: [],
-                    body: { size: 0 }
+                    body: fakeBody
                   }
                 });
 
@@ -625,22 +636,22 @@ describe("When traversing a JavaScript/Node.js project", () => {
                     "a.js": {
                       id: "a.js",
                       adjacentTo: ["b.js"],
-                      body: { size: 0 }
+                      body: fakeBody
                     },
                     "b.js": {
                       id: "b.js",
                       adjacentTo: ["c.js"],
-                      body: { size: 0 }
+                      body: fakeBody
                     },
                     "c.js": {
                       id: "c.js",
                       adjacentTo: ["d.js"],
-                      body: { size: 0 }
+                      body: fakeBody
                     },
                     "d.js": {
                       id: "d.js",
                       adjacentTo: ["a.js"],
-                      body: { size: 0 }
+                      body: fakeBody
                     }
                   });
 
@@ -691,7 +702,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
                     "index.js": {
                       id: "index.js",
                       adjacentTo: ["src/feature.js"],
-                      body: { size: 0 }
+                      body: fakeBody
                     },
                     "src/feature.js": {
                       id: "src/feature.js",
@@ -700,32 +711,32 @@ describe("When traversing a JavaScript/Node.js project", () => {
                         "src/utils/index.js",
                         "src/other-feature.js"
                       ],
-                      body: { size: 0 }
+                      body: fakeBody
                     },
                     "src/constants.js": {
                       id: "src/constants.js",
                       adjacentTo: [],
-                      body: { size: 0 }
+                      body: fakeBody
                     },
                     "src/utils/index.js": {
                       id: "src/utils/index.js",
                       adjacentTo: ["src/utils/doSomethingUtil.js"],
-                      body: { size: 0 }
+                      body: fakeBody
                     },
                     "src/utils/doSomethingUtil.js": {
                       id: "src/utils/doSomethingUtil.js",
                       adjacentTo: ["src/utils/index.js"],
-                      body: { size: 0 }
+                      body: fakeBody
                     },
                     "src/other-feature.js": {
                       id: "src/other-feature.js",
                       adjacentTo: ["src/last-feature.js", "src/utils/index.js"],
-                      body: { size: 0 }
+                      body: fakeBody
                     },
                     "src/last-feature.js": {
                       id: "src/last-feature.js",
                       adjacentTo: [],
-                      body: { size: 0 }
+                      body: fakeBody
                     }
                   });
 
@@ -802,13 +813,13 @@ describe("When traversing a JavaScript/Node.js project", () => {
                         `src/foo.${scenarioWithRequireImport.expectedFinalFileExtension}`
                       ],
                       id: `index.js`,
-                      body: { size: 0 }
+                      body: fakeBody
                     },
                     [`src/foo.${scenarioWithRequireImport.expectedFinalFileExtension}`]:
                       {
                         adjacentTo: [],
                         id: `src/foo.${scenarioWithRequireImport.expectedFinalFileExtension}`,
-                        body: { size: 0 }
+                        body: fakeBody
                       }
                   },
                   files: [
@@ -848,17 +859,17 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   "index.js": {
                     adjacentTo: ["lib/index.js", "foobar.js"],
                     id: "index.js",
-                    body: { size: 0 }
+                    body: fakeBody
                   },
                   "lib/index.js": {
                     adjacentTo: [],
                     id: "lib/index.js",
-                    body: { size: 0 }
+                    body: fakeBody
                   },
                   "foobar.js": {
                     adjacentTo: [],
                     id: "foobar.js",
-                    body: { size: 0 }
+                    body: fakeBody
                   }
                 },
                 files: ["index.js", "lib/index.js", "foobar.js"],
@@ -902,27 +913,27 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   "index.js": {
                     adjacentTo: ["lib/index.js", "foobar.js"],
                     id: "index.js",
-                    body: { size: 0 }
+                    body: fakeBody
                   },
                   "lib/index.js": {
                     adjacentTo: ["fizzbuzz.js"],
                     id: "lib/index.js",
-                    body: { size: 0 }
+                    body: fakeBody
                   },
                   "foobar.js": {
                     adjacentTo: ["foobaz.js"],
                     id: "foobar.js",
-                    body: { size: 0 }
+                    body: fakeBody
                   },
                   "fizzbuzz.js": {
                     adjacentTo: ["foobaz.js"],
                     id: "fizzbuzz.js",
-                    body: { size: 0 }
+                    body: fakeBody
                   },
                   "foobaz.js": {
                     adjacentTo: [],
                     id: "foobaz.js",
-                    body: { size: 0 }
+                    body: fakeBody
                   }
                 },
                 files: [
@@ -987,7 +998,10 @@ describe("When traversing a JavaScript/Node.js project", () => {
             {
               entrypoint: "a.js",
               circularMaxDepth: Number.POSITIVE_INFINITY,
-              includeBaseDir: false
+              includeBaseDir: false,
+              dependencyTracking: {
+                thirdParty: false
+              }
             },
             new InMemoryFileReader()
           );
@@ -1032,17 +1046,17 @@ describe("When traversing a JavaScript/Node.js project", () => {
           "index.js": {
             id: "index.js",
             adjacentTo: ["foo.js", "baz.js"],
-            body: { size: 0 }
+            body: fakeBody
           },
           "foo.js": {
             id: "foo.js",
             adjacentTo: [],
-            body: { size: 0 }
+            body: fakeBody
           },
           "baz.js": {
             id: "baz.js",
             adjacentTo: [],
-            body: { size: 0 }
+            body: fakeBody
           }
         });
         expect(files).to.be.deep.equal(["index.js", "foo.js", "baz.js"]);

@@ -3,10 +3,18 @@ import fs from "node:fs/promises";
 
 export interface FileReader {
   read: (filename: string) => Promise<string>;
+  stats: (filename: string) => Promise<number>;
 }
 
 export class FileSystemReader implements FileReader {
   read(filename: string): Promise<string> {
     return fs.readFile(filename, { encoding: "utf-8", flag: R_OK });
+  }
+
+  stats(filename: string): Promise<number> {
+    return fs
+      .stat(filename, { bigint: false })
+      .then((stats) => stats.size)
+      .catch(() => 0);
   }
 }

@@ -15,12 +15,20 @@ import {
   isThirdPartyModule
 } from "./modules/import-checker.js";
 
-export type SkottNode = VertexDefinition<{ size: number }>;
+export type SkottNodeBody = {
+  size: number;
+  thirdPartyDependencies: string[];
+};
+
+export type SkottNode = VertexDefinition<SkottNodeBody>;
 
 export interface SkottConfig {
   entrypoint: string;
   circularMaxDepth?: number;
   includeBaseDir: boolean;
+  dependencyTracking: {
+    thirdParty: boolean;
+  };
 }
 
 export interface SkottStructure {
@@ -42,7 +50,10 @@ export interface SkottInstance {
 const defaultConfig = {
   entrypoint: "",
   includeBaseDir: false,
-  circularMaxDepth: Number.POSITIVE_INFINITY
+  circularMaxDepth: Number.POSITIVE_INFINITY,
+  dependencyTracking: {
+    thirdParty: false
+  }
 };
 
 export class Skott {
@@ -115,18 +126,25 @@ export class Skott {
     return path.relative(this.#baseDir, nodePath);
   }
 
-  private addNode(node: string): void {
+  private async addNode(node: string): Promise<void> {
     this.#projectGraph.addVertex({
       id: this.formatNodePath(node),
       adjacentTo: [],
       body: {
-        size: 0
+        size: await this.fileReader.stats(node),
+        thirdPartyDependencies: []
       }
     });
   }
 
-  private linkNodes({ from, to }: { from: string; to: string }): void {
-    this.addNode(to);
+  private async linkNodes({
+    from,
+    to
+  }: {
+    from: string;
+    to: string;
+  }): Promise<void> {
+    await this.addNode(to);
     this.#projectGraph.addEdge({
       from: this.formatNodePath(from),
       to: this.formatNodePath(to)
@@ -134,10 +152,10 @@ export class Skott {
   }
 
   private async followModuleDeclarationsFromFile(
-    rootDir: string,
+    rootPath: string,
     fileContent: string
   ): Promise<void> {
-    if (this.#visitedNodes.has(rootDir)) {
+    if (this.#visitedNodes.has(rootPath)) {
       return;
     }
 
@@ -160,7 +178,7 @@ export class Skott {
       }
     });
 
-    this.#visitedNodes.add(rootDir);
+    this.#visitedNodes.add(rootPath);
 
     if (moduleDeclarations.size === 0) {
       return;
@@ -169,15 +187,25 @@ export class Skott {
     for (const moduleDeclaration of moduleDeclarations.values()) {
       if (
         isBuiltinModule(moduleDeclaration) ||
-        isThirdPartyModule(moduleDeclaration) ||
         isBinaryModule(moduleDeclaration) ||
         isJSONModule(moduleDeclaration)
       ) {
         continue;
       }
 
+      if (isThirdPartyModule(moduleDeclaration)) {
+        if (!this.config.dependencyTracking.thirdParty) {
+          continue;
+        }
+
+        this.#projectGraph.mergeVertexBody(rootPath, (body) => {
+          body.thirdPartyDependencies =
+            body.thirdPartyDependencies.concat(moduleDeclaration);
+        });
+      }
+
       const fullFilePathFromEntrypoint = await resolveImportedModulePath(
-        path.join(path.dirname(rootDir), moduleDeclaration),
+        path.join(path.dirname(rootPath), moduleDeclaration),
         this.fileReader
       );
 
@@ -186,9 +214,9 @@ export class Skott {
           fullFilePathFromEntrypoint
         );
 
-        this.addNode(fullFilePathFromEntrypoint);
-        this.linkNodes({
-          from: rootDir,
+        await this.addNode(fullFilePathFromEntrypoint);
+        await this.linkNodes({
+          from: rootPath,
           to: fullFilePathFromEntrypoint
         });
 
@@ -242,7 +270,7 @@ export class Skott {
     const rootFileContent = await this.fileReader.read(entrypointModulePath);
 
     this.#baseDir = path.dirname(entrypointModulePath);
-    this.addNode(entrypointModulePath);
+    await this.addNode(entrypointModulePath);
     await this.followModuleDeclarationsFromFile(
       entrypointModulePath,
       rootFileContent
