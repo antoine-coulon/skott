@@ -15,7 +15,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "rimraf ./dist && tsc --project tsconfig.build.json",
-    "copy:docs": "cp ../../README.md ./dist",
+    "copy:docs": "cp ../../README.md ./",
     "lint": "eslint .",
     "prepublishOnly": "npm run test && npm run build && npm run copy:docs",
     "prestart": "npm run build",
@@ -52,7 +52,8 @@
     "typescript": "^4.5.2"
   },
   "files": [
-    "dist"
+    "dist",
+    "../../README.md"
   ],
   "keywords": [
     "javascript",
