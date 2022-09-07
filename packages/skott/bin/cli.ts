@@ -78,11 +78,44 @@ function displayAsGraph(
   }
 }
 
+function displayThirdPartyDependencies(graph: Record<string, SkottNode>): void {
+  console.log(`\n Third-party dependencies: \n`);
+  const thirdPartyRegistry = new Map<string, number>();
+  for (const node of Object.values(graph)) {
+    node.body.thirdPartyDependencies.forEach((dep) => {
+      const occurrencesOfDep = thirdPartyRegistry.get(dep);
+      if (occurrencesOfDep) {
+        thirdPartyRegistry.set(dep, occurrencesOfDep + 1);
+      } else {
+        thirdPartyRegistry.set(dep, 1);
+      }
+    });
+  }
+
+  const sortedDependencies = [...thirdPartyRegistry.entries()].sort(
+    ([a], [b]) => {
+      if (a > b) return 1;
+      if (a < b) return -1;
+
+      return 0;
+    }
+  );
+
+  for (const [depName, depOccurrence] of sortedDependencies) {
+    console.log(
+      `${makeIndents(1)} ${kleur.magenta().bold(depName)} (imports=${kleur
+        .bold()
+        .yellow(depOccurrence)})`
+    );
+  }
+}
+
 type CliOptions = {
   circularMaxDepth: number;
   includeBaseDir: boolean;
   displayMode: string;
   exitCodeOnCircularDependencies: number;
+  trackThirdPartyDependencies: boolean;
 };
 
 async function displaySkott(
@@ -102,7 +135,10 @@ async function displaySkott(
   const instance = await skott({
     entrypoint: entrypointModule,
     circularMaxDepth: options.circularMaxDepth ?? Number.POSITIVE_INFINITY,
-    includeBaseDir: options.includeBaseDir
+    includeBaseDir: options.includeBaseDir,
+    dependencyTracking: {
+      thirdParty: options.trackThirdPartyDependencies
+    }
   });
   const timeTook = `${(performance.now() - start).toFixed(3)}ms`;
   const { files, graph, circularDependencies } = instance.getStructure();
@@ -150,6 +186,10 @@ async function displaySkott(
   } else {
     displayAsGraph(graph, filesInvolvedInCircularDependencies);
   }
+
+  if (options.trackThirdPartyDependencies) {
+    displayThirdPartyDependencies(graph);
+  }
 }
 
 process.on("exit", (code) => {
@@ -182,6 +222,11 @@ const cli = sade("skott <entrypoint>", true)
     "e, --exitCodeOnCircularDependencies",
     "Either display the result of the analysis as a graph or as a file-tree",
     1
+  )
+  .option(
+    "t, --trackThirdPartyDependencies",
+    "Enable third party dependency tracking",
+    false
   )
   .example(
     "./node_modules/.bin/skott src/index.js --circular --displayMode=file-tree"
