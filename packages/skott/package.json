@@ -4,6 +4,13 @@
   "description": "Automatically construct and visualize Graphs generated from your Node.js project",
   "author": "Antoine Coulon",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/antoine-coulon/skott.git"
+  },
+  "bugs": {
+    "url": "https://github.com/antoine-coulon/skott/issues"
+  },
   "main": "dist/index.js",
   "bin": {
     "skott": "./dist/bin/cli.js"
