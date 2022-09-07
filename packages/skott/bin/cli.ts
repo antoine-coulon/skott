@@ -52,7 +52,9 @@ function displayAsGraph(
 
     if (filesInvolvedInCycles.includes(nodeId)) {
       console.log(
-        `${makeIndents(1)} ${kleur.red().underline().bold(nodeId)} 🔄`
+        `${makeIndents(1)} ${kleur.red().underline().bold(nodeId)} ${kleur
+          .bold()
+          .yellow("♻️")}`
       );
     } else {
       console.log(`${makeIndents(1)} ${kleur.blue().underline().bold(nodeId)}`);
@@ -61,7 +63,7 @@ function displayAsGraph(
     for (const subNode of nodeValue.adjacentTo) {
       console.log(kleur.bold().yellow(`${makeIndents(3)} │`));
       if (filesInvolvedInCycles.includes(subNode)) {
-        const subNodeWithWarning = `${subNode} 🔄`;
+        const subNodeWithWarning = `${subNode} ${kleur.bold().yellow("♻️")}`;
         console.log(
           `${makeIndents(3)} ${kleur.bold().yellow(leftArrow)} ${kleur
             .bold()

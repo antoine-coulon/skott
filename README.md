@@ -96,7 +96,7 @@ Using **"file-tree"** display mode:
 When circular dependencies are met:
 
 <p>
-    <img width="350" src="https://user-images.githubusercontent.com/43391199/188308089-00e84a10-8d14-48ef-8b8a-c6def0b3a4f5.png">
+    <img width="350" src="https://user-images.githubusercontent.com/43391199/188888740-5d54e6fd-aded-493f-bf5f-e2dca06bcaa7.png">
 </p>
 
 See all the options of the CLI running:
