@@ -7,8 +7,13 @@ import { FileReader } from "../filesystem/file-reader";
 const NODE_PROTOCOL = "node:";
 
 export function isBuiltinModule(module: string): boolean {
+  // fs, path, etc
+  if (builtinModules.includes(module)) {
+    return true;
+  }
+
+  // node:fs
   if (module.startsWith("node:")) {
-    // node:fs => fs
     const moduleName = module.slice(NODE_PROTOCOL.length);
 
     // node:fs/promises

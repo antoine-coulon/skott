@@ -119,6 +119,8 @@ describe("Skott Node information", () => {
               "index.js": `
                       import * as anything from "./lib.js";
                       import { parseScript } from 'meriyah';
+                      import path from "path";
+                      import * as fs from "node:fs"; 
                   `,
               "lib.js": ""
             },
