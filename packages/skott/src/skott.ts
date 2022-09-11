@@ -18,6 +18,7 @@ import {
 export type SkottNodeBody = {
   size: number;
   thirdPartyDependencies: string[];
+  builtinDependencies: string[];
 };
 
 export type SkottNode = VertexDefinition<SkottNodeBody>;
@@ -28,6 +29,7 @@ export interface SkottConfig {
   includeBaseDir: boolean;
   dependencyTracking: {
     thirdParty: boolean;
+    builtin: boolean;
   };
 }
 
@@ -52,7 +54,8 @@ const defaultConfig = {
   includeBaseDir: false,
   circularMaxDepth: Number.POSITIVE_INFINITY,
   dependencyTracking: {
-    thirdParty: false
+    thirdParty: false,
+    builtin: false
   }
 };
 
@@ -132,7 +135,8 @@ export class Skott {
       adjacentTo: [],
       body: {
         size: await this.fileReader.stats(node),
-        thirdPartyDependencies: []
+        thirdPartyDependencies: [],
+        builtinDependencies: []
       }
     });
   }
@@ -186,14 +190,21 @@ export class Skott {
 
     for (const moduleDeclaration of moduleDeclarations.values()) {
       if (
-        isBuiltinModule(moduleDeclaration) ||
         isBinaryModule(moduleDeclaration) ||
         isJSONModule(moduleDeclaration)
       ) {
         continue;
       }
 
-      if (isThirdPartyModule(moduleDeclaration)) {
+      if (isBuiltinModule(moduleDeclaration)) {
+        if (!this.config.dependencyTracking.builtin) {
+          continue;
+        }
+        this.#projectGraph.mergeVertexBody(rootPath, (body) => {
+          body.builtinDependencies =
+            body.builtinDependencies.concat(moduleDeclaration);
+        });
+      } else if (isThirdPartyModule(moduleDeclaration)) {
         if (!this.config.dependencyTracking.thirdParty) {
           continue;
         }

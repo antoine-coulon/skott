@@ -29,7 +29,8 @@ async function buildProjectStructureUsingInMemoryFileExplorer(
       circularMaxDepth: Number.POSITIVE_INFINITY,
       includeBaseDir,
       dependencyTracking: {
-        thirdParty: false
+        thirdParty: false,
+        builtin: false
       }
     },
     new InMemoryFileReader()
@@ -41,7 +42,8 @@ async function buildProjectStructureUsingInMemoryFileExplorer(
 
 const fakeBody = {
   size: 0,
-  thirdPartyDependencies: []
+  thirdPartyDependencies: [],
+  builtinDependencies: []
 };
 
 describe("When traversing a JavaScript/Node.js project", () => {
@@ -370,7 +372,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
             });
 
             describe("When the file contains imports of Node.js core modules", () => {
-              it("should ignore Node.js core modules imports by default", async () => {
+              it("should not consider Node.js core modules imports as file dependencies", async () => {
                 const fakeFileSystem = {
                   "index.js": `
                     import { readFile } from "fs/promises";
@@ -413,7 +415,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
             });
 
             describe("When the file imports third-party libraries", () => {
-              it("should ignore third-party libraries imports by default", async () => {
+              it("should not consider third-party libraries as file dependencies", async () => {
                 const fakeFileSystem = {
                   "index.js": `
                     import { parseScript } from "meriyah";
@@ -1000,7 +1002,8 @@ describe("When traversing a JavaScript/Node.js project", () => {
               circularMaxDepth: Number.POSITIVE_INFINITY,
               includeBaseDir: false,
               dependencyTracking: {
-                thirdParty: false
+                thirdParty: false,
+                builtin: false
               }
             },
             new InMemoryFileReader()

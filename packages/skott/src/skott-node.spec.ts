@@ -36,7 +36,8 @@ async function makeScott(): Promise<SkottStructure> {
       circularMaxDepth: Number.POSITIVE_INFINITY,
       includeBaseDir: false,
       dependencyTracking: {
-        thirdParty: true
+        thirdParty: true,
+        builtin: true
       }
     },
     new InMemoryFileReader()
@@ -64,7 +65,8 @@ describe("Skott Node information", () => {
           adjacentTo: [],
           body: {
             size: 0,
-            thirdPartyDependencies: []
+            thirdPartyDependencies: [],
+            builtinDependencies: []
           }
         });
       });
@@ -103,11 +105,13 @@ describe("Skott Node information", () => {
 
           expect(indexFile.body).to.deep.equal({
             size: Buffer.byteLength(fakeFs["index.js"], "utf-8"),
-            thirdPartyDependencies: []
+            thirdPartyDependencies: [],
+            builtinDependencies: []
           });
           expect(libFile.body).to.deep.equal({
             size: Buffer.byteLength(fakeFs["lib.js"], "utf-8"),
-            thirdPartyDependencies: []
+            thirdPartyDependencies: [],
+            builtinDependencies: []
           });
         });
       });
@@ -156,6 +160,33 @@ describe("Skott Node information", () => {
             "side-effect-library",
             "@nodesecure/vulnera"
           ]);
+        });
+      });
+
+      describe("When tracking native dependencies", async () => {
+        describe("When the source file contains native dependencies", async () => {
+          it("should collect all native dependencies", async () => {
+            memfs.vol.fromJSON(
+              {
+                "index.js": `
+                        import * as anything from "./lib.js";
+                        import { parseScript } from 'meriyah';
+                        import path from "path";
+                        import * as fs from "node:fs"; 
+                    `,
+                "lib.js": ""
+              },
+              "./"
+            );
+
+            const { graph } = await makeScott();
+            const indexFile = graph["index.js"];
+
+            expect(indexFile.body.builtinDependencies).to.deep.equal([
+              "path",
+              "node:fs"
+            ]);
+          });
         });
       });
     });
