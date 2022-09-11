@@ -19,19 +19,13 @@ _Graph Construction_
 
 ✅ Deep **parent and child dependencies traversals**
 
-✅ Node.js core, binary and JSON modules are excluded by default
+✅ Collect metadata for each traversed node including file size and also Node.js builtin modules + npm third-party libraries imports
 
-✅ Third-party libraries are excluded by default
+✅ Node.js binary and JSON modules are excluded by default
 
 Work in progress includes:
 
-🛠 Allow unused dependency to be flagged
-
-🛠 Caching on graph operations to provide better traversal efficiency
-
-🛠 Collect metadata on the graph (unused imports, unoptimized imports)
-
-🛠 Collect metadata on each traversed node (file size, number of other nodes depending on it, etc)
+🛠 Collect metadata to flag unused imports/exports
 
 🛠 Resolve workspaces/monorepos graphs
 
@@ -189,4 +183,28 @@ const { findParentsOf } = await skott({
 });
 
 console.log(findParentsOf("children.js")); // logs [ "parent.js" ]
+```
+
+### File node metadata 
+
+lib.js
+```javascript
+import * as fs from "node:fs";
+import { parseScript } from "meriyah";
+```
+
+main.js
+```javascript
+import skott from "skott";
+
+const { getStructure } = await skott({
+  entrypoint: "lib.js",
+  dependencyTracking: {
+    builtin: true,
+    thirdParty: true
+  }
+});
+
+const { graph } = getStructure();
+console.log(graph["lib.js"].body); // { size: 70, thirdPartyDependencies: ["meriyah"], builtinDependencies: ["node:fs"] };
 ```
