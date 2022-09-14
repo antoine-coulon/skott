@@ -8,8 +8,7 @@ class InMemoryFileReader implements FileReader {
   read(filename: string): Promise<string> {
     return new Promise((resolve) => {
       /* eslint-disable no-sync */
-      // @ts-expect-error - Will be a string as its decoded in utf-8
-      resolve(memfs.fs.readFileSync(filename, "utf-8"));
+      resolve(memfs.fs.readFileSync(filename, "utf-8") as string);
     });
   }
   stats(filename: string): Promise<number> {
@@ -27,6 +26,13 @@ class InMemoryFileReader implements FileReader {
       });
     });
   }
+}
+
+function mountFakeFileSystem(
+  fs: Record<string, string>,
+  mountingPoint = "./"
+): void {
+  memfs.vol.fromJSON(fs, mountingPoint);
 }
 
 async function makeScott(): Promise<SkottStructure> {
@@ -47,16 +53,13 @@ async function makeScott(): Promise<SkottStructure> {
   return skottInstance.getStructure();
 }
 
-describe("Skott Node information", () => {
+describe("Skott Node details", () => {
   describe("When there is only one file in the project", () => {
     describe("When the file is empty", () => {
       it("should generate basic data", async () => {
-        memfs.vol.fromJSON(
-          {
-            "index.js": ""
-          },
-          "./"
-        );
+        mountFakeFileSystem({
+          "index.js": ""
+        });
 
         const { graph } = await makeScott();
 
@@ -96,7 +99,7 @@ describe("Skott Node information", () => {
             `
           };
 
-          memfs.vol.fromJSON(fakeFs, "./");
+          mountFakeFileSystem(fakeFs);
 
           const { graph } = await makeScott();
 
@@ -118,18 +121,15 @@ describe("Skott Node information", () => {
 
       describe("When tracking third-party dependencies", async () => {
         it("should find one third-party dependency", async () => {
-          memfs.vol.fromJSON(
-            {
-              "index.js": `
-                      import * as anything from "./lib.js";
-                      import { parseScript } from 'meriyah';
-                      import path from "path";
-                      import * as fs from "node:fs"; 
-                  `,
-              "lib.js": ""
-            },
-            "./"
-          );
+          mountFakeFileSystem({
+            "index.js": `
+              import * as anything from "./lib.js";
+              import { parseScript } from 'meriyah';
+              import path from "path";
+              import * as fs from "node:fs"; 
+            `,
+            "lib.js": ""
+          });
 
           const { graph } = await makeScott();
           const indexFile = graph["index.js"];
@@ -142,11 +142,11 @@ describe("Skott Node information", () => {
           memfs.vol.fromJSON(
             {
               "index.js": `
-                      import * as anything from "./lib.js";
-                      import { parseScript } from 'meriyah';
-                      import 'side-effect-library';
-                      import { getStrategy } from "@nodesecure/vulnera";
-                  `,
+                import * as anything from "./lib.js";
+                import { parseScript } from 'meriyah';
+                import 'side-effect-library';
+                import { getStrategy } from "@nodesecure/vulnera";
+              `,
               "lib.js": ""
             },
             "./"
@@ -166,18 +166,15 @@ describe("Skott Node information", () => {
       describe("When tracking native dependencies", async () => {
         describe("When the source file contains native dependencies", async () => {
           it("should collect all native dependencies", async () => {
-            memfs.vol.fromJSON(
-              {
-                "index.js": `
-                        import * as anything from "./lib.js";
-                        import { parseScript } from 'meriyah';
-                        import path from "path";
-                        import * as fs from "node:fs"; 
-                    `,
-                "lib.js": ""
-              },
-              "./"
-            );
+            mountFakeFileSystem({
+              "index.js": `
+                import * as anything from "./lib.js";
+                import { parseScript } from 'meriyah';
+                import path from "path";
+                import * as fs from "node:fs"; 
+              `,
+              "lib.js": ""
+            });
 
             const { graph } = await makeScott();
             const indexFile = graph["index.js"];

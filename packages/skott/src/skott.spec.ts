@@ -10,8 +10,7 @@ class InMemoryFileReader implements FileReader {
   read(filename: string): Promise<string> {
     return new Promise((resolve) => {
       /* eslint-disable no-sync */
-      // @ts-expect-error - Will be a string as its decoded in utf-8
-      resolve(memfs.fs.readFileSync(filename, "utf-8"));
+      resolve(memfs.fs.readFileSync(filename, "utf-8") as string);
     });
   }
   stats(_filename: string): Promise<number> {
@@ -40,18 +39,25 @@ async function buildProjectStructureUsingInMemoryFileExplorer(
   return skottInstance.getStructure();
 }
 
-const fakeBody = {
+const fakeNodeBody = {
   size: 0,
   thirdPartyDependencies: [],
   builtinDependencies: []
 };
+
+function mountFakeFileSystem(
+  fs: Record<string, string>,
+  mountingPoint = "./"
+): void {
+  memfs.vol.fromJSON(fs, mountingPoint);
+}
 
 describe("When traversing a JavaScript/Node.js project", () => {
   describe("When building the project structure", () => {
     describe("When specifying a dirname while providing the entrypoint", () => {
       describe("When the full dirname must be ignored from node paths", () => {
         it("should remove by default the dirname from all relative paths of the graph", async () => {
-          const fakeFileSystem = {
+          mountFakeFileSystem({
             "my-app-folder/my-project/index.js": `
               import { createHtml } './apps/dashboard/index.js';
               render(createHtml());
@@ -64,8 +70,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
               
               export const createHtml = () => "<div> Date comparison </div>";
             `
-          };
-          memfs.vol.fromJSON(fakeFileSystem, "./");
+          });
 
           const projectStructure =
             await buildProjectStructureUsingInMemoryFileExplorer(
@@ -77,17 +82,17 @@ describe("When traversing a JavaScript/Node.js project", () => {
               "index.js": {
                 adjacentTo: ["apps/dashboard/index.js"],
                 id: "index.js",
-                body: fakeBody
+                body: fakeNodeBody
               },
               "apps/dashboard/index.js": {
                 adjacentTo: ["libs/temporal/index.js"],
                 id: "apps/dashboard/index.js",
-                body: fakeBody
+                body: fakeNodeBody
               },
               "libs/temporal/index.js": {
                 adjacentTo: [],
                 id: "libs/temporal/index.js",
-                body: fakeBody
+                body: fakeNodeBody
               }
             },
             files: [
@@ -103,7 +108,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
 
         describe("When the provided entrypoint is not at the top-level of the project", () => {
           it("should include relative segments for files at an higher level than the entrypoint", async () => {
-            const fakeFileSystem = {
+            mountFakeFileSystem({
               "libs/lib1/index.js": `
                   import { something } from "../lib2/feature/index.js";
               `,
@@ -112,8 +117,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
                 export const something = () => {};
               `,
               "libs/util.js": ``
-            };
-            memfs.vol.fromJSON(fakeFileSystem, "./");
+            });
 
             const projectStructure =
               await buildProjectStructureUsingInMemoryFileExplorer(
@@ -125,17 +129,17 @@ describe("When traversing a JavaScript/Node.js project", () => {
                 "index.js": {
                   adjacentTo: ["../lib2/feature/index.js"],
                   id: "index.js",
-                  body: fakeBody
+                  body: fakeNodeBody
                 },
                 "../lib2/feature/index.js": {
                   adjacentTo: ["../util.js"],
                   id: "../lib2/feature/index.js",
-                  body: fakeBody
+                  body: fakeNodeBody
                 },
                 "../util.js": {
                   adjacentTo: [],
                   id: "../util.js",
-                  body: fakeBody
+                  body: fakeNodeBody
                 }
               },
               files: ["index.js", "../lib2/feature/index.js", "../util.js"],
@@ -147,9 +151,9 @@ describe("When traversing a JavaScript/Node.js project", () => {
         });
       });
 
-      describe("When the full dirname must be included in node paths", () => {
+      describe("When the full dirname must be included in nodes file paths", () => {
         it("should include the relative dirname in every path of the graph", async () => {
-          const fakeFileSystem = {
+          mountFakeFileSystem({
             "my-app-folder/my-project/index.js": `
             import { createHtml } '../apps/dashboard/index.js';
             render(createHtml());
@@ -162,8 +166,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
               
               export const createHtml = () => "<div> Date comparison </div>";
           `
-          };
-          memfs.vol.fromJSON(fakeFileSystem, "./");
+          });
 
           const projectStructure =
             await buildProjectStructureUsingInMemoryFileExplorer(
@@ -176,17 +179,17 @@ describe("When traversing a JavaScript/Node.js project", () => {
               "my-app-folder/my-project/index.js": {
                 adjacentTo: ["my-app-folder/apps/dashboard/index.js"],
                 id: "my-app-folder/my-project/index.js",
-                body: fakeBody
+                body: fakeNodeBody
               },
               "my-app-folder/apps/dashboard/index.js": {
                 adjacentTo: ["my-app-folder/my-project/libs/temporal/index.js"],
                 id: "my-app-folder/apps/dashboard/index.js",
-                body: fakeBody
+                body: fakeNodeBody
               },
               "my-app-folder/my-project/libs/temporal/index.js": {
                 adjacentTo: [],
                 id: "my-app-folder/my-project/libs/temporal/index.js",
-                body: fakeBody
+                body: fakeNodeBody
               }
             },
             files: [
@@ -205,10 +208,9 @@ describe("When traversing a JavaScript/Node.js project", () => {
     describe("When the looked up file exists and can be read", () => {
       describe("When the file does not have any module declarations", () => {
         it("skott should build a graph with only the root node", async () => {
-          const fakeFileSystem = {
+          mountFakeFileSystem({
             "index.js": "console.log('Hello, world!');"
-          };
-          memfs.vol.fromJSON(fakeFileSystem, "./");
+          });
 
           const projectStructure =
             await buildProjectStructureUsingInMemoryFileExplorer("index.js");
@@ -218,7 +220,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
               "index.js": {
                 adjacentTo: [],
                 id: "index.js",
-                body: fakeBody
+                body: fakeNodeBody
               }
             },
             files: ["index.js"],
@@ -231,7 +233,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
 
       describe("When the file contains imports that are not initially JavaScript modules", () => {
         it("should process only with JavaScript modules", async () => {
-          const fakeFileSystem = {
+          mountFakeFileSystem({
             "index.js": `
               const foo = require("./javascript-module.js");
               const staticFile = require("./db.json");
@@ -240,8 +242,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
             "javascript-module.js": "console.log('Hello, world!');",
             "binaryModule.node": "",
             "staticFile.json": "{}"
-          };
-          memfs.vol.fromJSON(fakeFileSystem, "./");
+          });
 
           const projectStructure =
             await buildProjectStructureUsingInMemoryFileExplorer("index.js");
@@ -258,7 +259,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
           describe("When extracting import declarations", () => {
             describe("When the file has one import declaration", () => {
               it("skott should build the graph with two nodes and one link", async () => {
-                const fakeFileSystem = {
+                mountFakeFileSystem({
                   "index.js": `
                     import { foo } from "./src/foo.js";
             
@@ -267,9 +268,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   "src/foo.js": `
                     export const foo = { doSomething: () => 'Hello, world!' };
                   `
-                };
-
-                memfs.vol.fromJSON(fakeFileSystem, "./");
+                });
 
                 const projectStructure =
                   await buildProjectStructureUsingInMemoryFileExplorer(
@@ -281,12 +280,12 @@ describe("When traversing a JavaScript/Node.js project", () => {
                     "index.js": {
                       adjacentTo: ["src/foo.js"],
                       id: "index.js",
-                      body: fakeBody
+                      body: fakeNodeBody
                     },
                     "src/foo.js": {
                       adjacentTo: [],
                       id: "src/foo.js",
-                      body: fakeBody
+                      body: fakeNodeBody
                     }
                   },
                   files: ["index.js", "src/foo.js"],
@@ -299,7 +298,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
 
             describe("When the project has four nested import declarations", () => {
               it("skott should build the graph with all nodes and links", async () => {
-                const fakeFileSystem = {
+                mountFakeFileSystem({
                   "index.js": `
                     import { foo } from "./src/foo.js";
                     console.log(foo.doSomething());
@@ -320,9 +319,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
                     const lol = () => 'Hello, baz!';
                     export default lol;
                   `
-                };
-
-                memfs.vol.fromJSON(fakeFileSystem, "./");
+                });
 
                 const projectStructure =
                   await buildProjectStructureUsingInMemoryFileExplorer(
@@ -334,27 +331,27 @@ describe("When traversing a JavaScript/Node.js project", () => {
                     "index.js": {
                       adjacentTo: ["src/foo.js"],
                       id: "index.js",
-                      body: fakeBody
+                      body: fakeNodeBody
                     },
                     "src/foo.js": {
                       adjacentTo: ["src/bar.js"],
                       id: "src/foo.js",
-                      body: fakeBody
+                      body: fakeNodeBody
                     },
                     "src/bar.js": {
                       adjacentTo: ["src/lib/baz/index.js"],
                       id: "src/bar.js",
-                      body: fakeBody
+                      body: fakeNodeBody
                     },
                     "src/lib/baz/index.js": {
                       adjacentTo: ["src/lol/index.js"],
                       id: "src/lib/baz/index.js",
-                      body: fakeBody
+                      body: fakeNodeBody
                     },
                     "src/lol/index.js": {
                       adjacentTo: [],
                       id: "src/lol/index.js",
-                      body: fakeBody
+                      body: fakeNodeBody
                     }
                   },
                   files: [
@@ -373,7 +370,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
 
             describe("When the file contains imports of Node.js core modules", () => {
               it("should not consider Node.js core modules imports as file dependencies", async () => {
-                const fakeFileSystem = {
+                mountFakeFileSystem({
                   "index.js": `
                     import { readFile } from "fs/promises";
                     import { join } from "node:path";
@@ -386,9 +383,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   "foobar.js": `
                     export const foo = { doSomething: () => 'Hello, world!' };
                   `
-                };
-
-                memfs.vol.fromJSON(fakeFileSystem, "./");
+                });
 
                 const projectStructure =
                   await buildProjectStructureUsingInMemoryFileExplorer(
@@ -399,12 +394,12 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   "index.js": {
                     adjacentTo: ["foobar.js"],
                     id: "index.js",
-                    body: fakeBody
+                    body: fakeNodeBody
                   },
                   "foobar.js": {
                     adjacentTo: [],
                     id: "foobar.js",
-                    body: fakeBody
+                    body: fakeNodeBody
                   }
                 });
                 expect(projectStructure.files).to.be.deep.equal([
@@ -416,7 +411,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
 
             describe("When the file imports third-party libraries", () => {
               it("should not consider third-party libraries as file dependencies", async () => {
-                const fakeFileSystem = {
+                mountFakeFileSystem({
                   "index.js": `
                     import { parseScript } from "meriyah";
                     import * as vuln from "@nodesecure/vuln";
@@ -428,9 +423,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   "foobar.js": `
                     export const foo = { doSomething: () => 'Hello, world!' };
                   `
-                };
-
-                memfs.vol.fromJSON(fakeFileSystem, "./");
+                });
 
                 const projectStructure =
                   await buildProjectStructureUsingInMemoryFileExplorer(
@@ -441,12 +434,12 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   "index.js": {
                     adjacentTo: ["foobar.js"],
                     id: "index.js",
-                    body: fakeBody
+                    body: fakeNodeBody
                   },
                   "foobar.js": {
                     adjacentTo: [],
                     id: "foobar.js",
-                    body: fakeBody
+                    body: fakeNodeBody
                   }
                 });
                 expect(projectStructure.files).to.be.deep.equal([
@@ -460,7 +453,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
           describe("When extracting export declarations", () => {
             describe("When the file contains some 'ExportAllDeclaration'", () => {
               it("should extract all related export declarations", async () => {
-                const fakeFileSystem = {
+                mountFakeFileSystem({
                   "index.js": `
                     export * from "./foobar.js";
                     export * as foo from "./foo.js";
@@ -471,9 +464,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   "foo.js": `
                     export const foo = { doSomething: () => 'Hello, world!' };
                   `
-                };
-
-                memfs.vol.fromJSON(fakeFileSystem, "./");
+                });
 
                 const projectStructure =
                   await buildProjectStructureUsingInMemoryFileExplorer(
@@ -484,17 +475,17 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   "index.js": {
                     adjacentTo: ["foobar.js", "foo.js"],
                     id: "index.js",
-                    body: fakeBody
+                    body: fakeNodeBody
                   },
                   "foobar.js": {
                     adjacentTo: [],
                     id: "foobar.js",
-                    body: fakeBody
+                    body: fakeNodeBody
                   },
                   "foo.js": {
                     adjacentTo: [],
                     id: "foo.js",
-                    body: fakeBody
+                    body: fakeNodeBody
                   }
                 });
                 expect(projectStructure.files).to.be.deep.equal([
@@ -507,7 +498,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
 
             describe("When the file contains some 'ExportNamedDeclaration", () => {
               it("should only extract named exports with a source", async () => {
-                const fakeFileSystem = {
+                mountFakeFileSystem({
                   "index.js": `
                     export { foobar } from "./foobar.js";
                   `,
@@ -521,9 +512,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
                     const foo2 = { doSomething: () => foobar() };
                     export { foo2 };
                   `
-                };
-
-                memfs.vol.fromJSON(fakeFileSystem, "./");
+                });
 
                 const projectStructure =
                   await buildProjectStructureUsingInMemoryFileExplorer(
@@ -534,17 +523,17 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   "index.js": {
                     adjacentTo: ["foobar.js"],
                     id: "index.js",
-                    body: fakeBody
+                    body: fakeNodeBody
                   },
                   "foobar.js": {
                     adjacentTo: ["foo.js"],
                     id: "foobar.js",
-                    body: fakeBody
+                    body: fakeNodeBody
                   },
                   "foo.js": {
                     adjacentTo: [],
                     id: "foo.js",
-                    body: fakeBody
+                    body: fakeNodeBody
                   }
                 });
                 expect(projectStructure.files).to.be.deep.equal([
@@ -559,7 +548,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
           describe("When the project contains circular dependencies", () => {
             describe("When there is direct a circular dependency between two files importing each other", () => {
               it("should find the cycle and keep traversing other nodes", async () => {
-                const fakeFileSystem = {
+                mountFakeFileSystem({
                   "a.js": `
                     import { b } from "./b.js";
                     export const a = () => b();
@@ -572,9 +561,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   "c.js": `
                     export const c = { doSomething: () => {} };
                   `
-                };
-
-                memfs.vol.fromJSON(fakeFileSystem, "./");
+                });
 
                 const { graph, hasCircularDependencies, circularDependencies } =
                   await buildProjectStructureUsingInMemoryFileExplorer("a.js");
@@ -583,17 +570,17 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   "a.js": {
                     id: "a.js",
                     adjacentTo: ["b.js"],
-                    body: fakeBody
+                    body: fakeNodeBody
                   },
                   "b.js": {
                     id: "b.js",
                     adjacentTo: ["a.js", "c.js"],
-                    body: fakeBody
+                    body: fakeNodeBody
                   },
                   "c.js": {
                     id: "c.js",
                     adjacentTo: [],
-                    body: fakeBody
+                    body: fakeNodeBody
                   }
                 });
 
@@ -605,7 +592,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
             describe("When there is an indirect circular dependency involving many files imports", () => {
               describe("When all the files are involved in the cycle", () => {
                 it("should find the cycle and traverse+link all nodes involved in the cycle", async () => {
-                  const fakeFileSystem = {
+                  mountFakeFileSystem({
                     "a.js": `
                       import { b } from "./b.js";
                       export const a = () => b();
@@ -622,9 +609,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
                       import { a } from "./a.js";
                       export const d = { doSomething: () => {} };
                     `
-                  };
-
-                  memfs.vol.fromJSON(fakeFileSystem, "./");
+                  });
 
                   const {
                     graph,
@@ -638,22 +623,22 @@ describe("When traversing a JavaScript/Node.js project", () => {
                     "a.js": {
                       id: "a.js",
                       adjacentTo: ["b.js"],
-                      body: fakeBody
+                      body: fakeNodeBody
                     },
                     "b.js": {
                       id: "b.js",
                       adjacentTo: ["c.js"],
-                      body: fakeBody
+                      body: fakeNodeBody
                     },
                     "c.js": {
                       id: "c.js",
                       adjacentTo: ["d.js"],
-                      body: fakeBody
+                      body: fakeNodeBody
                     },
                     "d.js": {
                       id: "d.js",
                       adjacentTo: ["a.js"],
-                      body: fakeBody
+                      body: fakeNodeBody
                     }
                   });
 
@@ -666,7 +651,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
 
               describe("When only some of the files are involved in the cycle", () => {
                 it("should find the cycle and keep traversing+linking other nodes not involved in the cycle", async () => {
-                  const fakeFileSystem = {
+                  mountFakeFileSystem({
                     "index.js": `
                     import * as _ from "./src/feature.js";
                   `,
@@ -687,9 +672,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
                     import { utils } from "./utils/index.js";
                   `,
                     "src/last-feature.js": ``
-                  };
-
-                  memfs.vol.fromJSON(fakeFileSystem, "./");
+                  });
 
                   const {
                     graph,
@@ -704,7 +687,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
                     "index.js": {
                       id: "index.js",
                       adjacentTo: ["src/feature.js"],
-                      body: fakeBody
+                      body: fakeNodeBody
                     },
                     "src/feature.js": {
                       id: "src/feature.js",
@@ -713,32 +696,32 @@ describe("When traversing a JavaScript/Node.js project", () => {
                         "src/utils/index.js",
                         "src/other-feature.js"
                       ],
-                      body: fakeBody
+                      body: fakeNodeBody
                     },
                     "src/constants.js": {
                       id: "src/constants.js",
                       adjacentTo: [],
-                      body: fakeBody
+                      body: fakeNodeBody
                     },
                     "src/utils/index.js": {
                       id: "src/utils/index.js",
                       adjacentTo: ["src/utils/doSomethingUtil.js"],
-                      body: fakeBody
+                      body: fakeNodeBody
                     },
                     "src/utils/doSomethingUtil.js": {
                       id: "src/utils/doSomethingUtil.js",
                       adjacentTo: ["src/utils/index.js"],
-                      body: fakeBody
+                      body: fakeNodeBody
                     },
                     "src/other-feature.js": {
                       id: "src/other-feature.js",
                       adjacentTo: ["src/last-feature.js", "src/utils/index.js"],
-                      body: fakeBody
+                      body: fakeNodeBody
                     },
                     "src/last-feature.js": {
                       id: "src/last-feature.js",
                       adjacentTo: [],
-                      body: fakeBody
+                      body: fakeNodeBody
                     }
                   });
 
@@ -789,7 +772,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
 
             for (const scenarioWithRequireImport of mixOfScenariosWithRequireImports) {
               it(scenarioWithRequireImport.description, async () => {
-                const fakeFileSystem = {
+                mountFakeFileSystem({
                   "index.js": `
                   const { foo } = ${scenarioWithRequireImport.requireIdentifier};
           
@@ -798,9 +781,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   [`src/foo.${scenarioWithRequireImport.expectedFinalFileExtension}`]: `
                   module.exports.foo = { doSomething: () => 'Hello, world!' };
                 `
-                };
-
-                memfs.vol.fromJSON(fakeFileSystem, "./");
+                });
 
                 const projectStructure =
                   await buildProjectStructureUsingInMemoryFileExplorer(
@@ -815,13 +796,13 @@ describe("When traversing a JavaScript/Node.js project", () => {
                         `src/foo.${scenarioWithRequireImport.expectedFinalFileExtension}`
                       ],
                       id: `index.js`,
-                      body: fakeBody
+                      body: fakeNodeBody
                     },
                     [`src/foo.${scenarioWithRequireImport.expectedFinalFileExtension}`]:
                       {
                         adjacentTo: [],
                         id: `src/foo.${scenarioWithRequireImport.expectedFinalFileExtension}`,
-                        body: fakeBody
+                        body: fakeNodeBody
                       }
                   },
                   files: [
@@ -840,16 +821,14 @@ describe("When traversing a JavaScript/Node.js project", () => {
 
           describe("When extracting import declarations targetting folders", () => {
             it("should find the index.js linked to the folder import", async () => {
-              const fakeFileSystem = {
+              mountFakeFileSystem({
                 "index.js": `
                   const { foo } = require("./lib");
                   const { foobar } = require("./foobar");
                 `,
                 "lib/index.js": "",
                 "foobar.js": ""
-              };
-
-              memfs.vol.fromJSON(fakeFileSystem, "./");
+              });
 
               const projectStructure =
                 await buildProjectStructureUsingInMemoryFileExplorer(
@@ -861,17 +840,17 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   "index.js": {
                     adjacentTo: ["lib/index.js", "foobar.js"],
                     id: "index.js",
-                    body: fakeBody
+                    body: fakeNodeBody
                   },
                   "lib/index.js": {
                     adjacentTo: [],
                     id: "lib/index.js",
-                    body: fakeBody
+                    body: fakeNodeBody
                   },
                   "foobar.js": {
                     adjacentTo: [],
                     id: "foobar.js",
-                    body: fakeBody
+                    body: fakeNodeBody
                   }
                 },
                 files: ["index.js", "lib/index.js", "foobar.js"],
@@ -886,7 +865,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
         describe("When extracting export declarations", () => {
           describe("When exporting something imported", () => {
             it("should add a link between the file exporting and the file being imported", async () => {
-              const fakeFileSystem = {
+              mountFakeFileSystem({
                 "index.js": `
                   const { foo } = require("./lib");
                   const { foobar } = require("./foobar");
@@ -901,9 +880,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   exports.foobaz = require("./foobaz.js");
                 `,
                 "foobaz.js": ""
-              };
-
-              memfs.vol.fromJSON(fakeFileSystem, "./");
+              });
 
               const projectStructure =
                 await buildProjectStructureUsingInMemoryFileExplorer(
@@ -915,27 +892,27 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   "index.js": {
                     adjacentTo: ["lib/index.js", "foobar.js"],
                     id: "index.js",
-                    body: fakeBody
+                    body: fakeNodeBody
                   },
                   "lib/index.js": {
                     adjacentTo: ["fizzbuzz.js"],
                     id: "lib/index.js",
-                    body: fakeBody
+                    body: fakeNodeBody
                   },
                   "foobar.js": {
                     adjacentTo: ["foobaz.js"],
                     id: "foobar.js",
-                    body: fakeBody
+                    body: fakeNodeBody
                   },
                   "fizzbuzz.js": {
                     adjacentTo: ["foobaz.js"],
                     id: "fizzbuzz.js",
-                    body: fakeBody
+                    body: fakeNodeBody
                   },
                   "foobaz.js": {
                     adjacentTo: [],
                     id: "foobaz.js",
-                    body: fakeBody
+                    body: fakeNodeBody
                   }
                 },
                 files: [
@@ -956,12 +933,11 @@ describe("When traversing a JavaScript/Node.js project", () => {
 
       describe("When searching for leaves", () => {
         it("should only return nodes identifiers with no children", async () => {
-          const fakeFileSystem = {
+          mountFakeFileSystem({
             "index.js": "export * from './file1.js';",
             "file1.js": "import { F2 } from './file2.js';",
             "file2.js": "export const F2 = 10;"
-          };
-          memfs.vol.fromJSON(fakeFileSystem, "./");
+          });
 
           const { leaves } =
             await buildProjectStructureUsingInMemoryFileExplorer("index.js");
@@ -972,7 +948,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
 
       describe("When deeply searching for parents of a given node", () => {
         it("should traverse the graph bottom-to-top and collect every file depending on the target", async () => {
-          const fakeFileSystem = {
+          mountFakeFileSystem({
             "a.js": `
               import { b } from "./b.js";
               export const a = () => b();
@@ -992,9 +968,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
             "d.js": `
               export const d = { doSomething: () => {} };
             `
-          };
-
-          memfs.vol.fromJSON(fakeFileSystem, "./");
+          });
 
           const skott = new Skott(
             {
@@ -1026,7 +1000,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
 
     describe("When the looked up file does not exist", () => {
       it("should ignore the file not found/readable and keep looking up for other files", async () => {
-        const fakeFileSystem = {
+        mountFakeFileSystem({
           "index.js": `
             // exists
             import { foo } from './foo.js';
@@ -1039,8 +1013,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
           `,
           "foo.js": "",
           "baz.js": ""
-        };
-        memfs.vol.fromJSON(fakeFileSystem, "./");
+        });
 
         const { files, graph } =
           await buildProjectStructureUsingInMemoryFileExplorer("index.js");
@@ -1049,17 +1022,17 @@ describe("When traversing a JavaScript/Node.js project", () => {
           "index.js": {
             id: "index.js",
             adjacentTo: ["foo.js", "baz.js"],
-            body: fakeBody
+            body: fakeNodeBody
           },
           "foo.js": {
             id: "foo.js",
             adjacentTo: [],
-            body: fakeBody
+            body: fakeNodeBody
           },
           "baz.js": {
             id: "baz.js",
             adjacentTo: [],
-            body: fakeBody
+            body: fakeNodeBody
           }
         });
         expect(files).to.be.deep.equal(["index.js", "foo.js", "baz.js"]);
