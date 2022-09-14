@@ -1,0 +1,39 @@
+name: Skott Continuous Integration
+
+on:
+  push:
+    branches: main
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/skott
+    strategy:
+      matrix:
+        node-version: [16.x]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - uses: pnpm/action-setup@v2.2.2
+        with:
+          version: 7
+          run_install: true
+
+      - name: Run tests
+        run: pnpm run test
+
+      - name: Run linter
+        run: pnpm run lint
+
+      - name: Build project
+        run: pnpm run build
+
