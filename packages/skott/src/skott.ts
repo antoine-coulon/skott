@@ -1,19 +1,16 @@
 import path from "node:path";
 
 import { DiGraph, VertexDefinition } from "digraph-js";
-import { walk } from "estree-walker";
-import { parseScript } from "meriyah";
 
 import { FileReader, FileSystemReader } from "./filesystem/file-reader.js";
-import { isCommonJSModuleImport } from "./modules/cjs.js";
-import { isEcmaScriptModuleDeclaration } from "./modules/esm.js";
 import {
   resolveImportedModulePath,
   isBinaryModule,
   isBuiltinModule,
   isJSONModule,
   isThirdPartyModule
-} from "./modules/import-checker.js";
+} from "./modules/walkers/javascript/import-checker.js";
+import { JavaScriptModuleWalker } from "./modules/walkers/javascript/walker.js";
 
 export type SkottNodeBody = {
   size: number;
@@ -60,6 +57,7 @@ const defaultConfig = {
 };
 
 export class Skott {
+  #moduleWalker = new JavaScriptModuleWalker();
   #projectGraph = new DiGraph<SkottNode>();
   #visitedNodes = new Set<string>();
   #baseDir = "";
@@ -155,7 +153,42 @@ export class Skott {
     });
   }
 
+  private async findModuleDeclarations(
+    fileContent: string
+  ): Promise<Set<string>> {
+    const { moduleDeclarations } = await this.#moduleWalker.walk(fileContent);
+
+    return moduleDeclarations;
+  }
+
   private async followModuleDeclarationsFromFile(
+    rootPath: string,
+    moduleDeclaration: string
+  ): Promise<void> {
+    const fullFilePathFromEntrypoint = await resolveImportedModulePath(
+      path.join(path.dirname(rootPath), moduleDeclaration),
+      this.fileReader
+    );
+
+    try {
+      const nextFileContentToExplore = await this.fileReader.read(
+        fullFilePathFromEntrypoint
+      );
+
+      await this.addNode(fullFilePathFromEntrypoint);
+      await this.linkNodes({
+        from: rootPath,
+        to: fullFilePathFromEntrypoint
+      });
+
+      await this.traceModuleDeclarationsFromFile(
+        fullFilePathFromEntrypoint,
+        nextFileContentToExplore
+      );
+    } catch {}
+  }
+
+  private async traceModuleDeclarationsFromFile(
     rootPath: string,
     fileContent: string
   ): Promise<void> {
@@ -163,24 +196,7 @@ export class Skott {
       return;
     }
 
-    const moduleDeclarations = new Set<string>();
-    const node = parseScript(fileContent, {
-      module: true,
-      next: true
-    });
-    const isRootNode = node.type === "Program";
-
-    walk(isRootNode ? node.body : node, {
-      enter(node) {
-        if (isCommonJSModuleImport(node)) {
-          moduleDeclarations.add(node.arguments[0].value);
-        }
-
-        if (isEcmaScriptModuleDeclaration(node)) {
-          moduleDeclarations.add(node.source.value);
-        }
-      }
-    });
+    const moduleDeclarations = await this.findModuleDeclarations(fileContent);
 
     this.#visitedNodes.add(rootPath);
 
@@ -215,27 +231,7 @@ export class Skott {
         });
       }
 
-      const fullFilePathFromEntrypoint = await resolveImportedModulePath(
-        path.join(path.dirname(rootPath), moduleDeclaration),
-        this.fileReader
-      );
-
-      try {
-        const nextFileContentToExplore = await this.fileReader.read(
-          fullFilePathFromEntrypoint
-        );
-
-        await this.addNode(fullFilePathFromEntrypoint);
-        await this.linkNodes({
-          from: rootPath,
-          to: fullFilePathFromEntrypoint
-        });
-
-        await this.followModuleDeclarationsFromFile(
-          fullFilePathFromEntrypoint,
-          nextFileContentToExplore
-        );
-      } catch {}
+      await this.followModuleDeclarationsFromFile(rootPath, moduleDeclaration);
     }
   }
 
@@ -282,7 +278,7 @@ export class Skott {
 
     this.#baseDir = path.dirname(entrypointModulePath);
     await this.addNode(entrypointModulePath);
-    await this.followModuleDeclarationsFromFile(
+    await this.traceModuleDeclarationsFromFile(
       entrypointModulePath,
       rootFileContent
     );
