@@ -254,9 +254,49 @@ describe("When traversing a JavaScript/Node.js project", () => {
         });
       });
 
+      describe("When extracting dynamic import expressions", () => {
+        describe("When importing a local module", () => {
+          it("should build the graph with two nodes and one link", async () => {
+            mountFakeFileSystem({
+              "index.js": `
+                async function main() {
+                  const foo = await import("./src/foo.js");
+                  console.log(foo.foo.domeSomething())
+                }
+              `,
+              "src/foo.js": `
+                export const foo = { doSomething: () => 'Hello, world!' };
+              `
+            });
+
+            const projectStructure =
+              await buildProjectStructureUsingInMemoryFileExplorer("index.js");
+
+            expect(projectStructure).to.be.deep.equal({
+              graph: {
+                "index.js": {
+                  adjacentTo: ["src/foo.js"],
+                  id: "index.js",
+                  body: fakeNodeBody
+                },
+                "src/foo.js": {
+                  adjacentTo: [],
+                  id: "src/foo.js",
+                  body: fakeNodeBody
+                }
+              },
+              files: ["index.js", "src/foo.js"],
+              circularDependencies: [],
+              hasCircularDependencies: false,
+              leaves: ["src/foo.js"]
+            });
+          });
+        });
+      });
+
       describe("When the project uses ECMAScript modules", () => {
         describe("When extracting module declarations starting from the root file", () => {
-          describe("When extracting import declarations", () => {
+          describe("When extracting static import declarations", () => {
             describe("When the file has one import declaration", () => {
               it("skott should build the graph with two nodes and one link", async () => {
                 mountFakeFileSystem({

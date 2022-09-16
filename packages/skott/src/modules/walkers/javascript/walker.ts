@@ -24,6 +24,10 @@ export class JavaScriptModuleWalker implements ModuleWalker {
         if (isEcmaScriptModuleDeclaration(node)) {
           moduleDeclarations.add(node.source.value);
         }
+
+        if (node.type === "ImportExpression") {
+          moduleDeclarations.add(node.source.value);
+        }
       }
     });
 
