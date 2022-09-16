@@ -22,9 +22,8 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "rimraf ./dist && tsc --project tsconfig.build.json",
-    "copy:docs": "cp ../../README.md ./",
     "lint": "eslint .",
-    "prepublishOnly": "npm run test && npm run build && npm run copy:docs",
+    "prepublishOnly": "npm run test && npm run build",
     "prestart": "npm run build",
     "start": "node dist/bin/cli.js",
     "test": "mocha --parallel"
@@ -60,7 +59,7 @@
   },
   "files": [
     "dist",
-    "../../README.md"
+    "./README.md"
   ],
   "keywords": [
     "javascript",

@@ -2,58 +2,50 @@
 	<img alt="skott" src="https://user-images.githubusercontent.com/43391199/188307540-00740a8b-ad19-401b-b767-6211bfb0d26b.png" width="350">
 </p>
 
-**skott** is a minimalist developer tool that can be used to efficiently generate directed graphs from your JavaScript/Node.js project. It can automatically collect metadata, detect circular dependencies and can be used to implement affected/incremental patterns as it exposes a way to know precisely dependencies for each graph node.
-
-_Graph Construction_
-**skott** is powered by [digraph-js](https://github.com/antoine-coulon/digraph-js), a _0 dependency_ Node.js library to make Directed Graph construction and traversal effortless.
-
-> **Note**
->
-> **skott** goal is to represent all the file tree structure but was designed to only include dependencies currently being used in the project based on the entrypoint. Consequently unused files (files that are not imported/exported by any other file) won't be included in the graph structure.
-
-✅ Works for **JavaScript/Node.js** projects (ECMAScript and CommonJS modules)
-
-✅ Deeply detects **circular dependencies** in an efficient way, with the ability to provide a max depth for the search
-
-✅ Deeply **collect all dependencies of the project graph**
-
-✅ Deep **parent and child dependencies traversals**
-
-✅ Collect metadata for each traversed node including file size and also Node.js builtin modules + npm third-party libraries imports
-
-✅ Node.js binary and JSON modules are excluded by default
-
-Work in progress includes:
-
-🛠 Collect metadata to flag unused imports/exports
-
-🛠 Resolve workspaces/monorepos graphs
-
 ## How to use skott
 
-### **API**
+### Install
+
+You can install skott either locally or globally
+```bash
+npm install skott --save-dev 
+// or
+npm install skott -g
+```
+
+### **JavaScript API**
 
 ```javascript
 import skott from "skott";
 
-const { getStructure, findCircularDependencies, findParentsOf } = await skott({
+const { getStructure, findCircularDependencies, findParentsOf, findLeaves } = await skott({
   /**
-   * The entrypoint of the project. Must be either a CommonJS or ES6 module.
-   * No TypeScript files are supported as entrypoints.
+   * Entrypoint of the project. Must be either a CommonJS or ES6 module.
+   * No TypeScript files are supported as entrypoints yet.
    */ 
   entrypoint: "dist/index.js",
   /**
-   * Define the max depth of for circular dependencies search. This can be useful 
-   * for performance purposes. This defaults to POSITIVE_INFINITY.
+   * Max depth search for circular dependencies. This can be useful for 
+   * performance purposes. 
+   * Defaults to `POSITIVE_INFINITY`.
    */
   circularMaxDepth: 20,
   /**
-   * This defines whether the base directory of the entrypoint must be included
-   * in all the relatives file paths.
-   * For the specified `dist/index.js` above, it would consider the root path
-   * to be `./` consequently `dist/` would never appear in any file paths.
+   * Whether the base directory of the entrypoint should be included in relative 
+   * file paths. For the specified `dist/index.js` above, it would consider the 
+   * root path to be `./` consequently `dist/` would never appear in any file paths.
+   * Defaults to `false`.
    */
-  includeBaseDir: false
+  includeBaseDir: false,
+  /**
+   * Whether third-party dependencies (npm) and/or builtin (Node.js core modules) 
+   * should be added in the graph. 
+   * Both defaults to `false`.
+   */
+  dependencyTracking: {
+    thirdParty: true,
+    builtin: true
+  };
 });
 ```
 
@@ -185,13 +177,17 @@ const { findParentsOf } = await skott({
 console.log(findParentsOf("children.js")); // logs [ "parent.js" ]
 ```
 
-### File node metadata 
+### Explore file node metadata 
+
+Take for instance `lib.js` with the following content:
 
 lib.js
 ```javascript
 import * as fs from "node:fs";
 import { parseScript } from "meriyah";
 ```
+
+And given the entrypoint `main.js` module below:
 
 main.js
 ```javascript
@@ -206,5 +202,12 @@ const { getStructure } = await skott({
 });
 
 const { graph } = getStructure();
-console.log(graph["lib.js"].body); // { size: 70, thirdPartyDependencies: ["meriyah"], builtinDependencies: ["node:fs"] };
+console.log(graph["lib.js"].body);
+
+// Prints
+{ 
+  size: 70, 
+  thirdPartyDependencies: ["meriyah"], 
+  builtinDependencies: ["node:fs"] 
+}
 ```
