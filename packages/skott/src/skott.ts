@@ -254,7 +254,11 @@ export class Skott {
   }
 
   private findParentsOf(node: string): string[] {
-    return this.#projectGraph.getDeepUpperDependencies(node);
+    const uniqueSetOfParents = new Set<string>([
+      ...this.#projectGraph.getDeepParents(node)
+    ]);
+
+    return [...uniqueSetOfParents];
   }
 
   private makeProjectStructure(): SkottStructure {

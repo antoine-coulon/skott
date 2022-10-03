@@ -50,7 +50,7 @@ importers:
       '@types/sade': ^1.7.4
       builtin-modules: ^3.3.0
       chai: ^4.3.4
-      digraph-js: 1.5.1
+      digraph-js: 2.0.0
       eslint: ^8.4.1
       eslint-config-prettier: ^8.3.0
       eslint-import-resolver-typescript: ^2.5.0
@@ -70,7 +70,7 @@ importers:
       typescript: ^4.5.2
     dependencies:
       builtin-modules: 3.3.0
-      digraph-js: 1.5.1
+      digraph-js: 2.0.0
       estree-walker: 3.0.1
       fs-tree-structure: link:../fs-tree-structure
       kleur: 4.1.5
@@ -971,9 +971,12 @@ packages:
     engines: {node: '>=0.3.1'}
     dev: true
 
-  /digraph-js/1.5.1:
-    resolution: {integrity: sha512-WSPXdsrcSUsfIg7BUgc4DYDo252ZhO/8DVYpSeDPLm3RB1fIRJlNRD7CQiowHiI3yl8nGRKgkyyLgFALdLL0Xg==}
+  /digraph-js/2.0.0:
+    resolution: {integrity: sha512-xw+qZF91FNFjsUmCWNOwsjJ4g/rI2en4EWyX25K0c15n+0s7iVY8NFXdN//TIQ/CckYOF7kp0tmTpcO7H7A5Qw==}
     engines: {node: '>=16.0.0'}
+    dependencies:
+      lodash.isequal: 4.5.0
+      lodash.uniqwith: 4.5.0
     dev: false
 
   /dir-glob/3.0.1:
@@ -1777,6 +1780,10 @@ packages:
       p-locate: 5.0.0
     dev: true
 
+  /lodash.isequal/4.5.0:
+    resolution: {integrity: sha512-pDo3lu8Jhfjqls6GkMgpahsF9kCyayhgykjyLMNFTKWrpVdAQtYyB4muAMWozBB4ig/dtWAmsMxLEI8wuz+DYQ==}
+    dev: false
+
   /lodash.merge/4.6.2:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
     dev: true
@@ -1787,6 +1794,10 @@ packages:
 
   /lodash.truncate/4.4.2:
     resolution: {integrity: sha512-jttmRe7bRse52OsWIMDLaXxWqRAmtIUccAQ3garviCqJjafXOfNMO0yMfNpdD6zbGaTU0P5Nz7e7gAT6cKmJRw==}
+    dev: false
+
+  /lodash.uniqwith/4.5.0:
+    resolution: {integrity: sha512-7lYL8bLopMoy4CTICbxygAUq6CdRJ36vFc80DucPueUee+d5NBRxz3FdT9Pes/HEx5mPoT9jwnsEJWz1N7uq7Q==}
     dev: false
 
   /log-symbols/4.1.0:

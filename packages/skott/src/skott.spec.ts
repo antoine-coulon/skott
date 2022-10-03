@@ -625,7 +625,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
                 });
 
                 expect(hasCircularDependencies).to.equal(true);
-                expect(circularDependencies).to.deep.equal([["b.js", "a.js"]]);
+                expect(circularDependencies).to.deep.equal([["a.js", "b.js"]]);
               });
             });
 
@@ -684,7 +684,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
 
                   expect(hasCircularDependencies).to.equal(true);
                   expect(circularDependencies).to.deep.equal([
-                    ["b.js", "c.js", "d.js", "a.js"]
+                    ["a.js", "b.js", "c.js", "d.js"]
                   ]);
                 });
               });
