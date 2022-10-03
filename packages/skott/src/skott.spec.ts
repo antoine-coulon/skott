@@ -777,7 +777,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
 
                   expect(hasCircularDependencies).to.equal(true);
                   expect(circularDependencies).to.deep.equal([
-                    ["src/utils/doSomethingUtil.js", "src/utils/index.js"]
+                    ["src/utils/index.js", "src/utils/doSomethingUtil.js"]
                   ]);
                 });
               });

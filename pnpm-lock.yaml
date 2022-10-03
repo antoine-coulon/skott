@@ -50,7 +50,7 @@ importers:
       '@types/sade': ^1.7.4
       builtin-modules: ^3.3.0
       chai: ^4.3.4
-      digraph-js: 2.0.0
+      digraph-js: ^2.0.1
       eslint: ^8.4.1
       eslint-config-prettier: ^8.3.0
       eslint-import-resolver-typescript: ^2.5.0
@@ -70,7 +70,7 @@ importers:
       typescript: ^4.5.2
     dependencies:
       builtin-modules: 3.3.0
-      digraph-js: 2.0.0
+      digraph-js: 2.0.1
       estree-walker: 3.0.1
       fs-tree-structure: link:../fs-tree-structure
       kleur: 4.1.5
@@ -971,8 +971,8 @@ packages:
     engines: {node: '>=0.3.1'}
     dev: true
 
-  /digraph-js/2.0.0:
-    resolution: {integrity: sha512-xw+qZF91FNFjsUmCWNOwsjJ4g/rI2en4EWyX25K0c15n+0s7iVY8NFXdN//TIQ/CckYOF7kp0tmTpcO7H7A5Qw==}
+  /digraph-js/2.0.1:
+    resolution: {integrity: sha512-isJ53xGHz6dpilBtWkWAhuhbjMrd2OpRCzmYn+EAG6l+WBGk9eR43HqYEeGQCM51uHv6LeJrQDQVg8TK5z5UcQ==}
     engines: {node: '>=16.0.0'}
     dependencies:
       lodash.isequal: 4.5.0
