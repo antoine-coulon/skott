@@ -1,0 +1,1 @@
+**remote-tarball-fetcher** allows to fetch any tarball from registries such as npm and GitHub and manage them locally.

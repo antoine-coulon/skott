@@ -1,6 +1,7 @@
 {
   "eslint.workingDirectories": [
     "./packages/skott",
-    "./packages/fs-tree-structure"
+    "./packages/fs-tree-structure",
+    "./packages/remote-tarball-fetcher"
   ]
 }

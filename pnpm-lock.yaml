@@ -46,6 +46,40 @@ importers:
       ts-node: 10.9.1_kmhzd2ra25a2aeanupbqenugla
       typescript: 4.7.4
 
+  packages/remote-tarball-fetcher:
+    specifiers:
+      '@nodesecure/eslint-config': ^1.3.0
+      '@types/chai': ^4.3.0
+      '@types/mocha': ^9.0.0
+      '@types/node': ^16.11.12
+      chai: ^4.3.4
+      eslint: ^8.4.1
+      eslint-config-prettier: ^8.3.0
+      eslint-import-resolver-typescript: ^2.5.0
+      eslint-plugin-import: ^2.26.0
+      eslint-plugin-prettier: ^4.0.0
+      mocha: ^9.1.4
+      prettier: ^2.5.1
+      rimraf: ^3.0.2
+      ts-node: ^10.8.1
+      typescript: ^4.5.2
+    devDependencies:
+      '@nodesecure/eslint-config': 1.4.1_typescript@4.7.4
+      '@types/chai': 4.3.1
+      '@types/mocha': 9.1.1
+      '@types/node': 16.11.45
+      chai: 4.3.6
+      eslint: 8.20.0
+      eslint-config-prettier: 8.5.0_eslint@8.20.0
+      eslint-import-resolver-typescript: 2.7.1_afl3vkhn63baibzal45igheroq
+      eslint-plugin-import: 2.26.0_pwsymjm7xg6klozrs3xs4oaxbu
+      eslint-plugin-prettier: 4.2.1_g4fztgbwjyq2fvmcscny2sj6fy
+      mocha: 9.2.2
+      prettier: 2.7.1
+      rimraf: 3.0.2
+      ts-node: 10.9.1_kmhzd2ra25a2aeanupbqenugla
+      typescript: 4.7.4
+
   packages/skott:
     specifiers:
       '@nodesecure/eslint-config': ^1.3.0
@@ -78,7 +112,7 @@ importers:
       builtin-modules: 3.3.0
       digraph-js: 2.0.1
       estree-walker: 3.0.1
-      fs-tree-structure: link:../fs-tree-structure
+      fs-tree-structure: link:../remote-tarball-fetcher
       kleur: 4.1.5
       meriyah: 4.2.1
       sade: 1.8.1
