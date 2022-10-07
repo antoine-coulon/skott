@@ -1,11 +1,8 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "@skott/config/tsconfig.build.json",
   "compilerOptions": {
-    "outDir": "dist",
-    "declaration": true,
-    "sourceMap": true,
-    "resolveJsonModule": true
+    "outDir": "dist"
   },
   "include": ["index.ts"],
-  "exclude": ["src/**/*.spec.ts"]
+  "exclude": ["index.spec.ts"]
 }
