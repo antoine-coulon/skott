@@ -15,7 +15,7 @@ _Graph Construction_
 >
 > **skott** goal is to represent all the file tree structure but was designed to only include dependencies currently being used in the project based on the entrypoint. Consequently unused files (files that are not imported/exported by any other file) won't be included in the graph structure.
 
-✅ Works for **JavaScript/Node.js** projects (ECMAScript and CommonJS modules)
+✅ Works for **JavaScript/Node.js** projects (ECMAScript and CommonJS modules). Dynamic imports for ECMAScript are also tracked.
 
 ✅ Deeply detects **circular dependencies** in an efficient way, with the ability to provide a max depth for the search
 
@@ -23,7 +23,7 @@ _Graph Construction_
 
 ✅ Deep **parent and child dependencies traversals**
 
-✅ Metadata collection for each traversed node (file size, dependencies towards Node.js builtin modules and npm third-party)
+✅ Metadata collection for each traversed node (file size, view dependencies towards Node.js builtin modules and npm third-party libraries)
 
 ✅ Node.js binary and JSON modules are excluded by default
 
