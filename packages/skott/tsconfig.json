@@ -1,5 +1,4 @@
 {
   "extends": "@skott/config/tsconfig.json",
-  "include": ["src", "lib", "index.ts"],
-  "exclude": ["src/**/*.spec.ts"]
+  "include": ["src/**/*.ts", "bin/**/*.ts", "index.ts"]
 }
