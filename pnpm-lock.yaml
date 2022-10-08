@@ -119,7 +119,7 @@ importers:
       builtin-modules: 3.3.0
       digraph-js: 2.0.1
       estree-walker: 3.0.1
-      fs-tree-structure: link:../remote-tarball-fetcher
+      fs-tree-structure: link:../fs-tree-structure
       kleur: 4.1.5
       meriyah: 4.2.1
       sade: 1.8.1
