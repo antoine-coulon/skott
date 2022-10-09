@@ -112,4 +112,129 @@ describe("Remote Tarball Fetcher", () => {
       });
     });
   });
+
+  describe("When downloading a same package more than once", () => {
+    describe("When using the remote npm registry for which any tarball is frozen for a published version", () => {
+      describe("When the package version is specified", () => {
+        it("should directly use the locally stored package using the provided version", async () => {
+          const packageInformation = {
+            latestVersion: "3.0.0",
+            tarballUrl: "https://location-of-the-package-2.0.0.tgz"
+          };
+
+          const manager = makeTarballManager(
+            makeInMemoryFetcher(packageInformation)
+          );
+          const libraryName = "digraph-js";
+          const libraryNameWithSpecifiedVersion = `${libraryName}@0.4.1`;
+          const expectedLocation = path.join(
+            kTemporaryDirFixture,
+            `skott_store`,
+            libraryNameWithSpecifiedVersion
+          );
+
+          const location = await manager.downloadAndStore(
+            libraryNameWithSpecifiedVersion,
+            kTemporaryDirFixture
+          );
+
+          expect(location).to.equal(expectedLocation);
+
+          const fetcherNotWorking: Fetcher = {
+            fetchPackageInformation: () => {
+              throw new Error("Should not be called");
+            },
+            downloadTarball: () => {
+              throw new Error("Should not be called");
+            }
+          };
+
+          /**
+           * Switch an implementation with a fetcher that does not work at all
+           * but the tarball should be already in the store so we
+           * should be able to still retrieve the path and the tarball
+           */
+          manager.switchFetcher(fetcherNotWorking);
+
+          try {
+            const sameLocation = await manager.downloadAndStore(
+              libraryNameWithSpecifiedVersion,
+              kTemporaryDirFixture
+            );
+
+            expect(location).to.equal(sameLocation);
+            expect(fs.readdirSync(expectedLocation)).to.deep.equal([
+              "file1.js",
+              "folder"
+            ]);
+          } finally {
+            fs.rmSync(location, { recursive: true });
+          }
+        });
+      });
+
+      describe("When the package version is not specified", () => {
+        it("should only require the latest version to be fetched then use the locally stored package", async () => {
+          const packageInformation = {
+            latestVersion: "8.1.0",
+            tarballUrl: "https://location-of-the-package-8.1.0.tgz"
+          };
+
+          const manager = makeTarballManager(
+            makeInMemoryFetcher(packageInformation)
+          );
+          const libraryName = "openforker";
+          const libraryNameWithSpecifiedVersion = `${libraryName}@8.1.0`;
+          const expectedLocation = path.join(
+            kTemporaryDirFixture,
+            `skott_store`,
+            libraryNameWithSpecifiedVersion
+          );
+
+          const location = await manager.downloadAndStore(
+            libraryNameWithSpecifiedVersion,
+            kTemporaryDirFixture
+          );
+
+          expect(location).to.equal(expectedLocation);
+
+          const fetcherWithOnlyPackageInformationWorking: Fetcher = {
+            fetchPackageInformation: async () => {
+              return {
+                latestVersion: packageInformation.latestVersion,
+                tarballUrl: packageInformation.tarballUrl
+              };
+            },
+            downloadTarball: () => {
+              throw new Error("Should not be called");
+            }
+          };
+
+          /**
+           * Switch an implementation with a fetcher that only work for the
+           * version information but not for the tarball downloading. As the
+           * tarball is already in the store, we should be able to still
+           * retrieve it using the package name and the specific version provided.
+           */
+          manager.switchFetcher(fetcherWithOnlyPackageInformationWorking);
+
+          try {
+            const sameLocation = await manager.downloadAndStore(
+              // We do not provide the version here
+              libraryName,
+              kTemporaryDirFixture
+            );
+
+            expect(location).to.equal(sameLocation);
+            expect(fs.readdirSync(expectedLocation)).to.deep.equal([
+              "file1.js",
+              "folder"
+            ]);
+          } finally {
+            fs.rmSync(location, { recursive: true });
+          }
+        });
+      });
+    });
+  });
 });

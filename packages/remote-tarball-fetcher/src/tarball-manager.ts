@@ -12,7 +12,7 @@ const kSkottStore = "skott_store";
 export class TarballManager {
   private readonly _store = new Map();
 
-  constructor(private readonly _fetcher: Fetcher) {}
+  constructor(private _fetcher: Fetcher) {}
 
   get store(): Map<string, string> {
     return this._store;
@@ -22,31 +22,52 @@ export class TarballManager {
     return packageName.includes("@");
   }
 
-  private async makePackageNameWithVersion(
+  private async fetchPackageInformation(
     packageName: string
-  ): Promise<string> {
-    const { latestVersion } = await this._fetcher.fetchPackageInformation(
-      packageName
-    );
+  ): Promise<{ packageNameWithVersion: string; tarballUrl: string }> {
+    const { latestVersion, tarballUrl } =
+      await this._fetcher.fetchPackageInformation(packageName);
     if (this.isPackageIncludingSemver(packageName)) {
-      return packageName;
+      return {
+        packageNameWithVersion: packageName,
+        tarballUrl
+      };
     }
 
-    return `${packageName}@${latestVersion}`;
+    return {
+      packageNameWithVersion: `${packageName}@${latestVersion}`,
+      tarballUrl
+    };
   }
 
-  async downloadAndStore(
+  public switchFetcher(fetcher: Fetcher): void {
+    this._fetcher = fetcher;
+  }
+
+  public async downloadAndStore(
     packageName: string,
     baseOutDir = os.tmpdir()
   ): Promise<string> {
-    const targetVersion = await this.makePackageNameWithVersion(packageName);
-    const { tarballUrl } = await this._fetcher.fetchPackageInformation(
-      packageName
+    // package name already includes a package version
+    if (this._store.has(packageName)) {
+      return this._store.get(packageName);
+    }
+
+    const { packageNameWithVersion, tarballUrl } =
+      await this.fetchPackageInformation(packageName);
+
+    if (this._store.has(packageNameWithVersion)) {
+      return this._store.get(packageNameWithVersion);
+    }
+
+    const pathToTarball = path.join(
+      baseOutDir,
+      kSkottStore,
+      packageNameWithVersion
     );
-    const pathToTarball = path.join(baseOutDir, kSkottStore, targetVersion);
 
     // this should act as a transaction
-    this.store.set(targetVersion, pathToTarball);
+    this.store.set(packageNameWithVersion, pathToTarball);
     await mkdir(pathToTarball, { recursive: true });
     await pipeline(
       this._fetcher.downloadTarball(tarballUrl),
