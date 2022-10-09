@@ -1,0 +1,10 @@
+{
+  "name": "@skott/config",
+  "version": "0.0.1",
+  "description": "Skott shared config across monorepos",
+  "author": "Antoine Coulon",
+  "files": [
+    "tsconfig.json",
+    "tsconfig.build.json"
+  ]
+}
