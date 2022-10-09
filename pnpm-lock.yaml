@@ -150,12 +150,6 @@ importers:
       ts-node: 10.9.1_kmhzd2ra25a2aeanupbqenugla
       typescript: 4.7.4
 
-  webapp:
-    specifiers:
-      skott: workspace:*
-    dependencies:
-      skott: link:../packages/skott
-
 packages:
 
   /@ampproject/remapping/2.2.0:
