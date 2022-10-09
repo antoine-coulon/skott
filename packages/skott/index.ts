@@ -7,3 +7,5 @@ export default async function skott(
 
   return skottInstance;
 }
+
+export * from "./src/skott.js";
