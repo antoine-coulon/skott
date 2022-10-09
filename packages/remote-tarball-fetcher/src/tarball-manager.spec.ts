@@ -48,8 +48,8 @@ describe("Remote Tarball Fetcher", () => {
               tarballUrl: "https://location-of-the-thing-skott-2.0.0.tgz"
             })
           );
-          const libraryName = "fs-tree-structure";
-          const libraryNameWithLatestVersion = `${libraryName}@2.0.0`;
+          const libraryNameWithScope = "@skott/fs-tree-structure";
+          const libraryNameWithLatestVersion = `${libraryNameWithScope}@2.0.0`;
           const expectedLocation = path.join(
             kTemporaryDirFixture,
             `skott_store`,
@@ -57,23 +57,18 @@ describe("Remote Tarball Fetcher", () => {
           );
 
           const location = await manager.downloadAndStore(
-            libraryName,
+            libraryNameWithScope,
             kTemporaryDirFixture
           );
 
-          try {
-            expect(location).to.equal(expectedLocation);
-            expect([...manager.store.entries()]).to.deep.equal([
-              [libraryNameWithLatestVersion, expectedLocation]
-            ]);
-            expect(fs.readdirSync(expectedLocation)).to.deep.equal([
-              "file1.js",
-              "folder"
-            ]);
-          } finally {
-            // cleanup
-            fs.rmSync(expectedLocation, { recursive: true });
-          }
+          expect(location).to.equal(expectedLocation);
+          expect([...manager.store.entries()]).to.deep.equal([
+            [libraryNameWithLatestVersion, expectedLocation]
+          ]);
+          expect(fs.readdirSync(expectedLocation)).to.deep.equal([
+            "file1.js",
+            "folder"
+          ]);
         });
       });
 

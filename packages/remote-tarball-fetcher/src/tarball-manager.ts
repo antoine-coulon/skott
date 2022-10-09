@@ -3,6 +3,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { pipeline } from "node:stream/promises";
 
+import semver from "semver";
 import tar from "tar";
 
 import { Fetcher } from "./fetcher/index.js";
@@ -18,8 +19,16 @@ export class TarballManager {
     return this._store;
   }
 
-  private isPackageIncludingSemver(packageName: string): boolean {
-    return packageName.includes("@");
+  private isPackageIncludingValidSemver(packageName: string): boolean {
+    const nameWithMaybeSemver = packageName.split("@");
+    if (nameWithMaybeSemver.length === 1) {
+      return false;
+    }
+
+    const segmentThatShouldIncludeSemver = packageName.lastIndexOf("@");
+    const maybeSemver = packageName.slice(segmentThatShouldIncludeSemver + 1);
+
+    return semver.valid(maybeSemver) !== null;
   }
 
   private async fetchPackageInformation(
@@ -27,7 +36,8 @@ export class TarballManager {
   ): Promise<{ packageNameWithVersion: string; tarballUrl: string }> {
     const { latestVersion, tarballUrl } =
       await this._fetcher.fetchPackageInformation(packageName);
-    if (this.isPackageIncludingSemver(packageName)) {
+
+    if (this.isPackageIncludingValidSemver(packageName)) {
       return {
         packageNameWithVersion: packageName,
         tarballUrl
