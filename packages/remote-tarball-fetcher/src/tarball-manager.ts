@@ -47,33 +47,36 @@ export class TarballManager {
   public async downloadAndStore(
     packageName: string,
     baseOutDir = os.tmpdir()
-  ): Promise<string> {
+  ): Promise<string | undefined> {
     // package name already includes a package version
     if (this._store.has(packageName)) {
       return this._store.get(packageName);
     }
 
-    const { packageNameWithVersion, tarballUrl } =
-      await this.fetchPackageInformation(packageName);
+    try {
+      const { packageNameWithVersion, tarballUrl } =
+        await this.fetchPackageInformation(packageName);
 
-    if (this._store.has(packageNameWithVersion)) {
-      return this._store.get(packageNameWithVersion);
+      if (this._store.has(packageNameWithVersion)) {
+        return this._store.get(packageNameWithVersion);
+      }
+
+      const pathToTarball = path.join(
+        baseOutDir,
+        kSkottStore,
+        packageNameWithVersion
+      );
+
+      await mkdir(pathToTarball, { recursive: true });
+      await pipeline(
+        this._fetcher.downloadTarball(tarballUrl),
+        tar.extract({ cwd: pathToTarball })
+      );
+      this.store.set(packageNameWithVersion, pathToTarball);
+
+      return pathToTarball;
+    } catch {
+      return undefined;
     }
-
-    const pathToTarball = path.join(
-      baseOutDir,
-      kSkottStore,
-      packageNameWithVersion
-    );
-
-    // this should act as a transaction
-    this.store.set(packageNameWithVersion, pathToTarball);
-    await mkdir(pathToTarball, { recursive: true });
-    await pipeline(
-      this._fetcher.downloadTarball(tarballUrl),
-      tar.extract({ cwd: pathToTarball })
-    );
-
-    return pathToTarball;
   }
 }

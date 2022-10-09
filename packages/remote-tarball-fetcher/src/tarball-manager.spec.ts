@@ -33,6 +33,11 @@ function makeTarballManager(fetcher: Fetcher): TarballManager {
 }
 
 describe("Remote Tarball Fetcher", () => {
+  afterEach(() => {
+    fs.rmdirSync(path.join(kTemporaryDirFixture, "skott_store"), {
+      recursive: true
+    });
+  });
   describe("When fetching a package for the first time", () => {
     describe("When using the remote npm registry", () => {
       describe("When no semver is specified", () => {
@@ -156,20 +161,16 @@ describe("Remote Tarball Fetcher", () => {
            */
           manager.switchFetcher(fetcherNotWorking);
 
-          try {
-            const sameLocation = await manager.downloadAndStore(
-              libraryNameWithSpecifiedVersion,
-              kTemporaryDirFixture
-            );
+          const sameLocation = await manager.downloadAndStore(
+            libraryNameWithSpecifiedVersion,
+            kTemporaryDirFixture
+          );
 
-            expect(location).to.equal(sameLocation);
-            expect(fs.readdirSync(expectedLocation)).to.deep.equal([
-              "file1.js",
-              "folder"
-            ]);
-          } finally {
-            fs.rmSync(location, { recursive: true });
-          }
+          expect(location).to.equal(sameLocation);
+          expect(fs.readdirSync(expectedLocation)).to.deep.equal([
+            "file1.js",
+            "folder"
+          ]);
         });
       });
 
@@ -218,22 +219,45 @@ describe("Remote Tarball Fetcher", () => {
            */
           manager.switchFetcher(fetcherWithOnlyPackageInformationWorking);
 
-          try {
-            const sameLocation = await manager.downloadAndStore(
-              // We do not provide the version here
-              libraryName,
-              kTemporaryDirFixture
-            );
+          const sameLocation = await manager.downloadAndStore(
+            // We do not provide the version here
+            libraryName,
+            kTemporaryDirFixture
+          );
 
-            expect(location).to.equal(sameLocation);
-            expect(fs.readdirSync(expectedLocation)).to.deep.equal([
-              "file1.js",
-              "folder"
-            ]);
-          } finally {
-            fs.rmSync(location, { recursive: true });
+          expect(location).to.equal(sameLocation);
+          expect(fs.readdirSync(expectedLocation)).to.deep.equal([
+            "file1.js",
+            "folder"
+          ]);
+        });
+      });
+    });
+  });
+
+  describe("When creating the tarball on the local filesystem", () => {
+    describe("When at least one of the steps of the folder creation from the tarball fails", () => {
+      it("should ensure that nothing is added in the store if nothing is added in the local filesystem state", async () => {
+        const manager = makeTarballManager({
+          fetchPackageInformation: async () => {
+            return {
+              latestVersion: "0.1.79",
+              tarballUrl: "url-of-the-tarball"
+            };
+          },
+          downloadTarball: () => {
+            throw new Error("Something failed while downloading!");
           }
         });
+        const libraryName = "fs-tree-structure";
+
+        const location = await manager.downloadAndStore(
+          libraryName,
+          kTemporaryDirFixture
+        );
+
+        expect(location).to.equal(undefined);
+        expect(manager.store.size).to.equal(0);
       });
     });
   });
