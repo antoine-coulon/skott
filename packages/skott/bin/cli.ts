@@ -28,6 +28,11 @@ const cli = sade("skott <entrypoint>", true)
     1
   )
   .option(
+    "-f, --staticFile",
+    "Generate a static file from the graph. Can be 'none', 'svg', 'png', 'md'.",
+    "none"
+  )
+  .option(
     "s, --showCircularDependencies",
     "Show all circular dependencies in the graph",
     false
@@ -42,6 +47,7 @@ const cli = sade("skott <entrypoint>", true)
     "Enable Node.js builtin dependency tracking",
     false
   )
+
   .example("./node_modules/.bin/skott src/index.js --displayMode=file-tree")
   .action(displaySkott);
 

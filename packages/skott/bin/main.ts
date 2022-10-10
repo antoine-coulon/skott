@@ -3,6 +3,7 @@ import { performance } from "node:perf_hooks";
 
 import { makeTreeStructure, TreeStructure } from "fs-tree-structure";
 import kleur from "kleur";
+import { generateMermaid } from "ligie";
 import ora from "ora";
 
 import skott from "../index.js";
@@ -76,6 +77,37 @@ function displayAsGraph(
       }
     }
   }
+}
+
+async function generateStaticFile(
+  graph: Record<string, SkottNode>,
+  staticFile: string
+): Promise<void> {
+  const rawGraph = Object.entries(graph).reduce((acc, [key, val]) => {
+    return {
+      ...acc,
+      [key]: val.adjacentTo
+    };
+  }, {});
+
+  const mermaid = generateMermaid(rawGraph, process.cwd(), {
+    orientation: "TB"
+  });
+
+  const spinner = ora("Generating static file").start();
+  spinner.color = "magenta";
+
+  if (staticFile === "svg") {
+    await mermaid.toSvg();
+  }
+  if (staticFile === "png") {
+    await mermaid.toPng();
+  }
+  if (staticFile === "md") {
+    await mermaid.toMarkdown();
+  }
+
+  spinner.stop();
 }
 
 function displayThirdPartyDependencies(graph: Record<string, SkottNode>): void {
@@ -208,6 +240,7 @@ type CliOptions = {
   circularMaxDepth: number;
   includeBaseDir: boolean;
   displayMode: string;
+  staticFile: string;
   exitCodeOnCircularDependencies: number;
   showCircularDependencies: boolean;
   trackThirdPartyDependencies: boolean;
@@ -260,6 +293,10 @@ export async function displaySkott(
   );
 
   const circularDeps = makeCircularDependenciesUI(skottInstance, options);
+
+  if (options.staticFile !== "none") {
+    await generateStaticFile(graph, options.staticFile);
+  }
 
   if (options.displayMode === "raw") {
     return;

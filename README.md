@@ -27,6 +27,8 @@ _Graph Construction_
 
 ✅ Node.js binary and JSON modules are excluded by default
 
+✅ Generate [mermaid-js](https://github.com/mermaid-js/mermaid) diagrams (.svg, .png, .md) representing your project's graph directly from the CLI.
+
 Work in progress includes:
 
 🛠 Flag unused imports/exports and potentially prune them
