@@ -83,6 +83,7 @@ async function generateStaticFile(
   graph: Record<string, SkottNode>,
   staticFile: string
 ): Promise<void> {
+  console.log();
   const rawGraph = Object.entries(graph).reduce((acc, [key, val]) => {
     return {
       ...acc,
@@ -111,7 +112,6 @@ async function generateStaticFile(
 }
 
 function displayThirdPartyDependencies(graph: Record<string, SkottNode>): void {
-  console.log(`\n npm third-party dependencies: \n`);
   const thirdPartyRegistry = new Map<string, number>();
   for (const node of Object.values(graph)) {
     node.body.thirdPartyDependencies.forEach((dep) => {
@@ -123,6 +123,16 @@ function displayThirdPartyDependencies(graph: Record<string, SkottNode>): void {
       }
     });
   }
+
+  if (thirdPartyRegistry.size === 0) {
+    console.log(
+      `${kleur.bold().magenta("\n ✓ no third-party dependencies found")}`
+    );
+
+    return;
+  }
+
+  console.log(`\n npm third-party dependencies: \n`);
 
   const sortedDependencies = [...thirdPartyRegistry.entries()].sort(
     ([a], [b]) => {
@@ -143,7 +153,6 @@ function displayThirdPartyDependencies(graph: Record<string, SkottNode>): void {
 }
 
 function displayBuiltinDependencies(graph: Record<string, SkottNode>): void {
-  console.log(`\n Builtin Node.js dependencies: \n`);
   const builtinRegistry = new Map<string, number>();
   for (const node of Object.values(graph)) {
     node.body.builtinDependencies.forEach((dep) => {
@@ -155,6 +164,16 @@ function displayBuiltinDependencies(graph: Record<string, SkottNode>): void {
       }
     });
   }
+
+  if (builtinRegistry.size === 0) {
+    console.log(
+      `${kleur.bold().magenta("\n ✓ no builtin dependencies found")}`
+    );
+
+    return;
+  }
+
+  console.log(`\n Builtin Node.js dependencies: \n`);
 
   for (const [depName, depOccurrence] of builtinRegistry.entries()) {
     console.log(
@@ -294,14 +313,6 @@ export async function displaySkott(
 
   const circularDeps = makeCircularDependenciesUI(skottInstance, options);
 
-  if (options.staticFile !== "none") {
-    await generateStaticFile(graph, options.staticFile);
-  }
-
-  if (options.displayMode === "raw") {
-    return;
-  }
-
   const filesInvolvedInCircularDependencies = circularDeps.flat(1);
 
   if (options.displayMode === "file-tree") {
@@ -324,6 +335,10 @@ export async function displaySkott(
 
   if (options.trackBuiltinDependencies) {
     displayBuiltinDependencies(graph);
+  }
+
+  if (options.staticFile !== "none") {
+    await generateStaticFile(graph, options.staticFile);
   }
 }
 

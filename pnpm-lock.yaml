@@ -112,7 +112,7 @@ importers:
       estree-walker: ^3.0.1
       fs-tree-structure: workspace:*
       kleur: ^4.1.5
-      ligie: ^0.0.5
+      ligie: ^0.0.6
       memfs: ^3.4.6
       meriyah: ^4.2.1
       mocha: ^9.1.4
@@ -129,7 +129,7 @@ importers:
       estree-walker: 3.0.1
       fs-tree-structure: link:../fs-tree-structure
       kleur: 4.1.5
-      ligie: 0.0.5
+      ligie: 0.0.6
       meriyah: 4.2.1
       ora: 6.1.2
       sade: 1.8.1
@@ -2036,8 +2036,8 @@ packages:
       type-check: 0.4.0
     dev: true
 
-  /ligie/0.0.5:
-    resolution: {integrity: sha512-Io0cz3Q/Rhut9a2M7tRvxU4PQjDmJJUIMUvdysRkN8TOj7v8AOy4krOrbRcm1OKxK2JBHjL+K3+iclS2LRJPkQ==}
+  /ligie/0.0.6:
+    resolution: {integrity: sha512-mVbiUxtdPBxchsjx2VwLEmx6/0QTUcghYnQSKq/RMUoccG26OZ7KI/0m1pVhXB/lqjcEc47aZc7rQWfX+h40ag==}
     dependencies:
       '@mermaid-js/mermaid-cli': 9.1.7
     transitivePeerDependencies:
