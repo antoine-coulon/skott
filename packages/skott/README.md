@@ -74,7 +74,7 @@ $ skott src/index.js --staticFile=svg
 For **Skott** itself, the following _.svg_ file is generated:
 
 <p>
-    <img width="350" src="https://user-images.githubusercontent.com/43391199/194954752-ae888d9c-1c17-4be4-b04c-53771f840ea1.png">
+    <img width="650" src="https://user-images.githubusercontent.com/43391199/194954752-ae888d9c-1c17-4be4-b04c-53771f840ea1.png">
 </p>
 
 On the CLI side, here are some examples of output generated:
