@@ -33,9 +33,6 @@ export interface SkottConfig {
 export interface SkottStructure {
   graph: Record<string, SkottNode>;
   files: string[];
-  circularDependencies: string[][];
-  hasCircularDependencies: boolean;
-  leaves: string[];
 }
 
 export interface SkottInstance {
@@ -266,10 +263,7 @@ export class Skott {
 
     return {
       graph: projectStructure,
-      files: Object.keys(projectStructure),
-      leaves: this.findLeaves(),
-      circularDependencies: this.circularDependencies(),
-      hasCircularDependencies: this.hasCircularDependencies()
+      files: Object.keys(projectStructure)
     };
   }
 

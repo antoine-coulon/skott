@@ -4,7 +4,7 @@ import { expect } from "chai";
 import * as memfs from "memfs";
 
 import { FileReader } from "./filesystem/file-reader.js";
-import { Skott, SkottStructure } from "./skott";
+import { Skott, SkottNode } from "./skott";
 
 class InMemoryFileReader implements FileReader {
   read(filename: string): Promise<string> {
@@ -18,10 +18,18 @@ class InMemoryFileReader implements FileReader {
   }
 }
 
-async function buildProjectStructureUsingInMemoryFileExplorer(
+type UnwrappedSkottStructure = {
+  graph: Record<string, SkottNode>;
+  files: string[];
+  circularDependencies: string[][];
+  hasCircularDependencies: boolean;
+  leaves: string[];
+};
+
+async function buildSkottProjectUsingInMemoryFileExplorer(
   entrypoint: string,
   includeBaseDir = false
-): Promise<SkottStructure> {
+): Promise<UnwrappedSkottStructure> {
   const skott = new Skott(
     {
       entrypoint,
@@ -35,8 +43,15 @@ async function buildProjectStructureUsingInMemoryFileExplorer(
     new InMemoryFileReader()
   );
   const skottInstance = await skott.initialize();
+  const structure = skottInstance.getStructure();
 
-  return skottInstance.getStructure();
+  return {
+    graph: structure.graph,
+    files: structure.files,
+    circularDependencies: skottInstance.findCircularDependencies(),
+    hasCircularDependencies: skottInstance.hasCircularDependencies(),
+    leaves: skottInstance.findLeaves()
+  };
 }
 
 const fakeNodeBody = {
@@ -72,12 +87,11 @@ describe("When traversing a JavaScript/Node.js project", () => {
             `
           });
 
-          const projectStructure =
-            await buildProjectStructureUsingInMemoryFileExplorer(
-              "my-app-folder/my-project/index.js"
-            );
+          const skottProject = await buildSkottProjectUsingInMemoryFileExplorer(
+            "my-app-folder/my-project/index.js"
+          );
 
-          expect(projectStructure).to.be.deep.equal({
+          expect(skottProject).to.be.deep.equal({
             graph: {
               "index.js": {
                 adjacentTo: ["apps/dashboard/index.js"],
@@ -119,12 +133,12 @@ describe("When traversing a JavaScript/Node.js project", () => {
               "libs/util.js": ``
             });
 
-            const projectStructure =
-              await buildProjectStructureUsingInMemoryFileExplorer(
+            const skottProject =
+              await buildSkottProjectUsingInMemoryFileExplorer(
                 "libs/lib1/index.js"
               );
 
-            expect(projectStructure).to.be.deep.equal({
+            expect(skottProject).to.be.deep.equal({
               graph: {
                 "index.js": {
                   adjacentTo: ["../lib2/feature/index.js"],
@@ -168,13 +182,12 @@ describe("When traversing a JavaScript/Node.js project", () => {
           `
           });
 
-          const projectStructure =
-            await buildProjectStructureUsingInMemoryFileExplorer(
-              "my-app-folder/my-project/index.js",
-              true
-            );
+          const skottProject = await buildSkottProjectUsingInMemoryFileExplorer(
+            "my-app-folder/my-project/index.js",
+            true
+          );
 
-          expect(projectStructure).to.be.deep.equal({
+          expect(skottProject).to.be.deep.equal({
             graph: {
               "my-app-folder/my-project/index.js": {
                 adjacentTo: ["my-app-folder/apps/dashboard/index.js"],
@@ -212,10 +225,11 @@ describe("When traversing a JavaScript/Node.js project", () => {
             "index.js": "console.log('Hello, world!');"
           });
 
-          const projectStructure =
-            await buildProjectStructureUsingInMemoryFileExplorer("index.js");
+          const skottProject = await buildSkottProjectUsingInMemoryFileExplorer(
+            "index.js"
+          );
 
-          expect(projectStructure).to.be.deep.equal({
+          expect(skottProject).to.be.deep.equal({
             graph: {
               "index.js": {
                 adjacentTo: [],
@@ -244,10 +258,11 @@ describe("When traversing a JavaScript/Node.js project", () => {
             "staticFile.json": "{}"
           });
 
-          const projectStructure =
-            await buildProjectStructureUsingInMemoryFileExplorer("index.js");
+          const skottProject = await buildSkottProjectUsingInMemoryFileExplorer(
+            "index.js"
+          );
 
-          expect(projectStructure.files).to.deep.equal([
+          expect(skottProject.files).to.deep.equal([
             "index.js",
             "javascript-module.js"
           ]);
@@ -269,10 +284,10 @@ describe("When traversing a JavaScript/Node.js project", () => {
               `
             });
 
-            const projectStructure =
-              await buildProjectStructureUsingInMemoryFileExplorer("index.js");
+            const skottProject =
+              await buildSkottProjectUsingInMemoryFileExplorer("index.js");
 
-            expect(projectStructure).to.be.deep.equal({
+            expect(skottProject).to.be.deep.equal({
               graph: {
                 "index.js": {
                   adjacentTo: ["src/foo.js"],
@@ -310,12 +325,10 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   `
                 });
 
-                const projectStructure =
-                  await buildProjectStructureUsingInMemoryFileExplorer(
-                    "index.js"
-                  );
+                const skottProject =
+                  await buildSkottProjectUsingInMemoryFileExplorer("index.js");
 
-                expect(projectStructure).to.be.deep.equal({
+                expect(skottProject).to.be.deep.equal({
                   graph: {
                     "index.js": {
                       adjacentTo: ["src/foo.js"],
@@ -361,12 +374,10 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   `
                 });
 
-                const projectStructure =
-                  await buildProjectStructureUsingInMemoryFileExplorer(
-                    "index.js"
-                  );
+                const skottProject =
+                  await buildSkottProjectUsingInMemoryFileExplorer("index.js");
 
-                expect(projectStructure).to.be.deep.equal({
+                expect(skottProject).to.be.deep.equal({
                   graph: {
                     "index.js": {
                       adjacentTo: ["src/foo.js"],
@@ -425,12 +436,10 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   `
                 });
 
-                const projectStructure =
-                  await buildProjectStructureUsingInMemoryFileExplorer(
-                    "index.js"
-                  );
+                const skottProject =
+                  await buildSkottProjectUsingInMemoryFileExplorer("index.js");
 
-                expect(projectStructure.graph).to.be.deep.equal({
+                expect(skottProject.graph).to.be.deep.equal({
                   "index.js": {
                     adjacentTo: ["foobar.js"],
                     id: "index.js",
@@ -442,7 +451,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
                     body: fakeNodeBody
                   }
                 });
-                expect(projectStructure.files).to.be.deep.equal([
+                expect(skottProject.files).to.be.deep.equal([
                   "index.js",
                   "foobar.js"
                 ]);
@@ -465,12 +474,10 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   `
                 });
 
-                const projectStructure =
-                  await buildProjectStructureUsingInMemoryFileExplorer(
-                    "index.js"
-                  );
+                const skottProject =
+                  await buildSkottProjectUsingInMemoryFileExplorer("index.js");
 
-                expect(projectStructure.graph).to.be.deep.equal({
+                expect(skottProject.graph).to.be.deep.equal({
                   "index.js": {
                     adjacentTo: ["foobar.js"],
                     id: "index.js",
@@ -482,7 +489,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
                     body: fakeNodeBody
                   }
                 });
-                expect(projectStructure.files).to.be.deep.equal([
+                expect(skottProject.files).to.be.deep.equal([
                   "index.js",
                   "foobar.js"
                 ]);
@@ -506,12 +513,10 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   `
                 });
 
-                const projectStructure =
-                  await buildProjectStructureUsingInMemoryFileExplorer(
-                    "index.js"
-                  );
+                const skottProject =
+                  await buildSkottProjectUsingInMemoryFileExplorer("index.js");
 
-                expect(projectStructure.graph).to.be.deep.equal({
+                expect(skottProject.graph).to.be.deep.equal({
                   "index.js": {
                     adjacentTo: ["foobar.js", "foo.js"],
                     id: "index.js",
@@ -528,7 +533,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
                     body: fakeNodeBody
                   }
                 });
-                expect(projectStructure.files).to.be.deep.equal([
+                expect(skottProject.files).to.be.deep.equal([
                   "index.js",
                   "foobar.js",
                   "foo.js"
@@ -554,12 +559,10 @@ describe("When traversing a JavaScript/Node.js project", () => {
                   `
                 });
 
-                const projectStructure =
-                  await buildProjectStructureUsingInMemoryFileExplorer(
-                    "index.js"
-                  );
+                const skottProject =
+                  await buildSkottProjectUsingInMemoryFileExplorer("index.js");
 
-                expect(projectStructure.graph).to.be.deep.equal({
+                expect(skottProject.graph).to.be.deep.equal({
                   "index.js": {
                     adjacentTo: ["foobar.js"],
                     id: "index.js",
@@ -576,7 +579,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
                     body: fakeNodeBody
                   }
                 });
-                expect(projectStructure.files).to.be.deep.equal([
+                expect(skottProject.files).to.be.deep.equal([
                   "index.js",
                   "foobar.js",
                   "foo.js"
@@ -604,7 +607,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
                 });
 
                 const { graph, hasCircularDependencies, circularDependencies } =
-                  await buildProjectStructureUsingInMemoryFileExplorer("a.js");
+                  await buildSkottProjectUsingInMemoryFileExplorer("a.js");
 
                 expect(graph).to.deep.equal({
                   "a.js": {
@@ -655,9 +658,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
                     graph,
                     hasCircularDependencies,
                     circularDependencies
-                  } = await buildProjectStructureUsingInMemoryFileExplorer(
-                    "a.js"
-                  );
+                  } = await buildSkottProjectUsingInMemoryFileExplorer("a.js");
 
                   expect(graph).to.deep.equal({
                     "a.js": {
@@ -719,7 +720,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
                     circularDependencies,
                     hasCircularDependencies,
                     files
-                  } = await buildProjectStructureUsingInMemoryFileExplorer(
+                  } = await buildSkottProjectUsingInMemoryFileExplorer(
                     "index.js"
                   );
 
@@ -823,13 +824,13 @@ describe("When traversing a JavaScript/Node.js project", () => {
                 `
                 });
 
-                const projectStructure =
-                  await buildProjectStructureUsingInMemoryFileExplorer(
+                const skottProject =
+                  await buildSkottProjectUsingInMemoryFileExplorer(
                     "index.js",
                     false
                   );
 
-                expect(projectStructure).to.be.deep.equal({
+                expect(skottProject).to.be.deep.equal({
                   graph: {
                     "index.js": {
                       adjacentTo: [
@@ -870,12 +871,10 @@ describe("When traversing a JavaScript/Node.js project", () => {
                 "foobar.js": ""
               });
 
-              const projectStructure =
-                await buildProjectStructureUsingInMemoryFileExplorer(
-                  "index.js"
-                );
+              const skottProject =
+                await buildSkottProjectUsingInMemoryFileExplorer("index.js");
 
-              expect(projectStructure).to.be.deep.equal({
+              expect(skottProject).to.be.deep.equal({
                 graph: {
                   "index.js": {
                     adjacentTo: ["lib/index.js", "foobar.js"],
@@ -922,12 +921,10 @@ describe("When traversing a JavaScript/Node.js project", () => {
                 "foobaz.js": ""
               });
 
-              const projectStructure =
-                await buildProjectStructureUsingInMemoryFileExplorer(
-                  "index.js"
-                );
+              const skottProject =
+                await buildSkottProjectUsingInMemoryFileExplorer("index.js");
 
-              expect(projectStructure).to.be.deep.equal({
+              expect(skottProject).to.be.deep.equal({
                 graph: {
                   "index.js": {
                     adjacentTo: ["lib/index.js", "foobar.js"],
@@ -979,8 +976,9 @@ describe("When traversing a JavaScript/Node.js project", () => {
             "file2.js": "export const F2 = 10;"
           });
 
-          const { leaves } =
-            await buildProjectStructureUsingInMemoryFileExplorer("index.js");
+          const { leaves } = await buildSkottProjectUsingInMemoryFileExplorer(
+            "index.js"
+          );
 
           expect(leaves).to.be.deep.equal(["file2.js"]);
         });
@@ -1056,7 +1054,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
         });
 
         const { files, graph } =
-          await buildProjectStructureUsingInMemoryFileExplorer("index.js");
+          await buildSkottProjectUsingInMemoryFileExplorer("index.js");
 
         expect(graph).to.deep.equal({
           "index.js": {
