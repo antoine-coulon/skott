@@ -28,6 +28,11 @@ const cli = sade("skott <entrypoint>", true)
     1
   )
   .option(
+    "s, --showCircularDependencies",
+    "Show all circular dependencies in the graph",
+    false
+  )
+  .option(
     "ttp, --trackThirdPartyDependencies",
     "Enable npm third-party dependency tracking",
     false
@@ -37,9 +42,7 @@ const cli = sade("skott <entrypoint>", true)
     "Enable Node.js builtin dependency tracking",
     false
   )
-  .example(
-    "./node_modules/.bin/skott src/index.js --circular --displayMode=file-tree"
-  )
+  .example("./node_modules/.bin/skott src/index.js --displayMode=file-tree")
   .action(displaySkott);
 
 cli.parse(process.argv);

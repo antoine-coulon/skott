@@ -79,7 +79,7 @@ Using **"file-tree"** display mode:
     <img width="350" src="https://user-images.githubusercontent.com/43391199/188308088-97575cd8-d725-456e-82e3-c7d9ee37ea9c.png">
 </p>
 
-When circular dependencies are met:
+When askign for circular dependencies to be found (using the `--showCircularDependencies` option):
 
 <p>
     <img width="350" src="https://user-images.githubusercontent.com/43391199/188888740-5d54e6fd-aded-493f-bf5f-e2dca06bcaa7.png">
