@@ -102,7 +102,6 @@ importers:
       '@types/node': ^16.11.12
       '@types/sade': ^1.7.4
       '@typescript-eslint/typescript-estree': ^5.40.0
-      builtin-modules: ^3.3.0
       chai: ^4.3.4
       digraph-js: ^2.0.2
       eslint: ^8.4.1
@@ -126,7 +125,6 @@ importers:
       typescript: ^4.5.2
     dependencies:
       '@typescript-eslint/typescript-estree': 5.40.0_typescript@4.7.4
-      builtin-modules: 3.3.0
       digraph-js: 2.0.2
       estree-walker: 3.0.1
       fs-tree-structure: link:../fs-tree-structure
@@ -929,11 +927,6 @@ packages:
     dependencies:
       base64-js: 1.5.1
       ieee754: 1.2.1
-    dev: false
-
-  /builtin-modules/3.3.0:
-    resolution: {integrity: sha512-zhaCDicdLuWN5UbN5IMnFqNMhNfo919sH85y2/ea+5Yg9TsTkeZxpL+JLbp6cgYFS4sRLp3YV4S6yDuqVWHYOw==}
-    engines: {node: '>=6'}
     dev: false
 
   /call-bind/1.0.2:

@@ -1,6 +1,5 @@
+import { builtinModules } from "node:module";
 import path from "node:path";
-
-import builtinModules from "builtin-modules";
 
 import { FileReader } from "../../../filesystem/file-reader";
 
