@@ -1109,90 +1109,129 @@ describe("When traversing a TypeScript project", () => {
     });
 
     describe("When using TypeScript module declarations", () => {
-      describe("When extracting module declarations starting from the root file", () => {
-        describe("When extracting static import declarations", () => {
-          describe("When the file has one import declaration", () => {
-            it("skott should build the graph with two nodes and one link", async () => {
-              // Forcing files to add specific TS syntax
-              mountFakeFileSystem({
-                "index.ts": `
+      describe("When extracting static import declarations", () => {
+        describe("When the file has one import declaration", () => {
+          it("skott should build the graph with two nodes and one link", async () => {
+            // Forcing files to add specific TS syntax
+            mountFakeFileSystem({
+              "index.ts": `
                     import { foo } from "./src/foo";
 
                     const someTypeScriptSpecificStuff: number = 10;
                     console.log(foo.doSomething());
                   `,
-                "src/foo.ts": `
+              "src/foo.ts": `
                     export const foo = { doSomething: (): string => 'Hello, world!' };
                   `
-              });
+            });
 
-              const skottProject =
-                await buildSkottProjectUsingInMemoryFileExplorer("index.ts");
+            const skottProject =
+              await buildSkottProjectUsingInMemoryFileExplorer("index.ts");
 
-              expect(skottProject).to.be.deep.equal({
-                graph: {
-                  "index.ts": {
-                    adjacentTo: ["src/foo.ts"],
-                    id: "index.ts",
-                    body: fakeNodeBody
-                  },
-                  "src/foo.ts": {
-                    adjacentTo: [],
-                    id: "src/foo.ts",
-                    body: fakeNodeBody
-                  }
+            expect(skottProject).to.be.deep.equal({
+              graph: {
+                "index.ts": {
+                  adjacentTo: ["src/foo.ts"],
+                  id: "index.ts",
+                  body: fakeNodeBody
                 },
-                files: ["index.ts", "src/foo.ts"],
-                circularDependencies: [],
-                hasCircularDependencies: false,
-                leaves: ["src/foo.ts"]
-              });
+                "src/foo.ts": {
+                  adjacentTo: [],
+                  id: "src/foo.ts",
+                  body: fakeNodeBody
+                }
+              },
+              files: ["index.ts", "src/foo.ts"],
+              circularDependencies: [],
+              hasCircularDependencies: false,
+              leaves: ["src/foo.ts"]
             });
           });
+        });
 
-          describe("When the file has one import declaration refering implicitely to an index module", () => {
-            it("skott should build the graph with two nodes and one link", async () => {
-              // Forcing files to add specific TS syntax
-              mountFakeFileSystem({
-                "index.ts": `
+        describe("When the file has one import declaration refering implicitely to an index module", () => {
+          it("skott should build the graph with two nodes and one link", async () => {
+            // Forcing files to add specific TS syntax
+            mountFakeFileSystem({
+              "index.ts": `
                     import { foo } from "./src/foo";
 
                     const someTypeScriptSpecificStuff: number = 10;
                     console.log(foo.doSomething());
                   `,
-                "src/foo/index.ts": `
+              "src/foo/index.ts": `
                     export const foo = { doSomething: (): string => 'Hello, world!' };
                   `
-              });
+            });
 
-              const skottProject =
-                await buildSkottProjectUsingInMemoryFileExplorer("index.ts");
+            const skottProject =
+              await buildSkottProjectUsingInMemoryFileExplorer("index.ts");
 
-              expect(skottProject).to.be.deep.equal({
-                graph: {
-                  "index.ts": {
-                    adjacentTo: ["src/foo/index.ts"],
-                    id: "index.ts",
-                    body: fakeNodeBody
-                  },
-                  "src/foo/index.ts": {
-                    adjacentTo: [],
-                    id: "src/foo/index.ts",
-                    body: fakeNodeBody
-                  }
+            expect(skottProject).to.be.deep.equal({
+              graph: {
+                "index.ts": {
+                  adjacentTo: ["src/foo/index.ts"],
+                  id: "index.ts",
+                  body: fakeNodeBody
                 },
-                files: ["index.ts", "src/foo/index.ts"],
-                circularDependencies: [],
-                hasCircularDependencies: false,
-                leaves: ["src/foo/index.ts"]
-              });
+                "src/foo/index.ts": {
+                  adjacentTo: [],
+                  id: "src/foo/index.ts",
+                  body: fakeNodeBody
+                }
+              },
+              files: ["index.ts", "src/foo/index.ts"],
+              circularDependencies: [],
+              hasCircularDependencies: false,
+              leaves: ["src/foo/index.ts"]
             });
           });
+        });
 
-          describe("When the file includes path aliases", () => {
-            it.skip("should build the graph of nodes by resolving paths aliases", () => {
-              // TODO
+        describe("When the file includes type imports", () => {
+          it("skott should build the graph with two nodes and one link", async () => {
+            // Forcing files to add specific TS syntax
+            mountFakeFileSystem({
+              "index.ts": `
+                    import type { Foo } from "./foo";
+
+                    const someTypeScriptSpecificStuff: number = 10;
+                    console.log(foo.doSomething());
+                  `,
+              "foo.ts": `
+                    export type Foo = {
+                      doSomething: () => string;
+                    }
+                  `
             });
+
+            const skottProject =
+              await buildSkottProjectUsingInMemoryFileExplorer("index.ts");
+
+            expect(skottProject).to.be.deep.equal({
+              graph: {
+                "index.ts": {
+                  adjacentTo: ["foo.ts"],
+                  id: "index.ts",
+                  body: fakeNodeBody
+                },
+                "foo.ts": {
+                  adjacentTo: [],
+                  id: "foo.ts",
+                  body: fakeNodeBody
+                }
+              },
+              files: ["index.ts", "foo.ts"],
+              circularDependencies: [],
+              hasCircularDependencies: false,
+              leaves: ["foo.ts"]
+            });
+          });
+        });
+
+        describe("When the file includes path aliases", () => {
+          it.skip("should build the graph of nodes by resolving paths aliases", () => {
+            // TODO
           });
         });
       });
