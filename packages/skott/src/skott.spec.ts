@@ -4,10 +4,6 @@ import { expect } from "chai";
 import * as memfs from "memfs";
 
 import { FileReader } from "./filesystem/file-reader.js";
-import {
-  JavaScriptModuleWalker,
-  TypeScriptModuleWalker
-} from "./modules/walkers/ecmascript/index.js";
 import { Skott, SkottNode } from "./skott";
 
 class InMemoryFileReader implements FileReader {
@@ -32,8 +28,7 @@ type UnwrappedSkottStructure = {
 
 async function buildSkottProjectUsingInMemoryFileExplorer(
   entrypoint: string,
-  includeBaseDir = false,
-  moduleWalker = new JavaScriptModuleWalker()
+  includeBaseDir = false
 ): Promise<UnwrappedSkottStructure> {
   const skott = new Skott(
     {
@@ -45,7 +40,6 @@ async function buildSkottProjectUsingInMemoryFileExplorer(
         builtin: false
       }
     },
-    moduleWalker,
     new InMemoryFileReader()
   );
   const skottInstance = await skott.initialize();
@@ -1025,7 +1019,6 @@ describe("When traversing a JavaScript/Node.js project", () => {
               builtin: false
             }
           },
-          new JavaScriptModuleWalker(),
           new InMemoryFileReader()
         );
 
@@ -1134,11 +1127,7 @@ describe("When traversing a TypeScript project", () => {
               });
 
               const skottProject =
-                await buildSkottProjectUsingInMemoryFileExplorer(
-                  "index.ts",
-                  false,
-                  new TypeScriptModuleWalker()
-                );
+                await buildSkottProjectUsingInMemoryFileExplorer("index.ts");
 
               expect(skottProject).to.be.deep.equal({
                 graph: {
@@ -1177,11 +1166,7 @@ describe("When traversing a TypeScript project", () => {
               });
 
               const skottProject =
-                await buildSkottProjectUsingInMemoryFileExplorer(
-                  "index.ts",
-                  false,
-                  new TypeScriptModuleWalker()
-                );
+                await buildSkottProjectUsingInMemoryFileExplorer("index.ts");
 
               expect(skottProject).to.be.deep.equal({
                 graph: {
