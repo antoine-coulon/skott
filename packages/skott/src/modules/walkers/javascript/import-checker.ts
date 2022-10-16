@@ -43,7 +43,7 @@ export function isBinaryModule(module: string): boolean {
   return module.endsWith(".node");
 }
 
-const kExpectedModuleExtensions = new Set([".js", ".mjs", ".cjs"]);
+const kExpectedModuleExtensions = new Set([".js", ".mjs", ".cjs", ".ts"]);
 
 export function isJavaScriptModule(module: string): boolean {
   return kExpectedModuleExtensions.has(path.extname(module));
