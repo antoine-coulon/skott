@@ -212,11 +212,14 @@ export class Skott {
         continue;
       }
 
+      const formattedNodePath = this.formatNodePath(rootPath);
+
       if (isBuiltinModule(moduleDeclaration)) {
         if (!this.config.dependencyTracking.builtin) {
           continue;
         }
-        this.#projectGraph.mergeVertexBody(rootPath, (body) => {
+
+        this.#projectGraph.mergeVertexBody(formattedNodePath, (body) => {
           body.builtinDependencies =
             body.builtinDependencies.concat(moduleDeclaration);
         });
@@ -225,7 +228,7 @@ export class Skott {
           continue;
         }
 
-        this.#projectGraph.mergeVertexBody(rootPath, (body) => {
+        this.#projectGraph.mergeVertexBody(formattedNodePath, (body) => {
           body.thirdPartyDependencies =
             body.thirdPartyDependencies.concat(moduleDeclaration);
         });

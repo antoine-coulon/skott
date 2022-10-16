@@ -31,12 +31,15 @@ class InMemoryFileReaderWithFakeStats implements FileReader {
   }
 }
 
-async function makeScott(): Promise<SkottStructure> {
+async function makeSkott(
+  entrypoint = "index.js",
+  includeBaseDir = false
+): Promise<SkottStructure> {
   const skott = new Skott(
     {
-      entrypoint: "index.js",
+      entrypoint,
       circularMaxDepth: Number.POSITIVE_INFINITY,
-      includeBaseDir: false,
+      includeBaseDir,
       dependencyTracking: {
         thirdParty: true,
         builtin: true
@@ -125,7 +128,7 @@ describe("When building the project structure independently of JavaScript or Typ
             "index.js": ""
           });
 
-          const { graph } = await makeScott();
+          const { graph } = await makeSkott();
 
           expect(graph["index.js"]).to.deep.equal({
             id: "index.js",
@@ -165,7 +168,7 @@ describe("When building the project structure independently of JavaScript or Typ
 
             mountFakeFileSystem(fakeFs);
 
-            const { graph } = await makeScott();
+            const { graph } = await makeSkott();
 
             const indexFile = graph["index.js"];
             const libFile = graph["lib.js"];
@@ -195,14 +198,15 @@ describe("When building the project structure independently of JavaScript or Typ
               "lib.js": ""
             });
 
-            const { graph } = await makeScott();
+            const { graph } = await makeSkott();
             const indexFile = graph["index.js"];
 
             expect(indexFile.body.thirdPartyDependencies).to.deep.equal([
               "meriyah"
             ]);
           });
-          it("should find many third-party dependencies", async () => {
+
+          it("should find all types of third-party dependencies", async () => {
             memfs.vol.fromJSON(
               {
                 "index.js": `
@@ -216,7 +220,7 @@ describe("When building the project structure independently of JavaScript or Typ
               "./"
             );
 
-            const { graph } = await makeScott();
+            const { graph } = await makeSkott();
             const indexFile = graph["index.js"];
 
             expect(indexFile.body.thirdPartyDependencies).to.deep.equal([
@@ -224,6 +228,27 @@ describe("When building the project structure independently of JavaScript or Typ
               "side-effect-library",
               "@nodesecure/vulnera"
             ]);
+          });
+
+          describe("When the entrypoint contains a base directory", () => {
+            it("should find one third-party dependency", async () => {
+              mountFakeFileSystem({
+                "src/index.js": `
+                import * as anything from "./lib.js";
+                import { parse } from '@typescript-eslint/typescript-estree';
+                import path from "path";
+                import * as fs from "node:fs"; 
+              `,
+                "src/lib.js": ""
+              });
+
+              const { graph } = await makeSkott("src/index.js", false);
+              const indexFile = graph["index.js"];
+
+              expect(indexFile.body.thirdPartyDependencies).to.deep.equal([
+                "@typescript-eslint/typescript-estree"
+              ]);
+            });
           });
         });
 
@@ -240,13 +265,35 @@ describe("When building the project structure independently of JavaScript or Typ
                 "lib.js": ""
               });
 
-              const { graph } = await makeScott();
+              const { graph } = await makeSkott();
               const indexFile = graph["index.js"];
 
               expect(indexFile.body.builtinDependencies).to.deep.equal([
                 "path",
                 "node:fs"
               ]);
+            });
+
+            describe("When the entrypoint contains a base directory", () => {
+              it("should collect native dependencies", async () => {
+                mountFakeFileSystem({
+                  "src/index.js": `
+                  import * as anything from "./lib.js";
+                  import { parse } from '@typescript-eslint/typescript-estree';
+                  import path from "path";
+                  import * as fs from "node:fs"; 
+                `,
+                  "src/lib.js": ""
+                });
+
+                const { graph } = await makeSkott("src/index.js", false);
+                const indexFile = graph["index.js"];
+
+                expect(indexFile.body.builtinDependencies).to.deep.equal([
+                  "path",
+                  "node:fs"
+                ]);
+              });
             });
           });
         });
