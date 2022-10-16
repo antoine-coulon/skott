@@ -1149,7 +1149,7 @@ describe("When traversing a TypeScript project", () => {
           });
         });
 
-        describe("When the file has one import declaration refering implicitely to an index module", () => {
+        describe("When the file includes an import declaration refering implicitely to an index module", () => {
           it("skott should build the graph with two nodes and one link", async () => {
             // Forcing files to add specific TS syntax
             mountFakeFileSystem({
@@ -1225,6 +1225,47 @@ describe("When traversing a TypeScript project", () => {
               circularDependencies: [],
               hasCircularDependencies: false,
               leaves: ["foo.ts"]
+            });
+          });
+        });
+
+        describe("When the file includes Node.js require imports", () => {
+          it("skott should build the graph with two nodes and one link", async () => {
+            // Forcing files to add specific TS syntax
+            mountFakeFileSystem({
+              "index.ts": `
+                    require("./side-effect");
+                    require("./side-effect.ts");
+                  `,
+              "side-effect.ts": `
+                    export function sideEffect(): void {
+                      fetch("https://example.com");
+                    }
+
+                    sideEffect();
+                  `
+            });
+
+            const skottProject =
+              await buildSkottProjectUsingInMemoryFileExplorer("index.ts");
+
+            expect(skottProject).to.be.deep.equal({
+              graph: {
+                "index.ts": {
+                  adjacentTo: ["side-effect.ts"],
+                  id: "index.ts",
+                  body: fakeNodeBody
+                },
+                "side-effect.ts": {
+                  adjacentTo: [],
+                  id: "side-effect.ts",
+                  body: fakeNodeBody
+                }
+              },
+              files: ["index.ts", "side-effect.ts"],
+              circularDependencies: [],
+              hasCircularDependencies: false,
+              leaves: ["side-effect.ts"]
             });
           });
         });
