@@ -2,6 +2,7 @@ import { expect } from "chai";
 import * as memfs from "memfs";
 
 import { FileReader } from "./filesystem/file-reader.js";
+import { JavaScriptModuleWalker } from "./modules/walkers/javascript/walker.js";
 import { Skott, SkottStructure } from "./skott.js";
 
 class InMemoryFileReader implements FileReader {
@@ -46,6 +47,7 @@ async function makeScott(): Promise<SkottStructure> {
         builtin: true
       }
     },
+    new JavaScriptModuleWalker(),
     new InMemoryFileReader()
   );
   const skottInstance = await skott.initialize();

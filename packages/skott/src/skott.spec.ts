@@ -4,6 +4,8 @@ import { expect } from "chai";
 import * as memfs from "memfs";
 
 import { FileReader } from "./filesystem/file-reader.js";
+import { JavaScriptModuleWalker } from "./modules/walkers/javascript/walker.js";
+import { TypeScriptModuleWalker } from "./modules/walkers/typescript/walker.js";
 import { Skott, SkottNode } from "./skott";
 
 class InMemoryFileReader implements FileReader {
@@ -28,7 +30,8 @@ type UnwrappedSkottStructure = {
 
 async function buildSkottProjectUsingInMemoryFileExplorer(
   entrypoint: string,
-  includeBaseDir = false
+  includeBaseDir = false,
+  moduleWalker = new JavaScriptModuleWalker()
 ): Promise<UnwrappedSkottStructure> {
   const skott = new Skott(
     {
@@ -40,6 +43,7 @@ async function buildSkottProjectUsingInMemoryFileExplorer(
         builtin: false
       }
     },
+    moduleWalker,
     new InMemoryFileReader()
   );
   const skottInstance = await skott.initialize();
@@ -64,6 +68,9 @@ function mountFakeFileSystem(
   fs: Record<string, string>,
   mountingPoint = "./"
 ): void {
+  // As Volumes are shared, we need to clear the volume before mounting another one
+  // specifically for a test
+  memfs.vol.reset();
   memfs.vol.fromJSON(fs, mountingPoint);
 }
 
@@ -245,7 +252,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
       });
     });
 
-    describe("When the file contains imports that are not initially JavaScript modules", () => {
+    describe("When the file contains some imports that are not JavaScript modules", () => {
       it("should process only with JavaScript modules", async () => {
         mountFakeFileSystem({
           "index.js": `
@@ -1016,6 +1023,7 @@ describe("When traversing a JavaScript/Node.js project", () => {
               builtin: false
             }
           },
+          new JavaScriptModuleWalker(),
           new InMemoryFileReader()
         );
 
@@ -1101,6 +1109,147 @@ describe("When traversing a TypeScript project", () => {
           circularDependencies: [],
           hasCircularDependencies: false,
           leaves: ["index.ts"]
+        });
+      });
+    });
+
+    describe("When using TypeScript module declarations", () => {
+      describe("When extracting module declarations starting from the root file", () => {
+        describe("When extracting static import declarations", () => {
+          describe("When the file has one import declaration", () => {
+            it("skott should build the graph with two nodes and one link", async () => {
+              // Forcing files to add specific TS syntax
+              mountFakeFileSystem({
+                "index.ts": `
+                    import { foo } from "./src/foo";
+
+                    const someTypeScriptSpecificStuff: number = 10;
+                    console.log(foo.doSomething());
+                  `,
+                "src/foo.ts": `
+                    export const foo = { doSomething: (): string => 'Hello, world!' };
+                  `
+              });
+
+              const skottProject =
+                await buildSkottProjectUsingInMemoryFileExplorer(
+                  "index.ts",
+                  false,
+                  new TypeScriptModuleWalker()
+                );
+
+              expect(skottProject).to.be.deep.equal({
+                graph: {
+                  "index.ts": {
+                    adjacentTo: ["src/foo.ts"],
+                    id: "index.ts",
+                    body: fakeNodeBody
+                  },
+                  "src/foo.ts": {
+                    adjacentTo: [],
+                    id: "src/foo.ts",
+                    body: fakeNodeBody
+                  }
+                },
+                files: ["index.ts", "src/foo.ts"],
+                circularDependencies: [],
+                hasCircularDependencies: false,
+                leaves: ["src/foo.ts"]
+              });
+            });
+          });
+
+          describe("When the file has one import declaration refering implicitely to an index module", () => {
+            it("skott should build the graph with two nodes and one link", async () => {
+              // Forcing files to add specific TS syntax
+              mountFakeFileSystem({
+                "index.ts": `
+                    import { foo } from "./src/foo";
+
+                    const someTypeScriptSpecificStuff: number = 10;
+                    console.log(foo.doSomething());
+                  `,
+                "src/foo/index.ts": `
+                    export const foo = { doSomething: (): string => 'Hello, world!' };
+                  `
+              });
+
+              const skottProject =
+                await buildSkottProjectUsingInMemoryFileExplorer(
+                  "index.ts",
+                  false,
+                  new TypeScriptModuleWalker()
+                );
+
+              expect(skottProject).to.be.deep.equal({
+                graph: {
+                  "index.ts": {
+                    adjacentTo: ["src/foo/index.ts"],
+                    id: "index.ts",
+                    body: fakeNodeBody
+                  },
+                  "src/foo/index.ts": {
+                    adjacentTo: [],
+                    id: "src/foo/index.ts",
+                    body: fakeNodeBody
+                  }
+                },
+                files: ["index.ts", "src/foo/index.ts"],
+                circularDependencies: [],
+                hasCircularDependencies: false,
+                leaves: ["src/foo/index.ts"]
+              });
+            });
+          });
+
+          describe("When the file includes path aliases", () => {
+            it.skip("should build the graph of nodes by resolving paths aliases", () => {
+              // TODO
+            });
+          });
+        });
+      });
+    });
+
+    describe("SKIPPED: When TypeScript targets ECMAScript modules", () => {
+      describe("When extracting module declarations starting from the root file", () => {
+        describe("When extracting static import declarations", () => {
+          describe("When the file has one import declaration", () => {
+            it.skip("skott should build the graph with two nodes and one link", async () => {
+              mountFakeFileSystem({
+                "index.ts": `
+                    import { foo } from "./src/foo.js";
+            
+                    console.log(foo.doSomething());
+                  `,
+                "src/foo.ts": `
+                    export const foo = { doSomething: () => 'Hello, world!' };
+                  `
+              });
+
+              const skottProject =
+                await buildSkottProjectUsingInMemoryFileExplorer("index.ts");
+
+              expect(skottProject).to.be.deep.equal({
+                graph: {
+                  "index.ts": {
+                    adjacentTo: ["src/foo.ts"],
+                    id: "index.ts",
+                    body: fakeNodeBody
+                  },
+                  "src/foo.ts": {
+                    adjacentTo: [],
+                    id: "src/foo.js",
+                    body: fakeNodeBody
+                  }
+                },
+                files: ["index.ts", "src/foo.ts"],
+                circularDependencies: [],
+                hasCircularDependencies: false,
+                leaves: ["src/foo.ts"]
+              });
+            });
+          });
         });
       });
     });
