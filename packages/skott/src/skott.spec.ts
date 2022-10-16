@@ -4,8 +4,10 @@ import { expect } from "chai";
 import * as memfs from "memfs";
 
 import { FileReader } from "./filesystem/file-reader.js";
-import { JavaScriptModuleWalker } from "./modules/walkers/javascript/walker.js";
-import { TypeScriptModuleWalker } from "./modules/walkers/typescript/walker.js";
+import {
+  JavaScriptModuleWalker,
+  TypeScriptModuleWalker
+} from "./modules/walkers/ecmascript/index.js";
 import { Skott, SkottNode } from "./skott";
 
 class InMemoryFileReader implements FileReader {

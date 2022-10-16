@@ -4,14 +4,14 @@ import { DiGraph, VertexDefinition } from "digraph-js";
 
 import { FileReader, FileSystemReader } from "./filesystem/file-reader.js";
 import { ModuleWalker } from "./modules/walkers/common.js";
+import { JavaScriptModuleWalker } from "./modules/walkers/ecmascript/javascript/walker.js";
 import {
   resolveImportedModulePath,
   isBinaryModule,
   isBuiltinModule,
   isJSONModule,
   isThirdPartyModule
-} from "./modules/walkers/javascript/import-checker.js";
-import { JavaScriptModuleWalker } from "./modules/walkers/javascript/walker.js";
+} from "./modules/walkers/ecmascript/module-resolver.js";
 
 export type SkottNodeBody = {
   size: number;

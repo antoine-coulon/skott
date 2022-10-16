@@ -1,7 +1,7 @@
 import { walk } from "estree-walker";
 
-import { ModuleWalker, ModuleWalkerResult } from "../common.js";
-import { isEcmaScriptModuleDeclaration } from "../javascript/esm.js";
+import { ModuleWalker, ModuleWalkerResult } from "../../common.js";
+import { isEcmaScriptModuleDeclaration } from "../module-declaration.js";
 
 /**
  * TypeScript implements the ECMAScript standard module system. This walker

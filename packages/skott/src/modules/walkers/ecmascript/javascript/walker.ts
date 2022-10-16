@@ -1,9 +1,9 @@
 import { walk } from "estree-walker";
 
-import { ModuleWalker, ModuleWalkerResult } from "../common.js";
+import { ModuleWalker, ModuleWalkerResult } from "../../common.js";
 
 import { isCommonJSModuleImport } from "./cjs.js";
-import { isEcmaScriptModuleDeclaration } from "./esm.js";
+import { isEcmaScriptModuleDeclaration } from "../module-declaration.js";
 
 export class JavaScriptModuleWalker implements ModuleWalker {
   public async walk(fileContent: string): Promise<ModuleWalkerResult> {

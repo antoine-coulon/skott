@@ -2,7 +2,7 @@ import { expect } from "chai";
 import * as memfs from "memfs";
 
 import { FileReader } from "./filesystem/file-reader.js";
-import { JavaScriptModuleWalker } from "./modules/walkers/javascript/walker.js";
+import { JavaScriptModuleWalker } from "./modules/walkers/ecmascript/javascript/walker.js";
 import { Skott, SkottStructure } from "./skott.js";
 
 class InMemoryFileReader implements FileReader {
