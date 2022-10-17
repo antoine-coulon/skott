@@ -48,21 +48,39 @@ export function isSupportedModule(module: string): boolean {
   return kExpectedModuleExtensions.has(path.extname(module));
 }
 
+async function isExistingModule(
+  module: string,
+  fileReader: FileReader
+): Promise<boolean> {
+  try {
+    await fileReader.read(module);
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // Given a module name, resolve it to a file path.
 export async function resolveImportedModulePath(
   module: string,
   fileReader: FileReader
 ): Promise<string> {
-  // If the module name is the module itself, we have nothing to do.
-  if (isSupportedModule(module)) {
+  const moduleExists = await isExistingModule(module, fileReader);
+  /**
+   * If the module name is the module itself, we have nothing to do.
+   * If the module is supported and it appears that `moduleExists` is false, it
+   * might be the case where TypeScript is used with ECMAScript modules.
+   */
+  if (isSupportedModule(module) && moduleExists) {
     return module;
   }
 
+  /**
+   * In case of CommonJS modules, the module can be targetted through a directory
+   * import e.g: require("./lib") which will eventually resolve to "lib/index.js".
+   */
   try {
-    /**
-     * In case of CommonJS modules, the module can be targetted through a directory
-     * import e.g: require("./lib") which will eventually resolve to "lib/index.js".
-     */
     const maybePathToModule = path.join(module, "index.js");
 
     await fileReader.read(maybePathToModule);
@@ -71,27 +89,40 @@ export async function resolveImportedModulePath(
     return maybePathToModule;
   } catch {}
 
+  // TypeScript file, with classic TypeScript module declarations.
   try {
-    // TypeScript file
     const maybePathToModule = module.concat(".ts");
 
     await fileReader.read(maybePathToModule);
 
-    // If the file is found, we must resolve the path to the index.js file.
     return maybePathToModule;
   } catch {}
 
+  /**
+   * In case of TypeScript modules, the module can be targetted through a directory
+   * import e.g: import "./lib" which will eventually resolve to "lib/index.ts".
+   */
   try {
-    /**
-     * In case of TypeScript modules, the module can be targetted through a directory
-     * import e.g: import "./lib" which will eventually resolve to "lib/index.ts".
-     */
     const maybePathToModule = path.join(module, "index.ts");
 
     await fileReader.read(maybePathToModule);
 
-    // If the file is found, we must resolve the path to the index.js file.
+    // If the file is found, we must resolve the path to the index.ts file.
     return maybePathToModule;
+  } catch {}
+
+  /**
+   * In case of TypeScript modules but when targetting ECMAScript modules,
+   * modules are suffixed with ".js" but should resolve to their corresponding
+   * ".ts" file.
+   */
+  try {
+    const maybePathToModule = module.split(path.extname(module))[0];
+    const javaScriptToTypeScriptFile = maybePathToModule.concat(".ts");
+    await fileReader.read(javaScriptToTypeScriptFile);
+
+    // If the file is found, we must resolve the path to the corresponding TypeScript file.
+    return javaScriptToTypeScriptFile;
   } catch {}
 
   // Otherwise, require("./lib") will resolve to "./lib.js".

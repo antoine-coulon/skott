@@ -338,43 +338,45 @@ describe("When traversing a TypeScript project", () => {
     });
   });
 
-  describe("SKIPPED: When TypeScript targets ECMAScript modules", () => {
-    describe("When extracting module declarations starting from the root file", () => {
-      describe("When extracting static import declarations", () => {
-        describe("When the file has one import declaration", () => {
-          it.skip("skott should build the graph with two nodes and one link", async () => {
-            mountFakeFileSystem({
-              "index.ts": `
+  describe("When TypeScript targets ECMAScript modules", () => {
+    describe("When extracting static import declarations", () => {
+      describe("When file includes mixin of .js and .ts imports", () => {
+        it("skott should resolve JavaScript files to their corresponding TypeScript files", async () => {
+          mountFakeFileSystem({
+            "index.ts": `
                 import { foo } from "./src/foo.js";
               
                 console.log(foo.doSomething());
             `,
-              "src/foo.ts": `
+            "src/foo.ts": `
+                import './index.js';
                 export const foo = { doSomething: () => 'Hello, world!' };
+            `,
+            "src/index.js": `
+                export const bar = { doSomething: () => 'Hello, world!' };
             `
-            });
+          });
 
-            const skottProject =
-              await buildSkottProjectUsingInMemoryFileExplorer("index.ts");
+          const { graph } = await buildSkottProjectUsingInMemoryFileExplorer(
+            "index.ts"
+          );
 
-            expect(skottProject).to.be.deep.equal({
-              graph: {
-                "index.ts": {
-                  adjacentTo: ["src/foo.ts"],
-                  id: "index.ts",
-                  body: fakeNodeBody
-                },
-                "src/foo.ts": {
-                  adjacentTo: [],
-                  id: "src/foo.js",
-                  body: fakeNodeBody
-                }
-              },
-              files: ["index.ts", "src/foo.ts"],
-              circularDependencies: [],
-              hasCircularDependencies: false,
-              leaves: ["src/foo.ts"]
-            });
+          expect(graph).to.be.deep.equal({
+            "index.ts": {
+              adjacentTo: ["src/foo.ts"],
+              id: "index.ts",
+              body: fakeNodeBody
+            },
+            "src/foo.ts": {
+              adjacentTo: ["src/index.js"],
+              id: "src/foo.ts",
+              body: fakeNodeBody
+            },
+            "src/index.js": {
+              adjacentTo: [],
+              id: "src/index.js",
+              body: fakeNodeBody
+            }
           });
         });
       });

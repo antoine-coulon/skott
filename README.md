@@ -6,7 +6,7 @@
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/antoine-coulon/skott/commit-activity)
 [![mit](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](antoine-coulon/skott/tree/blob/main/LICENSE)
 
-**skott** is a minimalist developer tool that can be used to efficiently generate directed graphs from your JavaScript/Node.js project. It can automatically collect metadata, detect circular dependencies and can be used to implement affected/incremental patterns as it exposes a way to know precisely dependencies for each graph node.
+**skott** is a minimalist developer tool that can be used to efficiently generate directed graphs from your JavaScript/TypeScript/Node.js project. It can automatically collect metadata, detect circular dependencies and can be used to implement affected/incremental patterns as it exposes a way to know precisely dependencies for each graph node.
 
 _Graph Construction_
 **skott** is powered by [digraph-js](https://github.com/antoine-coulon/digraph-js), a _0 dependency_ Node.js library to make Directed Graph construction and traversal effortless.
@@ -15,7 +15,7 @@ _Graph Construction_
 >
 > **skott** goal is to represent all the file tree structure but was designed to only include dependencies currently being used in the project based on the entrypoint. Consequently unused files (files that are not imported/exported by any other file) won't be included in the graph structure.
 
-✅ Works for **JavaScript/Node.js** projects (ECMAScript and CommonJS modules). Dynamic imports for ECMAScript are also tracked.
+✅ Works for **JavaScript/TypeScript** projects (ECMAScript and CommonJS modules both supported). Dynamic imports for ECMAScript are also tracked.
 
 ✅ Deeply detects **circular dependencies** in an efficient way, with the ability to provide a max depth for the search
 
@@ -32,10 +32,6 @@ _Graph Construction_
 Work in progress includes:
 
 🛠 Flag unused imports/exports and potentially prune them
-
-🛠 Explore automatic cyclic dependencies prune 
-
-🛠 Resolve workspaces/monorepos graphs
 
 ## Why you should care about circular dependencies and dead code
 
