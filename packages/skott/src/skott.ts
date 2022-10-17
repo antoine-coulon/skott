@@ -14,6 +14,11 @@ import {
   isJSONModule,
   isThirdPartyModule
 } from "./modules/walkers/ecmascript/module-resolver.js";
+import {
+  buildPathAliases,
+  isTypeScriptPathAlias,
+  resolvePathAlias
+} from "./modules/walkers/ecmascript/typescript/path-alias.js";
 
 export type SkottNodeBody = {
   size: number;
@@ -223,6 +228,15 @@ export class Skott {
           body.builtinDependencies =
             body.builtinDependencies.concat(moduleDeclaration);
         });
+      } else if (isTypeScriptPathAlias(moduleDeclaration)) {
+        const resolvedModulePath = resolvePathAlias(moduleDeclaration);
+
+        if (resolvedModulePath) {
+          await this.followModuleDeclarationsFromFile(
+            rootPath,
+            resolvedModulePath
+          );
+        }
       } else if (isThirdPartyModule(moduleDeclaration)) {
         if (!this.config.dependencyTracking.thirdParty) {
           continue;
@@ -281,6 +295,7 @@ export class Skott {
 
     if (path.extname(entrypointModulePath) === ".ts") {
       this.#moduleWalker = new TypeScriptModuleWalker();
+      await buildPathAliases(this.fileReader);
     }
 
     const rootFileContent = await this.fileReader.read(entrypointModulePath);

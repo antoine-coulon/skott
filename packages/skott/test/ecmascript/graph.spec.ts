@@ -29,6 +29,9 @@ class InMemoryFileReaderWithFakeStats implements FileReader {
       });
     });
   }
+  getCurrentWorkingDir(): string {
+    return process.cwd();
+  }
 }
 
 async function makeSkott(

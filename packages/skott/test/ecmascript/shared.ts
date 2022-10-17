@@ -13,6 +13,9 @@ export class InMemoryFileReader implements FileReader {
   stats(_filename: string): Promise<number> {
     return new Promise((resolve) => resolve(0));
   }
+  getCurrentWorkingDir(): string {
+    return "./";
+  }
 }
 
 type UnwrappedSkottStructure = {
@@ -25,7 +28,8 @@ type UnwrappedSkottStructure = {
 
 export async function buildSkottProjectUsingInMemoryFileExplorer(
   entrypoint: string,
-  includeBaseDir = false
+  includeBaseDir = false,
+  thirdParty = false
 ): Promise<UnwrappedSkottStructure> {
   const skott = new Skott(
     {
@@ -33,7 +37,7 @@ export async function buildSkottProjectUsingInMemoryFileExplorer(
       circularMaxDepth: Number.POSITIVE_INFINITY,
       includeBaseDir,
       dependencyTracking: {
-        thirdParty: false,
+        thirdParty,
         builtin: false
       }
     },
