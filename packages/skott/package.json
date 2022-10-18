@@ -29,7 +29,7 @@
     "test": "mocha --parallel"
   },
   "dependencies": {
-    "builtin-modules": "^3.3.0",
+    "@typescript-eslint/typescript-estree": "^5.40.0",
     "digraph-js": "^2.0.2",
     "estree-walker": "^3.0.1",
     "fs-tree-structure": "workspace:*",

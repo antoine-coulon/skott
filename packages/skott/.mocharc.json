@@ -5,6 +5,6 @@
     "loader=ts-node/esm",
     "no-warnings"
   ],
-  "spec": ["src/**/*.spec.ts"],
+  "spec": ["test/**/*.spec.ts"],
   "timeout": 5000
 }

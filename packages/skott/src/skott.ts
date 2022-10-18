@@ -4,13 +4,21 @@ import { DiGraph, VertexDefinition } from "digraph-js";
 
 import { FileReader, FileSystemReader } from "./filesystem/file-reader.js";
 import {
+  JavaScriptModuleWalker,
+  TypeScriptModuleWalker
+} from "./modules/walkers/ecmascript/index.js";
+import {
   resolveImportedModulePath,
   isBinaryModule,
   isBuiltinModule,
   isJSONModule,
   isThirdPartyModule
-} from "./modules/walkers/javascript/import-checker.js";
-import { JavaScriptModuleWalker } from "./modules/walkers/javascript/walker.js";
+} from "./modules/walkers/ecmascript/module-resolver.js";
+import {
+  buildPathAliases,
+  isTypeScriptPathAlias,
+  resolvePathAlias
+} from "./modules/walkers/ecmascript/typescript/path-alias.js";
 
 export type SkottNodeBody = {
   size: number;
@@ -178,14 +186,14 @@ export class Skott {
         to: fullFilePathFromEntrypoint
       });
 
-      await this.traceModuleDeclarationsFromFile(
+      await this.collectModuleDeclarationsFromFile(
         fullFilePathFromEntrypoint,
         nextFileContentToExplore
       );
     } catch {}
   }
 
-  private async traceModuleDeclarationsFromFile(
+  private async collectModuleDeclarationsFromFile(
     rootPath: string,
     fileContent: string
   ): Promise<void> {
@@ -209,20 +217,32 @@ export class Skott {
         continue;
       }
 
+      const formattedNodePath = this.formatNodePath(rootPath);
+
       if (isBuiltinModule(moduleDeclaration)) {
         if (!this.config.dependencyTracking.builtin) {
           continue;
         }
-        this.#projectGraph.mergeVertexBody(rootPath, (body) => {
+
+        this.#projectGraph.mergeVertexBody(formattedNodePath, (body) => {
           body.builtinDependencies =
             body.builtinDependencies.concat(moduleDeclaration);
         });
+      } else if (isTypeScriptPathAlias(moduleDeclaration)) {
+        const resolvedModulePath = resolvePathAlias(moduleDeclaration);
+
+        if (resolvedModulePath) {
+          await this.followModuleDeclarationsFromFile(
+            rootPath,
+            resolvedModulePath
+          );
+        }
       } else if (isThirdPartyModule(moduleDeclaration)) {
         if (!this.config.dependencyTracking.thirdParty) {
           continue;
         }
 
-        this.#projectGraph.mergeVertexBody(rootPath, (body) => {
+        this.#projectGraph.mergeVertexBody(formattedNodePath, (body) => {
           body.thirdPartyDependencies =
             body.thirdPartyDependencies.concat(moduleDeclaration);
         });
@@ -272,11 +292,17 @@ export class Skott {
       this.config.entrypoint,
       this.fileReader
     );
+
+    if (path.extname(entrypointModulePath) === ".ts") {
+      this.#moduleWalker = new TypeScriptModuleWalker();
+      await buildPathAliases(this.fileReader);
+    }
+
     const rootFileContent = await this.fileReader.read(entrypointModulePath);
 
     this.#baseDir = path.dirname(entrypointModulePath);
     await this.addNode(entrypointModulePath);
-    await this.traceModuleDeclarationsFromFile(
+    await this.collectModuleDeclarationsFromFile(
       entrypointModulePath,
       rootFileContent
     );
