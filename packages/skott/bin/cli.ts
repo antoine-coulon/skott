@@ -1,10 +1,33 @@
 #!/usr/bin/env node
 
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 import sade from "sade";
 
 import { displaySkott } from "./main.js";
 
+function readManifestVersion(): string {
+  try {
+    const pathToManifest = path.join(
+      path.dirname(fileURLToPath(import.meta.url)),
+      "..",
+      "..",
+      "package.json"
+    );
+    // eslint-disable-next-line no-sync
+    const manifestContent = fs.readFileSync(path.join(pathToManifest), "utf-8");
+    const { version } = JSON.parse(manifestContent);
+
+    return version;
+  } catch {
+    return "0.0.0";
+  }
+}
+
 const cli = sade("skott <entrypoint>", true)
+  .version(readManifestVersion())
   .describe("Start the Skott analysis to fully build the graph")
 
   .option(
