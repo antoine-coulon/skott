@@ -1,5 +1,6 @@
 import { expect } from "chai";
 
+import { makeTestSuiteForJsxOrTsx as makeTestSuiteForTsx } from "./jsx-and-tsx";
 import {
   buildSkottProjectUsingInMemoryFileExplorer,
   fakeNodeBody,
@@ -381,5 +382,9 @@ describe("When traversing a TypeScript project", () => {
         });
       });
     });
+  });
+
+  describe("When the project uses TSX files", () => {
+    makeTestSuiteForTsx("ts");
   });
 });

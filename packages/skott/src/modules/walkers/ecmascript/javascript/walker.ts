@@ -11,7 +11,9 @@ export class JavaScriptModuleWalker implements ModuleWalker {
     const moduleDeclarations = new Set<string>();
     const node = parseScript(fileContent, {
       module: true,
-      next: true
+      next: true,
+      jsx: true,
+      loc: false
     });
     const isRootNode = node.type === "Program";
 

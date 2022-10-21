@@ -12,7 +12,8 @@ import {
   isBinaryModule,
   isBuiltinModule,
   isJSONModule,
-  isThirdPartyModule
+  isThirdPartyModule,
+  isTypeScriptModule
 } from "./modules/walkers/ecmascript/module-resolver.js";
 import {
   buildPathAliases,
@@ -293,7 +294,7 @@ export class Skott {
       this.fileReader
     );
 
-    if (path.extname(entrypointModulePath) === ".ts") {
+    if (isTypeScriptModule(entrypointModulePath)) {
       this.#moduleWalker = new TypeScriptModuleWalker();
       await buildPathAliases(this.fileReader);
     }

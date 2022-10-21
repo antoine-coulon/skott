@@ -42,7 +42,18 @@ export function isBinaryModule(module: string): boolean {
   return module.endsWith(".node");
 }
 
-const kExpectedModuleExtensions = new Set([".js", ".mjs", ".cjs", ".ts"]);
+export function isTypeScriptModule(module: string): boolean {
+  return path.extname(module) === ".ts" || path.extname(module) === ".tsx";
+}
+
+const kExpectedModuleExtensions = new Set([
+  ".js",
+  ".jsx",
+  ".mjs",
+  ".cjs",
+  ".ts",
+  ".tsx"
+]);
 
 export function isSupportedModule(module: string): boolean {
   return kExpectedModuleExtensions.has(path.extname(module));

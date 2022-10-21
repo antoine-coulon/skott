@@ -13,7 +13,7 @@ export class TypeScriptModuleWalker implements ModuleWalker {
   public async walk(fileContent: string): Promise<ModuleWalkerResult> {
     const { parse } = await import("@typescript-eslint/typescript-estree");
     const moduleDeclarations = new Set<string>();
-    const node = parse(fileContent);
+    const node = parse(fileContent, { jsx: true, loc: false, comment: false });
     const isRootNode = node.type === "Program";
 
     walk(isRootNode ? node.body : node, {

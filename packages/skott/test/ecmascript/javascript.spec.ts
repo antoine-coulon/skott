@@ -2,6 +2,7 @@
 
 import { expect } from "chai";
 
+import { makeTestSuiteForJsxOrTsx as makeTestSuiteForJsx } from "./jsx-and-tsx";
 import {
   buildSkottProjectUsingInMemoryFileExplorer,
   fakeNodeBody,
@@ -688,5 +689,9 @@ describe("When traversing a JavaScript/Node.js project", () => {
         });
       });
     });
+  });
+
+  describe("When the project uses JSX", () => {
+    makeTestSuiteForJsx("js");
   });
 });
