@@ -7,10 +7,16 @@ import { generateMermaid } from "ligie";
 import ora from "ora";
 
 import skott from "../index.js";
-import { SkottInstance, SkottNode } from "../src/skott.js";
+import { SkottInstance, SkottNode, SkottNodeBody } from "../src/skott.js";
 import { findWorkspaceEntrypointModule } from "../src/workspace/index.js";
 
 const kLeftSeparator = "└──";
+
+function bytesToKB(bytes: number): string {
+  const kilobytes = (bytes / 1024).toFixed(2);
+
+  return kleur.bold().yellow(`${kilobytes} KB`);
+}
 
 function isDirectory(nodePath: string): boolean {
   return path.extname(nodePath) === "";
@@ -27,14 +33,14 @@ function displayAsFileTree(
 ): void {
   const leftLevelSeparator = whitespaces === 0 ? "" : kLeftSeparator;
   const indents = makeIndents(whitespaces);
-  for (const [node, subNodes] of Object.entries(treeStructure)) {
-    if (isDirectory(node)) {
+  for (const [nodeId, subNodes] of Object.entries(treeStructure)) {
+    if (isDirectory(nodeId)) {
       console.log(
-        `${indents} ${leftLevelSeparator} ${kleur.bold().yellow(node)}/`
+        `${indents} ${leftLevelSeparator} ${kleur.bold().yellow(nodeId)}/`
       );
     } else {
       console.log(
-        `${indents} ${leftLevelSeparator} ${kleur.bold().blue(node)}`
+        `${indents} ${leftLevelSeparator} ${kleur.bold().blue(nodeId)}`
       );
     }
     displayAsFileTree(subNodes, filesInvolvedInCycles, whitespaces + 2);
@@ -43,10 +49,24 @@ function displayAsFileTree(
 
 function displayAsGraph(
   graph: Record<string, SkottNode>,
-  filesInvolvedInCycles: string[]
+  filesInvolvedInCycles: string[],
+  nodesWithBodyBindings: Map<string, SkottNodeBody>
 ): void {
   const leftArrow = `${kLeftSeparator}>`;
   for (const [nodeId, nodeValue] of Object.entries(graph)) {
+    const localStore = nodeValue.adjacentTo.reduce(
+      (store, current) => {
+        const nodeSize = nodesWithBodyBindings.get(current)?.size ?? 0;
+        store[current] = nodeSize;
+        store.sum += nodeSize;
+
+        return store;
+      },
+      { sum: 0 } as Record<string, number>
+    );
+
+    const parentNodeSize = bytesToKB(nodeValue.body.size ?? 0);
+    const totalOfChildrenSize = bytesToKB(localStore.sum);
     console.log();
 
     if (filesInvolvedInCycles.includes(nodeId)) {
@@ -56,23 +76,32 @@ function displayAsGraph(
           .yellow("♻️")}`
       );
     } else {
-      console.log(`${makeIndents(1)} ${kleur.blue().underline().bold(nodeId)}`);
+      console.log(
+        `${makeIndents(1)} ${kleur
+          .blue()
+          .underline()
+          .bold(
+            nodeId
+          )} (self=${parentNodeSize}, imported=${totalOfChildrenSize})`
+      );
     }
 
     for (const subNode of nodeValue.adjacentTo) {
+      const nodeSize = bytesToKB(localStore[subNode]);
+
       console.log(kleur.bold().yellow(`${makeIndents(3)} │`));
       if (filesInvolvedInCycles.includes(subNode)) {
         const subNodeWithWarning = `${subNode} ${kleur.bold().yellow("♻️")}`;
         console.log(
           `${makeIndents(3)} ${kleur.bold().yellow(leftArrow)} ${kleur
             .bold()
-            .red(subNodeWithWarning)} `
+            .red(subNodeWithWarning)}`
         );
       } else {
         console.log(
           `${makeIndents(3)} ${kleur.bold().yellow(leftArrow)} ${kleur
             .bold()
-            .white(subNode)}`
+            .white(subNode)} (${nodeSize})`
         );
       }
     }
@@ -322,11 +351,21 @@ export async function displaySkott(
     ]);
     const treeStructure = makeTreeStructure(flattenedFilesPaths);
     console.log();
-    displayAsFileTree(treeStructure, filesInvolvedInCircularDependencies);
+    displayAsFileTree(treeStructure, filesInvolvedInCircularDependencies, 0);
   }
 
   if (options.displayMode === "graph") {
-    displayAsGraph(graph, filesInvolvedInCircularDependencies);
+    const nodesWithBodyBindings = new Map<string, SkottNodeBody>();
+
+    for (const [nodeId, nodeValue] of Object.entries(graph)) {
+      nodesWithBodyBindings.set(nodeId, nodeValue.body);
+    }
+
+    displayAsGraph(
+      graph,
+      filesInvolvedInCircularDependencies,
+      nodesWithBodyBindings
+    );
   }
 
   if (options.trackThirdPartyDependencies) {
