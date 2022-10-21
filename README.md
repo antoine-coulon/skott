@@ -26,11 +26,9 @@
 
 ✅ Node.js binary and JSON modules are excluded by default
 
-✅ Generate [mermaid-js](https://github.com/mermaid-js/mermaid) diagrams (.svg, .png, .md) representing your project's graph directly from the CLI.
+✅ Generate static files including raw JSON, [mermaid-js](https://github.com/mermaid-js/mermaid) diagrams (.svg, .png, .md) representing your project's graph directly generated from the CLI.
 
 Work in progress includes:
-
-🛠 Allow JSX/TSX to be supported
 
 🛠 Expose graph metrics for file nodes such as _how many times_ this dependency is used through the project
 

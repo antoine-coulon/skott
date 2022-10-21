@@ -1,3 +1,4 @@
+import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
 
@@ -119,12 +120,20 @@ async function generateStaticFile(
       [key]: val.adjacentTo
     };
   }, {});
+  const spinner = ora("Generating static file").start();
+
+  if (staticFile === "json") {
+    await writeFile(
+      path.join(process.cwd(), "skott.json"),
+      JSON.stringify(graph, null, 2),
+      "utf-8"
+    );
+  }
 
   const mermaid = generateMermaid(rawGraph, process.cwd(), {
     orientation: "TB"
   });
 
-  const spinner = ora("Generating static file").start();
   spinner.color = "magenta";
 
   if (staticFile === "svg") {
