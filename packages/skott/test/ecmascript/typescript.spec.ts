@@ -14,9 +14,9 @@ describe("When traversing a TypeScript project", () => {
         "index.ts": "console.log('Hello, world!');"
       });
 
-      const { graph } = await buildSkottProjectUsingInMemoryFileExplorer(
-        "index.ts"
-      );
+      const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+        entrypoint: "index.ts"
+      });
 
       expect(graph).to.be.deep.equal({
         "index.ts": {
@@ -45,9 +45,9 @@ describe("When traversing a TypeScript project", () => {
             `
           });
 
-          const { graph } = await buildSkottProjectUsingInMemoryFileExplorer(
-            "index.ts"
-          );
+          const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+            entrypoint: "index.ts"
+          });
 
           expect(graph).to.be.deep.equal({
             "index.ts": {
@@ -79,9 +79,9 @@ describe("When traversing a TypeScript project", () => {
             `
           });
 
-          const { graph } = await buildSkottProjectUsingInMemoryFileExplorer(
-            "index.ts"
-          );
+          const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+            entrypoint: "index.ts"
+          });
 
           expect(graph).to.be.deep.equal({
             "index.ts": {
@@ -115,9 +115,9 @@ describe("When traversing a TypeScript project", () => {
             `
           });
 
-          const { graph } = await buildSkottProjectUsingInMemoryFileExplorer(
-            "index.ts"
-          );
+          const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+            entrypoint: "index.ts"
+          });
 
           expect(graph).to.be.deep.equal({
             "index.ts": {
@@ -151,9 +151,9 @@ describe("When traversing a TypeScript project", () => {
             `
           });
 
-          const { graph } = await buildSkottProjectUsingInMemoryFileExplorer(
-            "index.ts"
-          );
+          const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+            entrypoint: "index.ts"
+          });
 
           expect(graph).to.be.deep.equal({
             "index.ts": {
@@ -193,11 +193,11 @@ describe("When traversing a TypeScript project", () => {
               "tsconfig.json": JSON.stringify(tsConfig)
             });
 
-            const { graph } = await buildSkottProjectUsingInMemoryFileExplorer(
-              "index.ts",
-              false,
-              true
-            );
+            const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+              entrypoint: "index.ts",
+              includeBaseDir: false,
+              thirdParty: true
+            });
 
             expect(graph).to.be.deep.equal({
               "index.ts": {
@@ -238,11 +238,11 @@ describe("When traversing a TypeScript project", () => {
               "tsconfig.json": JSON.stringify(tsConfig)
             });
 
-            const { graph } = await buildSkottProjectUsingInMemoryFileExplorer(
-              "index.ts",
-              false,
-              true
-            );
+            const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+              entrypoint: "index.ts",
+              includeBaseDir: false,
+              thirdParty: true
+            });
 
             expect(graph).to.be.deep.equal({
               "index.ts": {
@@ -294,11 +294,11 @@ describe("When traversing a TypeScript project", () => {
               "tsconfig.json": JSON.stringify(tsConfig)
             });
 
-            const { graph } = await buildSkottProjectUsingInMemoryFileExplorer(
-              "index.ts",
-              false,
-              true
-            );
+            const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+              entrypoint: "index.ts",
+              includeBaseDir: false,
+              thirdParty: true
+            });
 
             expect(graph).to.be.deep.equal({
               "index.ts": {
@@ -358,9 +358,9 @@ describe("When traversing a TypeScript project", () => {
             `
           });
 
-          const { graph } = await buildSkottProjectUsingInMemoryFileExplorer(
-            "index.ts"
-          );
+          const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+            entrypoint: "index.ts"
+          });
 
           expect(graph).to.be.deep.equal({
             "index.ts": {

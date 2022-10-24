@@ -1,7 +1,7 @@
 import { builtinModules } from "node:module";
 import path from "node:path";
 
-import { FileReader } from "../../../filesystem/file-reader";
+import type { FileReader } from "../../../filesystem/file-reader";
 
 const NODE_PROTOCOL = "node:";
 
@@ -42,11 +42,18 @@ export function isBinaryModule(module: string): boolean {
   return module.endsWith(".node");
 }
 
-export function isTypeScriptModule(module: string): boolean {
-  return path.extname(module) === ".ts" || path.extname(module) === ".tsx";
+export function isJavaScriptModule(module: string): boolean {
+  const extension = path.extname(module);
+
+  return (
+    extension === ".js" ||
+    extension === ".jsx" ||
+    extension === ".mjs" ||
+    extension === ".cjs"
+  );
 }
 
-const kExpectedModuleExtensions = new Set([
+export const kExpectedModuleExtensions = new Set([
   ".js",
   ".jsx",
   ".mjs",
@@ -55,8 +62,34 @@ const kExpectedModuleExtensions = new Set([
   ".tsx"
 ]);
 
-export function isSupportedModule(module: string): boolean {
-  return kExpectedModuleExtensions.has(path.extname(module));
+function isTypeScriptDeclarationFile(module: string): boolean {
+  return module.endsWith(".d.ts");
+}
+
+function isTestFile(fileName: string): boolean {
+  return fileName.includes(".test") || fileName.includes(".spec");
+}
+
+export function isFileSupportedByDefault(fileName: string): boolean {
+  return (
+    kExpectedModuleExtensions.has(path.extname(fileName)) &&
+    !isTypeScriptDeclarationFile(fileName) &&
+    !isTestFile(fileName)
+  );
+}
+
+// TODO: Use .gitignore instead
+export function isDirSupportedByDefault(directoryName: string): boolean {
+  return (
+    !directoryName.includes("node_modules") &&
+    !directoryName.includes("dist") &&
+    !directoryName.includes("build") &&
+    !directoryName.includes("coverage") &&
+    !directoryName.includes("docs") &&
+    !directoryName.includes("examples") &&
+    !directoryName.includes("test") &&
+    !directoryName.includes("__tests__")
+  );
 }
 
 async function isExistingModule(
@@ -83,7 +116,7 @@ export async function resolveImportedModulePath(
    * If the module is supported and it appears that `moduleExists` is false, it
    * might be the case where TypeScript is used with ECMAScript modules.
    */
-  if (isSupportedModule(module) && moduleExists) {
+  if (isFileSupportedByDefault(module) && moduleExists) {
     return module;
   }
 

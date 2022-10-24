@@ -6,6 +6,8 @@ import { fileURLToPath } from "node:url";
 
 import sade from "sade";
 
+import { kExpectedModuleExtensions } from "../src/modules/walkers/ecmascript/module-resolver.js";
+
 import { displaySkott } from "./main.js";
 
 function readManifestVersion(): string {
@@ -26,7 +28,7 @@ function readManifestVersion(): string {
   }
 }
 
-const cli = sade("skott <entrypoint>", true)
+const cli = sade("skott [entrypoint]", true)
   .version(readManifestVersion())
   .describe("Start the Skott analysis to fully build the graph")
 
@@ -49,6 +51,11 @@ const cli = sade("skott <entrypoint>", true)
     "e, --exitCodeOnCircularDependencies",
     "Either display the result of the analysis as a graph or as a file-tree",
     1
+  )
+  .option(
+    "ext, fileExtensions",
+    "File extensions to consider when building the graph",
+    [...kExpectedModuleExtensions].join(",")
   )
   .option(
     "-f, --staticFile",

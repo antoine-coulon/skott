@@ -1,6 +1,13 @@
+import path from "node:path";
+
 import * as memfs from "memfs";
 
 import { FileReader } from "../../src/filesystem/file-reader.js";
+import {
+  isFileSupportedByDefault,
+  isDirSupportedByDefault,
+  kExpectedModuleExtensions
+} from "../../src/modules/walkers/ecmascript/module-resolver.js";
 import { Skott, SkottNode } from "../../src/skott";
 
 export class InMemoryFileReader implements FileReader {
@@ -10,6 +17,26 @@ export class InMemoryFileReader implements FileReader {
       resolve(memfs.fs.readFileSync(filename, "utf-8") as string);
     });
   }
+
+  async *readdir(
+    root: string,
+    fileExtensions: string[]
+  ): AsyncGenerator<string> {
+    for (const dirent of memfs.fs.readdirSync(root)) {
+      const _dirent = dirent as string;
+      if (memfs.fs.lstatSync(path.join(root, _dirent)).isDirectory()) {
+        if (isDirSupportedByDefault(path.join(root, _dirent))) {
+          yield* this.readdir(path.join(root, _dirent), fileExtensions);
+        }
+      } else if (
+        isFileSupportedByDefault(_dirent) &&
+        fileExtensions.includes(path.extname(_dirent))
+      ) {
+        yield path.join(root, _dirent);
+      }
+    }
+  }
+
   stats(_filename: string): Promise<number> {
     return new Promise((resolve) => resolve(0));
   }
@@ -26,11 +53,17 @@ type UnwrappedSkottStructure = {
   leaves: string[];
 };
 
-export async function buildSkottProjectUsingInMemoryFileExplorer(
-  entrypoint: string,
+export async function buildSkottProjectUsingInMemoryFileExplorer({
+  entrypoint,
   includeBaseDir = false,
-  thirdParty = false
-): Promise<UnwrappedSkottStructure> {
+  thirdParty = false,
+  fileExtensions = [...kExpectedModuleExtensions]
+}: {
+  entrypoint?: string;
+  includeBaseDir?: boolean;
+  thirdParty?: boolean;
+  fileExtensions?: string[];
+} = {}): Promise<UnwrappedSkottStructure> {
   const skott = new Skott(
     {
       entrypoint,
@@ -39,7 +72,8 @@ export async function buildSkottProjectUsingInMemoryFileExplorer(
       dependencyTracking: {
         thirdParty,
         builtin: false
-      }
+      },
+      fileExtensions
     },
     new InMemoryFileReader()
   );

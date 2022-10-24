@@ -1,5 +1,7 @@
 import { expect } from "chai";
 
+import { kExpectedModuleExtensions } from "../../src/modules/walkers/ecmascript/module-resolver";
+
 import {
   buildSkottProjectUsingInMemoryFileExplorer,
   fakeNodeBody,
@@ -25,9 +27,9 @@ describe("When dealing with ECMAScript standards agnostic of TypeScript and Java
           `
         });
 
-        const skottProject = await buildSkottProjectUsingInMemoryFileExplorer(
-          "my-app-folder/my-project/index.js"
-        );
+        const skottProject = await buildSkottProjectUsingInMemoryFileExplorer({
+          entrypoint: "my-app-folder/my-project/index.js"
+        });
 
         expect(skottProject).to.be.deep.equal({
           graph: {
@@ -72,7 +74,9 @@ describe("When dealing with ECMAScript standards agnostic of TypeScript and Java
           });
 
           const skottProject = await buildSkottProjectUsingInMemoryFileExplorer(
-            "libs/lib1/index.js"
+            {
+              entrypoint: "libs/lib1/index.js"
+            }
           );
 
           expect(skottProject).to.be.deep.equal({
@@ -119,10 +123,10 @@ describe("When dealing with ECMAScript standards agnostic of TypeScript and Java
         `
         });
 
-        const skottProject = await buildSkottProjectUsingInMemoryFileExplorer(
-          "my-app-folder/my-project/index.js",
-          true
-        );
+        const skottProject = await buildSkottProjectUsingInMemoryFileExplorer({
+          entrypoint: "my-app-folder/my-project/index.js",
+          includeBaseDir: true
+        });
 
         expect(skottProject).to.be.deep.equal({
           graph: {
@@ -173,7 +177,9 @@ describe("When dealing with ECMAScript standards agnostic of TypeScript and Java
       });
 
       const { files, graph } = await buildSkottProjectUsingInMemoryFileExplorer(
-        "index.js"
+        {
+          entrypoint: "index.js"
+        }
       );
 
       expect(graph).to.deep.equal({
@@ -210,9 +216,9 @@ describe("When dealing with ECMAScript standards agnostic of TypeScript and Java
         "staticFile.json": "{}"
       });
 
-      const skottProject = await buildSkottProjectUsingInMemoryFileExplorer(
-        "index.js"
-      );
+      const skottProject = await buildSkottProjectUsingInMemoryFileExplorer({
+        entrypoint: "index.js"
+      });
 
       expect(skottProject.files).to.deep.equal([
         "index.js",
@@ -236,9 +242,9 @@ describe("When dealing with ECMAScript standards agnostic of TypeScript and Java
               `
         });
 
-        const skottProject = await buildSkottProjectUsingInMemoryFileExplorer(
-          "index.js"
-        );
+        const skottProject = await buildSkottProjectUsingInMemoryFileExplorer({
+          entrypoint: "index.js"
+        });
 
         expect(skottProject).to.be.deep.equal({
           graph: {
@@ -260,5 +266,127 @@ describe("When dealing with ECMAScript standards agnostic of TypeScript and Java
         });
       });
     });
+  });
+});
+
+describe("When a global analysis without any entrypoint is requested", () => {
+  it("should collect all files at the root directory level", async () => {
+    mountFakeFileSystem({
+      "foo.js": "",
+      "bar.js": ""
+    });
+
+    const { files } = await buildSkottProjectUsingInMemoryFileExplorer();
+
+    expect(files).to.deep.equal(["bar.js", "foo.js"]);
+  });
+
+  it("should deeply collect all files starting from the root directory level", async () => {
+    mountFakeFileSystem({
+      "foo.ts": "",
+      "bar/buzz/boo.ts": "",
+      "buzz/bizz.ts": ""
+    });
+
+    const { files } = await buildSkottProjectUsingInMemoryFileExplorer();
+
+    expect(files).to.deep.equal(["bar/buzz/boo.ts", "buzz/bizz.ts", "foo.ts"]);
+  });
+
+  it("should assemble parts of the graph starting from independent nodes at root level", async () => {
+    mountFakeFileSystem({
+      "foo.ts": "",
+
+      "bar/buzz/boo.ts": `import "./baz"`,
+      "bar/buzz/baz.ts": "",
+
+      "buzz/bizz.ts": `import "./bozz"`,
+      "buzz/bozz.ts": ""
+    });
+
+    const { graph } = await buildSkottProjectUsingInMemoryFileExplorer();
+
+    expect(graph).to.deep.equal({
+      "foo.ts": {
+        adjacentTo: [],
+        id: "foo.ts",
+        body: fakeNodeBody
+      },
+      "bar/buzz/boo.ts": {
+        adjacentTo: ["bar/buzz/baz.ts"],
+        id: "bar/buzz/boo.ts",
+        body: fakeNodeBody
+      },
+      "bar/buzz/baz.ts": {
+        adjacentTo: [],
+        id: "bar/buzz/baz.ts",
+        body: fakeNodeBody
+      },
+      "buzz/bizz.ts": {
+        adjacentTo: ["buzz/bozz.ts"],
+        id: "buzz/bizz.ts",
+        body: fakeNodeBody
+      },
+      "buzz/bozz.ts": {
+        adjacentTo: [],
+        id: "buzz/bozz.ts",
+        body: fakeNodeBody
+      }
+    });
+  });
+
+  it("should only collect files matching with the default expected extensions", async () => {
+    mountFakeFileSystem({
+      "foo.js": "",
+      "foo.controller.js": "",
+      "bar.js": "",
+      "baz.ts": "",
+      "fizz.py": "",
+      "buzz.d.ts": "",
+      "node_modules/bar/foo.js": "",
+      "dist/foo.js": "",
+      "foo.spec.js": "",
+      "foo.spec.ts": "",
+      "foo.test.js": "",
+      "test/foo.js": "",
+      "__tests__/foo.js": ""
+    });
+
+    const { files } = await buildSkottProjectUsingInMemoryFileExplorer({
+      fileExtensions: [...kExpectedModuleExtensions]
+    });
+
+    expect(files).to.deep.equal([
+      "bar.js",
+      "baz.ts",
+      "foo.controller.js",
+      "foo.js"
+    ]);
+  });
+
+  it("should only collect files matching with the provided extensions", async () => {
+    mountFakeFileSystem({
+      "foo.js": "",
+      "foo.controller.js": "",
+      "bar.js": "",
+      "baz.ts": "",
+      "fizz.py": "",
+      "buzz.d.ts": "",
+      "node_modules/bar/foo.js": "",
+      "dist/foo.js": "",
+      "foo.spec.js": "",
+      "foo.spec.ts": "",
+      "foo.test.js": "",
+      "test/foo.js": "",
+      "__tests__/foo.js": "",
+      "dir/foo.ts": "",
+      "index.mjs": ""
+    });
+
+    const { files } = await buildSkottProjectUsingInMemoryFileExplorer({
+      fileExtensions: [".ts", ".mjs"]
+    });
+
+    expect(files).to.deep.equal(["baz.ts", "dir/foo.ts", "index.mjs"]);
   });
 });

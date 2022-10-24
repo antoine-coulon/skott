@@ -30,9 +30,9 @@ export function makeTestSuiteForJsxOrTsx(rawLanguage: "ts" | "js"): void {
               `
         });
 
-        const { graph } = await buildSkottProjectUsingInMemoryFileExplorer(
-          `index.${jsxOrTsx}`
-        );
+        const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+          entrypoint: `index.${jsxOrTsx}`
+        });
 
         expect(graph).to.be.deep.equal({
           [`index.${jsxOrTsx}`]: {
@@ -73,9 +73,9 @@ export function makeTestSuiteForJsxOrTsx(rawLanguage: "ts" | "js"): void {
             [`lib/bar.${rawLanguage}`]: ``
           });
 
-          const { graph } = await buildSkottProjectUsingInMemoryFileExplorer(
-            `index.${rawLanguage}`
-          );
+          const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+            entrypoint: `index.${rawLanguage}`
+          });
 
           expect(graph).to.be.deep.equal({
             [`index.${rawLanguage}`]: {
@@ -131,9 +131,9 @@ export function makeTestSuiteForJsxOrTsx(rawLanguage: "ts" | "js"): void {
             [`lib/bar.${rawLanguage}`]: ``
           });
 
-          const { graph } = await buildSkottProjectUsingInMemoryFileExplorer(
-            `index.${rawLanguage}`
-          );
+          const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+            entrypoint: `index.${rawLanguage}`
+          });
 
           expect(graph).to.be.deep.equal({
             [`index.${rawLanguage}`]: {

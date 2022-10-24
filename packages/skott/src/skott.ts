@@ -13,7 +13,8 @@ import {
   isBuiltinModule,
   isJSONModule,
   isThirdPartyModule,
-  isTypeScriptModule
+  isJavaScriptModule,
+  kExpectedModuleExtensions
 } from "./modules/walkers/ecmascript/module-resolver.js";
 import {
   buildPathAliases,
@@ -30,13 +31,14 @@ export type SkottNodeBody = {
 export type SkottNode = VertexDefinition<SkottNodeBody>;
 
 export interface SkottConfig {
-  entrypoint: string;
+  entrypoint?: string;
   circularMaxDepth?: number;
   includeBaseDir: boolean;
   dependencyTracking: {
     thirdParty: boolean;
     builtin: boolean;
   };
+  fileExtensions: string[];
 }
 
 export interface SkottStructure {
@@ -59,11 +61,12 @@ const defaultConfig = {
   dependencyTracking: {
     thirdParty: false,
     builtin: false
-  }
+  },
+  fileExtensions: [...kExpectedModuleExtensions]
 };
 
 export class Skott {
-  #moduleWalker = new JavaScriptModuleWalker();
+  #moduleWalker = new TypeScriptModuleWalker();
   #projectGraph = new DiGraph<SkottNode>();
   #visitedNodes = new Set<string>();
   #baseDir = "";
@@ -71,13 +74,7 @@ export class Skott {
   constructor(
     private readonly config: SkottConfig = defaultConfig,
     private readonly fileReader: FileReader = new FileSystemReader()
-  ) {
-    if (!this.config.entrypoint) {
-      throw new Error(
-        "An entrypoint must be provided to Skott to build the graph"
-      );
-    }
-  }
+  ) {}
 
   private formatNodePath(nodePath: string): string {
     /**
@@ -288,14 +285,16 @@ export class Skott {
     };
   }
 
-  public async initialize(): Promise<SkottInstance> {
+  private async buildFromEntrypoint(entrypoint: string): Promise<void> {
     const entrypointModulePath = await resolveImportedModulePath(
-      this.config.entrypoint,
+      entrypoint,
       this.fileReader
     );
 
-    if (isTypeScriptModule(entrypointModulePath)) {
-      this.#moduleWalker = new TypeScriptModuleWalker();
+    // TODO: support that in build root also
+    if (isJavaScriptModule(entrypointModulePath)) {
+      this.#moduleWalker = new JavaScriptModuleWalker();
+    } else {
       await buildPathAliases(this.fileReader);
     }
 
@@ -307,6 +306,27 @@ export class Skott {
       entrypointModulePath,
       rootFileContent
     );
+  }
+
+  private async buildFromRootDirectory(): Promise<void> {
+    // Must be set to "true" without entrypoint as we don't know what the base is
+    this.config.includeBaseDir = true;
+    for await (const rootFile of this.fileReader.readdir(
+      this.fileReader.getCurrentWorkingDir(),
+      this.config.fileExtensions
+    )) {
+      const rootFileContent = await this.fileReader.read(rootFile);
+      await this.addNode(rootFile);
+      await this.collectModuleDeclarationsFromFile(rootFile, rootFileContent);
+    }
+  }
+
+  public async initialize(): Promise<SkottInstance> {
+    if (this.config.entrypoint) {
+      await this.buildFromEntrypoint(this.config.entrypoint);
+    } else {
+      await this.buildFromRootDirectory();
+    }
 
     return {
       getStructure: this.makeProjectStructure.bind(this),

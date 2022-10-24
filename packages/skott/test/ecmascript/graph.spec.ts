@@ -14,6 +14,9 @@ class InMemoryFileReaderWithFakeStats implements FileReader {
       resolve(memfs.fs.readFileSync(filename, "utf-8") as string);
     });
   }
+  async *readdir(): AsyncGenerator<string> {
+    yield Promise.resolve("fake");
+  }
   stats(filename: string): Promise<number> {
     return new Promise((resolve) => {
       memfs.fs.stat(filename, (err, data) => {
@@ -46,7 +49,8 @@ async function makeSkott(
       dependencyTracking: {
         thirdParty: true,
         builtin: true
-      }
+      },
+      fileExtensions: [".js", ".ts"]
     },
     new InMemoryFileReaderWithFakeStats()
   );
@@ -64,9 +68,9 @@ describe("When building the project structure independently of JavaScript or Typ
         "file2.js": "export const F2 = 10;"
       });
 
-      const { leaves } = await buildSkottProjectUsingInMemoryFileExplorer(
-        "index.js"
-      );
+      const { leaves } = await buildSkottProjectUsingInMemoryFileExplorer({
+        entrypoint: "index.js"
+      });
 
       expect(leaves).to.be.deep.equal(["file2.js"]);
     });
@@ -104,7 +108,8 @@ describe("When building the project structure independently of JavaScript or Typ
           dependencyTracking: {
             thirdParty: false,
             builtin: false
-          }
+          },
+          fileExtensions: [".js"]
         },
         new InMemoryFileReaderWithFakeStats()
       );

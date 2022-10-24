@@ -8,8 +8,8 @@ import { generateMermaid } from "ligie";
 import ora from "ora";
 
 import skott from "../index.js";
+import { kExpectedModuleExtensions } from "../src/modules/walkers/ecmascript/module-resolver.js";
 import { SkottInstance, SkottNode, SkottNodeBody } from "../src/skott.js";
-import { findWorkspaceEntrypointModule } from "../src/workspace/index.js";
 
 const kLeftSeparator = "└──";
 
@@ -302,33 +302,43 @@ type CliOptions = {
   showCircularDependencies: boolean;
   trackThirdPartyDependencies: boolean;
   trackBuiltinDependencies: boolean;
+  fileExtensions: string;
 };
 
 export async function displaySkott(
-  entrypoint: string,
+  entrypoint: string | undefined,
   options: CliOptions
 ): Promise<void> {
-  const entrypointModule =
-    entrypoint ?? (await findWorkspaceEntrypointModule());
-
-  console.log(
-    `\n Running ${kleur.blue().bold("Skott")} from entrypoint: ${kleur
-      .yellow()
-      .underline()
-      .bold(`${entrypointModule}`)}`
-  );
+  if (entrypoint) {
+    console.log(
+      `\n Running ${kleur.blue().bold("Skott")} from entrypoint: ${kleur
+        .yellow()
+        .underline()
+        .bold(`${entrypoint}`)}`
+    );
+  } else {
+    console.log(
+      `\n Running ${kleur.blue().bold("Skott")} from current directory: ${kleur
+        .yellow()
+        .underline()
+        .bold(`${path.basename(process.cwd())}`)}`
+    );
+  }
 
   const spinner = ora(`Initializing ${kleur.blue().bold("Skott")}`).start();
   const start = performance.now();
 
   const skottInstance = await skott({
-    entrypoint: entrypointModule,
+    entrypoint: entrypoint ? entrypoint : undefined,
     circularMaxDepth: options.circularMaxDepth ?? Number.POSITIVE_INFINITY,
     includeBaseDir: options.includeBaseDir,
     dependencyTracking: {
       thirdParty: options.trackThirdPartyDependencies,
       builtin: options.trackBuiltinDependencies
-    }
+    },
+    fileExtensions: options.fileExtensions
+      .split(",")
+      .filter((ext) => kExpectedModuleExtensions.has(ext))
   });
 
   const timeTook = `${(performance.now() - start).toFixed(3)}ms`;
