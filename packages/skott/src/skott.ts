@@ -69,7 +69,7 @@ export class Skott {
   #moduleWalker = new TypeScriptModuleWalker();
   #projectGraph = new DiGraph<SkottNode>();
   #visitedNodes = new Set<string>();
-  #baseDir = "";
+  #baseDir = ".";
 
   constructor(
     private readonly config: SkottConfig = defaultConfig,
@@ -309,8 +309,6 @@ export class Skott {
   }
 
   private async buildFromRootDirectory(): Promise<void> {
-    // Must be set to "true" without entrypoint as we don't know what the base is
-    this.config.includeBaseDir = true;
     for await (const rootFile of this.fileReader.readdir(
       this.fileReader.getCurrentWorkingDir(),
       this.config.fileExtensions
