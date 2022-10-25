@@ -70,11 +70,16 @@ function isTestFile(fileName: string): boolean {
   return fileName.includes(".test") || fileName.includes(".spec");
 }
 
+function isMinifiedFile(fileName: string): boolean {
+  return fileName.includes(".min");
+}
+
 export function isFileSupportedByDefault(fileName: string): boolean {
   return (
     kExpectedModuleExtensions.has(path.extname(fileName)) &&
     !isTypeScriptDeclarationFile(fileName) &&
-    !isTestFile(fileName)
+    !isTestFile(fileName) &&
+    !isMinifiedFile(fileName)
   );
 }
 

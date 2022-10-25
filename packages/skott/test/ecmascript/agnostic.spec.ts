@@ -349,7 +349,8 @@ describe("When a global analysis without any entrypoint is requested", () => {
       "foo.spec.ts": "",
       "foo.test.js": "",
       "test/foo.js": "",
-      "__tests__/foo.js": ""
+      "__tests__/foo.js": "",
+      "minified.min.js": ""
     });
 
     const { files } = await buildSkottProjectUsingInMemoryFileExplorer({
