@@ -47,9 +47,9 @@ export function extractModuleDeclarations(
      * `require('./index.js')`. Consequently every "require(someVar)" will be
      * discarded.
      */
-    const isStaticPath = node.arguments[0].value;
-    if (isStaticPath) {
-      moduleDeclarations.add(isStaticPath);
+    const staticPath = node.arguments[0].value;
+    if (staticPath) {
+      moduleDeclarations.add(staticPath);
     }
   }
 
@@ -58,6 +58,19 @@ export function extractModuleDeclarations(
   }
 
   if (node.type === "ImportExpression") {
-    moduleDeclarations.add(node.source.value);
+    const staticLiteral = node.source.value;
+    if (staticLiteral) {
+      moduleDeclarations.add(staticLiteral);
+
+      return;
+    }
+
+    const isTemplateLiteral = node.source.type === "TemplateLiteral";
+    if (isTemplateLiteral) {
+      const isStaticTemplateLiteral = node.source.quasis.length === 1;
+      if (isStaticTemplateLiteral) {
+        moduleDeclarations.add(node.source.quasis[0].value.raw);
+      }
+    }
   }
 }

@@ -266,6 +266,143 @@ describe("When dealing with ECMAScript standards agnostic of TypeScript and Java
         });
       });
     });
+
+    describe("When importing a local module", () => {
+      describe("When the module is a simple Literal", () => {
+        it("should build the graph with two nodes and one link", async () => {
+          mountFakeFileSystem({
+            "index.js": `
+                async function main() {
+                  const foo = await import("./src/foo.js");
+                  console.log(foo.foo.domeSomething())
+                }
+              `,
+            "src/foo.js": `
+                export const foo = { doSomething: () => 'Hello, world!' };
+              `
+          });
+
+          const skottProject = await buildSkottProjectUsingInMemoryFileExplorer(
+            {
+              entrypoint: "index.js"
+            }
+          );
+
+          expect(skottProject).to.be.deep.equal({
+            graph: {
+              "index.js": {
+                adjacentTo: ["src/foo.js"],
+                id: "index.js",
+                body: fakeNodeBody
+              },
+              "src/foo.js": {
+                adjacentTo: [],
+                id: "src/foo.js",
+                body: fakeNodeBody
+              }
+            },
+            files: ["index.js", "src/foo.js"],
+            circularDependencies: [],
+            hasCircularDependencies: false,
+            leaves: ["src/foo.js"]
+          });
+        });
+      });
+
+      describe("When the module is a template Literal", () => {
+        describe("When the template Literal is static", () => {
+          it("should build the graph with two nodes and one link", async () => {
+            mountFakeFileSystem({
+              "index.ts": `
+                async function main() {
+                  const foo = await import(\`./src/foo.ts\`);
+                  console.log(foo.foo.domeSomething())
+                }
+              `,
+              "src/foo.ts": `
+                export const foo = { doSomething: () => 'Hello, world!' };
+              `
+            });
+
+            const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+              entrypoint: "index.ts"
+            });
+
+            expect(graph).to.be.deep.equal({
+              "index.ts": {
+                adjacentTo: ["src/foo.ts"],
+                id: "index.ts",
+                body: fakeNodeBody
+              },
+              "src/foo.ts": {
+                adjacentTo: [],
+                id: "src/foo.ts",
+                body: fakeNodeBody
+              }
+            });
+          });
+        });
+
+        describe("When the template Literal contains dynamic variables", () => {
+          it("should not try to resolve the import expression", async () => {
+            mountFakeFileSystem({
+              "index.ts": `
+                async function main() {
+                  const myVariable = "./myFile.ts";
+                  const foo = await import(\`\${myVariable}\`);
+                  const bar = await import(\`./staticallyResolvedPath.ts\`);
+                  console.log(foo.foo.domeSomething())
+                }
+              `,
+              "dynamicallyResolvedPath.ts": ``,
+              "staticallyResolvedPath.ts": ``
+            });
+
+            const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+              entrypoint: "index.ts"
+            });
+
+            expect(graph).to.be.deep.equal({
+              "index.ts": {
+                adjacentTo: ["staticallyResolvedPath.ts"],
+                id: "index.ts",
+                body: fakeNodeBody
+              },
+              "staticallyResolvedPath.ts": {
+                id: "staticallyResolvedPath.ts",
+                adjacentTo: [],
+                body: fakeNodeBody
+              }
+            });
+          });
+        });
+      });
+    });
+
+    describe("When importing a dynamic module", () => {
+      it("should not try to resolve the dynamic path", async () => {
+        mountFakeFileSystem({
+          "index.js": `
+            async function main() {
+              const path = await fetch("/get-path");
+              const foo = await import(path);
+            }
+          `
+        });
+
+        const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+          entrypoint: "index.js"
+        });
+
+        expect(graph).to.be.deep.equal({
+          "index.js": {
+            adjacentTo: [],
+            id: "index.js",
+            body: fakeNodeBody
+          }
+        });
+      });
+    });
   });
 });
 
