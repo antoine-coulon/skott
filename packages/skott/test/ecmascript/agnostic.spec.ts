@@ -510,6 +510,7 @@ describe("When a global analysis without any entrypoint is requested", () => {
       "foo.test.js": "",
       "test/foo.js": "",
       "__tests__/foo.js": "",
+      "temp/foo.js": "",
       "minified.min.js": ""
     });
 
