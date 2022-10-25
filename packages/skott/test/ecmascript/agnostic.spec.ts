@@ -269,6 +269,29 @@ describe("When dealing with ECMAScript standards agnostic of TypeScript and Java
   });
 });
 
+describe("When extracting CommonJS dynamic import declarations using variables", () => {
+  it("should ignore the require statement as we can't resolve statically the file", async () => {
+    mountFakeFileSystem({
+      "index.js": `
+        const a = "./something.js";
+      
+        require(a);
+      `,
+      "index.ts": `
+        const a = "./something.js";
+      
+        require(a);
+      `
+    });
+
+    const { files } = await buildSkottProjectUsingInMemoryFileExplorer({
+      includeBaseDir: false
+    });
+
+    expect(files).to.be.deep.equal(["index.js", "index.ts"]);
+  });
+});
+
 describe("When a global analysis without any entrypoint is requested", () => {
   it("should collect all files at the root directory level", async () => {
     mountFakeFileSystem({

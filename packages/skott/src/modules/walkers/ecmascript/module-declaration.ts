@@ -1,3 +1,5 @@
+import { isCommonJSModuleImport } from "./javascript/cjs.js";
+
 /**
  * Searching for named exports with no local variable binding such as
  * export { foo } from "./foo.js" as this export from another file is creating
@@ -29,8 +31,33 @@ function isEcmaScriptModuleImport(estreeNode: any): boolean {
   return estreeNode.type === "ImportDeclaration";
 }
 
-export function isEcmaScriptModuleDeclaration(estreeNode: any): boolean {
+function isEcmaScriptModuleDeclaration(estreeNode: any): boolean {
   return (
     isEcmaScriptModuleImport(estreeNode) || isEcmaScriptModuleExport(estreeNode)
   );
+}
+
+export function extractModuleDeclarations(
+  node: any,
+  moduleDeclarations: Set<string>
+): void {
+  if (isCommonJSModuleImport(node)) {
+    /**
+     * Just trying to track static paths from dynamic require statements such as
+     * `require('./index.js')`. Consequently every "require(someVar)" will be
+     * discarded.
+     */
+    const isStaticPath = node.arguments[0].value;
+    if (isStaticPath) {
+      moduleDeclarations.add(isStaticPath);
+    }
+  }
+
+  if (isEcmaScriptModuleDeclaration(node)) {
+    moduleDeclarations.add(node.source.value);
+  }
+
+  if (node.type === "ImportExpression") {
+    moduleDeclarations.add(node.source.value);
+  }
 }
