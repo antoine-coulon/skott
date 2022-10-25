@@ -165,3 +165,23 @@ export function makeTestSuiteForJsxOrTsx(rawLanguage: "ts" | "js"): void {
     });
   });
 }
+
+describe("When some TypeScript code is not TSX compliant", () => {
+  it("should be able to parse the script disabling the jsx feature", async () => {
+    const fileThatCanNotBeParsedAsTSX = `
+    export const unparsableTSXFunction = async <T>(
+      x: T
+    ) => {}
+    `;
+
+    mountFakeFileSystem({
+      "index.ts": fileThatCanNotBeParsedAsTSX
+    });
+
+    const { files } = await buildSkottProjectUsingInMemoryFileExplorer({
+      entrypoint: "index.ts"
+    });
+
+    expect(files).to.deep.equal(["index.ts"]);
+  });
+});
