@@ -53,6 +53,12 @@ export function isJavaScriptModule(module: string): boolean {
   );
 }
 
+export function isTypeScriptModule(module: string): boolean {
+  const extension = path.extname(module);
+
+  return extension === ".ts" || extension === ".tsx";
+}
+
 export const kExpectedModuleExtensions = new Set([
   ".js",
   ".jsx",

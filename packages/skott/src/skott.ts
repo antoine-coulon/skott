@@ -3,18 +3,15 @@ import path from "node:path";
 import { DiGraph, VertexDefinition } from "digraph-js";
 
 import { FileReader, FileSystemReader } from "./filesystem/file-reader.js";
-import {
-  JavaScriptModuleWalker,
-  TypeScriptModuleWalker
-} from "./modules/walkers/ecmascript/index.js";
+import { selectAppropriateModuleWalker } from "./modules/walkers/common.js";
 import {
   resolveImportedModulePath,
   isBinaryModule,
   isBuiltinModule,
   isJSONModule,
   isThirdPartyModule,
-  isJavaScriptModule,
-  kExpectedModuleExtensions
+  kExpectedModuleExtensions,
+  isTypeScriptModule
 } from "./modules/walkers/ecmascript/module-resolver.js";
 import {
   buildPathAliases,
@@ -66,7 +63,6 @@ const defaultConfig = {
 };
 
 export class Skott {
-  #moduleWalker = new TypeScriptModuleWalker();
   #projectGraph = new DiGraph<SkottNode>();
   #visitedNodes = new Set<string>();
   #baseDir = ".";
@@ -157,9 +153,11 @@ export class Skott {
   }
 
   private async findModuleDeclarations(
+    fileName: string,
     fileContent: string
   ): Promise<Set<string>> {
-    const { moduleDeclarations } = await this.#moduleWalker.walk(fileContent);
+    const moduleWalker = selectAppropriateModuleWalker(fileName);
+    const { moduleDeclarations } = await moduleWalker.walk(fileContent);
 
     return moduleDeclarations;
   }
@@ -199,7 +197,10 @@ export class Skott {
       return;
     }
 
-    const moduleDeclarations = await this.findModuleDeclarations(fileContent);
+    const moduleDeclarations = await this.findModuleDeclarations(
+      rootPath,
+      fileContent
+    );
 
     this.#visitedNodes.add(rootPath);
 
@@ -291,10 +292,7 @@ export class Skott {
       this.fileReader
     );
 
-    // TODO: support that in build root also
-    if (isJavaScriptModule(entrypointModulePath)) {
-      this.#moduleWalker = new JavaScriptModuleWalker();
-    } else {
+    if (isTypeScriptModule(entrypointModulePath)) {
       await buildPathAliases(this.fileReader);
     }
 
