@@ -20,25 +20,30 @@ import skott from "skott";
 
 const { getStructure, findCircularDependencies, findParentsOf, findLeaves } = await skott({
   /**
-   * Entrypoint of the project. Must be either a CommonJS or ES6 module.
-   * No TypeScript files are supported as entrypoints yet.
+   * (Optional) Entrypoint of the project. If not provided, `skott` will search for all
+   * supported files starting from the current working directory.
    */ 
-  entrypoint: "dist/index.js",
+  entrypoint: "src/index.ts",
   /**
-   * Max depth search for circular dependencies. This can be useful for 
+   * (Optional) restricts file discovering when building the graph. 
+   * Defaults to [".js", ".mjs", ".cjs", ".jsx", ".ts", ".tsx"]
+   */ 
+  fileExtensions: [".ts", ".tsx"],
+  /**
+   * (Optional) Max depth search for circular dependencies. This can be useful for 
    * performance purposes. 
    * Defaults to `POSITIVE_INFINITY`.
    */
   circularMaxDepth: 20,
   /**
-   * Whether the base directory of the entrypoint should be included in relative 
-   * file paths. For the specified `dist/index.js` above, it would consider the 
-   * root path to be `./` consequently `dist/` would never appear in any file paths.
+   * (Optional) Whether the base directory of the entrypoint should be included in relative 
+   * file paths. For the specified `src/index.ts` above, it would consider the 
+   * root path to be `./` consequently `src/` would never appear in any file paths.
    * Defaults to `false`.
    */
   includeBaseDir: false,
   /**
-   * Whether third-party dependencies (npm) and/or builtin (Node.js core modules) 
+   * (Optional) Whether third-party dependencies (npm) and/or builtin (Node.js core modules) 
    * should be added in the graph. 
    * Both defaults to `false`.
    */
@@ -55,17 +60,27 @@ skott exposes a CLI directly using features from the core library.
 
 When the library installed locally you can run:
 
+**Providing an entrypoint:**
+
 ```bash
 $ ./node_modules/.bin/skott src/index.js
 ```
 
-When the library installed globally:
+When the library is installed globally:
 
 ```bash
 $ skott src/index.js
 ```
 
-**Skott** can be used to generate static file (.svg, .png, .md) from the project graph structure using [mermaid-js](https://github.com/mermaid-js/mermaid):
+**Run a global analysis from the current working directory:**
+
+Using this command, skott will deeply search for all ".ts" and ".tsx" files starting from cwd
+
+```bash
+$ skott --fileExtensions=.ts,.tsx
+```
+
+**Skott** can be used to generate static files from the project graph structure (.svg, .png, .md, .json)
 
 ```bash
 $ skott src/index.js --staticFile=svg
@@ -91,7 +106,7 @@ Using **"file-tree"** display mode:
     <img width="350" src="https://user-images.githubusercontent.com/43391199/188308088-97575cd8-d725-456e-82e3-c7d9ee37ea9c.png">
 </p>
 
-When askign for circular dependencies to be found (using the `--showCircularDependencies` option):
+When asking for circular dependencies to be found (using the `--showCircularDependencies` option):
 
 <p>
     <img width="350" src="https://user-images.githubusercontent.com/43391199/188888740-5d54e6fd-aded-493f-bf5f-e2dca06bcaa7.png">

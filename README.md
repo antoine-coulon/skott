@@ -6,13 +6,9 @@
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/antoine-coulon/skott/commit-activity)
 [![mit](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](antoine-coulon/skott/tree/blob/main/LICENSE)
 
-**skott** is a minimalist developer tool that can be used to efficiently generate directed graphs from your **JavaScript/TypeScript/Node.js** project. It can **automatically collect metadata** such as _file size_, _third-party_ or _builtin dependencies_, **detect circular dependencies** or help you **building tools relying on graph data structures** thanks to the exposed primitives. Many display modes exists to date from the CLI **(.svg, .png, .md, .json)** and a webapp is being developed to interactively check the graph.
+**skott** is a minimalist developer tool that can be used to efficiently generate directed graphs from your **JavaScript/TypeScript/Node.js** project. It can **automatically collect metadata** such as _file size_, _third-party_ or _builtin dependencies_, **detect circular dependencies** or help you **building tools relying on graph data structures** thanks to the exposed primitives. Many display modes exists to date from the CLI **(.svg, .png, .md, .json)**. Many more to come.
 
 **skott** exposes **directed graphs primitives** so that it can be used to implement tools on top of graph structures e.g. affected/incremental patterns as it exposes a way to know precisely and deeply dependencies for each graph node. More generally speaking, anything that can be implemented using graphs can be implemented using **skott**.
-
-> **Note**
->
-> **skott** goal is to represent all the file tree structure but was designed to only include dependencies currently being used in the project based on the entrypoint. Consequently unused files (files that are not imported/exported by any other file) won't be included in the graph structure.
 
 ✅ Works for modern **JavaScript/TypeScript** projects (TSX/JSX, ECMAScript and CommonJS modules all supported). **TypeScript**'s path aliases are also supported.
 
@@ -28,13 +24,10 @@
 
 ✅ Generate static files including raw JSON, [mermaid-js](https://github.com/mermaid-js/mermaid) diagrams (.svg, .png, .md) representing your project's graph directly generated from the CLI.
 
-Work in progress includes:
 
-🛠 Expose graph metrics for file nodes such as _how many times_ this dependency is used through the project
-
-🛠 Monorepos/Workspaces support to build cross project graphs 
-
-🛠 Flag unused imports/exports and potentially prune them
+> **Note**
+>
+> **skott** can either build the project graph using an entrypoint file or build it starting from the current root directory and recursively traverse all directories/folders. Currently, supported files are **.js, .jsx, .cjs, .mjs, .ts, .tsx**. Some directories will be ignored by default, please check [the code](https://github.com/antoine-coulon/skott/blob/56fd0b3347ba5113be8d70bc07d09a4065e0b124/packages/skott/src/modules/walkers/ecmascript/module-resolver.ts#L93) to see more about that. 
 
 ## Why you should care about circular dependencies and dead code
 
@@ -73,3 +66,11 @@ Please refer to the [documentation at the skott package level](https://github.co
 ## Graph Management
 
 **skott** is powered by [digraph-js](https://github.com/antoine-coulon/digraph-js), a _0 dependency_ Node.js library to make Directed Graph construction and traversal effortless.
+
+## Parsers
+
+While traversing the project, **skott** automatically loads the appropriate parser required. When meeting **".js, .cjs, .mjs, .jsx"** files, a specific JS parser will be used, otherwise for **".ts, .tsx"** files
+a specific TS parser will be used instead.
+
+- JavaScript: JavaScript/JSX parsing is done using [meriyah](https://github.com/meriyah/meriyah)
+- TypeScript: TypeScript/TSX parsing is done using [typescript-estree](https://github.com/typescript-eslint/typescript-eslint/tree/main/packages/typescript-estree)
