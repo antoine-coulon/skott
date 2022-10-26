@@ -57,12 +57,14 @@ export async function buildSkottProjectUsingInMemoryFileExplorer({
   entrypoint,
   includeBaseDir = false,
   thirdParty = false,
-  fileExtensions = [...kExpectedModuleExtensions]
+  fileExtensions = [...kExpectedModuleExtensions],
+  tsConfigPath = "./tsconfig.json"
 }: {
   entrypoint?: string;
   includeBaseDir?: boolean;
   thirdParty?: boolean;
   fileExtensions?: string[];
+  tsConfigPath?: string;
 } = {}): Promise<UnwrappedSkottStructure> {
   const skott = new Skott(
     {
@@ -73,7 +75,8 @@ export async function buildSkottProjectUsingInMemoryFileExplorer({
         thirdParty,
         builtin: false
       },
-      fileExtensions
+      fileExtensions,
+      tsConfigPath
     },
     new InMemoryFileReader()
   );

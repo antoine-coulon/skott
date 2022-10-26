@@ -68,6 +68,11 @@ const cli = sade("skott [entrypoint]", true)
     false
   )
   .option(
+    "ts, --tsconfig",
+    "Provide a path to a tsconfig.json file to use for path aliases resolution",
+    "tsconfig.json"
+  )
+  .option(
     "ttp, --trackThirdPartyDependencies",
     "Enable npm third-party dependency tracking",
     false

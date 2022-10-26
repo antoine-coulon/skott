@@ -10,7 +10,8 @@ import {
   isBuiltinModule,
   isJSONModule,
   isThirdPartyModule,
-  kExpectedModuleExtensions
+  kExpectedModuleExtensions,
+  isTypeScriptModule
 } from "./modules/walkers/ecmascript/module-resolver.js";
 import {
   buildPathAliases,
@@ -35,6 +36,7 @@ export interface SkottConfig {
     builtin: boolean;
   };
   fileExtensions: string[];
+  tsConfigPath: string;
 }
 
 export interface SkottStructure {
@@ -58,7 +60,8 @@ const defaultConfig = {
     thirdParty: false,
     builtin: false
   },
-  fileExtensions: [...kExpectedModuleExtensions]
+  fileExtensions: [...kExpectedModuleExtensions],
+  tsConfigPath: "tsconfig.json"
 };
 
 export class Skott {
@@ -308,6 +311,10 @@ export class Skott {
       this.fileReader
     );
 
+    if (isTypeScriptModule(entrypointModulePath)) {
+      await buildPathAliases(this.fileReader, this.config.tsConfigPath);
+    }
+
     const rootFileContent = await this.fileReader.read(entrypointModulePath);
 
     this.#baseDir = path.dirname(entrypointModulePath);
@@ -319,6 +326,8 @@ export class Skott {
   }
 
   private async buildFromRootDirectory(): Promise<void> {
+    await buildPathAliases(this.fileReader, this.config.tsConfigPath);
+
     for await (const rootFile of this.fileReader.readdir(
       this.fileReader.getCurrentWorkingDir(),
       this.config.fileExtensions
@@ -330,8 +339,6 @@ export class Skott {
   }
 
   public async initialize(): Promise<SkottInstance> {
-    await buildPathAliases(this.fileReader);
-
     if (this.config.entrypoint) {
       await this.buildFromEntrypoint(this.config.entrypoint);
     } else {

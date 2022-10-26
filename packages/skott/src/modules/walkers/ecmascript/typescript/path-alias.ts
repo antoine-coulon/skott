@@ -4,13 +4,15 @@ import { FileReader } from "../../../../filesystem/file-reader";
 
 const aliasLinks = new Map<string, string>();
 
-export async function buildPathAliases(fileReader: FileReader): Promise<void> {
+export async function buildPathAliases(
+  fileReader: FileReader,
+  tsConfigPath: string
+): Promise<void> {
   try {
-    const tsConfig = await fileReader.read(
-      path.join(fileReader.getCurrentWorkingDir(), "tsconfig.json")
+    const baseTsConfig = await fileReader.read(
+      path.join(fileReader.getCurrentWorkingDir(), tsConfigPath)
     );
-
-    const tsConfigJson = JSON.parse(tsConfig);
+    const tsConfigJson = JSON.parse(baseTsConfig);
     const baseUrl = tsConfigJson.compilerOptions.baseUrl ?? ".";
     const paths: Record<string, string[]> = tsConfigJson.compilerOptions.paths;
 
@@ -29,6 +31,13 @@ export async function buildPathAliases(fileReader: FileReader): Promise<void> {
           path.join(baseUrl, realPathWithoutGlob)
         );
       }
+    }
+
+    // If the config provided extends another one, we must keep looking for
+    // path aliases elsewhere.
+    const extendedTsConfigPath = tsConfigJson.extends;
+    if (extendedTsConfigPath) {
+      await buildPathAliases(fileReader, extendedTsConfigPath);
     }
   } catch {}
 }

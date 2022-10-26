@@ -303,6 +303,7 @@ type CliOptions = {
   trackThirdPartyDependencies: boolean;
   trackBuiltinDependencies: boolean;
   fileExtensions: string;
+  tsconfig: string;
 };
 
 export async function displaySkott(
@@ -338,7 +339,8 @@ export async function displaySkott(
     },
     fileExtensions: options.fileExtensions
       .split(",")
-      .filter((ext) => kExpectedModuleExtensions.has(ext))
+      .filter((ext) => kExpectedModuleExtensions.has(ext)),
+    tsConfigPath: options.tsconfig
   });
 
   const timeTook = `${(performance.now() - start).toFixed(3)}ms`;

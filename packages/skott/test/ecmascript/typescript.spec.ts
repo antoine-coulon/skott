@@ -340,71 +340,130 @@ describe("When traversing a TypeScript project", () => {
 
     describe("When a global analysis without any entrypoint is requested", () => {
       describe("When there is a tsconfig located in the root directory including path aliases", () => {
-        describe("When the baseUrl specifies the root directory", () => {
-          it("should resolve paths aliases", async () => {
-            const tsConfig = {
-              compilerOptions: {
-                baseUrl: ".",
-                paths: {
-                  "@lib1": ["libs/lib1/index.ts"],
-                  "@lib2": ["libs/lib2/index.ts"],
-                  "@lib3": ["libs/lib3/index.ts"]
-                }
+        it("should resolve paths aliases", async () => {
+          const tsConfig = {
+            compilerOptions: {
+              baseUrl: ".",
+              paths: {
+                "@lib1": ["libs/lib1/index.ts"],
+                "@lib2": ["libs/lib2/index.ts"],
+                "@lib3": ["libs/lib3/index.ts"]
               }
-            };
+            }
+          };
 
-            mountFakeFileSystem({
-              "libs/lib1/index.ts": `
+          mountFakeFileSystem({
+            "libs/lib1/index.ts": `
                 import * as lib2 from "@lib2";
               `,
-              "libs/lib2/index.ts": `
+            "libs/lib2/index.ts": `
                 import * as lib3 from "@lib3";
                 export function someComponent() {}
               `,
-              "libs/lib3/index.ts": `
+            "libs/lib3/index.ts": `
                 export function lib() {}
               `,
-              "apps/main/util.ts": `
+            "apps/main/util.ts": `
                 export function somethingUtil() {}
               `,
-              "apps/main/index.ts": `
+            "apps/main/index.ts": `
                 import * as lib2 from "@lib2";
                 import util from "./util";
               `,
-              "tsconfig.json": JSON.stringify(tsConfig)
-            });
+            "tsconfig.json": JSON.stringify(tsConfig)
+          });
 
-            const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
-              thirdParty: true
-            });
+          const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+            thirdParty: true
+          });
 
-            expect(graph).to.be.deep.equal({
-              "libs/lib1/index.ts": {
-                adjacentTo: ["libs/lib2/index.ts"],
-                id: "libs/lib1/index.ts",
-                body: fakeNodeBody
-              },
-              "libs/lib2/index.ts": {
-                adjacentTo: ["libs/lib3/index.ts"],
-                id: "libs/lib2/index.ts",
-                body: fakeNodeBody
-              },
-              "libs/lib3/index.ts": {
-                adjacentTo: [],
-                id: "libs/lib3/index.ts",
-                body: fakeNodeBody
-              },
-              "apps/main/util.ts": {
-                adjacentTo: [],
-                id: "apps/main/util.ts",
-                body: fakeNodeBody
-              },
-              "apps/main/index.ts": {
-                adjacentTo: ["libs/lib2/index.ts", "apps/main/util.ts"],
-                id: "apps/main/index.ts",
-                body: fakeNodeBody
+          expect(graph).to.be.deep.equal({
+            "libs/lib1/index.ts": {
+              adjacentTo: ["libs/lib2/index.ts"],
+              id: "libs/lib1/index.ts",
+              body: fakeNodeBody
+            },
+            "libs/lib2/index.ts": {
+              adjacentTo: ["libs/lib3/index.ts"],
+              id: "libs/lib2/index.ts",
+              body: fakeNodeBody
+            },
+            "libs/lib3/index.ts": {
+              adjacentTo: [],
+              id: "libs/lib3/index.ts",
+              body: fakeNodeBody
+            },
+            "apps/main/util.ts": {
+              adjacentTo: [],
+              id: "apps/main/util.ts",
+              body: fakeNodeBody
+            },
+            "apps/main/index.ts": {
+              adjacentTo: ["libs/lib2/index.ts", "apps/main/util.ts"],
+              id: "apps/main/index.ts",
+              body: fakeNodeBody
+            }
+          });
+        });
+      });
+
+      describe("When providing a base tsconfig extending other configs with both path aliases", () => {
+        it("should resolve all paths aliases starting from base config", async () => {
+          const tsConfigBase = {
+            compilerOptions: {
+              baseUrl: ".",
+              paths: {
+                "@path-alias1": ["path/alias1/index.ts"]
               }
-            });
+            }
+          };
+
+          const tsConfigBuild = {
+            extends: "./tsconfig.base.json",
+            compilerOptions: {
+              baseUrl: ".",
+              paths: {
+                "@path-alias2": ["path/alias2/index.ts"]
+              }
+            }
+          };
+
+          mountFakeFileSystem({
+            "main/app/index.ts": `
+                import "@path-alias1";
+                import "@path-alias2";
+            `,
+            "path/alias1/index.ts": `
+                export function something() {}
+            `,
+            "path/alias2/index.ts": `
+                export function something() {}
+              `,
+            "tsconfig.base.json": JSON.stringify(tsConfigBase),
+            "tsconfig.build.json": JSON.stringify(tsConfigBuild)
+          });
+
+          const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+            thirdParty: true,
+            tsConfigPath: "tsconfig.build.json"
+          });
+
+          expect(graph).to.be.deep.equal({
+            "main/app/index.ts": {
+              adjacentTo: ["path/alias1/index.ts", "path/alias2/index.ts"],
+              id: "main/app/index.ts",
+              body: fakeNodeBody
+            },
+            "path/alias1/index.ts": {
+              id: "path/alias1/index.ts",
+              adjacentTo: [],
+              body: fakeNodeBody
+            },
+            "path/alias2/index.ts": {
+              id: "path/alias2/index.ts",
+              adjacentTo: [],
+              body: fakeNodeBody
+            }
           });
         });
       });

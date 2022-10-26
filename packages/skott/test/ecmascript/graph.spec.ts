@@ -50,7 +50,8 @@ async function makeSkott(
         thirdParty: true,
         builtin: true
       },
-      fileExtensions: [".js", ".ts"]
+      fileExtensions: [".js", ".ts"],
+      tsConfigPath: "./tsconfig.json"
     },
     new InMemoryFileReaderWithFakeStats()
   );
@@ -109,7 +110,8 @@ describe("When building the project structure independently of JavaScript or Typ
             thirdParty: false,
             builtin: false
           },
-          fileExtensions: [".js"]
+          fileExtensions: [".js"],
+          tsConfigPath: "./tsconfig.json"
         },
         new InMemoryFileReaderWithFakeStats()
       );
