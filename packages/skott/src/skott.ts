@@ -10,8 +10,7 @@ import {
   isBuiltinModule,
   isJSONModule,
   isThirdPartyModule,
-  kExpectedModuleExtensions,
-  isTypeScriptModule
+  kExpectedModuleExtensions
 } from "./modules/walkers/ecmascript/module-resolver.js";
 import {
   buildPathAliases,
@@ -162,28 +161,41 @@ export class Skott {
     return moduleDeclarations;
   }
 
-  private async followModuleDeclarationsFromFile(
-    rootPath: string,
-    moduleDeclaration: string
-  ): Promise<void> {
-    const fullFilePathFromEntrypoint = await resolveImportedModulePath(
-      path.join(path.dirname(rootPath), moduleDeclaration),
+  private async followModuleDeclarationsFromFile({
+    rootPath,
+    moduleDeclaration,
+    isPathAliasDeclaration = false
+  }: {
+    rootPath: string;
+    moduleDeclaration: string;
+    isPathAliasDeclaration?: boolean;
+  }): Promise<void> {
+    /**
+     * When performing a global analysis, path aliases must be resolved from
+     * the working directory the analysis was started from.
+     */
+    const baseDirectory =
+      !this.config.entrypoint && isPathAliasDeclaration
+        ? this.fileReader.getCurrentWorkingDir()
+        : path.dirname(rootPath);
+    const fullFilePathFromBaseDirectory = await resolveImportedModulePath(
+      path.join(baseDirectory, moduleDeclaration),
       this.fileReader
     );
 
     try {
       const nextFileContentToExplore = await this.fileReader.read(
-        fullFilePathFromEntrypoint
+        fullFilePathFromBaseDirectory
       );
 
-      await this.addNode(fullFilePathFromEntrypoint);
+      await this.addNode(fullFilePathFromBaseDirectory);
       await this.linkNodes({
         from: rootPath,
-        to: fullFilePathFromEntrypoint
+        to: fullFilePathFromBaseDirectory
       });
 
       await this.collectModuleDeclarationsFromFile(
-        fullFilePathFromEntrypoint,
+        fullFilePathFromBaseDirectory,
         nextFileContentToExplore
       );
     } catch {}
@@ -231,10 +243,11 @@ export class Skott {
         const resolvedModulePath = resolvePathAlias(moduleDeclaration);
 
         if (resolvedModulePath) {
-          await this.followModuleDeclarationsFromFile(
+          await this.followModuleDeclarationsFromFile({
             rootPath,
-            resolvedModulePath
-          );
+            moduleDeclaration: resolvedModulePath,
+            isPathAliasDeclaration: true
+          });
         }
       } else if (isThirdPartyModule(moduleDeclaration)) {
         if (!this.config.dependencyTracking.thirdParty) {
@@ -247,7 +260,10 @@ export class Skott {
         });
       }
 
-      await this.followModuleDeclarationsFromFile(rootPath, moduleDeclaration);
+      await this.followModuleDeclarationsFromFile({
+        rootPath,
+        moduleDeclaration
+      });
     }
   }
 
@@ -292,10 +308,6 @@ export class Skott {
       this.fileReader
     );
 
-    if (isTypeScriptModule(entrypointModulePath)) {
-      await buildPathAliases(this.fileReader);
-    }
-
     const rootFileContent = await this.fileReader.read(entrypointModulePath);
 
     this.#baseDir = path.dirname(entrypointModulePath);
@@ -318,6 +330,8 @@ export class Skott {
   }
 
   public async initialize(): Promise<SkottInstance> {
+    await buildPathAliases(this.fileReader);
+
     if (this.config.entrypoint) {
       await this.buildFromEntrypoint(this.config.entrypoint);
     } else {
