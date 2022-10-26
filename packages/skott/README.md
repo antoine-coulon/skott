@@ -79,6 +79,11 @@ When the library is installed globally:
 $ skott src/index.js
 ```
 
+**Note: The CLI output might be massive, so don't hesitate to pipe the stdout into a file:**
+```bash
+$ skott --displayMode=file-tree > skott.txt
+```
+
 **Run a global analysis from the current working directory:**
 
 Using this command, skott will deeply search for all ".ts" and ".tsx" files starting from cwd
