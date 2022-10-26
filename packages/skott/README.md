@@ -51,6 +51,13 @@ const { getStructure, findCircularDependencies, findParentsOf, findLeaves } = aw
     thirdParty: true,
     builtin: true
   };
+  /**
+   * (Optional) Provide a custom tsconfig file to help skott resolve path aliases.
+   * When extending some other tsconfig files, skott will be able to parse
+   * all the way up all the path aliases referenced. 
+   * Defaults to `tsconfig.json`.
+   */
+  tsConfigPath: "tsconfig.json"
 });
 ```
 
