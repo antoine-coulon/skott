@@ -30,60 +30,79 @@ function readManifestVersion(): string {
 
 const cli = sade("skott [entrypoint]", true)
   .version(readManifestVersion())
+
   .describe("Start the Skott analysis to fully build the graph")
 
   .option(
-    "-b, --includeBaseDir",
-    "Include the base directory name for each graph node",
+    "-b, --baseDir",
+    "Include the base directory name for each graph node. Relative to the entrypoint base directory or the current working directory.",
     false
   )
+
   .option(
-    "-c, --circularMaxDepth",
+    "-c, --exitCodeOnCircularDependencies",
+    "Specify the exit code to use when circular dependencies are found",
+    1
+  )
+
+  .option(
+    "-d, --circularMaxDepth",
     "Define the max depth of the nested circular dependencies search",
     Number.POSITIVE_INFINITY
   )
+
   .option(
-    "d, --displayMode",
-    "Either display the result of the analysis as a graph, as a file-tree or raw",
-    "graph"
-  )
-  .option(
-    "e, --exitCodeOnCircularDependencies",
-    "Either display the result of the analysis as a graph or as a file-tree",
-    1
-  )
-  .option(
-    "ext, fileExtensions",
-    "File extensions to consider when building the graph",
+    "-e, --fileExtensions",
+    "File extensions to explore when building the graph",
     [...kExpectedModuleExtensions].join(",")
   )
+
   .option(
     "-f, --staticFile",
     "Generate a static file from the graph. Can be 'none', 'svg', 'png', 'md'.",
     "none"
   )
+
   .option(
-    "s, --showCircularDependencies",
-    "Show all circular dependencies in the graph",
-    false
+    "-m, --displayMode",
+    "Either display the result of the analysis as a 'graph', as a 'file-tree' or 'raw'",
+    "graph"
   )
+
   .option(
-    "ts, --tsconfig",
-    "Provide a path to a tsconfig.json file to use for path aliases resolution",
-    "tsconfig.json"
-  )
-  .option(
-    "ttp, --trackThirdPartyDependencies",
-    "Enable npm third-party dependency tracking",
-    false
-  )
-  .option(
-    "tb, --trackBuiltinDependencies",
+    "-n, --trackBuiltinDependencies",
     "Enable Node.js builtin dependency tracking",
     false
   )
 
-  .example("./node_modules/.bin/skott src/index.js --displayMode=file-tree")
+  .option(
+    "-s, --showCircularDependencies",
+    "Show all circular dependencies in the graph",
+    false
+  )
+
+  .option(
+    "-ts, --tsconfig",
+    "Provide a path to a tsconfig.json file to use for path aliases resolution",
+    "tsconfig.json"
+  )
+
+  .option(
+    "-t, --trackThirdPartyDependencies",
+    "Enable npm third-party dependency tracking",
+    false
+  )
+
+  .example(
+    "./node_modules/.bin/skott src/index.js --displayMode=file-tree --staticFile=md"
+  )
+  .example(
+    "./node_modules/.bin/skott  --fileExtensions=.ts,.tsx --tsconfig=tsconfig.base.json"
+  )
+  .example(
+    "./node_modules/.bin/skott --showCircularDependencies --displayMode=raw"
+  )
+
   .action(displaySkott);
 
 cli.parse(process.argv);

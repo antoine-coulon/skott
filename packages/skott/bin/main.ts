@@ -237,10 +237,16 @@ function displayWarningOnHighCircularDepth(circularDepth: number): void {
 function displayCircularDependenciesPaths(
   circularDependencies: string[][]
 ): void {
-  circularDependencies.forEach((circularDependency) => {
-    const cyclicIndex = kleur.bold().yellow(`•`);
+  circularDependencies.forEach((circularDependency, index) => {
+    const circularDependencySeverity =
+      circularDependency.length > 4 ? "good luck" : "easy one";
+    const cyclicIndex = kleur
+      .bold()
+      .red(`${index + 1}. ${kleur.underline(circularDependencySeverity)}`);
     console.log(
-      `\n ${cyclicIndex} ${kleur.bold().red(circularDependency.join(" -> "))}`
+      `\n ${cyclicIndex} \n\n ${kleur.bold().red("->")} ${kleur
+        .bold()
+        .blue(circularDependency.join(kleur.red("\n -> ")))}`
     );
   });
 }
@@ -266,7 +272,13 @@ function makeCircularDependenciesUI(
 
     circularDependencies.push(...findCircularDependencies());
     if (circularDependencies.length > 0) {
-      console.log(kleur.bold().red(`\n ✖ circular dependencies found:`));
+      console.log(
+        kleur
+          .bold()
+          .red(
+            `\n ✖ (${circularDependencies.length}) circular dependencies found`
+          )
+      );
       displayCircularDependenciesPaths(circularDependencies);
       process.exitCode = options.exitCodeOnCircularDependencies;
     } else {
@@ -283,7 +295,7 @@ function makeCircularDependenciesUI(
     console.log(
       kleur
         .bold()
-        .red(`\n ✖ Graph is not Acyclic as circular dependencies were found.`)
+        .red(`\n ✖ Circular dependencies were found. Graph is not Acyclic.`)
     );
     process.exitCode = options.exitCodeOnCircularDependencies;
   } else {
