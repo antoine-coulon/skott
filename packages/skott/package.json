@@ -1,6 +1,6 @@
 {
   "name": "skott",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Automatically construct and visualize Graphs generated from your Node.js project",
   "author": "Antoine Coulon",
   "license": "MIT",

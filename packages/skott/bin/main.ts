@@ -238,11 +238,7 @@ function displayCircularDependenciesPaths(
   circularDependencies: string[][]
 ): void {
   circularDependencies.forEach((circularDependency, index) => {
-    const circularDependencySeverity =
-      circularDependency.length > 4 ? "good luck" : "easy one";
-    const cyclicIndex = kleur
-      .bold()
-      .red(`${index + 1}. ${kleur.underline(circularDependencySeverity)}`);
+    const cyclicIndex = kleur.bold().red(`${index + 1}.`);
     console.log(
       `\n ${cyclicIndex} \n\n ${kleur.bold().red("->")} ${kleur
         .bold()
