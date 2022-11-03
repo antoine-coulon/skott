@@ -1,6 +1,6 @@
 import { walk } from "estree-walker";
 
-import { ModuleWalker, ModuleWalkerResult } from "../../common.js";
+import type { ModuleWalker, ModuleWalkerResult } from "../../common.js";
 import { extractModuleDeclarations } from "../module-declaration.js";
 
 export class JavaScriptModuleWalker implements ModuleWalker {
