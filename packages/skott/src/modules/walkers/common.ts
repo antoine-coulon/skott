@@ -1,4 +1,7 @@
-import { JavaScriptModuleWalker, TypeScriptModuleWalker } from "./ecmascript";
+import {
+  JavaScriptModuleWalker,
+  TypeScriptModuleWalker
+} from "./ecmascript/index.js";
 import { isTypeScriptModule } from "./ecmascript/module-resolver.js";
 
 export interface ModuleWalkerResult {
