@@ -111,4 +111,4 @@ const cli = sade("skott [entrypoint]", true)
 
   .action(displaySkott);
 
-cli.parse(process.argv);
+cli.parse(process.argv, { unknown: (flag) => `Unknown option: ${flag}` });
