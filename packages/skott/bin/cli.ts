@@ -76,7 +76,7 @@ const cli = sade("skott [entrypoint]", true)
   )
 
   .option(
-    "-n, --trackTypeOnlyDependencies",
+    "-it, --trackTypeOnlyDependencies",
     "Enable dependency tracking for Typescript 'import type' statements",
     true
   )
