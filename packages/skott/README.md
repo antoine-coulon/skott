@@ -45,7 +45,7 @@ const { getStructure, findCircularDependencies, findParentsOf, findLeaves } = aw
   /**
    * (Optional) Whether third-party dependencies (npm) and/or builtin (Node.js core modules)
    * should be added in the graph and/or Typescript type-only import should be followed. 
-   * Both defaults to `false`.
+   * Defaults to `thirdParty=false`, `builtin=false`, and `typeOnly=true`.
    */
   dependencyTracking: {
     thirdParty: true,
