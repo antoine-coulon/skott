@@ -56,13 +56,15 @@ type UnwrappedSkottStructure = {
 export async function buildSkottProjectUsingInMemoryFileExplorer({
   entrypoint,
   includeBaseDir = false,
-  thirdParty = false,
+  trackThirdParty = false,
+  trackTypeOnly = true,
   fileExtensions = [...kExpectedModuleExtensions],
   tsConfigPath = "./tsconfig.json"
 }: {
   entrypoint?: string;
   includeBaseDir?: boolean;
-  thirdParty?: boolean;
+  trackThirdParty?: boolean;
+  trackTypeOnly?: boolean;
   fileExtensions?: string[];
   tsConfigPath?: string;
 } = {}): Promise<UnwrappedSkottStructure> {
@@ -72,8 +74,9 @@ export async function buildSkottProjectUsingInMemoryFileExplorer({
       circularMaxDepth: Number.POSITIVE_INFINITY,
       includeBaseDir,
       dependencyTracking: {
-        thirdParty,
-        builtin: false
+        thirdParty: trackThirdParty,
+        builtin: false,
+        typeOnly: trackTypeOnly
       },
       fileExtensions,
       tsConfigPath

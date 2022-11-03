@@ -48,7 +48,8 @@ async function makeSkott(
       includeBaseDir,
       dependencyTracking: {
         thirdParty: true,
-        builtin: true
+        builtin: true,
+        typeOnly: true
       },
       fileExtensions: [".js", ".ts"],
       tsConfigPath: "./tsconfig.json"
@@ -108,7 +109,8 @@ describe("When building the project structure independently of JavaScript or Typ
           includeBaseDir: false,
           dependencyTracking: {
             thirdParty: false,
-            builtin: false
+            builtin: false,
+            typeOnly: true
           },
           fileExtensions: [".js"],
           tsConfigPath: "./tsconfig.json"

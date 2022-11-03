@@ -1,7 +1,4 @@
-import {
-  JavaScriptModuleWalker,
-  TypeScriptModuleWalker
-} from "./ecmascript/index.js";
+import { JavaScriptModuleWalker, TypeScriptModuleWalker } from "./ecmascript";
 import { isTypeScriptModule } from "./ecmascript/module-resolver.js";
 
 export interface ModuleWalkerResult {
@@ -9,8 +6,15 @@ export interface ModuleWalkerResult {
 }
 
 export interface ModuleWalker {
-  walk(fileContent: string): Promise<ModuleWalkerResult>;
+  walk(
+    fileContent: string,
+    config: ModuleWalkerConfig
+  ): Promise<ModuleWalkerResult>;
 }
+
+export type ModuleWalkerConfig = {
+  trackTypeOnlyDependencies: boolean;
+};
 
 type Walkers = "JS" | "TS";
 

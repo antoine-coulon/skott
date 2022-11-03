@@ -39,7 +39,8 @@ function isEcmaScriptModuleDeclaration(estreeNode: any): boolean {
 
 export function extractModuleDeclarations(
   node: any,
-  moduleDeclarations: Set<string>
+  moduleDeclarations: Set<string>,
+  trackTypeOnlyDependencies = true
 ): void {
   if (isCommonJSModuleImport(node)) {
     /**
@@ -54,7 +55,9 @@ export function extractModuleDeclarations(
   }
 
   if (isEcmaScriptModuleDeclaration(node)) {
-    moduleDeclarations.add(node.source.value);
+    if (node.importKind !== "type" || trackTypeOnlyDependencies) {
+      moduleDeclarations.add(node.source.value);
+    }
   }
 
   if (node.type === "ImportExpression") {
