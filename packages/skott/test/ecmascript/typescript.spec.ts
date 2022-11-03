@@ -99,37 +99,71 @@ describe("When traversing a TypeScript project", () => {
       });
 
       describe("When the file includes type imports", () => {
-        it("skott should build the graph with two nodes and one link", async () => {
-          // Forcing files to add specific TS syntax
-          mountFakeFileSystem({
-            "index.ts": `
-                import type { Foo } from "./foo";
-  
-                const someTypeScriptSpecificStuff: number = 10;
-                console.log(foo.doSomething());
-            `,
-            "foo.ts": `
-                export type Foo = {
-                    doSomething: () => stng;
-                }
-            `
-          });
+        describe("When type imports are taken into account", () => {
+          it("skott should build the graph with two nodes and one link", async () => {
+            // Forcing files to add specific TS syntax
+            mountFakeFileSystem({
+              "index.ts": `
+                  import type { Foo } from "./foo";
+    
+                  const someTypeScriptSpecificStuff: number = 10;
+                  console.log(foo.doSomething());
+              `,
+              "foo.ts": `
+                  export type Foo = {
+                      doSomething: () => stng;
+                  }
+              `
+            });
 
-          const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
-            entrypoint: "index.ts"
-          });
+            const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+              entrypoint: "index.ts"
+            });
 
-          expect(graph).to.be.deep.equal({
-            "index.ts": {
-              adjacentTo: ["foo.ts"],
-              id: "index.ts",
-              body: fakeNodeBody
-            },
-            "foo.ts": {
-              adjacentTo: [],
-              id: "foo.ts",
-              body: fakeNodeBody
-            }
+            expect(graph).to.be.deep.equal({
+              "index.ts": {
+                adjacentTo: ["foo.ts"],
+                id: "index.ts",
+                body: fakeNodeBody
+              },
+              "foo.ts": {
+                adjacentTo: [],
+                id: "foo.ts",
+                body: fakeNodeBody
+              }
+            });
+          });
+        });
+
+        describe("When type imports are ignored", () => {
+          it("skott should build the graph with only the root node", async () => {
+            // Forcing files to add specific TS syntax
+            mountFakeFileSystem({
+              "index.ts": `
+                  import type { Foo } from "./foo";
+    
+                  const someTypeScriptSpecificStuff: number = 10;
+                  console.log(foo.doSomething());
+              `,
+              "foo.ts": `
+                  export type Foo = {
+                      doSomething: () => stng;
+                  }
+              `
+            });
+
+            const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+              entrypoint: "index.ts",
+              trackTypeOnly: false
+            });
+
+            expect(graph).to.be.deep.equal({
+              "index.ts": {
+                adjacentTo: [],
+                id: "index.ts",
+                body: fakeNodeBody
+              }
+            });
           });
         });
       });
@@ -196,7 +230,7 @@ describe("When traversing a TypeScript project", () => {
             const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
               entrypoint: "index.ts",
               includeBaseDir: false,
-              thirdParty: true
+              trackThirdParty: true
             });
 
             expect(graph).to.be.deep.equal({
@@ -241,7 +275,7 @@ describe("When traversing a TypeScript project", () => {
             const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
               entrypoint: "index.ts",
               includeBaseDir: false,
-              thirdParty: true
+              trackThirdParty: true
             });
 
             expect(graph).to.be.deep.equal({
@@ -297,7 +331,7 @@ describe("When traversing a TypeScript project", () => {
             const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
               entrypoint: "index.ts",
               includeBaseDir: false,
-              thirdParty: true
+              trackThirdParty: true
             });
 
             expect(graph).to.be.deep.equal({
@@ -374,7 +408,7 @@ describe("When traversing a TypeScript project", () => {
           });
 
           const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
-            thirdParty: true
+            trackThirdParty: true
           });
 
           expect(graph).to.be.deep.equal({
@@ -444,7 +478,7 @@ describe("When traversing a TypeScript project", () => {
           });
 
           const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
-            thirdParty: true,
+            trackThirdParty: true,
             tsConfigPath: "tsconfig.build.json"
           });
 

@@ -76,6 +76,12 @@ const cli = sade("skott [entrypoint]", true)
   )
 
   .option(
+    "-it, --trackTypeOnlyDependencies",
+    "Enable dependency tracking for Typescript 'import type' statements",
+    true
+  )
+
+  .option(
     "-s, --showCircularDependencies",
     "Show all circular dependencies in the graph",
     false

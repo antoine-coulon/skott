@@ -43,13 +43,14 @@ const { getStructure, findCircularDependencies, findParentsOf, findLeaves } = aw
    */
   includeBaseDir: false,
   /**
-   * (Optional) Whether third-party dependencies (npm) and/or builtin (Node.js core modules) 
-   * should be added in the graph. 
-   * Both defaults to `false`.
+   * (Optional) Whether third-party dependencies (npm) and/or builtin (Node.js core modules)
+   * should be added in the graph and/or Typescript type-only import should be followed. 
+   * Defaults to `thirdParty=false`, `builtin=false`, and `typeOnly=true`.
    */
   dependencyTracking: {
     thirdParty: true,
-    builtin: true
+    builtin: true,
+    typeOnly: true
   };
   /**
    * (Optional) Provide a custom tsconfig file to help skott resolve path aliases.
@@ -236,7 +237,8 @@ const { getStructure } = await skott({
   entrypoint: "lib.js",
   dependencyTracking: {
     builtin: true,
-    thirdParty: true
+    thirdParty: true,
+    typeOnly: true
   }
 });
 

@@ -1,6 +1,10 @@
 import { walk } from "estree-walker";
 
-import { ModuleWalker, ModuleWalkerResult } from "../../common.js";
+import {
+  ModuleWalker,
+  ModuleWalkerConfig,
+  ModuleWalkerResult
+} from "../../common.js";
 import { extractModuleDeclarations } from "../module-declaration.js";
 
 async function tryOrElse(
@@ -19,8 +23,12 @@ async function tryOrElse(
 }
 
 export class TypeScriptModuleWalker implements ModuleWalker {
-  public async walk(fileContent: string): Promise<ModuleWalkerResult> {
+  public async walk(
+    fileContent: string,
+    config: ModuleWalkerConfig
+  ): Promise<ModuleWalkerResult> {
     const { parse } = await import("@typescript-eslint/typescript-estree");
+    const trackTypeOnlyDependencies = config.trackTypeOnlyDependencies;
     const moduleDeclarations = new Set<string>();
     let jsxEnabled = true;
 
@@ -34,7 +42,11 @@ export class TypeScriptModuleWalker implements ModuleWalker {
 
       walk(isRootNode ? node.body : node, {
         enter(node) {
-          extractModuleDeclarations(node, moduleDeclarations);
+          extractModuleDeclarations(
+            node,
+            moduleDeclarations,
+            trackTypeOnlyDependencies
+          );
         }
       });
     }

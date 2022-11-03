@@ -9,8 +9,15 @@ export interface ModuleWalkerResult {
 }
 
 export interface ModuleWalker {
-  walk(fileContent: string): Promise<ModuleWalkerResult>;
+  walk(
+    fileContent: string,
+    config: ModuleWalkerConfig
+  ): Promise<ModuleWalkerResult>;
 }
+
+export type ModuleWalkerConfig = {
+  trackTypeOnlyDependencies: boolean;
+};
 
 type Walkers = "JS" | "TS";
 

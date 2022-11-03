@@ -310,6 +310,7 @@ type CliOptions = {
   showCircularDependencies: boolean;
   trackThirdPartyDependencies: boolean;
   trackBuiltinDependencies: boolean;
+  trackTypeOnlyDependencies: boolean;
   fileExtensions: string;
   tsconfig: string;
 };
@@ -343,7 +344,8 @@ export async function displaySkott(
     includeBaseDir: options.includeBaseDir,
     dependencyTracking: {
       thirdParty: options.trackThirdPartyDependencies,
-      builtin: options.trackBuiltinDependencies
+      builtin: options.trackBuiltinDependencies,
+      typeOnly: options.trackTypeOnlyDependencies
     },
     fileExtensions: options.fileExtensions
       .split(",")

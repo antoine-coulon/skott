@@ -34,6 +34,7 @@ export interface SkottConfig {
   dependencyTracking: {
     thirdParty: boolean;
     builtin: boolean;
+    typeOnly: boolean;
   };
   fileExtensions: string[];
   tsConfigPath: string;
@@ -58,7 +59,8 @@ const defaultConfig = {
   circularMaxDepth: Number.POSITIVE_INFINITY,
   dependencyTracking: {
     thirdParty: false,
-    builtin: false
+    builtin: false,
+    typeOnly: true
   },
   fileExtensions: [...kExpectedModuleExtensions],
   tsConfigPath: "tsconfig.json"
@@ -112,7 +114,7 @@ export class Skott {
 
     /**
      * If we can't create a node path without the base directory name,
-     * it probably means that the initial node path is located in an higher scope
+     * it probably means that the initial node path is located in a higher scope
      * than the base directory name.
      * Example:
      * Say we have the following file "lib/feature/index.js" with the following
@@ -159,7 +161,13 @@ export class Skott {
     fileContent: string
   ): Promise<Set<string>> {
     const moduleWalker = selectAppropriateModuleWalker(fileName);
-    const { moduleDeclarations } = await moduleWalker.walk(fileContent);
+    const moduleWalkerConfig = {
+      trackTypeOnlyDependencies: this.config.dependencyTracking.typeOnly
+    };
+    const { moduleDeclarations } = await moduleWalker.walk(
+      fileContent,
+      moduleWalkerConfig
+    );
 
     return moduleDeclarations;
   }
