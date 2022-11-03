@@ -1,6 +1,6 @@
 import { walk } from "estree-walker";
 
-import {
+import type {
   ModuleWalker,
   ModuleWalkerConfig,
   ModuleWalkerResult
