@@ -1,5 +1,4 @@
 {
   "extends": "@skott/config/tsconfig.json",
-  "include": ["index.ts"],
-  "exclude": ["index.spec.ts"]
+  "include": ["index.ts", "index.spec.ts"]
 }

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Skott Visualization</title>
+    <link rel="stylesheet" href="./styles/index.css" />
+</head>
+
+<body>
+    <div id="skott-network"></div>
+    <div id="skott-sidebar">
+        <div class="skott-logo">
+            <img src="./skott.svg" id="skott-logo" alt="Skott Logo" />
+        </div>
+
+        <div class="options-container">
+            <div class="options-container-header">
+                Skott analysis
+            </div>
+
+            <div class="skott-stats">
+                <section>
+                    <div class="skott-stats-container">
+                        <span class="skott-stats-label">Files</span>
+                        <span class="skott-stats-tooltip"> Number of scanned files </span>
+                        <span class="skott-stats-value" id="stats-file">0</span>
+                    </div>
+
+                    <div class="skott-stats-container">
+                        <div>
+                            <img src="./typescript.png" alt="typescript" class="tall-icons" />
+                        </div>
+                        <span class="skott-stats-tooltip"> TypeScript files </span>
+                        <span class="skott-stats-value" id="stats-ts">0</span>
+                    </div>
+
+                    <div class="skott-stats-container">
+                        <div>
+                            <img src="./javascript.png" alt="javascript" class="tall-icons" />
+                        </div>
+                        <span class="skott-stats-tooltip"> JavaScript files </span>
+                        <span class="skott-stats-value" id="stats-js">0</span>
+                    </div>
+                </section>
+
+                <section>
+                    <div class="skott-stats-container">
+                        <div>
+                            <img src="./skott-raw.svg" alt="skott" class="tall-icons" />
+                        </div>
+                        <span class="skott-stats-tooltip"> Circular dependencies </span>
+                        <span class="skott-stats-value" id="stats-circular">
+                            0
+                        </span>
+                    </div>
+                </section>
+
+
+                <section>
+                    <div class="skott-stats-container">
+                        <div>
+                            <img src="./npm.svg" alt="npm third-party dependencies" class="wide-icons" />
+                        </div>
+                        <span class="skott-stats-tooltip"> Third-party dependencies </span>
+                        <span class="skott-stats-value" id="stats-npm">
+                            0
+                        </span>
+                    </div>
+
+                    <div class="skott-stats-container">
+                        <div>
+                            <img src="./nodejs.svg" alt="nodejs builtin dependencies" class="wide-icons" />
+                        </div>
+                        <span class="skott-stats-tooltip"> Builtin dependencies </span>
+                        <span class="skott-stats-value" id="stats-node">
+                            0
+                        </span>
+                    </div>
+                </section>
+
+            </div>
+
+            <hr />
+
+            <div class="skott-actions">
+                <div class="options-container-header">
+                    Node visualization options
+                </div>
+
+                <div class="option-selector" id="nodeOptions">
+                    <div class="checkbox-container">
+                        <input type="checkbox" class="checkbox check-circular" id="opt-circular">
+                        <label id="checkbox-label" for="opt-circular">
+                            <div class="tick-mark"></div>
+                        </label>
+                    </div>
+                    <div class="option-label">
+                        Circular dependencies
+                    </div>
+                </div>
+
+                <div class="option-selector">
+                    <div class="checkbox-container">
+                        <input type="checkbox" class="checkbox check-third-party" id="opt-thirdparty">
+                        <label id="checkbox-label" for="opt-thirdparty">
+                            <div class="tick-mark"></div>
+                        </label>
+                    </div>
+                    <div class="option-label">
+                        Third-party dependencies
+                    </div>
+                </div>
+
+                <div class="option-selector">
+                    <div class="checkbox-container">
+                        <input type="checkbox" class="checkbox check-builtin" id="opt-builtin">
+                        <label id="checkbox-label" for="opt-builtin">
+                            <div class="tick-mark"></div>
+                        </label>
+                    </div>
+                    <div class="option-label">
+                        Builtin dependencies
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="module" src="./src/main.ts"></script>
+</body>
+
+</html>

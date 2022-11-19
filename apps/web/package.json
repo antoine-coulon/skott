@@ -1,0 +1,31 @@
+{
+  "name": "@skott/webapp",
+  "version": "0.0.1",
+  "description": "Visualize Graphs generated from Skott",
+  "author": "Antoine Coulon",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "skott": "workspace:^0.10.0",
+    "vite": "^3.2.4"
+  },
+  "dependencies": {
+    "@egjs/hammerjs": "^2.0.0",
+    "component-emitter": "^1.3.0",
+    "fs-tree-structure": "workspace:*",
+    "keycharm": "^0.2.0 timsort@^0.3.0 uuid@^3.4.0",
+    "rxjs": "^7.5.7",
+    "timsort": "^0.3.0",
+    "uuid": "^8.0.0",
+    "vis-data": "^7.1.4",
+    "vis-network": "^9.1.2",
+    "vis-util": "^5.0.1"
+  }
+}
