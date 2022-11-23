@@ -59,13 +59,20 @@ export function isTypeScriptModule(module: string): boolean {
   return extension === ".ts" || extension === ".tsx";
 }
 
+export function isVueModule(module: string): boolean {
+  const extension = path.extname(module);
+
+  return extension === ".vue";
+}
+
 export const kExpectedModuleExtensions = new Set([
   ".js",
   ".jsx",
   ".mjs",
   ".cjs",
   ".ts",
-  ".tsx"
+  ".tsx",
+  ".vue"
 ]);
 
 function isTypeScriptDeclarationFile(module: string): boolean {

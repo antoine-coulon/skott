@@ -2,7 +2,8 @@ import {
   JavaScriptModuleWalker,
   TypeScriptModuleWalker
 } from "./ecmascript/index.js";
-import { isTypeScriptModule } from "./ecmascript/module-resolver.js";
+import { isTypeScriptModule, isVueModule } from "./ecmascript/module-resolver.js";
+import { VueModuleWorker } from "./vue/walker.js";
 
 export interface ModuleWalkerResult {
   moduleDeclarations: Set<string>;
@@ -19,7 +20,7 @@ export type ModuleWalkerConfig = {
   trackTypeOnlyDependencies: boolean;
 };
 
-type Walkers = "JS" | "TS";
+type Walkers = "JS" | "TS" | "VUE";
 
 function getAppropriateWalker(): (fileName: string) => ModuleWalker {
   const walkers = {} as Record<Walkers, ModuleWalker>;
@@ -31,6 +32,14 @@ function getAppropriateWalker(): (fileName: string) => ModuleWalker {
       }
 
       return walkers.TS;
+    }
+
+    if (isVueModule(fileName)) {
+      if (!walkers.VUE) {
+        walkers.VUE = new VueModuleWorker();
+      }
+
+      return walkers.VUE;
     }
 
     if (!walkers.JS) {
