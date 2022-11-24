@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "@typescript-eslint/typescript-estree": "^5.40.0",
+    "@vue/compiler-dom": "^3.2.45",
     "@vue/compiler-sfc": ">=2.7.0",
     "digraph-js": "^2.0.2",
     "estree-walker": "^3.0.1",

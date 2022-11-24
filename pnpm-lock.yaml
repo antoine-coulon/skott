@@ -105,6 +105,7 @@ importers:
       '@types/node': ^16.11.12
       '@types/sade': ^1.7.4
       '@typescript-eslint/typescript-estree': ^5.40.0
+      '@vue/compiler-dom': ^3.2.45
       '@vue/compiler-sfc': '>=2.7.0'
       chai: ^4.3.4
       digraph-js: ^2.0.2
@@ -129,13 +130,14 @@ importers:
       typescript: ^4.5.2
     dependencies:
       '@typescript-eslint/typescript-estree': 5.40.0_typescript@4.7.4
+      '@vue/compiler-dom': 3.2.45
       '@vue/compiler-sfc': 3.2.45
       digraph-js: 2.0.2
       estree-walker: 3.0.1
       fs-tree-structure: link:../fs-tree-structure
       kleur: 4.1.5
       ligie: 0.0.6
-      meriyah: 4.2.1
+      meriyah: 4.3.3
       ora: 6.1.2
       sade: 1.8.1
       table: 6.8.0
@@ -2202,8 +2204,8 @@ packages:
     resolution: {integrity: sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==}
     engines: {node: '>= 8'}
 
-  /meriyah/4.2.1:
-    resolution: {integrity: sha512-Uv5sWsmjFNC6IszEmHo5bzJLL+kqjQ/VrEj9Agqsqtx7B6dcxHnHLew1ioJD19HNXrxrRZltPi+NVh12I8RLXA==}
+  /meriyah/4.3.3:
+    resolution: {integrity: sha512-7+EKEzAp0Gvp739Dv9F6ci9FXqqAz4QDAPVaLt15s9UF9gwQLwspqQzmoGjbavnTiFXZ5hf+EDdu5MtlkMCZfA==}
     engines: {node: '>=10.4.0'}
     dev: false
 
