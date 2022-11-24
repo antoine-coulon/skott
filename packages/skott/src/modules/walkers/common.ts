@@ -2,7 +2,10 @@ import {
   JavaScriptModuleWalker,
   TypeScriptModuleWalker
 } from "./ecmascript/index.js";
-import { isTypeScriptModule, isVueModule } from "./ecmascript/module-resolver.js";
+import {
+  isTypeScriptModule,
+  isVueModule
+} from "./ecmascript/module-resolver.js";
 import { VueModuleWorker } from "./vue/walker.js";
 
 export interface ModuleWalkerResult {
@@ -18,6 +21,7 @@ export interface ModuleWalker {
 
 export type ModuleWalkerConfig = {
   trackTypeOnlyDependencies: boolean;
+  astParseOptions?: Record<string, any>;
 };
 
 type Walkers = "JS" | "TS" | "VUE";

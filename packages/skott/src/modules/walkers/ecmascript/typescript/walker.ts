@@ -1,3 +1,4 @@
+import type { TSESTreeOptions as AstParserOptions } from "@typescript-eslint/typescript-estree";
 import { walk } from "estree-walker";
 
 import type {
@@ -25,7 +26,9 @@ async function tryOrElse(
 export class TypeScriptModuleWalker implements ModuleWalker {
   public async walk(
     fileContent: string,
-    config: ModuleWalkerConfig
+    config: ModuleWalkerConfig & {
+      astParseOptions?: AstParserOptions;
+    }
   ): Promise<ModuleWalkerResult> {
     const { parse } = await import("@typescript-eslint/typescript-estree");
     const trackTypeOnlyDependencies = config.trackTypeOnlyDependencies;
@@ -36,7 +39,8 @@ export class TypeScriptModuleWalker implements ModuleWalker {
       const node = parse(fileContent, {
         jsx: jsxEnabled,
         loc: false,
-        comment: false
+        comment: false,
+        ...config.astParseOptions
       });
       const isRootNode = node.type === "Program";
 
