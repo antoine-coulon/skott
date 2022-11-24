@@ -16,21 +16,21 @@ describe("When traversing a Vue project", () => {
     mountFakeFileSystem({
       "main.js": "import App from './App.vue';",
       "App.vue": `
-        <template><img src="./img.png" :data-src="require('./img.png')"/></template>
+        <template><img src="./img.png" :data-src="require('./img.jpg')"/></template>
         <script>
         import utils from './utils.js';
         export default {}
         </script>
       `,
       "img.png": "",
+      "img.jpg": "",
       "utils.js": "export const utils = {}"
     });
     it("should be able to collect imgs from template", async () => {
       const skottProject = await buildSkottProjectUsingInMemoryFileExplorer({
-        fileExtensions: [".js", ".vue", ".png"],
+        fileExtensions: [".js", ".vue", ".png", ".jpg"],
         entrypoint: "main.js"
       });
-      console.log(skottProject);
       expect(skottProject).to.be.deep.equal({
         graph: {
           "main.js": {
@@ -40,7 +40,7 @@ describe("When traversing a Vue project", () => {
           },
           "App.vue": {
             id: "App.vue",
-            adjacentTo: ["utils.js", "img.png"],
+            adjacentTo: ["utils.js", "img.jpg", "img.png"],
             body: fakeNodeBody
           },
           "utils.js": {
@@ -52,12 +52,17 @@ describe("When traversing a Vue project", () => {
             id: "img.png",
             adjacentTo: [],
             body: fakeNodeBody
+          },
+          "img.jpg": {
+            id: "img.jpg",
+            adjacentTo: [],
+            body: fakeNodeBody
           }
         },
-        files: ["main.js", "App.vue", "utils.js", "img.png"],
+        files: ["main.js", "App.vue", "utils.js", "img.jpg", "img.png"],
         circularDependencies: [],
         hasCircularDependencies: false,
-        leaves: ["utils.js", "img.png"]
+        leaves: ["utils.js", "img.jpg", "img.png"]
       });
     });
   });
