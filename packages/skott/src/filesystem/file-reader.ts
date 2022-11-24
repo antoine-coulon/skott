@@ -39,10 +39,7 @@ export class FileSystemReader implements FileReader {
     for await (const dirent of rootDir) {
       if (dirent.isDirectory() && isDirSupportedByDefault(dirent.name)) {
         yield* this.readdir(path.join(root, dirent.name), fileExtensions);
-      } else if (
-        isFileSupportedByDefault(dirent.name) &&
-        fileExtensions.includes(path.extname(dirent.name))
-      ) {
+      } else if (fileExtensions.includes(path.extname(dirent.name))) {
         yield path.join(root, dirent.name);
       }
     }

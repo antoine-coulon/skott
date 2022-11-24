@@ -11,7 +11,8 @@ import {
   isJSONModule,
   isThirdPartyModule,
   kExpectedModuleExtensions,
-  isTypeScriptModule
+  isTypeScriptModule,
+  isFileSupportedByDefault
 } from "./modules/walkers/ecmascript/module-resolver.js";
 import {
   buildPathAliases,
@@ -204,6 +205,10 @@ export class Skott {
         from: rootPath,
         to: fullFilePathFromBaseDirectory
       });
+
+      if (!isFileSupportedByDefault(fullFilePathFromBaseDirectory)) {
+        return;
+      }
 
       await this.collectModuleDeclarationsFromFile(
         fullFilePathFromBaseDirectory,

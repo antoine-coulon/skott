@@ -137,7 +137,7 @@ export async function resolveImportedModulePath(
    * If the module is supported and it appears that `moduleExists` is false, it
    * might be the case where TypeScript is used with ECMAScript modules.
    */
-  if (isFileSupportedByDefault(module) && moduleExists) {
+  if (moduleExists) {
     return module;
   }
 
