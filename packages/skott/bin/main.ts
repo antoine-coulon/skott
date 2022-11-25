@@ -1,11 +1,15 @@
 import { writeFile } from "node:fs/promises";
+import { ServerResponse } from "node:http";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
 
+import compression from "compression";
 import { makeTreeStructure, TreeStructure } from "fs-tree-structure";
 import kleur from "kleur";
 import { generateMermaid } from "ligie";
 import ora from "ora";
+import polka from "polka";
+import sirv from "sirv";
 
 import skott from "../index.js";
 import { kExpectedModuleExtensions } from "../src/modules/walkers/ecmascript/module-resolver.js";
@@ -409,6 +413,37 @@ export async function displaySkott(
 
   if (options.staticFile !== "none") {
     await generateStaticFile(graph, options.staticFile);
+  }
+
+  if (options.displayMode === "webapp") {
+    const baseWebAppDirectory = path.join(
+      process.cwd(),
+      "node_modules",
+      "@skott",
+      "webapp",
+      "dist"
+    );
+    const compress = compression();
+    const assets = sirv(baseWebAppDirectory, {
+      immutable: true
+    });
+    const port = 49389;
+
+    polka()
+      .use(compress, assets)
+      .use("/api", (_: any, response: ServerResponse) => {
+        const cycles = skottInstance.findCircularDependencies();
+
+        response.setHeader("Content-Type", "application/json");
+        response.end(JSON.stringify({ ...skottStructure, cycles }));
+      })
+      .listen(port, () => {
+        console.log(
+          `\n ${kleur.bold("Opened Skott web app on")} ${kleur
+            .bold()
+            .green(`http://127.0.0.1:${port}`)}`
+        );
+      });
   }
 }
 
