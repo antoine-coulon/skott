@@ -1,3 +1,4 @@
+import "animate.css";
 import {
   BehaviorSubject,
   catchError,
@@ -13,7 +14,6 @@ import {
   Observable,
   of,
   tap,
-  timer,
 } from "rxjs";
 import { EMPTY_OBSERVER } from "rxjs/internal/Subscriber";
 import { Edge, Node } from "vis-network";
@@ -86,6 +86,13 @@ function determineNetworkElementsToUpdate({
   }
 }
 
+function displayOptionGivenStats(option: string, stats: number) {
+  if (stats > 0) {
+    const optionElement = document.getElementById(option);
+    optionElement?.classList.remove("hidden-by-default");
+  }
+}
+
 function displaySkottStatistics(data: SkottStructureWithCycles) {
   const npmStats = document.getElementById("stats-npm")!;
   const nodeStats = document.getElementById("stats-node")!;
@@ -116,6 +123,10 @@ function displaySkottStatistics(data: SkottStructureWithCycles) {
     });
   }
 
+  displayOptionGivenStats("circular-container", data.cycles.length);
+  displayOptionGivenStats("third-party-container", npmRegistry.size);
+  displayOptionGivenStats("builtin-container", builtinRegistry.size);
+
   npmStats.textContent = npmRegistry.size.toString();
   nodeStats.textContent = builtinRegistry.size.toString();
   circularStats.textContent = data.cycles.length.toString();
@@ -124,7 +135,7 @@ function displaySkottStatistics(data: SkottStructureWithCycles) {
   jsStats.textContent = numberOfJavaScriptFiles.toString();
 }
 
-const dataStream$ = timer(250).pipe(
+const dataStream$ = of(EMPTY).pipe(
   mergeMap(() => from(fetch("/api"))),
   mergeMap((value) => from(value.json())),
   catchError(() => of(fakeSkottData)),
@@ -140,11 +151,6 @@ const dataChunkedStream$ = combineLatest([dataStream$, domContentLoaded$]).pipe(
       buildNetworkIncremental(chunk, () => {
         initializeNetworkConstructionStateListeners();
       });
-
-      // bullshit heuristic
-      if (Math.random() < 0.5) {
-        network?.stabilize();
-      }
     }
   })
 );

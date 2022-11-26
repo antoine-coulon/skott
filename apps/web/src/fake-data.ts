@@ -1,49 +1,10 @@
-export const graphDataWithCycles = {
-  "src/server/errors.ts": {
-    id: "src/server/errors.ts",
-    adjacentTo: [],
-    body: {
-      size: 191,
-      thirdPartyDependencies: [],
-      builtinDependencies: [],
-    },
-  },
-  "src/server/settings.ts": {
-    id: "src/server/settings.ts",
-    adjacentTo: ["src/lib/fastify/index.ts", "src/server/errors.ts"],
-    body: {
-      size: 1380,
-      thirdPartyDependencies: [],
-      builtinDependencies: [],
-    },
-  },
-  "src/lib/fastify/index.ts": {
-    id: "src/lib/fastify/index.ts",
-    adjacentTo: ["src/server/errors.ts"],
-    body: {
-      size: 1380,
-      thirdPartyDependencies: [],
-      builtinDependencies: [],
-    },
-  },
-  "src/index.ts": {
-    id: "src/index.ts",
-    adjacentTo: ["src/server/errors.ts"],
-    body: {
-      size: 1380,
-      thirdPartyDependencies: [],
-      builtinDependencies: [],
-    },
-  },
-};
-
 export const graphData = {
   "prisma/logistic/client/runtime/index.js": {
     id: "prisma/logistic/client/runtime/index.js",
     adjacentTo: [],
     body: {
       size: 2623179,
-      thirdPartyDependencies: ["effect-ts"],
+      thirdPartyDependencies: [],
       builtinDependencies: ["node:fs", "node:path", "node:util"],
     },
   },
@@ -52,7 +13,7 @@ export const graphData = {
     adjacentTo: [],
     body: {
       size: 249852,
-      thirdPartyDependencies: ["prisma", "babel"],
+      thirdPartyDependencies: [],
       builtinDependencies: ["stream"],
     },
   },
@@ -3944,15 +3905,55 @@ export const realData = {
   },
 };
 
+export const graphDataWithCycles = {
+  "src/server/errors.ts": {
+    id: "src/server/errors.ts",
+    adjacentTo: ["src/server/settings.ts"],
+    body: {
+      size: 191,
+      thirdPartyDependencies: ["@effect-ts/core"],
+      builtinDependencies: ["node:fs"],
+    },
+  },
+  "src/server/settings.ts": {
+    id: "src/server/settings.ts",
+    adjacentTo: ["src/lib/fastify/index.ts"],
+    body: {
+      size: 1380,
+      thirdPartyDependencies: ["dotenv"],
+      builtinDependencies: [],
+    },
+  },
+  "src/lib/fastify/index.ts": {
+    id: "src/lib/fastify/index.ts",
+    adjacentTo: ["src/server/errors.ts"],
+    body: {
+      size: 1380,
+      thirdPartyDependencies: [],
+      builtinDependencies: [],
+    },
+  },
+  "src/index.ts": {
+    id: "src/index.ts",
+    adjacentTo: ["src/server/errors.ts"],
+    body: {
+      size: 1380,
+      thirdPartyDependencies: [],
+      builtinDependencies: [],
+    },
+  },
+};
+
 export const fakeSkottData = {
   cycles: [
     [
-      "prisma/logistic/client/runtime/index.js",
-      "prisma/logistic/client/runtime/edge.js",
+      "src/server/settings.ts",
+      "src/lib/fastify/index.ts",
+      "src/server/errors.ts",
     ],
   ],
-  files: Object.keys(realData),
+  files: Object.keys(graphDataWithCycles),
   graph: {
-    ...realData,
+    ...graphDataWithCycles,
   },
 };

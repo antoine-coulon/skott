@@ -145,15 +145,16 @@ export async function displaySkott(
   const spinner = ora(`Initializing ${kleur.blue().bold("Skott")}`).start();
   const start = performance.now();
 
+  const dependencyTracking = {
+    thirdParty: options.trackThirdPartyDependencies,
+    builtin: options.trackBuiltinDependencies,
+    typeOnly: options.trackTypeOnlyDependencies
+  };
   const skottInstance = await skott({
     entrypoint: entrypoint ? entrypoint : undefined,
     circularMaxDepth: options.circularMaxDepth ?? Number.POSITIVE_INFINITY,
     includeBaseDir: options.includeBaseDir,
-    dependencyTracking: {
-      thirdParty: options.trackThirdPartyDependencies,
-      builtin: options.trackBuiltinDependencies,
-      typeOnly: options.trackTypeOnlyDependencies
-    },
+    dependencyTracking,
     fileExtensions: options.fileExtensions
       .split(",")
       .filter((ext) => kExpectedModuleExtensions.has(ext)),
@@ -207,7 +208,9 @@ export async function displaySkott(
   }
 
   if (options.displayMode === "webapp") {
-    openWebApplication(skottInstance, skottStructure);
+    openWebApplication(skottInstance, skottStructure, dependencyTracking);
+
+    return;
   }
 
   if (options.trackThirdPartyDependencies) {

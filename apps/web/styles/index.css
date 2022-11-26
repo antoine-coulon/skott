@@ -26,7 +26,16 @@ canvas {
   width: 100vw;
   height: 100vh;
   z-index: 1;
-  background: rgb(244 245 246);
+  /* background-image: radial-gradient(
+    circle farthest-corner at 10% 20%,
+    rgba(37, 145, 251, 0.98) 0.1%,
+    rgba(0, 7, 128, 1) 99.8%
+  ); */
+  background-image: radial-gradient(
+    circle farthest-corner at 1.3% 2.8%,
+    rgb(241 244 244) 0%,
+    #63acff47 100.2%
+  );
 }
 
 #skott-sidebar {
@@ -48,6 +57,10 @@ canvas {
   border-radius: 1rem;
   border: none;
   box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.12), 0 2px 3px 0 rgba(0, 0, 0, 0.22);
+}
+
+.hidden-by-default {
+  display: none;
 }
 
 .blur-loading {

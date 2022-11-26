@@ -25,10 +25,13 @@ export function makeChunkStream<T>(
   chunkSize: number,
   timeBetweenChunks: number
 ): Observable<"END_OF_STREAM" | T[]> {
+  const timeBetweenChunksGivenSource =
+    chunkSize > sourceArray.length ? 0 : timeBetweenChunks;
+
   return from(makeChunksFromArray(sourceArray, chunkSize))
     .pipe(
       concatMap((chunk) =>
-        combineLatest([of(chunk), timer(timeBetweenChunks)])
+        combineLatest([of(chunk), timer(timeBetweenChunksGivenSource)])
       ),
       map(([chunk]) => chunk)
     )

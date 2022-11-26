@@ -13,14 +13,14 @@ export const defaultNodeOptions = {
   shape: "box",
   color: {
     border: "#000000",
-    background: "#ECECEC",
+    background: "#ffffff",
     highlight: {
-      border: "#00ADE9",
-      background: "#E5E5E5",
+      border: "#2597ff",
+      background: "#F5F5F5",
     },
   },
   font: {
-    color: "#343434",
+    color: "#121212",
     size: 18,
     face: "Monospace",
     background: "none",
@@ -40,26 +40,34 @@ export const defaultNodeOptions = {
 export const defaultEdgeOptions = {
   color: {
     color: "#7E7E7E",
-    highlight: "#00ADE9",
-    hover: "#000000 ",
+    highlight: "#007BEB",
+    hover: "#007BEB ",
     inherit: false,
   },
 };
 
 export const networkOptions = {
+  nodes: {
+    margin: {
+      top: 10,
+      right: 10,
+      bottom: 10,
+      left: 10,
+    },
+  },
   edges: {
     arrows: "to",
-    // As to be proportional to the number of nodes and edges
-    length: 150,
     ...defaultEdgeOptions,
   },
   physics: {
     enabled: false,
     stabilization: false,
-    solver: "repulsion",
-    repulsion: {
-      // As to be proportional to the number of nodes and edges
-      nodeDistance: 350, // Put more distance between the nodes.
+    solver: "forceAtlas2Based",
+    forceAtlas2Based: {
+      gravitationalConstant: -200,
+      springLength: 250,
+      springConstant: 0.5,
+      avoidOverlap: 1,
     },
   },
 };
@@ -72,6 +80,22 @@ function makeDatasetFromSkottPayload(graphNodes: Node[], graphEdges: Edge[]) {
     nodes,
     edges,
   };
+}
+
+function getAppropriateMassGivenDataset(datasetSize: number) {
+  if (datasetSize <= 10) {
+    return 1;
+  } else if (datasetSize <= 30) {
+    return 3;
+  } else if (datasetSize <= 50) {
+    return 4;
+  } else {
+    return 5;
+  }
+}
+
+function getRandomArbitrary(min: number, max: number) {
+  return Math.random() * (max - min) + min;
 }
 
 function makeNodesAndEdges(data: SkottNode[]): {
@@ -87,11 +111,14 @@ function makeNodesAndEdges(data: SkottNode[]): {
 
   const graphNodes: Node[] = [];
   const graphEdges: Edge[] = [];
+  const dataSpacingFactor = data.length > 100 ? 2.5 : 1;
 
   data.forEach((node) => {
     graphNodes.push({
       id: node.id,
       label: node.id,
+      x: getRandomArbitrary(-15, 15) * 100 * dataSpacingFactor,
+      y: getRandomArbitrary(-15, 15) * 100 * dataSpacingFactor,
       ...defaultNodeOptions,
     });
 
@@ -120,11 +147,19 @@ function makeInitialNetwork(
     network = null;
   }
 
+  const networkOptionsWithMass = {
+    ...networkOptions,
+    nodes: {
+      ...networkOptions.nodes,
+      mass: getAppropriateMassGivenDataset(graphNodes.length),
+    },
+  };
+
   const { nodes, edges } = makeDatasetFromSkottPayload(graphNodes, graphEdges);
   const container = document.getElementById("skott-network");
   const data = { nodes, edges };
 
-  network = new Network(container!, data, networkOptions);
+  network = new Network(container!, data, networkOptionsWithMass);
   onNetworkConstruction();
   network.stabilize();
 }
@@ -186,7 +221,7 @@ export function toggleCircularDependencies(
   for (const cycle of data.cycles) {
     for (let index = 0; index < cycle.length; index++) {
       const node1 = cycle[index];
-      const node2 = cycle[index + 1];
+      const node2 = cycle[index + 1] ? cycle[index + 1] : cycle[0];
 
       if (node1 && node2) {
         nodes.update([
@@ -207,12 +242,6 @@ export function toggleCircularDependencies(
             to: node2,
             ...edgeOptions,
           },
-          {
-            id: `${node2}-${node1}`,
-            from: node2,
-            to: node1,
-            ...edgeOptions,
-          },
         ]);
       }
     }
@@ -230,15 +259,15 @@ const builtinNodeOptions = {
     border: "#000000",
     background: "#74b859",
     highlight: {
-      border: "#00ADE9",
-      background: "#026e00",
+      border: "#337718",
+      background: "#5AA33C",
     },
   },
 };
 
 const builtinEdgeOptions = {
-  color: "#BE9700",
-  highlight: "#F9CD26",
+  color: "#5F9C47",
+  highlight: "#4C8834",
   hover: "#000000",
   inherit: false,
 };
@@ -289,7 +318,7 @@ const thirdPartyNodeOptions = {
     border: "#000000",
     background: "#FF60FB",
     highlight: {
-      border: "#00ADE9",
+      border: "#A600A2",
       background: "#FF56FA",
     },
   },

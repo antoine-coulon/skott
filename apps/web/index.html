@@ -9,12 +9,12 @@
 <body>
     <div id="skott-network"></div>
     <div id="skott-sidebar">
-        <div class="skott-logo">
+        <div class="skott-logo animate__animated animate__flipInY">
             <img src="./skott.svg" id="skott-logo" alt="Skott Logo" />
         </div>
 
         <div class="options-container">
-            <div class="options-container-header">
+            <div class="options-container-header animate__bounceIn">
                 Skott analysis
             </div>
 
@@ -23,7 +23,7 @@
                     <div class="skott-stats-container">
                         <span class="skott-stats-label">Files</span>
                         <span class="skott-stats-tooltip"> Number of scanned files </span>
-                        <span class="skott-stats-value" id="stats-file">0</span>
+                        <span class="skott-stats-value animate__bounceIn" id="stats-file">0</span>
                     </div>
 
                     <div class="skott-stats-container">
@@ -31,7 +31,7 @@
                             <img src="./typescript.png" alt="typescript" class="tall-icons" />
                         </div>
                         <span class="skott-stats-tooltip"> TypeScript files </span>
-                        <span class="skott-stats-value" id="stats-ts">0</span>
+                        <span class="skott-stats-value animate__bounceIn" id="stats-ts">0</span>
                     </div>
 
                     <div class="skott-stats-container">
@@ -39,7 +39,7 @@
                             <img src="./javascript.png" alt="javascript" class="tall-icons" />
                         </div>
                         <span class="skott-stats-tooltip"> JavaScript files </span>
-                        <span class="skott-stats-value" id="stats-js">0</span>
+                        <span class="skott-stats-value animate__bounceIn" id="stats-js">0</span>
                     </div>
                 </section>
 
@@ -49,7 +49,7 @@
                             <img src="./skott-raw.svg" alt="skott" class="tall-icons" />
                         </div>
                         <span class="skott-stats-tooltip"> Circular dependencies </span>
-                        <span class="skott-stats-value" id="stats-circular">
+                        <span class="skott-stats-value animate__bounceIn" id="stats-circular">
                             0
                         </span>
                     </div>
@@ -62,7 +62,7 @@
                             <img src="./npm.svg" alt="npm third-party dependencies" class="wide-icons" />
                         </div>
                         <span class="skott-stats-tooltip"> Third-party dependencies </span>
-                        <span class="skott-stats-value" id="stats-npm">
+                        <span class="skott-stats-value animate__bounceIn" id="stats-npm">
                             0
                         </span>
                     </div>
@@ -72,7 +72,7 @@
                             <img src="./nodejs.svg" alt="nodejs builtin dependencies" class="wide-icons" />
                         </div>
                         <span class="skott-stats-tooltip"> Builtin dependencies </span>
-                        <span class="skott-stats-value" id="stats-node">
+                        <span class="skott-stats-value animate__bounceIn" id="stats-node">
                             0
                         </span>
                     </div>
@@ -83,11 +83,11 @@
             <hr />
 
             <div class="skott-actions">
-                <div class="options-container-header">
+                <div class="options-container-header animate__bounceIn">
                     Node visualization options
                 </div>
 
-                <div class="option-selector" id="nodeOptions">
+                <div class="option-selector hidden-by-default animate__animated" id="circular-container">
                     <div class="checkbox-container">
                         <input type="checkbox" class="checkbox check-circular" id="opt-circular">
                         <label id="checkbox-label" for="opt-circular">
@@ -99,7 +99,7 @@
                     </div>
                 </div>
 
-                <div class="option-selector">
+                <div class="option-selector hidden-by-default" id="third-party-container">
                     <div class="checkbox-container">
                         <input type="checkbox" class="checkbox check-third-party" id="opt-thirdparty">
                         <label id="checkbox-label" for="opt-thirdparty">
@@ -111,7 +111,7 @@
                     </div>
                 </div>
 
-                <div class="option-selector">
+                <div class="option-selector hidden-by-default" id="builtin-container">
                     <div class="checkbox-container">
                         <input type="checkbox" class="checkbox check-builtin" id="opt-builtin">
                         <label id="checkbox-label" for="opt-builtin">
