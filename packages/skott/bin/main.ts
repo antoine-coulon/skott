@@ -1,117 +1,26 @@
 import { writeFile } from "node:fs/promises";
-import { ServerResponse } from "node:http";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
 
-import compression from "compression";
-import { makeTreeStructure, TreeStructure } from "fs-tree-structure";
+import { makeTreeStructure } from "fs-tree-structure";
 import kleur from "kleur";
 import { generateMermaid } from "ligie";
 import ora from "ora";
-import polka from "polka";
-import sirv from "sirv";
 
 import skott from "../index.js";
 import { kExpectedModuleExtensions } from "../src/modules/walkers/ecmascript/module-resolver.js";
 import { SkottInstance, SkottNode, SkottNodeBody } from "../src/skott.js";
 
-const kLeftSeparator = "└──";
-
-function bytesToKB(bytes: number): string {
-  const kilobytes = (bytes / 1024).toFixed(2);
-
-  return kleur.bold().yellow(`${kilobytes} KB`);
-}
-
-function isDirectory(nodePath: string): boolean {
-  return path.extname(nodePath) === "";
-}
-
-function makeIndents(numberOfIndents: number): string {
-  return Array.from({ length: numberOfIndents }, () => " ").join("");
-}
-
-function displayAsFileTree(
-  treeStructure: TreeStructure,
-  filesInvolvedInCycles: string[],
-  whitespaces = 0
-): void {
-  const leftLevelSeparator = whitespaces === 0 ? "" : kLeftSeparator;
-  const indents = makeIndents(whitespaces);
-  for (const [nodeId, subNodes] of Object.entries(treeStructure)) {
-    if (isDirectory(nodeId)) {
-      console.log(
-        `${indents} ${leftLevelSeparator} ${kleur.bold().yellow(nodeId)}/`
-      );
-    } else {
-      console.log(
-        `${indents} ${leftLevelSeparator} ${kleur.bold().blue(nodeId)}`
-      );
-    }
-    displayAsFileTree(subNodes, filesInvolvedInCycles, whitespaces + 2);
-  }
-}
-
-function displayAsGraph(
-  graph: Record<string, SkottNode>,
-  filesInvolvedInCycles: string[],
-  nodesWithBodyBindings: Map<string, SkottNodeBody>
-): void {
-  const leftArrow = `${kLeftSeparator}>`;
-  for (const [nodeId, nodeValue] of Object.entries(graph)) {
-    const localStore = nodeValue.adjacentTo.reduce(
-      (store, current) => {
-        const nodeSize = nodesWithBodyBindings.get(current)?.size ?? 0;
-        store[current] = nodeSize;
-        store.sum += nodeSize;
-
-        return store;
-      },
-      { sum: 0 } as Record<string, number>
-    );
-
-    const parentNodeSize = bytesToKB(nodeValue.body.size ?? 0);
-    const totalOfChildrenSize = bytesToKB(localStore.sum);
-    console.log();
-
-    if (filesInvolvedInCycles.includes(nodeId)) {
-      console.log(
-        `${makeIndents(1)} ${kleur.red().underline().bold(nodeId)} ${kleur
-          .bold()
-          .yellow("♻️")}`
-      );
-    } else {
-      console.log(
-        `${makeIndents(1)} ${kleur
-          .blue()
-          .underline()
-          .bold(
-            nodeId
-          )} (self=${parentNodeSize}, imported=${totalOfChildrenSize})`
-      );
-    }
-
-    for (const subNode of nodeValue.adjacentTo) {
-      const nodeSize = bytesToKB(localStore[subNode]);
-
-      console.log(kleur.bold().yellow(`${makeIndents(3)} │`));
-      if (filesInvolvedInCycles.includes(subNode)) {
-        const subNodeWithWarning = `${subNode} ${kleur.bold().yellow("♻️")}`;
-        console.log(
-          `${makeIndents(3)} ${kleur.bold().yellow(leftArrow)} ${kleur
-            .bold()
-            .red(subNodeWithWarning)}`
-        );
-      } else {
-        console.log(
-          `${makeIndents(3)} ${kleur.bold().yellow(leftArrow)} ${kleur
-            .bold()
-            .white(subNode)} (${nodeSize})`
-        );
-      }
-    }
-  }
-}
+import {
+  displayAsFileTree,
+  displayAsGraph,
+  displayBuiltinDependencies,
+  displayCircularDependenciesPaths,
+  displayNoCircularDependenciesFound,
+  displayThirdPartyDependencies,
+  displayWarningOnHighCircularDepth
+} from "./ui/console.js";
+import { openWebApplication } from "./ui/webapp.js";
 
 async function generateStaticFile(
   graph: Record<string, SkottNode>,
@@ -151,112 +60,6 @@ async function generateStaticFile(
   }
 
   spinner.stop();
-}
-
-function displayThirdPartyDependencies(graph: Record<string, SkottNode>): void {
-  const thirdPartyRegistry = new Map<string, number>();
-  for (const node of Object.values(graph)) {
-    node.body.thirdPartyDependencies.forEach((dep) => {
-      const occurrencesOfDep = thirdPartyRegistry.get(dep);
-      if (occurrencesOfDep) {
-        thirdPartyRegistry.set(dep, occurrencesOfDep + 1);
-      } else {
-        thirdPartyRegistry.set(dep, 1);
-      }
-    });
-  }
-
-  if (thirdPartyRegistry.size === 0) {
-    console.log(
-      `${kleur.bold().magenta("\n ✓ no third-party dependencies found")}`
-    );
-
-    return;
-  }
-
-  console.log(`\n npm third-party dependencies: \n`);
-
-  const sortedDependencies = [...thirdPartyRegistry.entries()].sort(
-    ([a], [b]) => {
-      if (a > b) return 1;
-      if (a < b) return -1;
-
-      return 0;
-    }
-  );
-
-  for (const [depName, depOccurrence] of sortedDependencies) {
-    console.log(
-      `${makeIndents(1)} ${kleur.magenta().bold(depName)} (imports=${kleur
-        .bold()
-        .yellow(depOccurrence)})`
-    );
-  }
-}
-
-function displayBuiltinDependencies(graph: Record<string, SkottNode>): void {
-  const builtinRegistry = new Map<string, number>();
-  for (const node of Object.values(graph)) {
-    node.body.builtinDependencies.forEach((dep) => {
-      const occurrencesOfDep = builtinRegistry.get(dep);
-      if (occurrencesOfDep) {
-        builtinRegistry.set(dep, occurrencesOfDep + 1);
-      } else {
-        builtinRegistry.set(dep, 1);
-      }
-    });
-  }
-
-  if (builtinRegistry.size === 0) {
-    console.log(
-      `${kleur.bold().magenta("\n ✓ no builtin dependencies found")}`
-    );
-
-    return;
-  }
-
-  console.log(`\n Builtin Node.js dependencies: \n`);
-
-  for (const [depName, depOccurrence] of builtinRegistry.entries()) {
-    console.log(
-      `${makeIndents(1)} ${kleur.magenta().bold(depName)} (imports=${kleur
-        .bold()
-        .yellow(depOccurrence)})`
-    );
-  }
-}
-
-function displayWarningOnHighCircularDepth(circularDepth: number): void {
-  if (circularDepth > 50) {
-    console.log(
-      kleur
-        .yellow()
-        .bold(
-          `\n Warning: Circular max depth is high (${circularDepth}). Finding exact circular paths might take a while on big graphs.`
-        )
-    );
-  }
-}
-
-function displayCircularDependenciesPaths(
-  circularDependencies: string[][]
-): void {
-  circularDependencies.forEach((circularDependency, index) => {
-    const cyclicIndex = kleur.bold().red(`${index + 1}.`);
-    console.log(
-      `\n ${cyclicIndex} \n\n ${kleur.bold().red("->")} ${kleur
-        .bold()
-        .blue(circularDependency.join(kleur.red("\n -> ")))}`
-    );
-  });
-}
-
-function displayNoCircularDependenciesFound(circularMaxDepth: number): void {
-  console.log(
-    `${kleur.bold().green("\n ✓ no circular dependencies found")} (depth=${kleur
-      .bold()
-      .yellow(circularMaxDepth)})`
-  );
 }
 
 function makeCircularDependenciesUI(
@@ -403,6 +206,10 @@ export async function displaySkott(
     );
   }
 
+  if (options.displayMode === "webapp") {
+    openWebApplication(skottInstance, skottStructure);
+  }
+
   if (options.trackThirdPartyDependencies) {
     displayThirdPartyDependencies(graph);
   }
@@ -413,37 +220,6 @@ export async function displaySkott(
 
   if (options.staticFile !== "none") {
     await generateStaticFile(graph, options.staticFile);
-  }
-
-  if (options.displayMode === "webapp") {
-    const baseWebAppDirectory = path.join(
-      process.cwd(),
-      "node_modules",
-      "@skott",
-      "webapp",
-      "dist"
-    );
-    const compress = compression();
-    const assets = sirv(baseWebAppDirectory, {
-      immutable: true
-    });
-    const port = 49389;
-
-    polka()
-      .use(compress, assets)
-      .use("/api", (_: any, response: ServerResponse) => {
-        const cycles = skottInstance.findCircularDependencies();
-
-        response.setHeader("Content-Type", "application/json");
-        response.end(JSON.stringify({ ...skottStructure, cycles }));
-      })
-      .listen(port, () => {
-        console.log(
-          `\n ${kleur.bold("Opened Skott web app on")} ${kleur
-            .bold()
-            .green(`http://127.0.0.1:${port}`)}`
-        );
-      });
   }
 }
 
