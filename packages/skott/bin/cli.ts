@@ -66,7 +66,7 @@ const cli = sade("skott [entrypoint]", true)
   .option(
     "-m, --displayMode",
     "Either display the result of the analysis as a 'graph', as a 'file-tree' or 'raw'",
-    "graph"
+    "webapp"
   )
 
   .option(

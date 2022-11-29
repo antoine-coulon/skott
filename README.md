@@ -2,11 +2,16 @@
 	<img alt="skott" src="https://user-images.githubusercontent.com/43391199/188307540-00740a8b-ad19-401b-b767-6211bfb0d26b.png" width="350">
 </p>
 
+
 ![version](https://img.shields.io/badge/dynamic/json.svg?url=https://raw.githubusercontent.com/antoine-coulon/skott/main/packages/skott/package.json&query=$.version&label=Version)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/antoine-coulon/skott/commit-activity)
 [![mit](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](antoine-coulon/skott/tree/blob/main/LICENSE)
 
-**skott** is a minimalist developer tool that can be used to efficiently generate directed graphs from your **JavaScript/TypeScript/Node.js** project. It can **automatically collect metadata** such as _file size_, _third-party_ or _builtin dependencies_, **detect circular dependencies** or help you **building tools relying on graph data structures** thanks to the exposed primitives. Many display modes exists to date from the CLI **(.svg, .png, .md, .json)**. Many more to come.
+**skott** is a minimalist developer tool that can be used to efficiently generate directed graphs from your **JavaScript/TypeScript/Node.js** project. It can **automatically collect metadata** such as _file size_, _third-party_ or _builtin dependencies_, **detect circular dependencies** or help you **building tools relying on graph data structures** thanks to the exposed primitives. Many display modes exists (such as **embedded interactive web application** shown just below) but also other from the CLI **(.svg, .png, .md, .json)**.
+
+<p align="center">
+	<img alt="skott" src="https://user-images.githubusercontent.com/43391199/204465791-99ae71bb-67e9-4c84-8734-c9cad0b5c24d.png">
+</p>
 
 **skott** exposes **directed graphs primitives** so that it can be used to implement tools on top of graph structures e.g. affected/incremental patterns as it exposes a way to know precisely and deeply dependencies for each graph node. More generally speaking, anything that can be implemented using graphs can be implemented using **skott**.
 
