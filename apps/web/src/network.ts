@@ -86,6 +86,8 @@ function getAppropriateMassGivenDataset(datasetSize: number) {
   if (datasetSize <= 10) {
     return 1;
   } else if (datasetSize <= 30) {
+    return 2;
+  } else if (datasetSize <= 40) {
     return 3;
   } else if (datasetSize <= 50) {
     return 4;

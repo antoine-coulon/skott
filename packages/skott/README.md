@@ -13,6 +13,19 @@ npm install skott --save-dev
 npm install skott -g
 ```
 
+### **Embedded Web Application**
+
+skott now embeds a new _display mode_ **"skott --displayMode=webapp"** allowing you to visualize more precisely dependencies and the links between them. Here is an overview of a subset from the graph generated for `fastify`:
+
+<img alt="skott-webapp-fastify" src="https://user-images.githubusercontent.com/43391199/204465791-99ae71bb-67e9-4c84-8734-c9cad0b5c24d.png" />
+
+As shown above **Third-party** and **Built-in dependencies** can be toggled when they are tracked (by providing `--trackThirdPartyDependencies` and `--trackBuiltinDependencies` to the CLI).
+
+When `Circular dependencies` are found in the graph, they can also be toggled via the _Node visualization options_ as shown below:
+
+<img alt="skott-webapp-with-cycles" src="https://user-images.githubusercontent.com/43391199/204466577-3b82bf6c-4ed4-436c-bd99-31aa9261fb61.png" />
+
+
 ### **JavaScript API**
 
 ```javascript
