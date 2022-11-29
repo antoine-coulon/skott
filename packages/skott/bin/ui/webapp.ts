@@ -15,8 +15,7 @@ function findSkottWebAppDirectory(): string {
   const rootSkottDirectory = path.join(__dirname, "..", "..", "..");
   const skottWebAppDirectory = path.join(
     "node_modules",
-    "@skott",
-    "webapp",
+    "skott-webapp",
     "dist"
   );
 

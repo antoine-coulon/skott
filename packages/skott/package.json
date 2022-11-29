@@ -1,6 +1,6 @@
 {
   "name": "skott",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "description": "Automatically construct and visualize Graphs generated from your Node.js project",
   "author": "Antoine Coulon",
   "license": "MIT",
@@ -29,7 +29,6 @@
     "test": "mocha --parallel"
   },
   "dependencies": {
-    "@skott/webapp": "workspace:*",
     "@typescript-eslint/typescript-estree": "^5.40.0",
     "compression": "^1.7.4",
     "digraph-js": "^2.0.2",
@@ -43,6 +42,7 @@
     "polka": "^0.5.2",
     "sade": "^1.8.1",
     "sirv": "^2.0.2",
+    "skott-webapp": "workspace:*",
     "table": "^6.8.0"
   },
   "devDependencies": {
