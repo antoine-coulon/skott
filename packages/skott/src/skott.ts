@@ -5,13 +5,13 @@ import { DiGraph, VertexDefinition } from "digraph-js";
 import { FileReader, FileSystemReader } from "./filesystem/file-reader.js";
 import { selectAppropriateModuleWalker } from "./modules/walkers/common.js";
 import {
-  resolveImportedModulePath,
   isBinaryModule,
   isBuiltinModule,
   isJSONModule,
   isThirdPartyModule,
+  isTypeScriptModule,
   kExpectedModuleExtensions,
-  isTypeScriptModule
+  resolveImportedModulePath
 } from "./modules/walkers/ecmascript/module-resolver.js";
 import {
   buildPathAliases,
@@ -265,9 +265,16 @@ export class Skott {
           continue;
         }
 
+        const dependencyPath = moduleDeclaration.split("/");
+        const dependencyName =
+          dependencyPath.length === 1
+            ? dependencyPath[0]
+            : dependencyPath.slice(0, 2).join("/");
+
         this.#projectGraph.mergeVertexBody(formattedNodePath, (body) => {
-          body.thirdPartyDependencies =
-            body.thirdPartyDependencies.concat(moduleDeclaration);
+          body.thirdPartyDependencies = Array.from(
+            new Set([...body.thirdPartyDependencies, dependencyName])
+          );
         });
       }
 
