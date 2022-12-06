@@ -242,6 +242,27 @@ describe("When building the project structure independently of JavaScript or Typ
             ]);
           });
 
+          describe("When third-party dependencies are exposing namespaces", () => {
+            it("should keep only one version of a same dependency", async () => {
+              mountFakeFileSystem({
+                "index.js": `
+                  import { pipe } from '@effect-ts/core/Function';
+                  import { Has } from '@effect-ts/core/Has';
+                  import * as System from '@effect-ts/system';
+                `
+              });
+
+              const { graph } = await makeSkott();
+
+              const indexFile = graph["index.js"];
+
+              expect(indexFile.body.thirdPartyDependencies).to.deep.equal([
+                "@effect-ts/core",
+                "@effect-ts/system"
+              ]);
+            });
+          });
+
           describe("When the entrypoint contains a base directory", () => {
             it("should find one third-party dependency", async () => {
               mountFakeFileSystem({
