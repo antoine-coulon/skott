@@ -111,6 +111,7 @@ function makeCircularDependenciesUI(
 type CliOptions = {
   circularMaxDepth: number;
   includeBaseDir: boolean;
+  incremental: boolean;
   displayMode: string;
   staticFile: string;
   exitCodeOnCircularDependencies: number;
@@ -152,6 +153,7 @@ export async function displaySkott(
   };
   const skottInstance = await skott({
     entrypoint: entrypoint ? entrypoint : undefined,
+    incremental: options.incremental,
     circularMaxDepth: options.circularMaxDepth ?? Number.POSITIVE_INFINITY,
     includeBaseDir: options.includeBaseDir,
     dependencyTracking,

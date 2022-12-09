@@ -1,4 +1,5 @@
 import { R_OK } from "node:constants";
+import fsSync from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -9,6 +10,7 @@ import {
 
 export interface FileReader {
   read: (filename: string) => Promise<string>;
+  readSync: (filename: string) => string;
   readdir: (root: string, extensions: string[]) => AsyncGenerator<string>;
   stats: (filename: string) => Promise<number>;
   getCurrentWorkingDir: () => string;
@@ -17,6 +19,11 @@ export interface FileReader {
 export class FileSystemReader implements FileReader {
   read(filename: string): Promise<string> {
     return fs.readFile(filename, { encoding: "utf-8", flag: R_OK });
+  }
+
+  readSync(filename: string): string {
+    // eslint-disable-next-line no-sync
+    return fsSync.readFileSync(filename, { encoding: "utf-8" });
   }
 
   stats(filename: string): Promise<number> {

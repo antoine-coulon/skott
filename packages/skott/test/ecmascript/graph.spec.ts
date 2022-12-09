@@ -14,6 +14,11 @@ class InMemoryFileReaderWithFakeStats implements FileReader {
       resolve(memfs.fs.readFileSync(filename, "utf-8") as string);
     });
   }
+
+  readSync(filename: string): string {
+    return memfs.fs.readFileSync(filename, "utf-8") as string;
+  }
+
   async *readdir(): AsyncGenerator<string> {
     yield Promise.resolve("fake");
   }

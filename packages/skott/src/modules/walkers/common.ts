@@ -21,24 +21,22 @@ export type ModuleWalkerConfig = {
 
 type Walkers = "JS" | "TS";
 
-function getAppropriateWalker(): (fileName: string) => ModuleWalker {
-  const walkers = {} as Record<Walkers, ModuleWalker>;
+export class WalkerSelector {
+  #walkers = {} as Record<Walkers, ModuleWalker>;
 
-  return function pickWalker(fileName: string) {
+  public getAppropriateWalker(fileName: string): ModuleWalker {
     if (isTypeScriptModule(fileName)) {
-      if (!walkers.TS) {
-        walkers.TS = new TypeScriptModuleWalker();
+      if (!this.#walkers.TS) {
+        this.#walkers.TS = new TypeScriptModuleWalker();
       }
 
-      return walkers.TS;
+      return this.#walkers.TS;
     }
 
-    if (!walkers.JS) {
-      walkers.JS = new JavaScriptModuleWalker();
+    if (!this.#walkers.JS) {
+      this.#walkers.JS = new JavaScriptModuleWalker();
     }
 
-    return walkers.JS;
-  };
+    return this.#walkers.JS;
+  }
 }
-
-export const selectAppropriateModuleWalker = getAppropriateWalker();

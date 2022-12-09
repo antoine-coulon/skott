@@ -2,8 +2,9 @@ import path from "node:path";
 
 import { DiGraph, VertexDefinition } from "digraph-js";
 
+import { SkottCache, SkottCacheHandler } from "./cache/handler.js";
 import { FileReader, FileSystemReader } from "./filesystem/file-reader.js";
-import { selectAppropriateModuleWalker } from "./modules/walkers/common.js";
+import { WalkerSelector } from "./modules/walkers/common.js";
 import {
   isBinaryModule,
   isBuiltinModule,
@@ -31,6 +32,7 @@ export interface SkottConfig {
   entrypoint?: string;
   circularMaxDepth?: number;
   includeBaseDir: boolean;
+  incremental?: boolean;
   dependencyTracking: {
     thirdParty: boolean;
     builtin: boolean;
@@ -53,9 +55,10 @@ export interface SkottInstance {
   findParentsOf: (node: string) => string[];
 }
 
-const defaultConfig = {
+export const defaultConfig = {
   entrypoint: "",
   includeBaseDir: false,
+  incremental: false,
   circularMaxDepth: Number.POSITIVE_INFINITY,
   dependencyTracking: {
     thirdParty: false,
@@ -67,14 +70,22 @@ const defaultConfig = {
 };
 
 export class Skott {
+  skottCache: SkottCacheHandler;
   #projectGraph = new DiGraph<SkottNode>();
   #visitedNodes = new Set<string>();
   #baseDir = ".";
 
   constructor(
     private readonly config: SkottConfig = defaultConfig,
-    private readonly fileReader: FileReader = new FileSystemReader()
-  ) {}
+    private readonly fileReader: FileReader = new FileSystemReader(),
+    private readonly walkerSelector = new WalkerSelector()
+  ) {
+    this.skottCache = new SkottCacheHandler(this.fileReader);
+  }
+
+  public getStructureCache(): SkottCache {
+    return this.skottCache.store;
+  }
 
   private formatNodePath(nodePath: string): string {
     /**
@@ -160,7 +171,14 @@ export class Skott {
     fileName: string,
     fileContent: string
   ): Promise<Set<string>> {
-    const moduleWalker = selectAppropriateModuleWalker(fileName);
+    if (this.config.incremental) {
+      const cachedNode = this.skottCache.get(fileName);
+      if (cachedNode) {
+        return new Set();
+      }
+    }
+
+    const moduleWalker = this.walkerSelector.getAppropriateWalker(fileName);
     const moduleWalkerConfig = {
       trackTypeOnlyDependencies: this.config.dependencyTracking.typeOnly
     };
@@ -331,6 +349,9 @@ export class Skott {
     }
 
     const rootFileContent = await this.fileReader.read(entrypointModulePath);
+    if (this.config.incremental) {
+      this.skottCache.addSourceFile(entrypointModulePath, rootFileContent);
+    }
 
     this.#baseDir = path.dirname(entrypointModulePath);
     await this.addNode(entrypointModulePath);
@@ -348,6 +369,11 @@ export class Skott {
       this.config.fileExtensions
     )) {
       const rootFileContent = await this.fileReader.read(rootFile);
+
+      if (this.config.incremental) {
+        this.skottCache.addSourceFile(rootFile, rootFileContent);
+      }
+
       await this.addNode(rootFile);
       await this.collectModuleDeclarationsFromFile(rootFile, rootFileContent);
     }
@@ -358,6 +384,10 @@ export class Skott {
       await this.buildFromEntrypoint(this.config.entrypoint);
     } else {
       await this.buildFromRootDirectory();
+    }
+
+    if (this.config.incremental) {
+      await this.skottCache.save();
     }
 
     return {
