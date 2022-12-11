@@ -2,7 +2,11 @@ import path from "node:path";
 
 import { DiGraph, VertexDefinition } from "digraph-js";
 
-import { SkottCache, SkottCacheHandler } from "./cache/handler.js";
+import {
+  isFileAffected,
+  SkottCache,
+  SkottCacheHandler
+} from "./cache/handler.js";
 import { FileReader, FileSystemReader } from "./filesystem/file-reader.js";
 import { WalkerSelector } from "./modules/walkers/common.js";
 import {
@@ -167,14 +171,32 @@ export class Skott {
     });
   }
 
+  /**
+   * When stored, nodes paths are absolute hence not ECMAScript compliant for
+   * imports declarations. When reading them again, we must be sure to put a
+   * compliant path again so that they can be looked up correctly.
+   */
+  private fromAbsoluteToRelativePath(moduleName: string): string {
+    return "./".concat(moduleName);
+  }
+
   private async findModuleDeclarations(
     fileName: string,
     fileContent: string
   ): Promise<Set<string>> {
     if (this.config.incremental) {
-      const cachedNode = this.skottCache.get(fileName);
-      if (cachedNode) {
-        return new Set();
+      const cachedNode = this.skottCache.get(this.formatNodePath(fileName));
+      /**
+       * Only try to hit cache when the file is not affected
+       * otherwise must parse it again
+       */
+      if (cachedNode && !isFileAffected(fileContent, cachedNode.hash)) {
+        return new Set(
+          cachedNode.value.adjacentTo
+            .map(this.fromAbsoluteToRelativePath)
+            .concat(cachedNode.value.body.thirdPartyDependencies)
+            .concat(cachedNode.value.body.builtinDependencies)
+        );
       }
     }
 
@@ -236,6 +258,10 @@ export class Skott {
   ): Promise<void> {
     if (this.#visitedNodes.has(rootPath)) {
       return;
+    }
+
+    if (this.config.incremental) {
+      this.skottCache.addSourceFile(this.formatNodePath(rootPath), fileContent);
     }
 
     const moduleDeclarations = await this.findModuleDeclarations(
@@ -387,7 +413,8 @@ export class Skott {
     }
 
     if (this.config.incremental) {
-      await this.skottCache.save();
+      const { graph } = this.makeProjectStructure();
+      await this.skottCache.save(graph);
     }
 
     return {
