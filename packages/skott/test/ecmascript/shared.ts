@@ -3,6 +3,8 @@ import path from "node:path";
 import * as memfs from "memfs";
 
 import { FileReader } from "../../src/filesystem/file-reader.js";
+import { InMemoryFileWriter } from "../../src/filesystem/file-writer.js";
+import { WalkerSelector } from "../../src/modules/walkers/common.js";
 import {
   isDirSupportedByDefault,
   isFileSupportedByDefault,
@@ -86,7 +88,9 @@ export async function buildSkottProjectUsingInMemoryFileExplorer({
       fileExtensions,
       tsConfigPath
     },
-    new InMemoryFileReader()
+    new InMemoryFileReader(),
+    new InMemoryFileWriter(),
+    new WalkerSelector()
   );
   const skottInstance = await skott.initialize();
   const structure = skottInstance.getStructure();

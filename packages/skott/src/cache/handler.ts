@@ -2,14 +2,14 @@ import crypto from "node:crypto";
 import path from "node:path";
 
 import { FileReader } from "../filesystem/file-reader";
-import { InMemoryFileSystemWriter } from "../filesystem/file-writer.js";
+import { FileWriter } from "../filesystem/file-writer.js";
 import type { SkottNode, SkottStructure } from "../skott";
 
 export function createNodeHash(content: string): string {
   return crypto.createHash("sha1").update(content).digest("hex");
 }
 
-export function makeEmptySkottCachedNodeValue(id: string): SkottNode {
+export function makeInitialSkottNodeValue(id: string): SkottNode {
   return {
     id,
     adjacentTo: [],
@@ -21,7 +21,7 @@ export function makeEmptySkottCachedNodeValue(id: string): SkottNode {
   };
 }
 
-export function isFileAffected(
+export function isAffectedFile(
   fileContent: string,
   hashInCache: string
 ): boolean {
@@ -53,7 +53,7 @@ export class SkottCacheHandler {
 
   constructor(
     private readonly fileReader: FileReader,
-    private readonly fileWriter = new InMemoryFileSystemWriter()
+    private readonly fileWriter: FileWriter
   ) {
     try {
       this.#cache = this.makeCache();
@@ -91,7 +91,7 @@ export class SkottCacheHandler {
     if (!currentlyCachedNode) {
       this.#nextCache.set(fileId, {
         hash: hashedContent,
-        value: makeEmptySkottCachedNodeValue(fileId)
+        value: makeInitialSkottNodeValue(fileId)
       });
 
       return;
@@ -103,26 +103,30 @@ export class SkottCacheHandler {
     });
   }
 
-  public async save(skottGraph: SkottStructure["graph"]): Promise<void> {
+  public async save(
+    latestComputedGraph: SkottStructure["graph"]
+  ): Promise<void> {
     try {
-      const graphWithHashes: Record<SkottNode["id"], SkottCachedNode> = {};
+      const graphWithLatestHashes: Record<SkottNode["id"], SkottCachedNode> =
+        {};
 
-      for (const [key, value] of Object.entries(skottGraph)) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const { hash } = this.#nextCache.get(key)!;
+      for (const [nodeId, nodeValue] of Object.entries(latestComputedGraph)) {
+        const currentNode = this.#nextCache.get(nodeId);
 
-        graphWithHashes[key] = {
-          hash,
-          value
-        };
+        if (currentNode) {
+          graphWithLatestHashes[nodeId] = {
+            hash: currentNode.hash,
+            value: nodeValue
+          };
+        }
       }
 
       await this.fileWriter.write(
         path.join(this.fileReader.getCurrentWorkingDir(), kSkottCacheFileName),
-        JSON.stringify(graphWithHashes)
+        JSON.stringify(graphWithLatestHashes)
       );
 
-      this.#cache = new Map(Object.entries(graphWithHashes));
+      this.#cache = new Map(Object.entries(graphWithLatestHashes));
     } catch {}
   }
 }

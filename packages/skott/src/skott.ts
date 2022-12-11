@@ -3,11 +3,12 @@ import path from "node:path";
 import { DiGraph, VertexDefinition } from "digraph-js";
 
 import {
-  isFileAffected,
+  isAffectedFile,
   SkottCache,
   SkottCacheHandler
 } from "./cache/handler.js";
-import { FileReader, FileSystemReader } from "./filesystem/file-reader.js";
+import { FileReader } from "./filesystem/file-reader.js";
+import { FileWriter } from "./filesystem/file-writer.js";
 import { WalkerSelector } from "./modules/walkers/common.js";
 import {
   isBinaryModule,
@@ -79,12 +80,14 @@ export class Skott {
   #visitedNodes = new Set<string>();
   #baseDir = ".";
 
+  // eslint-disable-next-line max-params
   constructor(
     private readonly config: SkottConfig = defaultConfig,
-    private readonly fileReader: FileReader = new FileSystemReader(),
-    private readonly walkerSelector = new WalkerSelector()
+    private readonly fileReader: FileReader,
+    private readonly fileWriter: FileWriter,
+    private readonly walkerSelector: WalkerSelector
   ) {
-    this.skottCache = new SkottCacheHandler(this.fileReader);
+    this.skottCache = new SkottCacheHandler(this.fileReader, this.fileWriter);
   }
 
   public getStructureCache(): SkottCache {
@@ -190,7 +193,7 @@ export class Skott {
        * Only try to hit cache when the file is not affected
        * otherwise must parse it again
        */
-      if (cachedNode && !isFileAffected(fileContent, cachedNode.hash)) {
+      if (cachedNode && !isAffectedFile(fileContent, cachedNode.hash)) {
         return new Set(
           cachedNode.value.adjacentTo
             .map(this.fromAbsoluteToRelativePath)

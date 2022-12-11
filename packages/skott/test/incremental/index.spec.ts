@@ -3,10 +3,11 @@ import { expect } from "chai";
 
 import {
   createNodeHash,
-  makeEmptySkottCachedNodeValue,
+  makeInitialSkottNodeValue,
   SkottCache,
   SkottCachedNode
 } from "../../src/cache/handler";
+import { InMemoryFileWriter } from "../../src/filesystem/file-writer";
 import { ModuleWalker, WalkerSelector } from "../../src/modules/walkers/common";
 import { JavaScriptModuleWalker } from "../../src/modules/walkers/ecmascript";
 import { defaultConfig, Skott } from "../../src/skott";
@@ -31,16 +32,20 @@ class NotWorkingWalkerSelector {
   }
 }
 
+const fileWriter = new InMemoryFileWriter();
+const fileReader = new InMemoryFileReader();
+const walkerSelector = new WalkerSelector();
+
 describe("Incremental analysis", () => {
   describe("When Skott runs an analysis for the first time", () => {
     const hashFromTheOnlyExistingFile = createNodeHash("const a = 1;");
 
     function makeNewSkottInstance(entrypoint?: string): Skott {
-      const fileReader = new InMemoryFileReader();
-
       return new Skott(
         { ...defaultIncrementalConfig, entrypoint, incremental: true },
-        fileReader
+        fileReader,
+        fileWriter,
+        walkerSelector
       );
     }
 
@@ -58,7 +63,7 @@ describe("Incremental analysis", () => {
         expect(dictFromCache(skottInstance.getStructureCache())).to.deep.equal({
           "index.js": {
             hash: hashFromTheOnlyExistingFile,
-            value: makeEmptySkottCachedNodeValue("index.js")
+            value: makeInitialSkottNodeValue("index.js")
           }
         });
       });
@@ -79,11 +84,11 @@ describe("Incremental analysis", () => {
         expect(dictFromCache(skottInstance.getStructureCache())).to.deep.equal({
           "index.js": {
             hash: hashFromTheOnlyExistingFile,
-            value: makeEmptySkottCachedNodeValue("index.js")
+            value: makeInitialSkottNodeValue("index.js")
           },
           "lib.js": {
             hash: hashFromTheOnlyExistingFile,
-            value: makeEmptySkottCachedNodeValue("lib.js")
+            value: makeInitialSkottNodeValue("lib.js")
           }
         });
       });
@@ -100,13 +105,12 @@ describe("Incremental analysis", () => {
               "lib.js": "const b = 2;"
             });
 
-            const fileReader = new InMemoryFileReader();
-            const walkerSelector = new WalkerSelector();
             const indexHash = createNodeHash("const a = 1;");
             const libHash = createNodeHash("const b = 2;");
             const skott = new Skott(
               { ...defaultIncrementalConfig, entrypoint: undefined },
               fileReader,
+              fileWriter,
               walkerSelector
             );
 
@@ -115,11 +119,11 @@ describe("Incremental analysis", () => {
             const expectedCache = {
               "index.js": {
                 hash: indexHash,
-                value: makeEmptySkottCachedNodeValue("index.js")
+                value: makeInitialSkottNodeValue("index.js")
               },
               "lib.js": {
                 hash: libHash,
-                value: makeEmptySkottCachedNodeValue("lib.js")
+                value: makeInitialSkottNodeValue("lib.js")
               }
             };
 
@@ -137,6 +141,7 @@ describe("Incremental analysis", () => {
             const skottWithCacheAndBrokenWalker = new Skott(
               { ...defaultIncrementalConfig, entrypoint: undefined },
               fileReader,
+              fileWriter,
               new NotWorkingWalkerSelector() as any
             );
 
@@ -148,8 +153,8 @@ describe("Incremental analysis", () => {
             ).to.deep.equal(expectedCache);
 
             expect(getStructure().graph).to.deep.equal({
-              "index.js": makeEmptySkottCachedNodeValue("index.js"),
-              "lib.js": makeEmptySkottCachedNodeValue("lib.js")
+              "index.js": makeInitialSkottNodeValue("index.js"),
+              "lib.js": makeInitialSkottNodeValue("lib.js")
             });
           });
         });
@@ -162,13 +167,12 @@ describe("Incremental analysis", () => {
             "lib.js": "const b = 2;"
           });
 
-          const fileReader = new InMemoryFileReader();
-          const walkerSelector = new WalkerSelector();
           const indexHash = createNodeHash("const a = 1;");
           const libHash = createNodeHash("const b = 2;");
           const skottWithoutCache = new Skott(
             { ...defaultIncrementalConfig, entrypoint: undefined },
             fileReader,
+            fileWriter,
             walkerSelector
           );
 
@@ -177,11 +181,11 @@ describe("Incremental analysis", () => {
           const expectedCache = {
             "index.js": {
               hash: indexHash,
-              value: makeEmptySkottCachedNodeValue("index.js")
+              value: makeInitialSkottNodeValue("index.js")
             },
             "lib.js": {
               hash: libHash,
-              value: makeEmptySkottCachedNodeValue("lib.js")
+              value: makeInitialSkottNodeValue("lib.js")
             }
           };
 
@@ -221,6 +225,7 @@ describe("Incremental analysis", () => {
           const skottWithCache = new Skott(
             { ...defaultIncrementalConfig, entrypoint: undefined },
             fileReader,
+            fileWriter,
             new WalkerSelectorWithFileTracking() as any
           );
 
@@ -237,26 +242,24 @@ describe("Incremental analysis", () => {
             ...expectedCache,
             "lib.js": {
               hash: updatedHashContent,
-              value: makeEmptySkottCachedNodeValue("lib.js")
+              value: makeInitialSkottNodeValue("lib.js")
             },
             "someNewFile.js": {
               hash: newHashContent,
-              value: makeEmptySkottCachedNodeValue("someNewFile.js")
+              value: makeInitialSkottNodeValue("someNewFile.js")
             }
           });
 
           expect(getStructure().graph).to.deep.equal({
-            "index.js": makeEmptySkottCachedNodeValue("index.js"),
-            "lib.js": makeEmptySkottCachedNodeValue("lib.js"),
-            "someNewFile.js": makeEmptySkottCachedNodeValue("someNewFile.js")
+            "index.js": makeInitialSkottNodeValue("index.js"),
+            "lib.js": makeInitialSkottNodeValue("lib.js"),
+            "someNewFile.js": makeInitialSkottNodeValue("someNewFile.js")
           });
         });
       });
     });
 
     describe("When dealing with files having dependencies", () => {
-      const fileReader = new InMemoryFileReader();
-      const walkerSelector = new WalkerSelector();
       describe("When files have not changed since the last run", () => {
         describe("When dealing with links that must be resolved correctly with a flat directory", () => {
           it("should restore nodes dependencies without having to parse file content again", async () => {
@@ -288,6 +291,7 @@ describe("Incremental analysis", () => {
                 }
               },
               fileReader,
+              fileWriter,
               walkerSelector
             );
 
@@ -334,6 +338,7 @@ describe("Incremental analysis", () => {
                 }
               },
               fileReader,
+              fileWriter,
               new NotWorkingWalkerSelector() as any
             );
 
@@ -381,6 +386,7 @@ describe("Incremental analysis", () => {
                 }
               },
               fileReader,
+              fileWriter,
               walkerSelector
             );
 
@@ -429,6 +435,7 @@ describe("Incremental analysis", () => {
                 }
               },
               fileReader,
+              fileWriter,
               new NotWorkingWalkerSelector() as any
             );
 
@@ -473,6 +480,7 @@ describe("Incremental analysis", () => {
               }
             },
             fileReader,
+            fileWriter,
             walkerSelector
           );
 
@@ -536,6 +544,7 @@ describe("Incremental analysis", () => {
               }
             },
             fileReader,
+            fileWriter,
             new WalkerSelectorWithFileTracking() as any
           );
 

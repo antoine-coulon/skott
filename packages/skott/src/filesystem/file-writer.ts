@@ -6,7 +6,7 @@ export interface FileWriter {
   write(filePath: string, fileContent: string): Promise<void>;
 }
 
-export class InMemoryFileSystemWriter implements FileWriter {
+export class InMemoryFileWriter implements FileWriter {
   async write(filePath: string, fileContent: string): Promise<void> {
     return new Promise((resolve) => {
       memfs.fs.writeFile(filePath, fileContent, () => {
