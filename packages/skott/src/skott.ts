@@ -3,7 +3,7 @@ import path from "node:path";
 import { DiGraph, VertexDefinition } from "digraph-js";
 
 import {
-  isAffectedFile,
+  isFileAffected,
   SkottCache,
   SkottCacheHandler
 } from "./cache/handler.js";
@@ -75,7 +75,7 @@ export const defaultConfig = {
 };
 
 export class Skott {
-  skottCache: SkottCacheHandler;
+  #skottCache: SkottCacheHandler;
   #projectGraph = new DiGraph<SkottNode>();
   #visitedNodes = new Set<string>();
   #baseDir = ".";
@@ -87,11 +87,15 @@ export class Skott {
     private readonly fileWriter: FileWriter,
     private readonly walkerSelector: WalkerSelector
   ) {
-    this.skottCache = new SkottCacheHandler(this.fileReader, this.fileWriter);
+    this.#skottCache = new SkottCacheHandler(
+      this.fileReader,
+      this.fileWriter,
+      this.config
+    );
   }
 
   public getStructureCache(): SkottCache {
-    return this.skottCache.store;
+    return this.#skottCache.store;
   }
 
   private formatNodePath(nodePath: string): string {
@@ -188,12 +192,12 @@ export class Skott {
     fileContent: string
   ): Promise<Set<string>> {
     if (this.config.incremental) {
-      const cachedNode = this.skottCache.get(this.formatNodePath(fileName));
+      const cachedNode = this.#skottCache.get(this.formatNodePath(fileName));
       /**
        * Only try to hit cache when the file is not affected
        * otherwise must parse it again
        */
-      if (cachedNode && !isAffectedFile(fileContent, cachedNode.hash)) {
+      if (cachedNode && !isFileAffected(fileContent, cachedNode.hash)) {
         return new Set(
           cachedNode.value.adjacentTo
             .map(this.fromAbsoluteToRelativePath)
@@ -264,7 +268,10 @@ export class Skott {
     }
 
     if (this.config.incremental) {
-      this.skottCache.addSourceFile(this.formatNodePath(rootPath), fileContent);
+      this.#skottCache.addSourceFile(
+        this.formatNodePath(rootPath),
+        fileContent
+      );
     }
 
     const moduleDeclarations = await this.findModuleDeclarations(
@@ -379,7 +386,7 @@ export class Skott {
 
     const rootFileContent = await this.fileReader.read(entrypointModulePath);
     if (this.config.incremental) {
-      this.skottCache.addSourceFile(entrypointModulePath, rootFileContent);
+      this.#skottCache.addSourceFile(entrypointModulePath, rootFileContent);
     }
 
     this.#baseDir = path.dirname(entrypointModulePath);
@@ -400,7 +407,7 @@ export class Skott {
       const rootFileContent = await this.fileReader.read(rootFile);
 
       if (this.config.incremental) {
-        this.skottCache.addSourceFile(rootFile, rootFileContent);
+        this.#skottCache.addSourceFile(rootFile, rootFileContent);
       }
 
       await this.addNode(rootFile);
@@ -417,7 +424,7 @@ export class Skott {
 
     if (this.config.incremental) {
       const { graph } = this.makeProjectStructure();
-      await this.skottCache.save(graph);
+      await this.#skottCache.save(graph, this.config);
     }
 
     return {

@@ -3,6 +3,7 @@ import { expect } from "chai";
 
 import {
   createNodeHash,
+  kSkottCacheFileName,
   makeInitialSkottNodeValue,
   SkottCache,
   SkottCachedNode
@@ -18,7 +19,7 @@ import {
 } from "../ecmascript/shared";
 
 function dictFromCache(cache: SkottCache): Record<string, SkottCachedNode> {
-  return Object.fromEntries(cache.entries());
+  return Object.fromEntries(cache.sourceFiles.entries());
 }
 
 const defaultIncrementalConfig = {
@@ -40,14 +41,102 @@ describe("Incremental analysis", () => {
   describe("When Skott runs an analysis for the first time", () => {
     const hashFromTheOnlyExistingFile = createNodeHash("const a = 1;");
 
-    function makeNewSkottInstance(entrypoint?: string): Skott {
+    function makeNewSkottInstance(
+      entrypoint?: string,
+      config = defaultIncrementalConfig
+    ): Skott {
       return new Skott(
-        { ...defaultIncrementalConfig, entrypoint, incremental: true },
+        { ...config, entrypoint },
         fileReader,
         fileWriter,
         walkerSelector
       );
     }
+
+    it("should store the configuration used for the analysis", async () => {
+      const fileContent = `
+        import fs from "node:fs";
+
+        const x = 2;
+      `;
+      mountFakeFileSystem({
+        "index.js": fileContent
+      });
+
+      const initialConfiguration = {
+        ...defaultIncrementalConfig,
+        dependencyTracking: {
+          builtin: false,
+          thirdParty: false,
+          typeOnly: false
+        }
+      };
+
+      const skottInstance = makeNewSkottInstance(
+        "index.js",
+        initialConfiguration
+      );
+
+      const { getStructure } = await skottInstance.initialize();
+
+      expect(skottInstance.getStructureCache().configurationHash).to.equal(
+        createNodeHash(
+          JSON.stringify({
+            ...initialConfiguration,
+            entrypoint: "index.js"
+          })
+        )
+      );
+
+      expect(getStructure().graph).to.deep.equal({
+        "index.js": {
+          body: {
+            ...fakeNodeBody,
+            builtinDependencies: []
+          },
+          id: "index.js",
+          adjacentTo: []
+        }
+      });
+
+      mountFakeFileSystem({
+        "index.js": fileContent,
+        [kSkottCacheFileName]: JSON.stringify({
+          configuration: skottInstance.getStructureCache().configurationHash,
+          sourceFiles: {
+            "index.js": {
+              hash: hashFromTheOnlyExistingFile,
+              value: makeInitialSkottNodeValue("index.js")
+            }
+          }
+        })
+      });
+
+      const anotherConfig = {
+        ...initialConfiguration,
+        dependencyTracking: {
+          builtin: true,
+          thirdParty: false,
+          typeOnly: false
+        }
+      };
+      const newSkottInstanceWithAnotherConfig = makeNewSkottInstance(
+        "index.js",
+        anotherConfig
+      );
+
+      expect(
+        newSkottInstanceWithAnotherConfig.getStructureCache().sourceFiles.size
+      ).to.equal(0);
+
+      const newSkottInstanceWithSameConfig = makeNewSkottInstance(
+        "index.js",
+        initialConfiguration
+      );
+      expect(
+        newSkottInstanceWithSameConfig.getStructureCache().sourceFiles.size
+      ).to.equal(1);
+    });
 
     describe("When providing an entrypoint", () => {
       it("should store the generated graph in its cache", async () => {
@@ -56,7 +145,7 @@ describe("Incremental analysis", () => {
         });
 
         const skottInstance = makeNewSkottInstance("index.js");
-        expect(skottInstance.getStructureCache().size).to.eq(0);
+        expect(skottInstance.getStructureCache().sourceFiles.size).to.eq(0);
 
         await skottInstance.initialize();
 
@@ -77,7 +166,7 @@ describe("Incremental analysis", () => {
         });
 
         const skottInstance = makeNewSkottInstance();
-        expect(skottInstance.getStructureCache().size).to.eq(0);
+        expect(skottInstance.getStructureCache().sourceFiles.size).to.eq(0);
 
         await skottInstance.initialize();
 
@@ -169,8 +258,12 @@ describe("Incremental analysis", () => {
 
           const indexHash = createNodeHash("const a = 1;");
           const libHash = createNodeHash("const b = 2;");
+          const initialConfiguration = {
+            ...defaultIncrementalConfig,
+            entrypoint: undefined
+          };
           const skottWithoutCache = new Skott(
-            { ...defaultIncrementalConfig, entrypoint: undefined },
+            initialConfiguration,
             fileReader,
             fileWriter,
             walkerSelector
@@ -204,9 +297,12 @@ describe("Incremental analysis", () => {
             "lib.js": updatedNodeContent,
             // New file is added
             "someNewFile.js": newNodeContent,
-            "SKOTT_CACHE.json": JSON.stringify(
-              dictFromCache(skottWithoutCache.getStructureCache())
-            )
+            [kSkottCacheFileName]: JSON.stringify({
+              configuration: createNodeHash(
+                JSON.stringify(initialConfiguration)
+              ),
+              sourceFiles: dictFromCache(skottWithoutCache.getStructureCache())
+            })
           });
 
           const affectedFilesThatShouldNotBeRetrievedFromCache: string[] = [];
@@ -280,16 +376,17 @@ describe("Incremental analysis", () => {
 
             const indexHash = createNodeHash(indexFileContent);
             const libHash = createNodeHash(libFileContent);
+            const initialConfiguration = {
+              ...defaultIncrementalConfig,
+              entrypoint: "index.js",
+              dependencyTracking: {
+                thirdParty: true,
+                builtin: false,
+                typeOnly: false
+              }
+            };
             const skott = new Skott(
-              {
-                ...defaultIncrementalConfig,
-                entrypoint: "index.js",
-                dependencyTracking: {
-                  thirdParty: true,
-                  builtin: false,
-                  typeOnly: true
-                }
-              },
+              initialConfiguration,
               fileReader,
               fileWriter,
               walkerSelector
@@ -328,15 +425,7 @@ describe("Incremental analysis", () => {
             );
 
             const secondSkottInstance = new Skott(
-              {
-                ...defaultIncrementalConfig,
-                entrypoint: "index.js",
-                dependencyTracking: {
-                  thirdParty: true,
-                  builtin: false,
-                  typeOnly: false
-                }
-              },
+              initialConfiguration,
               fileReader,
               fileWriter,
               new NotWorkingWalkerSelector() as any
@@ -374,17 +463,18 @@ describe("Incremental analysis", () => {
 
             const indexHash = createNodeHash(indexFileContent);
             const libHash = createNodeHash(libFileContent);
+            const initialConfig = {
+              ...defaultIncrementalConfig,
+              includeBaseDir: false,
+              entrypoint: "src/index.js",
+              dependencyTracking: {
+                thirdParty: true,
+                builtin: true,
+                typeOnly: false
+              }
+            };
             const skottWithoutCache = new Skott(
-              {
-                ...defaultIncrementalConfig,
-                includeBaseDir: false,
-                entrypoint: "src/index.js",
-                dependencyTracking: {
-                  thirdParty: true,
-                  builtin: true,
-                  typeOnly: false
-                }
-              },
+              initialConfig,
               fileReader,
               fileWriter,
               walkerSelector
@@ -424,16 +514,7 @@ describe("Incremental analysis", () => {
             ).to.deep.equal(expectedCache);
 
             const skottWithCacheAndBrokenWalker = new Skott(
-              {
-                ...defaultIncrementalConfig,
-                includeBaseDir: false,
-                entrypoint: "src/index.js",
-                dependencyTracking: {
-                  thirdParty: true,
-                  builtin: true,
-                  typeOnly: false
-                }
-              },
+              initialConfig,
               fileReader,
               fileWriter,
               new NotWorkingWalkerSelector() as any
@@ -469,16 +550,17 @@ describe("Incremental analysis", () => {
             "lib.js": libFileContent
           });
 
+          const initialConfiguration = {
+            ...defaultIncrementalConfig,
+            entrypoint: "index.js",
+            dependencyTracking: {
+              thirdParty: true,
+              builtin: false,
+              typeOnly: false
+            }
+          };
           const skott = new Skott(
-            {
-              ...defaultIncrementalConfig,
-              entrypoint: "index.js",
-              dependencyTracking: {
-                thirdParty: true,
-                builtin: false,
-                typeOnly: false
-              }
-            },
+            initialConfiguration,
             fileReader,
             fileWriter,
             walkerSelector
@@ -515,9 +597,12 @@ describe("Incremental analysis", () => {
             "newlyAddedFile.js": `
               export function something() {}
             `,
-            "SKOTT_CACHE.json": JSON.stringify(
-              dictFromCache(skott.getStructureCache())
-            )
+            [kSkottCacheFileName]: JSON.stringify({
+              configuration: createNodeHash(
+                JSON.stringify(initialConfiguration)
+              ),
+              sourceFiles: dictFromCache(skott.getStructureCache())
+            })
           });
 
           const affectedFilesThatShouldNotBeRetrievedFromCache: string[] = [];
@@ -534,15 +619,7 @@ describe("Incremental analysis", () => {
           }
 
           const skottWithCache = new Skott(
-            {
-              ...defaultIncrementalConfig,
-              entrypoint: "index.js",
-              dependencyTracking: {
-                thirdParty: true,
-                builtin: false,
-                typeOnly: false
-              }
-            },
+            initialConfiguration,
             fileReader,
             fileWriter,
             new WalkerSelectorWithFileTracking() as any
