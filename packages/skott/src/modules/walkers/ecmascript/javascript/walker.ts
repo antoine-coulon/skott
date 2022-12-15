@@ -1,11 +1,11 @@
 import { walk } from "estree-walker";
+import { parseScript } from "meriyah";
 
 import type { ModuleWalker, ModuleWalkerResult } from "../../common.js";
 import { extractModuleDeclarations } from "../module-declaration.js";
 
 export class JavaScriptModuleWalker implements ModuleWalker {
   public async walk(fileContent: string): Promise<ModuleWalkerResult> {
-    const { parseScript } = await import("meriyah");
     const moduleDeclarations = new Set<string>();
     const node = parseScript(fileContent, {
       module: true,
