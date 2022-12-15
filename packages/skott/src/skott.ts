@@ -184,7 +184,11 @@ export class Skott {
    * compliant path again so that they can be looked up correctly.
    */
   private fromAbsoluteToRelativePath(moduleName: string): string {
-    return "./".concat(moduleName);
+    if (moduleName.startsWith("../")) {
+      return moduleName;
+    }
+
+    return path.relative(this.#baseDir, moduleName);
   }
 
   private async findModuleDeclarations(
@@ -200,7 +204,7 @@ export class Skott {
       if (cachedNode && !isFileAffected(fileContent, cachedNode.hash)) {
         return new Set(
           cachedNode.value.adjacentTo
-            .map(this.fromAbsoluteToRelativePath)
+            .map((f) => this.fromAbsoluteToRelativePath(f))
             .concat(cachedNode.value.body.thirdPartyDependencies)
             .concat(cachedNode.value.body.builtinDependencies)
         );
@@ -256,7 +260,29 @@ export class Skott {
         fullFilePathFromBaseDirectory,
         nextFileContentToExplore
       );
+
+      return;
     } catch {}
+
+    if (this.config.incremental) {
+      try {
+        const restoredPath = this.fromAbsoluteToRelativePath(moduleDeclaration);
+        const nextFileContentToExplore = await this.fileReader.read(
+          restoredPath
+        );
+
+        await this.addNode(restoredPath);
+        await this.linkNodes({
+          from: rootPath,
+          to: restoredPath
+        });
+
+        await this.collectModuleDeclarationsFromFile(
+          restoredPath,
+          nextFileContentToExplore
+        );
+      } catch {}
+    }
   }
 
   private async collectModuleDeclarationsFromFile(
@@ -314,7 +340,10 @@ export class Skott {
             isPathAliasDeclaration: true
           });
         }
-      } else if (isThirdPartyModule(moduleDeclaration)) {
+      } else if (
+        isThirdPartyModule(moduleDeclaration) &&
+        path.extname(moduleDeclaration) === ""
+      ) {
         if (!this.config.dependencyTracking.thirdParty) {
           continue;
         }

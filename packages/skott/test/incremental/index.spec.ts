@@ -55,8 +55,6 @@ describe("Incremental analysis", () => {
 
     it("should store the configuration used for the analysis", async () => {
       const fileContent = `
-        import fs from "node:fs";
-
         const x = 2;
       `;
       mountFakeFileSystem({
@@ -155,6 +153,89 @@ describe("Incremental analysis", () => {
             value: makeInitialSkottNodeValue("index.js")
           }
         });
+      });
+
+      it("should store the generated graph in its cache", async () => {
+        const hashFromIndex = createNodeHash(
+          "import { FileReader } from './filesystem/file-reader.js'"
+        );
+        const fileReaderContent = `
+          import {
+            isDirSupportedByDefault,
+            isFileSupportedByDefault
+          } from "../modules/walkers/ecmascript/module-resolver.js";          
+        `;
+        const hashFromFileReader = createNodeHash(fileReaderContent);
+        const hashFromModuleResolver = createNodeHash(
+          "const myModule = 'abc';"
+        );
+        mountFakeFileSystem({
+          "index.ts":
+            "import { FileReader } from './filesystem/file-reader.js'",
+          "filesystem/file-reader.ts": fileReaderContent,
+          "modules/walkers/ecmascript/module-resolver.ts":
+            "const myModule = 'abc';"
+        });
+
+        const skottInstance = makeNewSkottInstance("index.ts");
+
+        await skottInstance.initialize();
+
+        expect(dictFromCache(skottInstance.getStructureCache())).to.deep.equal({
+          "index.ts": {
+            hash: hashFromIndex,
+            value: {
+              id: "index.ts",
+              body: fakeNodeBody,
+              adjacentTo: ["filesystem/file-reader.ts"]
+            }
+          },
+          "filesystem/file-reader.ts": {
+            hash: hashFromFileReader,
+            value: {
+              id: "filesystem/file-reader.ts",
+              body: fakeNodeBody,
+              adjacentTo: ["modules/walkers/ecmascript/module-resolver.ts"]
+            }
+          },
+          "modules/walkers/ecmascript/module-resolver.ts": {
+            hash: hashFromModuleResolver,
+            value: makeInitialSkottNodeValue(
+              "modules/walkers/ecmascript/module-resolver.ts"
+            )
+          }
+        });
+
+        const skottInstance2 = makeNewSkottInstance("index.ts");
+
+        await skottInstance2.initialize();
+
+        expect(dictFromCache(skottInstance2.getStructureCache())).to.deep.equal(
+          {
+            "index.ts": {
+              hash: hashFromIndex,
+              value: {
+                id: "index.ts",
+                body: fakeNodeBody,
+                adjacentTo: ["filesystem/file-reader.ts"]
+              }
+            },
+            "filesystem/file-reader.ts": {
+              hash: hashFromFileReader,
+              value: {
+                id: "filesystem/file-reader.ts",
+                body: fakeNodeBody,
+                adjacentTo: ["modules/walkers/ecmascript/module-resolver.ts"]
+              }
+            },
+            "modules/walkers/ecmascript/module-resolver.ts": {
+              hash: hashFromModuleResolver,
+              value: makeInitialSkottNodeValue(
+                "modules/walkers/ecmascript/module-resolver.ts"
+              )
+            }
+          }
+        );
       });
     });
 
