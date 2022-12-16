@@ -53,87 +53,98 @@ describe("Incremental analysis", () => {
       );
     }
 
-    it("should store the configuration used for the analysis", async () => {
-      const fileContent = `
-        const x = 2;
-      `;
-      mountFakeFileSystem({
-        "index.js": fileContent
-      });
+    describe("When inspecting the provided configuration", () => {
+      describe("When the provided configuration change since the last analysis", () => {
+        it("should invalidate the cache and store the new configuration hash", async () => {
+          const fileContent = `
+            const x = 2;
+          `;
+          mountFakeFileSystem({
+            "index.js": fileContent
+          });
 
-      const initialConfiguration = {
-        ...defaultIncrementalConfig,
-        dependencyTracking: {
-          builtin: false,
-          thirdParty: false,
-          typeOnly: false
-        }
-      };
-
-      const skottInstance = makeNewSkottInstance(
-        "index.js",
-        initialConfiguration
-      );
-
-      const { getStructure } = await skottInstance.initialize();
-
-      expect(skottInstance.getStructureCache().configurationHash).to.equal(
-        createNodeHash(
-          JSON.stringify({
-            ...initialConfiguration,
-            entrypoint: "index.js"
-          })
-        )
-      );
-
-      expect(getStructure().graph).to.deep.equal({
-        "index.js": {
-          body: {
-            ...fakeNodeBody,
-            builtinDependencies: []
-          },
-          id: "index.js",
-          adjacentTo: []
-        }
-      });
-
-      mountFakeFileSystem({
-        "index.js": fileContent,
-        [kSkottCacheFileName]: JSON.stringify({
-          configuration: skottInstance.getStructureCache().configurationHash,
-          sourceFiles: {
-            "index.js": {
-              hash: hashFromTheOnlyExistingFile,
-              value: makeInitialSkottNodeValue("index.js")
+          const initialConfiguration = {
+            ...defaultIncrementalConfig,
+            entrypoint: "index.js",
+            dependencyTracking: {
+              builtin: false,
+              thirdParty: false,
+              typeOnly: false
             }
-          }
-        })
+          };
+          const skottInstance = makeNewSkottInstance(
+            "index.js",
+            initialConfiguration
+          );
+          const { getStructure } = await skottInstance.initialize();
+
+          expect(skottInstance.getStructureCache().configurationHash).to.equal(
+            createNodeHash(JSON.stringify(initialConfiguration))
+          );
+
+          expect(getStructure().graph).to.deep.equal({
+            "index.js": {
+              body: {
+                ...fakeNodeBody,
+                builtinDependencies: []
+              },
+              id: "index.js",
+              adjacentTo: []
+            }
+          });
+
+          mountFakeFileSystem({
+            "index.js": fileContent,
+            [kSkottCacheFileName]: JSON.stringify({
+              configuration:
+                skottInstance.getStructureCache().configurationHash,
+              sourceFiles: {
+                "index.js": {
+                  hash: hashFromTheOnlyExistingFile,
+                  value: makeInitialSkottNodeValue("index.js")
+                }
+              }
+            })
+          });
+
+          const modifiedConfig = {
+            ...initialConfiguration,
+            dependencyTracking: {
+              ...initialConfiguration.dependencyTracking,
+              builtin: true
+            }
+          };
+          const newSkottInstanceWithModifiedConfig = makeNewSkottInstance(
+            "index.js",
+            modifiedConfig
+          );
+          const modifiedConfigHash = createNodeHash(
+            JSON.stringify(modifiedConfig)
+          );
+
+          const {
+            sourceFiles: invalidatedSourceFiles,
+            configurationHash: modifiedConfigurationHash
+          } = newSkottInstanceWithModifiedConfig.getStructureCache();
+
+          expect(invalidatedSourceFiles.size).to.equal(0);
+          expect(modifiedConfigurationHash).to.equal(modifiedConfigHash);
+
+          // restart the analysis process
+          await newSkottInstanceWithModifiedConfig.initialize();
+
+          const newSkottInstanceWithSameConfigAsBefore = makeNewSkottInstance(
+            "index.js",
+            modifiedConfig
+          );
+          const {
+            configurationHash: sameConfigurationHashAsBefore,
+            sourceFiles: sourceFilesFromCache
+          } = newSkottInstanceWithSameConfigAsBefore.getStructureCache();
+          expect(sourceFilesFromCache.size).to.equal(1);
+          expect(sameConfigurationHashAsBefore).to.equal(modifiedConfigHash);
+        });
       });
-
-      const anotherConfig = {
-        ...initialConfiguration,
-        dependencyTracking: {
-          builtin: true,
-          thirdParty: false,
-          typeOnly: false
-        }
-      };
-      const newSkottInstanceWithAnotherConfig = makeNewSkottInstance(
-        "index.js",
-        anotherConfig
-      );
-
-      expect(
-        newSkottInstanceWithAnotherConfig.getStructureCache().sourceFiles.size
-      ).to.equal(0);
-
-      const newSkottInstanceWithSameConfig = makeNewSkottInstance(
-        "index.js",
-        initialConfiguration
-      );
-      expect(
-        newSkottInstanceWithSameConfig.getStructureCache().sourceFiles.size
-      ).to.equal(1);
     });
 
     describe("When providing an entrypoint", () => {

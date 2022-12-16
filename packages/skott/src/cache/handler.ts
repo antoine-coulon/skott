@@ -75,8 +75,8 @@ export class SkottCacheHandler {
     } catch {}
   }
 
-  private isConfigurationAffected(configurationHash: string): boolean {
-    return createNodeHash(JSON.stringify(this.config)) !== configurationHash;
+  private isConfigurationAffected(cachedConfigHash: string): boolean {
+    return createNodeHash(JSON.stringify(this.config)) !== cachedConfigHash;
   }
 
   private makeCache(): SkottCache {
@@ -89,7 +89,7 @@ export class SkottCacheHandler {
 
     if (this.isConfigurationAffected(cache.configuration)) {
       return {
-        configurationHash: cache.configuration,
+        configurationHash: createNodeHash(JSON.stringify(this.config)),
         sourceFiles: new Map()
       };
     }
