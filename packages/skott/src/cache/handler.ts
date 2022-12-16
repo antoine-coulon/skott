@@ -1,13 +1,10 @@
-import crypto from "node:crypto";
 import path from "node:path";
 
-import { FileReader } from "../filesystem/file-reader";
-import { FileWriter } from "../filesystem/file-writer.js";
-import type { SkottConfig, SkottNode, SkottStructure } from "../skott";
+import type { FileReader } from "../filesystem/file-reader.js";
+import type { FileWriter } from "../filesystem/file-writer.js";
+import type { SkottConfig, SkottNode, SkottStructure } from "../skott.js";
 
-export function createNodeHash(content: string): string {
-  return crypto.createHash("sha1").update(content).digest("hex");
-}
+import { createNodeHash, isConfigurationAffected } from "./affected.js";
 
 export function createInitialSkottNodeValue(id: string): SkottNode {
   return {
@@ -19,13 +16,6 @@ export function createInitialSkottNodeValue(id: string): SkottNode {
       thirdPartyDependencies: []
     }
   };
-}
-
-export function isFileAffected(
-  fileContent: string,
-  hashInCache: string
-): boolean {
-  return createNodeHash(fileContent) !== hashInCache;
 }
 
 export interface SkottCachedNode {
@@ -81,13 +71,6 @@ export class SkottCacheHandler {
     return this.#cache;
   }
 
-  private isConfigurationAffected(
-    currentConfigHash: string,
-    cachedConfigHash: string
-  ): boolean {
-    return currentConfigHash !== cachedConfigHash;
-  }
-
   private createCache(): SkottCache {
     const cache = readSkottCache(() =>
       // eslint-disable-next-line no-sync
@@ -96,9 +79,7 @@ export class SkottCacheHandler {
       )
     );
 
-    if (
-      this.isConfigurationAffected(this.#currentConfigHash, cache.configuration)
-    ) {
+    if (isConfigurationAffected(this.#currentConfigHash, cache.configuration)) {
       return {
         configurationHash: this.#currentConfigHash,
         sourceFiles: new Map()

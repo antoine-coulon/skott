@@ -6,7 +6,7 @@ import {
   isFileAffected,
   SkottCache,
   SkottCacheHandler
-} from "./cache/handler.js";
+} from "./cache/index.js";
 import { FileReader } from "./filesystem/file-reader.js";
 import { FileWriter } from "./filesystem/file-writer.js";
 import { WalkerSelector } from "./modules/walkers/common.js";

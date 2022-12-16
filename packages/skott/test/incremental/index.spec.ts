@@ -1,9 +1,9 @@
 /* eslint-disable max-classes-per-file */
 import { expect } from "chai";
 
+import { createNodeHash } from "../../src/cache/affected";
 import {
   createInitialSkottNodeValue,
-  createNodeHash,
   kSkottCacheFileName,
   SkottCache,
   SkottCachedNode
