@@ -2,6 +2,8 @@ import { expect } from "chai";
 import * as memfs from "memfs";
 
 import { FileReader } from "../../src/filesystem/file-reader.js";
+import { InMemoryFileWriter } from "../../src/filesystem/file-writer.js";
+import { WalkerSelector } from "../../src/modules/walkers/common.js";
 import { Skott, SkottStructure } from "../../src/skott";
 
 import { mountFakeFileSystem } from "./shared";
@@ -14,6 +16,11 @@ class InMemoryFileReaderWithFakeStats implements FileReader {
       resolve(memfs.fs.readFileSync(filename, "utf-8") as string);
     });
   }
+
+  readSync(filename: string): string {
+    return memfs.fs.readFileSync(filename, "utf-8") as string;
+  }
+
   async *readdir(): AsyncGenerator<string> {
     yield Promise.resolve("fake");
   }
@@ -54,7 +61,9 @@ async function makeSkott(
       fileExtensions: [".js", ".ts"],
       tsConfigPath: "./tsconfig.json"
     },
-    new InMemoryFileReaderWithFakeStats()
+    new InMemoryFileReaderWithFakeStats(),
+    new InMemoryFileWriter(),
+    new WalkerSelector()
   );
   const skottInstance = await skott.initialize();
 
@@ -115,7 +124,9 @@ describe("When building the project structure independently of JavaScript or Typ
           fileExtensions: [".js"],
           tsConfigPath: "./tsconfig.json"
         },
-        new InMemoryFileReaderWithFakeStats()
+        new InMemoryFileReaderWithFakeStats(),
+        new InMemoryFileWriter(),
+        new WalkerSelector()
       );
 
       const skottInstance = await skott.initialize();

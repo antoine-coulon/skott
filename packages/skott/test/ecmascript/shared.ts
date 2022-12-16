@@ -3,19 +3,25 @@ import path from "node:path";
 import * as memfs from "memfs";
 
 import { FileReader } from "../../src/filesystem/file-reader.js";
+import { InMemoryFileWriter } from "../../src/filesystem/file-writer.js";
+import { WalkerSelector } from "../../src/modules/walkers/common.js";
 import {
-  isFileSupportedByDefault,
   isDirSupportedByDefault,
+  isFileSupportedByDefault,
   kExpectedModuleExtensions
 } from "../../src/modules/walkers/ecmascript/module-resolver.js";
 import { Skott, SkottNode } from "../../src/skott";
 
+/* eslint-disable no-sync */
 export class InMemoryFileReader implements FileReader {
   read(filename: string): Promise<string> {
     return new Promise((resolve) => {
-      /* eslint-disable no-sync */
       resolve(memfs.fs.readFileSync(filename, "utf-8") as string);
     });
+  }
+
+  readSync(filename: string): string {
+    return memfs.fs.readFileSync(filename, { encoding: "utf-8" }) as string;
   }
 
   async *readdir(
@@ -40,6 +46,7 @@ export class InMemoryFileReader implements FileReader {
   stats(_filename: string): Promise<number> {
     return new Promise((resolve) => resolve(0));
   }
+
   getCurrentWorkingDir(): string {
     return "./";
   }
@@ -81,7 +88,9 @@ export async function buildSkottProjectUsingInMemoryFileExplorer({
       fileExtensions,
       tsConfigPath
     },
-    new InMemoryFileReader()
+    new InMemoryFileReader(),
+    new InMemoryFileWriter(),
+    new WalkerSelector()
   );
   const skottInstance = await skott.initialize();
   const structure = skottInstance.getStructure();

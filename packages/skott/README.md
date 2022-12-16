@@ -35,11 +35,19 @@ const { getStructure, findCircularDependencies, findParentsOf, findLeaves } = aw
   /**
    * (Optional) Entrypoint of the project. If not provided, `skott` will search for all
    * supported files starting from the current working directory.
+   * Defaults to `""`
    */ 
   entrypoint: "src/index.ts",
   /**
+   * (Optional) Whether to run Skott using the incremental pattern. By setting "true",
+   * Skott will create a `.skott/cache.json` file to only detect and re-process what
+   * changed since the last analysis.
+   * Defaults to `true`;
+   */ 
+  incremental: true,
+  /**
    * (Optional) restricts file discovering when building the graph. 
-   * Defaults to [".js", ".mjs", ".cjs", ".jsx", ".ts", ".tsx"]
+   * Defaults to `[".js", ".mjs", ".cjs", ".jsx", ".ts", ".tsx"]`
    */ 
   fileExtensions: [".ts", ".tsx"],
   /**

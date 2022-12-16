@@ -2,8 +2,14 @@ import path from "node:path";
 
 import { DiGraph, VertexDefinition } from "digraph-js";
 
-import { FileReader, FileSystemReader } from "./filesystem/file-reader.js";
-import { selectAppropriateModuleWalker } from "./modules/walkers/common.js";
+import {
+  isFileAffected,
+  SkottCache,
+  SkottCacheHandler
+} from "./cache/index.js";
+import { FileReader } from "./filesystem/file-reader.js";
+import { FileWriter } from "./filesystem/file-writer.js";
+import { WalkerSelector } from "./modules/walkers/common.js";
 import {
   isBinaryModule,
   isBuiltinModule,
@@ -31,6 +37,7 @@ export interface SkottConfig {
   entrypoint?: string;
   circularMaxDepth?: number;
   includeBaseDir: boolean;
+  incremental?: boolean;
   dependencyTracking: {
     thirdParty: boolean;
     builtin: boolean;
@@ -53,9 +60,10 @@ export interface SkottInstance {
   findParentsOf: (node: string) => string[];
 }
 
-const defaultConfig = {
+export const defaultConfig = {
   entrypoint: "",
   includeBaseDir: false,
+  incremental: false,
   circularMaxDepth: Number.POSITIVE_INFINITY,
   dependencyTracking: {
     thirdParty: false,
@@ -67,14 +75,28 @@ const defaultConfig = {
 };
 
 export class Skott {
+  #cacheHandler: SkottCacheHandler;
   #projectGraph = new DiGraph<SkottNode>();
   #visitedNodes = new Set<string>();
   #baseDir = ".";
 
+  // eslint-disable-next-line max-params
   constructor(
     private readonly config: SkottConfig = defaultConfig,
-    private readonly fileReader: FileReader = new FileSystemReader()
-  ) {}
+    private readonly fileReader: FileReader,
+    private readonly fileWriter: FileWriter,
+    private readonly walkerSelector: WalkerSelector
+  ) {
+    this.#cacheHandler = new SkottCacheHandler(
+      this.fileReader,
+      this.fileWriter,
+      this.config
+    );
+  }
+
+  public getStructureCache(): SkottCache {
+    return this.#cacheHandler.store;
+  }
 
   private formatNodePath(nodePath: string): string {
     /**
@@ -160,7 +182,18 @@ export class Skott {
     fileName: string,
     fileContent: string
   ): Promise<Set<string>> {
-    const moduleWalker = selectAppropriateModuleWalker(fileName);
+    if (this.config.incremental) {
+      const cachedNode = this.#cacheHandler.get(this.formatNodePath(fileName));
+
+      if (cachedNode && !isFileAffected(fileContent, cachedNode.hash)) {
+        return this.#cacheHandler.restoreModuleDeclarations(
+          cachedNode,
+          this.#baseDir
+        );
+      }
+    }
+
+    const moduleWalker = this.walkerSelector.getAppropriateWalker(fileName);
     const moduleWalkerConfig = {
       trackTypeOnlyDependencies: this.config.dependencyTracking.typeOnly
     };
@@ -209,7 +242,32 @@ export class Skott {
         fullFilePathFromBaseDirectory,
         nextFileContentToExplore
       );
+
+      return;
     } catch {}
+
+    if (this.config.incremental) {
+      try {
+        const restoredPath = this.#cacheHandler.restoreFileRelativePath(
+          moduleDeclaration,
+          this.#baseDir
+        );
+        const nextFileContentToExplore = await this.fileReader.read(
+          restoredPath
+        );
+
+        await this.addNode(restoredPath);
+        await this.linkNodes({
+          from: rootPath,
+          to: restoredPath
+        });
+
+        await this.collectModuleDeclarationsFromFile(
+          restoredPath,
+          nextFileContentToExplore
+        );
+      } catch {}
+    }
   }
 
   private async collectModuleDeclarationsFromFile(
@@ -218,6 +276,13 @@ export class Skott {
   ): Promise<void> {
     if (this.#visitedNodes.has(rootPath)) {
       return;
+    }
+
+    if (this.config.incremental) {
+      this.#cacheHandler.addSourceFile(
+        this.formatNodePath(rootPath),
+        fileContent
+      );
     }
 
     const moduleDeclarations = await this.findModuleDeclarations(
@@ -260,7 +325,10 @@ export class Skott {
             isPathAliasDeclaration: true
           });
         }
-      } else if (isThirdPartyModule(moduleDeclaration)) {
+      } else if (
+        isThirdPartyModule(moduleDeclaration) &&
+        path.extname(moduleDeclaration) === ""
+      ) {
         if (!this.config.dependencyTracking.thirdParty) {
           continue;
         }
@@ -331,6 +399,9 @@ export class Skott {
     }
 
     const rootFileContent = await this.fileReader.read(entrypointModulePath);
+    if (this.config.incremental) {
+      this.#cacheHandler.addSourceFile(entrypointModulePath, rootFileContent);
+    }
 
     this.#baseDir = path.dirname(entrypointModulePath);
     await this.addNode(entrypointModulePath);
@@ -348,6 +419,11 @@ export class Skott {
       this.config.fileExtensions
     )) {
       const rootFileContent = await this.fileReader.read(rootFile);
+
+      if (this.config.incremental) {
+        this.#cacheHandler.addSourceFile(rootFile, rootFileContent);
+      }
+
       await this.addNode(rootFile);
       await this.collectModuleDeclarationsFromFile(rootFile, rootFileContent);
     }
@@ -358,6 +434,11 @@ export class Skott {
       await this.buildFromEntrypoint(this.config.entrypoint);
     } else {
       await this.buildFromRootDirectory();
+    }
+
+    if (this.config.incremental) {
+      const { graph } = this.makeProjectStructure();
+      await this.#cacheHandler.save(graph);
     }
 
     return {

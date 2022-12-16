@@ -1,3 +1,4 @@
+import { parse } from "@typescript-eslint/typescript-estree";
 import { walk } from "estree-walker";
 
 import type {
@@ -27,7 +28,6 @@ export class TypeScriptModuleWalker implements ModuleWalker {
     fileContent: string,
     config: ModuleWalkerConfig
   ): Promise<ModuleWalkerResult> {
-    const { parse } = await import("@typescript-eslint/typescript-estree");
     const trackTypeOnlyDependencies = config.trackTypeOnlyDependencies;
     const moduleDeclarations = new Set<string>();
     let jsxEnabled = true;

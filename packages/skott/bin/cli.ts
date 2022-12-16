@@ -76,6 +76,12 @@ const cli = sade("skott [entrypoint]", true)
   )
 
   .option(
+    "-i, --incremental",
+    "Enable incremental mode. Only the files that changed since the last run will be analyzed.",
+    true
+  )
+
+  .option(
     "-it, --trackTypeOnlyDependencies",
     "Enable dependency tracking for Typescript 'import type' statements",
     true
