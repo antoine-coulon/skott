@@ -38,7 +38,7 @@ export type SkottCache = {
   sourceFiles: Map<SkottNode["id"], SkottCachedNode>;
 };
 
-export const kSkottCacheFileName = "SKOTT_CACHE.json";
+export const kSkottCacheFileName = path.join(".skott", "cache.json");
 
 function readSkottCache<
   T extends Record<string, SkottCachedNode> & { configuration: string }

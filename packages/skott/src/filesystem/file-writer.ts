@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import path from "node:path";
 
 import memfs from "memfs";
 
@@ -8,7 +9,15 @@ export interface FileWriter {
 
 export class InMemoryFileWriter implements FileWriter {
   async write(filePath: string, fileContent: string): Promise<void> {
-    return new Promise((resolve) => {
+    const baseDir = path.dirname(filePath);
+
+    await new Promise<void>((resolve) => {
+      memfs.fs.mkdir(baseDir, { recursive: true }, () => {
+        resolve();
+      });
+    });
+
+    await new Promise<void>((resolve) => {
       memfs.fs.writeFile(filePath, fileContent, () => {
         resolve();
       });
@@ -18,6 +27,7 @@ export class InMemoryFileWriter implements FileWriter {
 
 export class FileSystemWriter implements FileWriter {
   async write(filePath: string, fileContent: string): Promise<void> {
+    await fs.mkdir(path.dirname(filePath), { recursive: true });
     await fs.writeFile(filePath, fileContent);
   }
 }
