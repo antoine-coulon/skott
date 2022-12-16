@@ -1,7 +1,7 @@
 {
   "name": "skott",
-  "version": "0.11.5",
-  "description": "Automatically construct and visualize Graphs generated from your Node.js project",
+  "version": "0.12.0",
+  "description": "Automatically construct and visualize Graphs generated from your JavaScript and TypeScript project",
   "author": "Antoine Coulon",
   "license": "MIT",
   "repository": {
@@ -23,8 +23,8 @@
   "scripts": {
     "build": "rimraf ./dist && tsc --project tsconfig.build.json",
     "lint": "eslint .",
-    "prepublishOnly": "npm run test && npm run build",
-    "prestart": "npm run build",
+    "prepublishOnly": "pnpm run test && pnpm run build",
+    "prestart": "pnpm run build",
     "start": "node dist/bin/cli.js",
     "test": "mocha --parallel"
   },
