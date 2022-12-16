@@ -96,6 +96,31 @@ export class SkottCacheHandler {
     return this.#cache.sourceFiles.get(fileId);
   }
 
+  /**
+   * When stored, nodes paths are absolute hence not ECMAScript compliant for
+   * imports declarations. When reading them again, we must be sure to put a
+   * compliant path again so that they can be looked up correctly.
+   */
+  public restoreFileRelativePath(moduleName: string, baseDir: string): string {
+    if (moduleName.startsWith("../")) {
+      return moduleName;
+    }
+
+    return path.relative(baseDir, moduleName);
+  }
+
+  public restoreModuleDeclarations(
+    node: SkottCachedNode,
+    baseDir: string
+  ): Set<string> {
+    return new Set(
+      node.value.adjacentTo
+        .map((moduleName) => this.restoreFileRelativePath(moduleName, baseDir))
+        .concat(node.value.body.thirdPartyDependencies)
+        .concat(node.value.body.builtinDependencies)
+    );
+  }
+
   public addSourceFile(fileId: string, fileContent: string): void {
     const hashedContent = createNodeHash(fileContent);
     const currentlyCachedNode = this.#cache.sourceFiles.get(fileId);

@@ -75,7 +75,7 @@ export const defaultConfig = {
 };
 
 export class Skott {
-  #skottCache: SkottCacheHandler;
+  #cacheHandler: SkottCacheHandler;
   #projectGraph = new DiGraph<SkottNode>();
   #visitedNodes = new Set<string>();
   #baseDir = ".";
@@ -87,7 +87,7 @@ export class Skott {
     private readonly fileWriter: FileWriter,
     private readonly walkerSelector: WalkerSelector
   ) {
-    this.#skottCache = new SkottCacheHandler(
+    this.#cacheHandler = new SkottCacheHandler(
       this.fileReader,
       this.fileWriter,
       this.config
@@ -95,7 +95,7 @@ export class Skott {
   }
 
   public getStructureCache(): SkottCache {
-    return this.#skottCache.store;
+    return this.#cacheHandler.store;
   }
 
   private formatNodePath(nodePath: string): string {
@@ -178,35 +178,17 @@ export class Skott {
     });
   }
 
-  /**
-   * When stored, nodes paths are absolute hence not ECMAScript compliant for
-   * imports declarations. When reading them again, we must be sure to put a
-   * compliant path again so that they can be looked up correctly.
-   */
-  private fromAbsoluteToRelativePath(moduleName: string): string {
-    if (moduleName.startsWith("../")) {
-      return moduleName;
-    }
-
-    return path.relative(this.#baseDir, moduleName);
-  }
-
   private async findModuleDeclarations(
     fileName: string,
     fileContent: string
   ): Promise<Set<string>> {
     if (this.config.incremental) {
-      const cachedNode = this.#skottCache.get(this.formatNodePath(fileName));
-      /**
-       * Only try to hit cache when the file is not affected
-       * otherwise must parse it again
-       */
+      const cachedNode = this.#cacheHandler.get(this.formatNodePath(fileName));
+
       if (cachedNode && !isFileAffected(fileContent, cachedNode.hash)) {
-        return new Set(
-          cachedNode.value.adjacentTo
-            .map((f) => this.fromAbsoluteToRelativePath(f))
-            .concat(cachedNode.value.body.thirdPartyDependencies)
-            .concat(cachedNode.value.body.builtinDependencies)
+        return this.#cacheHandler.restoreModuleDeclarations(
+          cachedNode,
+          this.#baseDir
         );
       }
     }
@@ -266,7 +248,10 @@ export class Skott {
 
     if (this.config.incremental) {
       try {
-        const restoredPath = this.fromAbsoluteToRelativePath(moduleDeclaration);
+        const restoredPath = this.#cacheHandler.restoreFileRelativePath(
+          moduleDeclaration,
+          this.#baseDir
+        );
         const nextFileContentToExplore = await this.fileReader.read(
           restoredPath
         );
@@ -294,7 +279,7 @@ export class Skott {
     }
 
     if (this.config.incremental) {
-      this.#skottCache.addSourceFile(
+      this.#cacheHandler.addSourceFile(
         this.formatNodePath(rootPath),
         fileContent
       );
@@ -415,7 +400,7 @@ export class Skott {
 
     const rootFileContent = await this.fileReader.read(entrypointModulePath);
     if (this.config.incremental) {
-      this.#skottCache.addSourceFile(entrypointModulePath, rootFileContent);
+      this.#cacheHandler.addSourceFile(entrypointModulePath, rootFileContent);
     }
 
     this.#baseDir = path.dirname(entrypointModulePath);
@@ -436,7 +421,7 @@ export class Skott {
       const rootFileContent = await this.fileReader.read(rootFile);
 
       if (this.config.incremental) {
-        this.#skottCache.addSourceFile(rootFile, rootFileContent);
+        this.#cacheHandler.addSourceFile(rootFile, rootFileContent);
       }
 
       await this.addNode(rootFile);
@@ -453,7 +438,7 @@ export class Skott {
 
     if (this.config.incremental) {
       const { graph } = this.makeProjectStructure();
-      await this.#skottCache.save(graph);
+      await this.#cacheHandler.save(graph);
     }
 
     return {
