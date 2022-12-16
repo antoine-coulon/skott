@@ -9,7 +9,7 @@ export function createNodeHash(content: string): string {
   return crypto.createHash("sha1").update(content).digest("hex");
 }
 
-export function makeInitialSkottNodeValue(id: string): SkottNode {
+export function createInitialSkottNodeValue(id: string): SkottNode {
   return {
     id,
     adjacentTo: [],
@@ -50,7 +50,7 @@ function readSkottCache<
   }
 }
 
-function makeEmptyCache(): SkottCache {
+function createEmptyCache(): SkottCache {
   return {
     configurationHash: "",
     sourceFiles: new Map()
@@ -58,8 +58,9 @@ function makeEmptyCache(): SkottCache {
 }
 
 export class SkottCacheHandler {
-  #cache = makeEmptyCache();
-  #nextCache = makeEmptyCache();
+  #cache = createEmptyCache();
+  #nextCache = createEmptyCache();
+  #currentConfigHash = "";
 
   constructor(
     private readonly fileReader: FileReader,
@@ -71,15 +72,23 @@ export class SkottCacheHandler {
     }
 
     try {
-      this.#cache = this.makeCache();
+      this.#currentConfigHash = createNodeHash(JSON.stringify(this.config));
+      this.#cache = this.createCache();
     } catch {}
   }
 
-  private isConfigurationAffected(cachedConfigHash: string): boolean {
-    return createNodeHash(JSON.stringify(this.config)) !== cachedConfigHash;
+  get store(): SkottCache {
+    return this.#cache;
   }
 
-  private makeCache(): SkottCache {
+  private isConfigurationAffected(
+    currentConfigHash: string,
+    cachedConfigHash: string
+  ): boolean {
+    return currentConfigHash !== cachedConfigHash;
+  }
+
+  private createCache(): SkottCache {
     const cache = readSkottCache(() =>
       // eslint-disable-next-line no-sync
       this.fileReader.readSync(
@@ -87,9 +96,11 @@ export class SkottCacheHandler {
       )
     );
 
-    if (this.isConfigurationAffected(cache.configuration)) {
+    if (
+      this.isConfigurationAffected(this.#currentConfigHash, cache.configuration)
+    ) {
       return {
-        configurationHash: createNodeHash(JSON.stringify(this.config)),
+        configurationHash: this.#currentConfigHash,
         sourceFiles: new Map()
       };
     }
@@ -100,11 +111,6 @@ export class SkottCacheHandler {
     };
   }
 
-  get store(): SkottCache {
-    // Return Immutable version of the cache
-    return this.#cache;
-  }
-
   public get(fileId: string): SkottCachedNode | undefined {
     return this.#cache.sourceFiles.get(fileId);
   }
@@ -112,25 +118,18 @@ export class SkottCacheHandler {
   public addSourceFile(fileId: string, fileContent: string): void {
     const hashedContent = createNodeHash(fileContent);
     const currentlyCachedNode = this.#cache.sourceFiles.get(fileId);
-
-    if (!currentlyCachedNode) {
-      this.#nextCache.sourceFiles.set(fileId, {
-        hash: hashedContent,
-        value: makeInitialSkottNodeValue(fileId)
-      });
-
-      return;
-    }
+    const cacheNodeValue = currentlyCachedNode
+      ? currentlyCachedNode.value
+      : createInitialSkottNodeValue(fileId);
 
     this.#nextCache.sourceFiles.set(fileId, {
       hash: hashedContent,
-      value: currentlyCachedNode.value
+      value: cacheNodeValue
     });
   }
 
   public async save(
-    latestComputedGraph: SkottStructure["graph"],
-    config: SkottConfig
+    latestComputedGraph: SkottStructure["graph"]
   ): Promise<void> {
     try {
       const graphWithLatestHashes: Record<SkottNode["id"], SkottCachedNode> =
@@ -147,18 +146,16 @@ export class SkottCacheHandler {
         }
       }
 
-      const configHash = createNodeHash(JSON.stringify(config));
-
       await this.fileWriter.write(
         path.join(this.fileReader.getCurrentWorkingDir(), kSkottCacheFileName),
         JSON.stringify({
-          configuration: configHash,
+          configuration: this.#currentConfigHash,
           sourceFiles: graphWithLatestHashes
         })
       );
 
       this.#cache = {
-        configurationHash: configHash,
+        configurationHash: this.#currentConfigHash,
         sourceFiles: new Map(Object.entries(graphWithLatestHashes))
       };
     } catch {}

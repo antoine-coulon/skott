@@ -2,9 +2,9 @@
 import { expect } from "chai";
 
 import {
+  createInitialSkottNodeValue,
   createNodeHash,
   kSkottCacheFileName,
-  makeInitialSkottNodeValue,
   SkottCache,
   SkottCachedNode
 } from "../../src/cache/handler";
@@ -101,7 +101,7 @@ describe("Incremental analysis", () => {
               sourceFiles: {
                 "index.js": {
                   hash: hashFromTheOnlyExistingFile,
-                  value: makeInitialSkottNodeValue("index.js")
+                  value: createInitialSkottNodeValue("index.js")
                 }
               }
             })
@@ -161,7 +161,7 @@ describe("Incremental analysis", () => {
         expect(dictFromCache(skottInstance.getStructureCache())).to.deep.equal({
           "index.js": {
             hash: hashFromTheOnlyExistingFile,
-            value: makeInitialSkottNodeValue("index.js")
+            value: createInitialSkottNodeValue("index.js")
           }
         });
       });
@@ -211,7 +211,7 @@ describe("Incremental analysis", () => {
           },
           "modules/walkers/ecmascript/module-resolver.ts": {
             hash: hashFromModuleResolver,
-            value: makeInitialSkottNodeValue(
+            value: createInitialSkottNodeValue(
               "modules/walkers/ecmascript/module-resolver.ts"
             )
           }
@@ -241,7 +241,7 @@ describe("Incremental analysis", () => {
             },
             "modules/walkers/ecmascript/module-resolver.ts": {
               hash: hashFromModuleResolver,
-              value: makeInitialSkottNodeValue(
+              value: createInitialSkottNodeValue(
                 "modules/walkers/ecmascript/module-resolver.ts"
               )
             }
@@ -265,11 +265,11 @@ describe("Incremental analysis", () => {
         expect(dictFromCache(skottInstance.getStructureCache())).to.deep.equal({
           "index.js": {
             hash: hashFromTheOnlyExistingFile,
-            value: makeInitialSkottNodeValue("index.js")
+            value: createInitialSkottNodeValue("index.js")
           },
           "lib.js": {
             hash: hashFromTheOnlyExistingFile,
-            value: makeInitialSkottNodeValue("lib.js")
+            value: createInitialSkottNodeValue("lib.js")
           }
         });
       });
@@ -300,11 +300,11 @@ describe("Incremental analysis", () => {
             const expectedCache = {
               "index.js": {
                 hash: indexHash,
-                value: makeInitialSkottNodeValue("index.js")
+                value: createInitialSkottNodeValue("index.js")
               },
               "lib.js": {
                 hash: libHash,
-                value: makeInitialSkottNodeValue("lib.js")
+                value: createInitialSkottNodeValue("lib.js")
               }
             };
 
@@ -334,8 +334,8 @@ describe("Incremental analysis", () => {
             ).to.deep.equal(expectedCache);
 
             expect(getStructure().graph).to.deep.equal({
-              "index.js": makeInitialSkottNodeValue("index.js"),
-              "lib.js": makeInitialSkottNodeValue("lib.js")
+              "index.js": createInitialSkottNodeValue("index.js"),
+              "lib.js": createInitialSkottNodeValue("lib.js")
             });
           });
         });
@@ -366,11 +366,11 @@ describe("Incremental analysis", () => {
           const expectedCache = {
             "index.js": {
               hash: indexHash,
-              value: makeInitialSkottNodeValue("index.js")
+              value: createInitialSkottNodeValue("index.js")
             },
             "lib.js": {
               hash: libHash,
-              value: makeInitialSkottNodeValue("lib.js")
+              value: createInitialSkottNodeValue("lib.js")
             }
           };
 
@@ -430,18 +430,18 @@ describe("Incremental analysis", () => {
             ...expectedCache,
             "lib.js": {
               hash: updatedHashContent,
-              value: makeInitialSkottNodeValue("lib.js")
+              value: createInitialSkottNodeValue("lib.js")
             },
             "someNewFile.js": {
               hash: newHashContent,
-              value: makeInitialSkottNodeValue("someNewFile.js")
+              value: createInitialSkottNodeValue("someNewFile.js")
             }
           });
 
           expect(getStructure().graph).to.deep.equal({
-            "index.js": makeInitialSkottNodeValue("index.js"),
-            "lib.js": makeInitialSkottNodeValue("lib.js"),
-            "someNewFile.js": makeInitialSkottNodeValue("someNewFile.js")
+            "index.js": createInitialSkottNodeValue("index.js"),
+            "lib.js": createInitialSkottNodeValue("lib.js"),
+            "someNewFile.js": createInitialSkottNodeValue("someNewFile.js")
           });
         });
       });

@@ -453,7 +453,7 @@ export class Skott {
 
     if (this.config.incremental) {
       const { graph } = this.makeProjectStructure();
-      await this.#skottCache.save(graph, this.config);
+      await this.#skottCache.save(graph);
     }
 
     return {
