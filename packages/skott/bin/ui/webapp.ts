@@ -1,25 +1,19 @@
 import { ServerResponse } from "node:http";
-import path from "node:path";
-import url from "node:url";
 
 import compression from "compression";
 import kleur from "kleur";
 import { open } from "openurl";
 import polka from "polka";
 import sirv from "sirv";
+// @ts-ignore - no types yet
+import resolveWebAppStaticPath from "skott-webapp";
 
 import { SkottInstance, SkottStructure } from "../../src/skott.js";
 
 function findSkottWebAppDirectory(): string {
-  const __dirname = path.dirname(url.fileURLToPath(new URL(import.meta.url)));
-  const rootSkottDirectory = path.join(__dirname, "..", "..", "..");
-  const skottWebAppDirectory = path.join(
-    "node_modules",
-    "skott-webapp",
-    "dist"
-  );
+  const skottWebAppDirectory = resolveWebAppStaticPath();
 
-  return path.join(rootSkottDirectory, skottWebAppDirectory);
+  return skottWebAppDirectory;
 }
 
 const trackingWithCommands = {

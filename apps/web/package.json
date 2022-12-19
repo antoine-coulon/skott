@@ -1,11 +1,14 @@
 {
   "name": "skott-webapp",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Visualize Graphs generated from Skott",
   "author": "Antoine Coulon",
+  "main": "index.js",
+  "type": "module",
   "license": "MIT",
   "files": [
-    "dist"
+    "dist",
+    "index.js"
   ],
   "scripts": {
     "build": "vite build",
