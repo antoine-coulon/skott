@@ -3,9 +3,12 @@
   "version": "0.0.3",
   "description": "Visualize Graphs generated from Skott",
   "author": "Antoine Coulon",
+  "main": "index.js",
+  "type": "module",
   "license": "MIT",
   "files": [
-    "dist"
+    "dist",
+    "index.js"
   ],
   "scripts": {
     "build": "vite build",
