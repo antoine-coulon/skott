@@ -143,6 +143,16 @@ export async function displaySkott(
     );
   }
 
+  if (options.incremental) {
+    console.log(
+      `\n ${kleur
+        .bold()
+        .yellow(
+          "`incremental` mode is experimental. Please report any issues you encounter."
+        )}`
+    );
+  }
+
   const spinner = ora(`Initializing ${kleur.blue().bold("Skott")}`).start();
   const start = performance.now();
 

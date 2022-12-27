@@ -17,7 +17,7 @@
 
 ✅ Works for modern **JavaScript/TypeScript** projects (TSX/JSX, ECMAScript and CommonJS modules all supported). **TypeScript**'s path aliases are also supported.
 
-✅ Runs **incrementally** by default, meaning that Skott will _only analyze_ files that were modified/added since the last run, offering performance boosts.
+✅ Runs **incrementally** (experimental), meaning that Skott will _only analyze_ files that were modified/added since the last run, offering performance boosts.
 
 ✅ Deeply detects **circular dependencies** in an efficient way, with the ability to provide a max depth for the search
 

@@ -77,8 +77,8 @@ const cli = sade("skott [entrypoint]", true)
 
   .option(
     "-i, --incremental",
-    "Enable incremental mode. Only the files that changed since the last run will be analyzed.",
-    true
+    "(Experimental) Enable incremental mode. Only the files that changed since the last run will be analyzed.",
+    false
   )
 
   .option(
