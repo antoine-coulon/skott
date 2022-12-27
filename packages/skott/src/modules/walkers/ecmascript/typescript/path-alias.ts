@@ -1,5 +1,7 @@
 import path from "node:path";
 
+import JSON5 from "json5";
+
 import { FileReader } from "../../../../filesystem/file-reader";
 
 const aliasLinks = new Map<string, string>();
@@ -12,7 +14,7 @@ export async function buildPathAliases(
     const baseTsConfig = await fileReader.read(
       path.join(fileReader.getCurrentWorkingDir(), tsConfigPath)
     );
-    const tsConfigJson = JSON.parse(baseTsConfig);
+    const tsConfigJson = JSON5.parse(baseTsConfig);
     const baseUrl = tsConfigJson.compilerOptions.baseUrl ?? ".";
     const paths: Record<string, string[]> = tsConfigJson.compilerOptions.paths;
 

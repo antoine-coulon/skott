@@ -34,6 +34,7 @@
     "digraph-js": "^2.0.2",
     "estree-walker": "^3.0.1",
     "fs-tree-structure": "workspace:*",
+    "json5": "^2.2.2",
     "kleur": "^4.1.5",
     "ligie": "^0.0.6",
     "meriyah": "^4.2.1",
