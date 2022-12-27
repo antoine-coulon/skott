@@ -2,3 +2,4 @@ dist
 fixtures
 *.txt
 build-local.sh
+.skott

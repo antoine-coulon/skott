@@ -145,6 +145,7 @@ importers:
       eslint-plugin-prettier: ^4.0.0
       estree-walker: ^3.0.1
       fs-tree-structure: workspace:*
+      json5: ^2.2.2
       kleur: ^4.1.5
       ligie: ^0.0.6
       memfs: ^3.4.6
@@ -167,6 +168,7 @@ importers:
       digraph-js: 2.0.2
       estree-walker: 3.0.1
       fs-tree-structure: link:../fs-tree-structure
+      json5: 2.2.2
       kleur: 4.1.5
       ligie: 0.0.6
       meriyah: 4.2.1
@@ -243,7 +245,7 @@ packages:
       convert-source-map: 1.8.0
       debug: 4.3.4
       gensync: 1.0.0-beta.2
-      json5: 2.2.1
+      json5: 2.2.2
       semver: 6.3.0
     transitivePeerDependencies:
       - supports-color
@@ -2433,11 +2435,10 @@ packages:
       minimist: 1.2.6
     dev: true
 
-  /json5/2.2.1:
-    resolution: {integrity: sha512-1hqLFMSrGHRHxav9q9gNjJ5EXznIxGVO09xQRrwplcS8qs28pZ8s8hupZAmqDwZUmVZ2Qb2jnyPOWcDH8m8dlA==}
+  /json5/2.2.2:
+    resolution: {integrity: sha512-46Tk9JiOL2z7ytNQWFLpj99RZkVgeHf87yGQKsIkaPz1qSH9UczKH1rO7K3wgRselo0tYMUNfecYpm/p1vC7tQ==}
     engines: {node: '>=6'}
     hasBin: true
-    dev: true
 
   /keycharm/0.2.0:
     resolution: {integrity: sha512-i/XBRTiLqRConPKioy2oq45vbv04e8x59b0mnsIRQM+7Ec/8BC7UcL5pnC4FMeGb8KwG7q4wOMw7CtNZf5tiIg==}
