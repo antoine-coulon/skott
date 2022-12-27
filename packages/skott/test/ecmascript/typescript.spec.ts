@@ -294,78 +294,183 @@ describe("When traversing a TypeScript project", () => {
         });
 
         describe("When path alias are using globs", () => {
-          it("should replace glob segments", async () => {
-            const tsConfig = {
-              compilerOptions: {
-                baseUrl: "src",
-                paths: {
-                  "config/*": ["config/*"],
-                  "app/*": ["core/apps/*"],
-                  "shared/*": ["core/shared/*"]
+          describe("When root alias are used", () => {
+            it("should replace glob segments", async () => {
+              const tsConfig = {
+                compilerOptions: {
+                  baseUrl: "src",
+                  paths: {
+                    "config/*": ["config/*"],
+                    "app/*": ["core/apps/*"],
+                    "shared/*": ["core/shared/*"]
+                  }
                 }
-              }
-            };
+              };
 
-            mountFakeFileSystem({
-              "index.ts": `
+              mountFakeFileSystem({
+                "index.ts": `
                 import "config/json";
                 import "./lib";
               `,
-              "lib.ts": `
+                "lib.ts": `
                 import app from "app/skott";
                 import s from "shared";
                 import { script } from "@typescript-eslint/estree-parser";
               `,
-              "src/config/json/index.ts": `
+                "src/config/json/index.ts": `
                 export function json(): string {}
               `,
-              "src/core/apps/skott.ts": `
+                "src/core/apps/skott.ts": `
                 export function skottHtml(): string { return "<h1>skott</h1>"; }
               `,
-              "src/core/shared/index.ts": `
+                "src/core/shared/index.ts": `
                 export function shared(): string {}
               `,
-              "tsconfig.json": JSON.stringify(tsConfig)
-            });
+                "tsconfig.json": JSON.stringify(tsConfig)
+              });
 
-            const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
-              entrypoint: "index.ts",
-              includeBaseDir: false,
-              trackThirdParty: true
-            });
+              const { graph } =
+                await buildSkottProjectUsingInMemoryFileExplorer({
+                  entrypoint: "index.ts",
+                  includeBaseDir: false,
+                  trackThirdParty: true
+                });
 
-            expect(graph).to.be.deep.equal({
-              "index.ts": {
-                adjacentTo: ["src/config/json/index.ts", "lib.ts"],
-                id: "index.ts",
-                body: fakeNodeBody
-              },
-              "lib.ts": {
-                adjacentTo: [
-                  "src/core/apps/skott.ts",
-                  "src/core/shared/index.ts"
-                ],
-                id: "lib.ts",
-                body: {
-                  ...fakeNodeBody,
-                  thirdPartyDependencies: ["@typescript-eslint/estree-parser"]
+              expect(graph).to.be.deep.equal({
+                "index.ts": {
+                  adjacentTo: ["src/config/json/index.ts", "lib.ts"],
+                  id: "index.ts",
+                  body: fakeNodeBody
+                },
+                "lib.ts": {
+                  adjacentTo: [
+                    "src/core/apps/skott.ts",
+                    "src/core/shared/index.ts"
+                  ],
+                  id: "lib.ts",
+                  body: {
+                    ...fakeNodeBody,
+                    thirdPartyDependencies: ["@typescript-eslint/estree-parser"]
+                  }
+                },
+                "src/config/json/index.ts": {
+                  adjacentTo: [],
+                  id: "src/config/json/index.ts",
+                  body: fakeNodeBody
+                },
+                "src/core/apps/skott.ts": {
+                  adjacentTo: [],
+                  id: "src/core/apps/skott.ts",
+                  body: fakeNodeBody
+                },
+                "src/core/shared/index.ts": {
+                  adjacentTo: [],
+                  id: "src/core/shared/index.ts",
+                  body: fakeNodeBody
                 }
-              },
-              "src/config/json/index.ts": {
-                adjacentTo: [],
-                id: "src/config/json/index.ts",
-                body: fakeNodeBody
-              },
-              "src/core/apps/skott.ts": {
-                adjacentTo: [],
-                id: "src/core/apps/skott.ts",
-                body: fakeNodeBody
-              },
-              "src/core/shared/index.ts": {
-                adjacentTo: [],
-                id: "src/core/shared/index.ts",
-                body: fakeNodeBody
-              }
+              });
+            });
+          });
+
+          describe("When deep alias are used", () => {
+            it("should replace glob segments", async () => {
+              const tsConfig = {
+                compilerOptions: {
+                  baseUrl: ".",
+                  paths: {
+                    "@lib": ["lib/index.ts"],
+                    "@/*": ["src/*"],
+                    "@nested/path1/path2/*": ["core/path1/path2/*"],
+                    "@nested/path3/path4/*": ["core/path3/path4/*"]
+                  }
+                }
+              };
+
+              mountFakeFileSystem({
+                "index.ts": `
+                  import { script } from "@typescript-eslint/estree-parser";
+                  import { foo } from "@lib";
+                  import { bar } from "@/some-folder/file";
+                  import { nestedA } from "@/some-folder/nested/a";
+                  import { nestedB } from "@/some-other-folder/nested/b";
+                  import { coreA } from "@nested/path1/path2/feat";
+                `,
+                "lib/index.ts": `
+                  export function foo(): string {}
+                `,
+                "src/some-folder/file.ts": `
+                  export function bar(): string {}
+                `,
+                "src/some-folder/nested/a.ts": `
+                  import { coreB } from "@nested/path3/path4/util";
+
+                  export function nestedA(): string {}
+                `,
+                "src/some-other-folder/nested/b.ts": `
+                  export function nestedB(): string {}
+                `,
+                "core/path1/path2/feat.ts": `
+                  export function coreA(): string {}
+                `,
+                "core/path3/path4/util.ts": `
+                  export function coreB(): string {}
+                `,
+                "tsconfig.json": JSON.stringify(tsConfig)
+              });
+
+              const { graph } =
+                await buildSkottProjectUsingInMemoryFileExplorer({
+                  entrypoint: "index.ts",
+                  includeBaseDir: false,
+                  trackThirdParty: true
+                });
+
+              expect(graph).to.be.deep.equal({
+                "index.ts": {
+                  adjacentTo: [
+                    "lib/index.ts",
+                    "src/some-folder/file.ts",
+                    "src/some-folder/nested/a.ts",
+                    "src/some-other-folder/nested/b.ts",
+                    "core/path1/path2/feat.ts"
+                  ],
+                  id: "index.ts",
+                  body: {
+                    ...fakeNodeBody,
+                    thirdPartyDependencies: ["@typescript-eslint/estree-parser"]
+                  }
+                },
+                "lib/index.ts": {
+                  adjacentTo: [],
+                  id: "lib/index.ts",
+                  body: fakeNodeBody
+                },
+                "src/some-folder/file.ts": {
+                  adjacentTo: [],
+                  id: "src/some-folder/file.ts",
+                  body: fakeNodeBody
+                },
+                "src/some-folder/nested/a.ts": {
+                  adjacentTo: ["core/path3/path4/util.ts"],
+                  id: "src/some-folder/nested/a.ts",
+                  body: fakeNodeBody
+                },
+                "src/some-other-folder/nested/b.ts": {
+                  adjacentTo: [],
+                  id: "src/some-other-folder/nested/b.ts",
+                  body: fakeNodeBody
+                },
+                "core/path1/path2/feat.ts": {
+                  adjacentTo: [],
+                  id: "core/path1/path2/feat.ts",
+                  body: fakeNodeBody
+                },
+                "core/path3/path4/util.ts": {
+                  adjacentTo: [],
+                  id: "core/path3/path4/util.ts",
+                  body: fakeNodeBody
+                }
+              });
             });
           });
         });

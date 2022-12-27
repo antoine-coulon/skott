@@ -218,10 +218,9 @@ export class Skott {
      * When performing a global analysis, path aliases must be resolved from
      * the working directory the analysis was started from.
      */
-    const baseDirectory =
-      !this.config.entrypoint && isPathAliasDeclaration
-        ? this.fileReader.getCurrentWorkingDir()
-        : path.dirname(rootPath);
+    const baseDirectory = isPathAliasDeclaration
+      ? this.fileReader.getCurrentWorkingDir()
+      : path.dirname(rootPath);
     const fullFilePathFromBaseDirectory = await resolveImportedModulePath(
       path.join(baseDirectory, moduleDeclaration),
       this.fileReader

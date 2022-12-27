@@ -42,6 +42,31 @@ export async function buildPathAliases(
   } catch {}
 }
 
+function resolveAliasToRelativePath(
+  moduleDeclaration: string,
+  baseAlias: string,
+  baseAliasDirname: string
+): string {
+  /**
+   * When having a path alias like "foo/*": ["core/lib/*"], we want to map
+   * any segment such as "foo/lib/baz" to "core/lib/baz".
+   */
+  const modulePathWithoutAliasBaseDirname = moduleDeclaration.split(
+    path.join(baseAliasDirname, path.sep)
+  )[1];
+
+  const realPathWithAlias = path.join(
+    baseAlias,
+    modulePathWithoutAliasBaseDirname
+  );
+
+  return realPathWithAlias;
+}
+
+function isNotBasePathSegment(segment: string): boolean {
+  return segment.includes(path.sep);
+}
+
 export function resolvePathAlias(
   moduleDeclaration: string
 ): string | undefined {
@@ -51,33 +76,50 @@ export function resolvePathAlias(
     return aliasWithoutGlob;
   }
 
-  const baseAliasDirname = path.dirname(moduleDeclaration);
-  const baseAlias = aliasLinks.get(baseAliasDirname);
+  let baseAliasDirname = path.dirname(moduleDeclaration);
+  let baseAlias = aliasLinks.get(baseAliasDirname);
 
   if (baseAlias) {
-    /**
-     * When having a path alias like "foo/*": ["core/lib/*"], we want to map
-     * any segment such as "foo/lib/baz" to "core/lib/baz".
-     */
-    const modulePathWithoutAliasBaseDirname = moduleDeclaration.split(
-      path.join(baseAliasDirname, path.sep)
-    )[1];
-
-    const realPathWithAlias = path.join(
+    return resolveAliasToRelativePath(
+      moduleDeclaration,
       baseAlias,
-      modulePathWithoutAliasBaseDirname
+      baseAliasDirname
     );
-
-    return realPathWithAlias;
   }
 
-  return undefined;
+  while (isNotBasePathSegment(baseAliasDirname)) {
+    baseAliasDirname = path.dirname(baseAliasDirname);
+    const deepBaseAlias = aliasLinks.get(baseAliasDirname);
+
+    if (deepBaseAlias) {
+      baseAlias = resolveAliasToRelativePath(
+        moduleDeclaration,
+        deepBaseAlias,
+        baseAliasDirname
+      );
+      break;
+    }
+  }
+
+  return baseAlias;
 }
 
 export function isTypeScriptPathAlias(moduleDeclaration: string): boolean {
-  if (aliasLinks.has(path.dirname(moduleDeclaration))) {
+  let pathSegmentToMatch = path.dirname(moduleDeclaration);
+  let isPathAlias = aliasLinks.has(moduleDeclaration);
+
+  if (aliasLinks.has(pathSegmentToMatch)) {
     return true;
   }
 
-  return aliasLinks.has(moduleDeclaration);
+  while (isNotBasePathSegment(pathSegmentToMatch)) {
+    pathSegmentToMatch = path.dirname(pathSegmentToMatch);
+
+    if (aliasLinks.has(pathSegmentToMatch)) {
+      isPathAlias = true;
+      break;
+    }
+  }
+
+  return isPathAlias;
 }
