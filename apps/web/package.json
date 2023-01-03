@@ -1,6 +1,6 @@
 {
   "name": "skott-webapp",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Visualize Graphs generated from Skott",
   "author": "Antoine Coulon",
   "main": "index.js",
