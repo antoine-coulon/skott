@@ -8,7 +8,7 @@ importers:
       animate.css: ^4.1.1
       component-emitter: ^1.3.0
       fs-tree-structure: workspace:*
-      keycharm: ^0.2.0 timsort@^0.3.0 uuid@^3.4.0
+      keycharm: ^0.2.0
       rxjs: ^7.5.7
       skott: workspace:*
       timsort: ^0.3.0
