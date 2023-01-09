@@ -1,6 +1,7 @@
 import path from "node:path";
 
 import { DiGraph, VertexDefinition } from "digraph-js";
+import difference from "lodash.difference";
 
 import {
   isFileAffected,
@@ -24,6 +25,7 @@ import {
   isTypeScriptPathAlias,
   resolvePathAlias
 } from "./modules/walkers/ecmascript/typescript/path-alias.js";
+import { tryOrElse } from "./util.js";
 
 export type SkottNodeBody = {
   size: number;
@@ -52,10 +54,15 @@ export interface SkottStructure {
   files: string[];
 }
 
+export interface UnusedDependencies {
+  thirdParty: string[];
+}
+
 export interface SkottInstance {
   getStructure: () => SkottStructure;
   findLeaves: () => string[];
   findCircularDependencies: () => string[][];
+  findUnusedDependencies: () => Promise<UnusedDependencies>;
   hasCircularDependencies: () => boolean;
   findParentsOf: (node: string) => string[];
 }
@@ -326,6 +333,7 @@ export class Skott {
         }
       } else if (
         isThirdPartyModule(moduleDeclaration) &&
+        !moduleDeclaration.includes(".") &&
         path.extname(moduleDeclaration) === ""
       ) {
         if (!this.config.dependencyTracking.thirdParty) {
@@ -376,6 +384,70 @@ export class Skott {
     ]);
 
     return [...uniqueSetOfParents];
+  }
+
+  private async readManifestFileAt(location: string): Promise<string> {
+    return await this.fileReader.read(path.join(location, "package.json"));
+  }
+
+  private async findManifestDependencies(): Promise<string[]> {
+    let rawManifest = "";
+    const cwd = this.fileReader.getCurrentWorkingDir();
+    try {
+      rawManifest = await tryOrElse(
+        () => this.readManifestFileAt(cwd),
+        () => this.readManifestFileAt(path.join(cwd, this.#baseDir))
+      );
+    } catch {
+      throw new Error("No 'package.json' was found in the base directory.");
+    }
+
+    return Object.keys(JSON.parse(rawManifest).dependencies);
+  }
+
+  private findAllGraphThirdPartyDependencies(): string[] {
+    const graphDependencies = new Set<string>();
+
+    for (const { body } of Object.values(this.#projectGraph.toDict())) {
+      body.thirdPartyDependencies.forEach((dep) => graphDependencies.add(dep));
+    }
+
+    return Array.from(graphDependencies);
+  }
+
+  /**
+   * As third-party dependencies can be accessed through exported modules
+   * such as "rjxs/internal/observable/empty", we must be able to match that
+   * whole path with the dependency name in the manifest file (e.g. "rxjs").
+   */
+  private matchDependencyNamesWithManifestOnes(
+    graphDependencies: string[],
+    manifestDependencies: string[]
+  ): string[] {
+    return graphDependencies.map((fullDependencyPath) => {
+      const baseDependencyWithoutNamespace = manifestDependencies.find(
+        (manifestDep) => fullDependencyPath.startsWith(manifestDep)
+      );
+
+      if (baseDependencyWithoutNamespace) {
+        return baseDependencyWithoutNamespace;
+      }
+
+      return fullDependencyPath;
+    });
+  }
+
+  private async findUnusedDependencies(): Promise<UnusedDependencies> {
+    const manifestDependencies = await this.findManifestDependencies();
+    const graphDependencies = this.findAllGraphThirdPartyDependencies();
+    const graphDependenciesMatched = this.matchDependencyNamesWithManifestOnes(
+      graphDependencies,
+      manifestDependencies
+    );
+
+    return {
+      thirdParty: difference(manifestDependencies, graphDependenciesMatched)
+    };
   }
 
   private makeProjectStructure(): SkottStructure {
@@ -445,7 +517,8 @@ export class Skott {
       findCircularDependencies: this.circularDependencies.bind(this),
       hasCircularDependencies: this.hasCircularDependencies.bind(this),
       findLeaves: this.findLeaves.bind(this),
-      findParentsOf: this.findParentsOf.bind(this)
+      findParentsOf: this.findParentsOf.bind(this),
+      findUnusedDependencies: this.findUnusedDependencies.bind(this)
     };
   }
 }
