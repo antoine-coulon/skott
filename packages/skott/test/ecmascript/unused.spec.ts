@@ -105,6 +105,8 @@ describe("Searching for unused dependencies", () => {
           mountFakeFileSystem({
             "index.js": `
               import {of} from 'rxjs/internal';
+              import {pipe} from '@effect-ts/core/Function';
+              import format from 'ajv-format';
               function foo() {}
             `,
             "package.json": JSON.stringify({
@@ -112,7 +114,10 @@ describe("Searching for unused dependencies", () => {
                 skott: "*",
                 rxjs: "*",
                 ramda: "*",
-                "lodash.difference": "*"
+                "lodash.difference": "*",
+                "@effect-ts/core": "*",
+                ajv: "*",
+                "ajv-format": "*"
               }
             })
           });
@@ -124,7 +129,8 @@ describe("Searching for unused dependencies", () => {
           expect(thirdParty).to.deep.equal([
             "skott",
             "ramda",
-            "lodash.difference"
+            "lodash.difference",
+            "ajv"
           ]);
         });
       });
