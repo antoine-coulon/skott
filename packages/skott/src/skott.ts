@@ -12,6 +12,7 @@ import { FileReader } from "./filesystem/file-reader.js";
 import { FileWriter } from "./filesystem/file-writer.js";
 import { WalkerSelector } from "./modules/walkers/common.js";
 import {
+  extractNpmNameFromThirdPartyModuleDeclaration,
   isBinaryModule,
   isBuiltinModule,
   isJSONModule,
@@ -331,24 +332,17 @@ export class Skott {
             isPathAliasDeclaration: true
           });
         }
-      } else if (
-        isThirdPartyModule(moduleDeclaration) &&
-        !moduleDeclaration.includes(".") &&
-        path.extname(moduleDeclaration) === ""
-      ) {
+      } else if (isThirdPartyModule(moduleDeclaration)) {
         if (!this.config.dependencyTracking.thirdParty) {
           continue;
         }
 
-        const dependencyPath = moduleDeclaration.split("/");
         const dependencyName =
-          dependencyPath.length === 1
-            ? dependencyPath[0]
-            : dependencyPath.slice(0, 2).join("/");
+          extractNpmNameFromThirdPartyModuleDeclaration(moduleDeclaration);
 
         this.#projectGraph.mergeVertexBody(formattedNodePath, (body) => {
           body.thirdPartyDependencies = Array.from(
-            new Set([...body.thirdPartyDependencies, dependencyName])
+            new Set(body.thirdPartyDependencies.concat(dependencyName))
           );
         });
       }

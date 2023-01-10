@@ -31,7 +31,25 @@ export function isBuiltinModule(module: string): boolean {
 }
 
 export function isThirdPartyModule(module: string): boolean {
-  return !module.startsWith(".");
+  const extension = path.extname(module);
+  const hasExpectedExtension =
+    extension !== "" && kExpectedModuleExtensions.has(extension);
+
+  return !module.startsWith(".") && !hasExpectedExtension;
+}
+
+export function extractNpmNameFromThirdPartyModuleDeclaration(
+  moduleDeclarationPath: string
+): string {
+  const declarationPathSegments = moduleDeclarationPath.split("/");
+  const scopeOrName = declarationPathSegments[0];
+  const isScopedPackage = scopeOrName.startsWith("@");
+
+  if (isScopedPackage) {
+    return declarationPathSegments.slice(0, 2).join("/");
+  }
+
+  return scopeOrName;
 }
 
 export function isJSONModule(module: string): boolean {
