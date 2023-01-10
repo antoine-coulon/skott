@@ -100,8 +100,20 @@ const cli = sade("skott [entrypoint]", true)
   )
 
   .option(
+    "-mf, --manifest",
+    "Provide a path to a manifest file used for dependencies resolution",
+    "package.json"
+  )
+
+  .option(
     "-t, --trackThirdPartyDependencies",
     "Enable npm third-party dependency tracking",
+    false
+  )
+
+  .option(
+    "-u, --showUnusedDependencies",
+    "Search for unused third-party dependencies in the graph",
     false
   )
 

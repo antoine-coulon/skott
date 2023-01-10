@@ -3,7 +3,7 @@ import path from "node:path";
 import { TreeStructure } from "fs-tree-structure";
 import kleur from "kleur";
 
-import { SkottNode, SkottNodeBody } from "../../src/skott.js";
+import { SkottInstance, SkottNode, SkottNodeBody } from "../../src/skott.js";
 
 const kLeftSeparator = "└──";
 
@@ -103,9 +103,11 @@ export function displayAsGraph(
   }
 }
 
-export function displayThirdPartyDependencies(
-  graph: Record<string, SkottNode>
-): void {
+export async function displayThirdPartyDependencies(
+  skottInstance: SkottInstance,
+  graph: Record<string, SkottNode>,
+  showUnusedDependencies: boolean
+): Promise<void> {
   const thirdPartyRegistry = new Map<string, number>();
   for (const node of Object.values(graph)) {
     node.body.thirdPartyDependencies.forEach((dep) => {
@@ -143,6 +145,31 @@ export function displayThirdPartyDependencies(
         .bold()
         .yellow(depOccurrence)})`
     );
+  }
+
+  if (showUnusedDependencies) {
+    const { thirdParty } = await skottInstance.findUnusedDependencies();
+    const indents = makeIndents(1);
+    if (thirdParty.length > 0) {
+      console.log(
+        `\n ${kleur.bold(
+          `Found ${kleur
+            .bold()
+            .red(
+              thirdParty.length
+            )} unused third-party dependencies in ${kleur.underline(
+            "production code"
+          )}:`
+        )} \n`
+      );
+      for (const dep of thirdParty) {
+        console.log(`${indents} ${kleur.bold().red(dep)}`);
+      }
+    } else {
+      console.log(
+        `${kleur.bold().green(`\n ✓ all third-party dependencies are used.`)}`
+      );
+    }
   }
 }
 
