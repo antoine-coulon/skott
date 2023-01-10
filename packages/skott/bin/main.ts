@@ -116,11 +116,13 @@ type CliOptions = {
   staticFile: string;
   exitCodeOnCircularDependencies: number;
   showCircularDependencies: boolean;
+  showUnusedDependencies: boolean;
   trackThirdPartyDependencies: boolean;
   trackBuiltinDependencies: boolean;
   trackTypeOnlyDependencies: boolean;
   fileExtensions: string;
   tsconfig: string;
+  manifest: string;
 };
 
 export async function displaySkott(
@@ -161,6 +163,7 @@ export async function displaySkott(
     builtin: options.trackBuiltinDependencies,
     typeOnly: options.trackTypeOnlyDependencies
   };
+
   const skottInstance = await skott({
     entrypoint: entrypoint ? entrypoint : undefined,
     incremental: options.incremental,
@@ -170,7 +173,8 @@ export async function displaySkott(
     fileExtensions: options.fileExtensions
       .split(",")
       .filter((ext) => kExpectedModuleExtensions.has(ext)),
-    tsConfigPath: options.tsconfig
+    tsConfigPath: options.tsconfig,
+    manifestPath: options.manifest
   });
 
   const timeTook = `${(performance.now() - start).toFixed(3)}ms`;
@@ -225,8 +229,30 @@ export async function displaySkott(
     return;
   }
 
+  if (options.showUnusedDependencies && !options.trackThirdPartyDependencies) {
+    console.log(
+      `\n ${kleur
+        .bold()
+        .yellow(
+          "Warning: `--trackThirdPartyDependencies` must be provided when searching for unused dependencies."
+        )}`
+    );
+
+    console.log(
+      `\n ${kleur
+        .bold()
+        .grey(
+          "Example: `skott --displayMode=raw --showUnusedDependencies --trackThirdPartyDependencies`"
+        )} \n`
+    );
+  }
+
   if (options.trackThirdPartyDependencies) {
-    displayThirdPartyDependencies(graph);
+    await displayThirdPartyDependencies(
+      skottInstance,
+      graph,
+      options.showUnusedDependencies
+    );
   }
 
   if (options.trackBuiltinDependencies) {

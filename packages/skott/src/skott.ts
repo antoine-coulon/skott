@@ -1,6 +1,7 @@
 import path from "node:path";
 
 import { DiGraph, VertexDefinition } from "digraph-js";
+import difference from "lodash.difference";
 
 import {
   isFileAffected,
@@ -11,6 +12,7 @@ import { FileReader } from "./filesystem/file-reader.js";
 import { FileWriter } from "./filesystem/file-writer.js";
 import { WalkerSelector } from "./modules/walkers/common.js";
 import {
+  extractNpmNameFromThirdPartyModuleDeclaration,
   isBinaryModule,
   isBuiltinModule,
   isJSONModule,
@@ -24,6 +26,10 @@ import {
   isTypeScriptPathAlias,
   resolvePathAlias
 } from "./modules/walkers/ecmascript/typescript/path-alias.js";
+import {
+  findManifestDependencies,
+  findMatchesBetweenGraphAndManifestDependencies
+} from "./workspace/index.js";
 
 export type SkottNodeBody = {
   size: number;
@@ -45,6 +51,7 @@ export interface SkottConfig {
   };
   fileExtensions: string[];
   tsConfigPath: string;
+  manifestPath: string;
 }
 
 export interface SkottStructure {
@@ -52,10 +59,15 @@ export interface SkottStructure {
   files: string[];
 }
 
+export interface UnusedDependencies {
+  thirdParty: string[];
+}
+
 export interface SkottInstance {
   getStructure: () => SkottStructure;
   findLeaves: () => string[];
   findCircularDependencies: () => string[][];
+  findUnusedDependencies: () => Promise<UnusedDependencies>;
   hasCircularDependencies: () => boolean;
   findParentsOf: (node: string) => string[];
 }
@@ -71,7 +83,8 @@ export const defaultConfig = {
     typeOnly: true
   },
   fileExtensions: [...kExpectedModuleExtensions],
-  tsConfigPath: "tsconfig.json"
+  tsConfigPath: "tsconfig.json",
+  manifestPath: "package.json"
 };
 
 export class Skott {
@@ -324,23 +337,17 @@ export class Skott {
             isPathAliasDeclaration: true
           });
         }
-      } else if (
-        isThirdPartyModule(moduleDeclaration) &&
-        path.extname(moduleDeclaration) === ""
-      ) {
+      } else if (isThirdPartyModule(moduleDeclaration)) {
         if (!this.config.dependencyTracking.thirdParty) {
           continue;
         }
 
-        const dependencyPath = moduleDeclaration.split("/");
         const dependencyName =
-          dependencyPath.length === 1
-            ? dependencyPath[0]
-            : dependencyPath.slice(0, 2).join("/");
+          extractNpmNameFromThirdPartyModuleDeclaration(moduleDeclaration);
 
         this.#projectGraph.mergeVertexBody(formattedNodePath, (body) => {
           body.thirdPartyDependencies = Array.from(
-            new Set([...body.thirdPartyDependencies, dependencyName])
+            new Set(body.thirdPartyDependencies.concat(dependencyName))
           );
         });
       }
@@ -376,6 +383,33 @@ export class Skott {
     ]);
 
     return [...uniqueSetOfParents];
+  }
+
+  private findAllThirdPartyDependencies(): string[] {
+    const graphDependencies = new Set<string>();
+
+    for (const { body } of Object.values(this.#projectGraph.toDict())) {
+      body.thirdPartyDependencies.forEach((dep) => graphDependencies.add(dep));
+    }
+
+    return Array.from(graphDependencies);
+  }
+
+  private async findUnusedDependencies(): Promise<UnusedDependencies> {
+    const manifestDependencies = await findManifestDependencies(
+      this.#baseDir,
+      this.config.manifestPath,
+      this.fileReader
+    );
+    const graphDependencies = this.findAllThirdPartyDependencies();
+    const matchedDependencies = findMatchesBetweenGraphAndManifestDependencies(
+      graphDependencies,
+      manifestDependencies
+    );
+
+    return {
+      thirdParty: difference(manifestDependencies, matchedDependencies)
+    };
   }
 
   private makeProjectStructure(): SkottStructure {
@@ -445,7 +479,8 @@ export class Skott {
       findCircularDependencies: this.circularDependencies.bind(this),
       hasCircularDependencies: this.hasCircularDependencies.bind(this),
       findLeaves: this.findLeaves.bind(this),
-      findParentsOf: this.findParentsOf.bind(this)
+      findParentsOf: this.findParentsOf.bind(this),
+      findUnusedDependencies: this.findUnusedDependencies.bind(this)
     };
   }
 }

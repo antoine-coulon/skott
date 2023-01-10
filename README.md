@@ -21,11 +21,14 @@
 
 ✅ Deeply detects **circular dependencies** in an efficient way, with the ability to provide a max depth for the search
 
+✅ Detect **unused npm third-party dependencies** from the production code
+
 ✅ Deeply **collect all dependencies of the project graph**
 
 ✅ Deep **parent and child dependencies traversals**
 
 ✅ Metadata collection for each traversed node (file size, view dependencies towards Node.js builtin modules and npm third-party libraries)
+
 
 ✅ Node.js binary and JSON modules are excluded by default
 

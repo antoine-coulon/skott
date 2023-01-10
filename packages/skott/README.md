@@ -79,7 +79,13 @@ const { getStructure, findCircularDependencies, findParentsOf, findLeaves } = aw
    * all the way up all the path aliases referenced. 
    * Defaults to `tsconfig.json`.
    */
-  tsConfigPath: "tsconfig.json"
+  tsConfigPath: "./tsconfig.json",
+  /**
+   * (Optional) Provide a path to the package.json that should be used to detect
+   * unused third-party dependencies.
+   * Defaults to `package.json`.
+   */
+  manifestPath: "./package.json",
 });
 ```
 
@@ -186,6 +192,20 @@ const { findCircularDependencies, hasCircularDependencies } = await skott({
 
 console.log(findCircularDependencies()); // logs [ [ "core.js", "utils.js" ] ]
 console.log(hasCircularDependencies()); // logs "true"
+```
+
+### Search for unused dependencies using the graph generated from production code
+
+```javascript
+import skott from "skott";
+
+const { findUnusedDependencies } = await skott({
+  entrypoint: "index.tsx",
+  // ...rest of the config
+});
+
+const { thirdParty } = await findUnusedDependencies();
+console.log(thirdParty); // logs [ "rxjs", "lodash.difference" ]
 ```
 
 ### Search for leaves (nodes with no children)

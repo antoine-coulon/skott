@@ -4,10 +4,12 @@ import * as memfs from "memfs";
 import { FileReader } from "../../src/filesystem/file-reader.js";
 import { InMemoryFileWriter } from "../../src/filesystem/file-writer.js";
 import { WalkerSelector } from "../../src/modules/walkers/common.js";
-import { Skott, SkottStructure } from "../../src/skott";
+import { Skott, SkottStructure } from "../../src/skott.js";
 
-import { mountFakeFileSystem } from "./shared";
-import { buildSkottProjectUsingInMemoryFileExplorer } from "./shared.js";
+import {
+  buildSkottProjectUsingInMemoryFileExplorer,
+  mountFakeFileSystem
+} from "./shared";
 
 class InMemoryFileReaderWithFakeStats implements FileReader {
   read(filename: string): Promise<string> {
@@ -59,7 +61,8 @@ async function makeSkott(
         typeOnly: true
       },
       fileExtensions: [".js", ".ts"],
-      tsConfigPath: "./tsconfig.json"
+      tsConfigPath: "./tsconfig.json",
+      manifestPath: "./package.json"
     },
     new InMemoryFileReaderWithFakeStats(),
     new InMemoryFileWriter(),
@@ -122,7 +125,8 @@ describe("When building the project structure independently of JavaScript or Typ
             typeOnly: true
           },
           fileExtensions: [".js"],
-          tsConfigPath: "./tsconfig.json"
+          tsConfigPath: "./tsconfig.json",
+          manifestPath: "./package.json"
         },
         new InMemoryFileReaderWithFakeStats(),
         new InMemoryFileWriter(),
@@ -237,6 +241,8 @@ describe("When building the project structure independently of JavaScript or Typ
                 import { parseScript } from 'meriyah';
                 import 'side-effect-library';
                 import { getStrategy } from "@nodesecure/vulnera";
+                import difference from "lodash.difference";
+                import _ from "next-plugin-preval/config";
               `,
                 "lib.js": ""
               },
@@ -249,7 +255,9 @@ describe("When building the project structure independently of JavaScript or Typ
             expect(indexFile.body.thirdPartyDependencies).to.deep.equal([
               "meriyah",
               "side-effect-library",
-              "@nodesecure/vulnera"
+              "@nodesecure/vulnera",
+              "lodash.difference",
+              "next-plugin-preval"
             ]);
           });
 
