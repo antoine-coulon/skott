@@ -61,7 +61,8 @@ async function makeSkott(
         typeOnly: true
       },
       fileExtensions: [".js", ".ts"],
-      tsConfigPath: "./tsconfig.json"
+      tsConfigPath: "./tsconfig.json",
+      manifestPath: "./package.json"
     },
     new InMemoryFileReaderWithFakeStats(),
     new InMemoryFileWriter(),
@@ -124,7 +125,8 @@ describe("When building the project structure independently of JavaScript or Typ
             typeOnly: true
           },
           fileExtensions: [".js"],
-          tsConfigPath: "./tsconfig.json"
+          tsConfigPath: "./tsconfig.json",
+          manifestPath: "./package.json"
         },
         new InMemoryFileReaderWithFakeStats(),
         new InMemoryFileWriter(),

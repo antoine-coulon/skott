@@ -98,6 +98,26 @@ describe("Searching for unused dependencies", () => {
 
           expect(thirdParty).to.deep.equal(["@nodesecure/ci"]);
         });
+
+        it("should find the unused dependency using package.json path provided from the config", async () => {
+          mountFakeFileSystem({
+            "libs/some-lib/index.js": `function foo() {}`,
+            "libs/package.json": JSON.stringify({
+              dependencies: {
+                "@nodesecure/ci": "^1.0.0"
+              }
+            })
+          });
+
+          const skott = makeSkott({
+            entrypoint: "libs/some-lib/index.js",
+            manifestPath: "libs/package.json"
+          });
+          const { findUnusedDependencies } = await skott.initialize();
+          const { thirdParty } = await findUnusedDependencies();
+
+          expect(thirdParty).to.deep.equal(["@nodesecure/ci"]);
+        });
       });
 
       describe("When there are multiple unused amongst other used third-party dependencies", () => {
@@ -166,7 +186,7 @@ describe("Searching for unused dependencies", () => {
           } catch (e: unknown) {
             // @ts-expect-error - message will exist in our case
             expect(e?.message).to.equal(
-              "No 'package.json' was found in the base directory."
+              "The package.json manifest file could not be found or read."
             );
           }
         });
@@ -187,7 +207,7 @@ describe("Searching for unused dependencies", () => {
           } catch (e: unknown) {
             // @ts-expect-error - message will exist in our case
             expect(e?.message).to.equal(
-              "No 'package.json' was found in the base directory."
+              "The package.json manifest file could not be found or read."
             );
           }
         });

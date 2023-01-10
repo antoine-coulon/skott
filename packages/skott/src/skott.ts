@@ -51,6 +51,7 @@ export interface SkottConfig {
   };
   fileExtensions: string[];
   tsConfigPath: string;
+  manifestPath: string;
 }
 
 export interface SkottStructure {
@@ -82,7 +83,8 @@ export const defaultConfig = {
     typeOnly: true
   },
   fileExtensions: [...kExpectedModuleExtensions],
-  tsConfigPath: "tsconfig.json"
+  tsConfigPath: "tsconfig.json",
+  manifestPath: "package.json"
 };
 
 export class Skott {
@@ -396,6 +398,7 @@ export class Skott {
   private async findUnusedDependencies(): Promise<UnusedDependencies> {
     const manifestDependencies = await findManifestDependencies(
       this.#baseDir,
+      this.config.manifestPath,
       this.fileReader
     );
     const graphDependencies = this.findAllThirdPartyDependencies();

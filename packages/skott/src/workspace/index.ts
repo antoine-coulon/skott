@@ -18,26 +18,22 @@ export async function findWorkspaceEntrypointModule(): Promise<string> {
   );
 }
 
-async function readManifestFileAt(
-  atLocation: string,
-  fileReader: FileReader
-): Promise<string> {
-  return await fileReader.read(path.join(atLocation, "package.json"));
-}
-
 export async function findManifestDependencies(
   baseDir: string,
+  manifestPath: string,
   fileReader: FileReader
 ): Promise<string[]> {
   let rawManifest = "";
   const cwd = fileReader.getCurrentWorkingDir();
   try {
     rawManifest = await tryOrElse(
-      () => readManifestFileAt(cwd, fileReader),
-      () => readManifestFileAt(path.join(cwd, baseDir), fileReader)
+      () => fileReader.read(path.join(cwd, manifestPath)),
+      () => fileReader.read(path.join(cwd, baseDir, manifestPath))
     );
   } catch {
-    throw new Error("No 'package.json' was found in the base directory.");
+    throw new Error(
+      "The package.json manifest file could not be found or read."
+    );
   }
 
   return Object.keys(JSON.parse(rawManifest).dependencies);
