@@ -224,7 +224,12 @@ export async function displaySkott(
   }
 
   if (options.displayMode === "webapp") {
-    openWebApplication(skottInstance, skottStructure, dependencyTracking);
+    openWebApplication(
+      skottInstance,
+      skottStructure,
+      entrypoint,
+      dependencyTracking
+    );
 
     return;
   }

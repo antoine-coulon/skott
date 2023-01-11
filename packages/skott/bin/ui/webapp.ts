@@ -50,9 +50,11 @@ function displaySelectedTracking(
   }
 }
 
+// eslint-disable-next-line max-params
 export function openWebApplication(
   skottInstance: SkottInstance,
   skottStructure: SkottStructure,
+  entrypoint: string | undefined,
   options: {
     thirdParty: boolean;
     builtin: boolean;
@@ -72,12 +74,24 @@ export function openWebApplication(
   const srv = polka().use(compress, assets);
 
   console.log(`\n ${kleur.italic("Prefetching data...")} `);
-  const cycles = skottInstance.findCircularDependencies();
-  const skottPayload = JSON.stringify({ ...skottStructure, cycles });
+
+  let computedCycles: string[][] = [];
+
+  srv.use("/cycles", (_, response: ServerResponse) => {
+    response.setHeader("Content-Type", "application/json");
+    if (computedCycles.length > 0) {
+      return response.end(computedCycles);
+    }
+
+    const cycles = skottInstance.findCircularDependencies();
+    computedCycles = computedCycles.concat(cycles);
+
+    return response.end(computedCycles);
+  });
 
   srv.use("/api", (_, response: ServerResponse) => {
     response.setHeader("Content-Type", "application/json");
-    response.end(skottPayload);
+    response.end({ ...skottStructure, cycles: [] });
   });
 
   srv.listen(process.env.SKOTT_PORT || 0);
