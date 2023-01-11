@@ -10,3 +10,8 @@ export function isJavaScriptModule(module: string) {
 export function isTypeScriptModule(module: string) {
   return module.endsWith(".ts") || module.endsWith(".tsx");
 }
+
+export function isDevelopmentEnvironment(): boolean {
+  // @ts-ignore - vite specific
+  return import.meta.env.DEV;
+}

@@ -32,7 +32,11 @@ import {
   toggleCircularDependencies,
 } from "./network";
 import { SkottStructureWithCycles } from "./skott";
-import { isJavaScriptModule, isTypeScriptModule } from "./util";
+import {
+  isDevelopmentEnvironment,
+  isJavaScriptModule,
+  isTypeScriptModule,
+} from "./util";
 
 const domContentLoaded$ = fromEvent(document, "DOMContentLoaded");
 const networkLoadingState$ = new BehaviorSubject("loading");
@@ -138,17 +142,24 @@ function displaySkottStatistics(data: SkottStructureWithCycles) {
 const dataStream$ = of(EMPTY).pipe(
   mergeMap(() => from(fetch("/api"))),
   mergeMap((value) => from(value.json())),
-  catchError(() => of(fakeSkottData)),
+  catchError(() => of(isDevelopmentEnvironment() ? fakeSkottData : {})),
   tap(displaySkottStatistics),
   catchError(() => EMPTY)
 );
 
 const dataChunkedStream$ = combineLatest([dataStream$, domContentLoaded$]).pipe(
-  concatMap(([data]) => makeChunkStream(Object.values(data.graph), 50, 500)),
-  tap((chunk) => {
+  concatMap(([data]) =>
+    combineLatest([
+      makeChunkStream(Object.values(data.graph), 50, 500),
+      of({
+        entrypoint: data.entrypoint,
+      }),
+    ])
+  ),
+  tap(([chunk, metadata]) => {
     if (Array.isArray(chunk)) {
       networkLoadingState$.next("loading");
-      buildNetworkIncremental(chunk, () => {
+      buildNetworkIncremental(chunk, metadata, () => {
         initializeNetworkConstructionStateListeners();
       });
     }
@@ -224,7 +235,7 @@ function registerCoreSubscribers() {
   optionStream$.subscribe(EMPTY_OBSERVER);
 
   dataChunkedStream$.subscribe((value) => {
-    if (value === "END_OF_STREAM") {
+    if (typeof value === "string" && value === "END_OF_STREAM") {
       network?.stabilize();
     }
   });

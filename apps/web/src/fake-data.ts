@@ -1,3 +1,5 @@
+import { SkottStructureWithCycles } from "./skott";
+
 export const graphData = {
   "prisma/logistic/client/runtime/index.js": {
     id: "prisma/logistic/client/runtime/index.js",
@@ -3944,14 +3946,15 @@ export const graphDataWithCycles = {
   },
 };
 
-export const fakeSkottData = {
-  cycles: [
-    [
-      "src/server/settings.ts",
-      "src/lib/fastify/index.ts",
-      "src/server/errors.ts",
-    ],
-  ],
+export const fakeCyclesData = [
+  "src/server/settings.ts",
+  "src/lib/fastify/index.ts",
+  "src/server/errors.ts",
+];
+
+export const fakeSkottData: SkottStructureWithCycles = {
+  cycles: [],
+  entrypoint: "src/lib/fastify/index.ts",
   files: Object.keys(graphDataWithCycles),
   graph: {
     ...graphDataWithCycles,
