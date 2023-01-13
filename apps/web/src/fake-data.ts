@@ -3947,9 +3947,11 @@ export const graphDataWithCycles = {
 };
 
 export const fakeCyclesData = [
-  "src/server/settings.ts",
-  "src/lib/fastify/index.ts",
-  "src/server/errors.ts",
+  [
+    "src/server/settings.ts",
+    "src/lib/fastify/index.ts",
+    "src/server/errors.ts",
+  ],
 ];
 
 export const fakeSkottData: SkottStructureWithCycles = {

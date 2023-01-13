@@ -13,12 +13,19 @@ import {
   mergeMap,
   Observable,
   of,
+  pipe,
+  shareReplay,
+  skipUntil,
+  skipWhile,
+  switchMap,
+  takeWhile,
   tap,
+  timer,
 } from "rxjs";
 import { EMPTY_OBSERVER } from "rxjs/internal/Subscriber";
 import { Edge, Node } from "vis-network";
 import { makeChunkStream } from "./chunk";
-import { fakeSkottData } from "./fake-data";
+import { fakeCyclesData, fakeSkottData } from "./fake-data";
 import {
   buildNetworkIncremental,
   edges,
@@ -139,11 +146,25 @@ function displaySkottStatistics(data: SkottStructureWithCycles) {
   jsStats.textContent = numberOfJavaScriptFiles.toString();
 }
 
-const dataStream$ = of(EMPTY).pipe(
-  mergeMap(() => from(fetch("/api"))),
-  mergeMap((value) => from(value.json())),
+const fetchRequest = (url: string) =>
+  from(fetch(url)).pipe(mergeMap((value) => from(value.json())));
+
+const dataStream$ = fetchRequest("/api/analysis").pipe(
   catchError(() => of(isDevelopmentEnvironment() ? fakeSkottData : {})),
   tap(displaySkottStatistics),
+  catchError(() => EMPTY),
+  shareReplay(1)
+);
+
+const cyclesStream$ = combineLatest([
+  dataStream$,
+  fetchRequest("/api/cycles").pipe(
+    catchError(() => of(isDevelopmentEnvironment() ? fakeCyclesData : []))
+  ),
+]).pipe(
+  tap(([data, cycles]) => {
+    displaySkottStatistics({ ...data, cycles });
+  }),
   catchError(() => EMPTY)
 );
 
@@ -165,6 +186,33 @@ const dataChunkedStream$ = combineLatest([dataStream$, domContentLoaded$]).pipe(
     }
   })
 );
+
+function processNetworkRendering(
+  payload: { data: SkottStructureWithCycles; action: string; enabled: boolean },
+  changeAction: "update" | "remove"
+) {
+  return determineNetworkElementsToUpdate(payload).pipe(
+    concatMap((linkedNodeAndEdges) =>
+      makeChunkStream(
+        linkedNodeAndEdges,
+        50,
+        // Removing is less expensive than adding/updating so we reduce debounce time
+        payload.enabled ? 300 : 50
+      )
+    ),
+    tap((linkedNodeAndEdges) => {
+      if (linkedNodeAndEdges === "END_OF_STREAM") {
+        return;
+      }
+
+      const linkedNodes = linkedNodeAndEdges.filter(isNetworkNode);
+      const linkedEdges = linkedNodeAndEdges.filter(isNetworkEdge);
+
+      nodes[changeAction](linkedNodes);
+      edges[changeAction](linkedEdges);
+    })
+  );
+}
 
 function makeOptionStream() {
   const readyDataStream$ = combineLatest([dataStream$, domContentLoaded$]);
@@ -193,27 +241,19 @@ function makeOptionStream() {
             const methodToApply = getMethodToApplyOnNetworkElement(
               payload.enabled
             );
-            return determineNetworkElementsToUpdate({ ...payload, data }).pipe(
-              concatMap((linkedNodeAndEdges) =>
-                makeChunkStream(
-                  linkedNodeAndEdges,
-                  50,
-                  // Removing is less expensive than adding/updating so we reduce debounce time
-                  payload.enabled ? 300 : 50
+
+            if (payload.action === "circular") {
+              return cyclesStream$.pipe(
+                map(([data, cycles]) => {
+                  return { ...payload, data: { ...data, cycles } };
+                }),
+                concatMap((payloadBody) =>
+                  processNetworkRendering(payloadBody, methodToApply)
                 )
-              ),
-              tap((linkedNodeAndEdges) => {
-                if (linkedNodeAndEdges === "END_OF_STREAM") {
-                  return;
-                }
+              );
+            }
 
-                const linkedNodes = linkedNodeAndEdges.filter(isNetworkNode);
-                const linkedEdges = linkedNodeAndEdges.filter(isNetworkEdge);
-
-                nodes[methodToApply](linkedNodes);
-                edges[methodToApply](linkedEdges);
-              })
-            );
+            return processNetworkRendering({ ...payload, data }, methodToApply);
           })
         )
       )
@@ -239,6 +279,8 @@ function registerCoreSubscribers() {
       network?.stabilize();
     }
   });
+
+  cyclesStream$.subscribe(EMPTY_OBSERVER);
 }
 
 registerCoreSubscribers();
