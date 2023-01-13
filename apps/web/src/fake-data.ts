@@ -10,15 +10,6 @@ export const graphDataWithCycles = {
       builtinDependencies: ["node:fs"],
     },
   },
-  "src/server/settings.ts": {
-    id: "src/server/settings.ts",
-    adjacentTo: ["src/lib/fastify/index.ts"],
-    body: {
-      size: 1380,
-      thirdPartyDependencies: ["dotenv"],
-      builtinDependencies: [],
-    },
-  },
   "src/lib/fastify/index.ts": {
     id: "src/lib/fastify/index.ts",
     adjacentTo: ["src/server/errors.ts"],
@@ -48,6 +39,42 @@ export const graphDataWithCycles = {
   },
   "src/entrypoint.ts": {
     id: "src/entrypoint.ts",
+    adjacentTo: [],
+    body: {
+      size: 1380,
+      thirdPartyDependencies: [],
+      builtinDependencies: [],
+    },
+  },
+  "src/server/settings.ts": {
+    id: "src/server/settings.ts",
+    adjacentTo: ["src/lib/fastify/index.ts"],
+    body: {
+      size: 1380,
+      thirdPartyDependencies: ["dotenv"],
+      builtinDependencies: [],
+    },
+  },
+  "src/core/index.ts": {
+    id: "src/core/index.ts",
+    adjacentTo: [],
+    body: {
+      size: 1380,
+      thirdPartyDependencies: [],
+      builtinDependencies: [],
+    },
+  },
+  "src/core/primary_adapters/index.ts": {
+    id: "src/core/primary_adapters/index.ts",
+    adjacentTo: [],
+    body: {
+      size: 1380,
+      thirdPartyDependencies: [],
+      builtinDependencies: [],
+    },
+  },
+  "src/core/secondary_adapters/index.ts": {
+    id: "src/core/secondary_adapters/index.ts",
     adjacentTo: [],
     body: {
       size: 1380,

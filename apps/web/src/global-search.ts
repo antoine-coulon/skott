@@ -16,10 +16,7 @@ export function initializeGlobalSearch(
   });
 
   dataStream$.subscribe((data) => {
-    const { graph, entrypoint } = data;
-    const hasEntryPoint = entrypoint !== "none";
-    const files = Object.values(graph)
-      .filter((value) => value.id !== entrypoint)
+    ninja.data = Object.values(data.graph)
       .map((value) => ({
         id: value.id,
         title: value.id,
@@ -27,20 +24,13 @@ export function initializeGlobalSearch(
         handler: ({ id }: { id: string }) => {
           focusOnNetworkNode(id);
         },
-      }));
-
-    ninja.data = [
-      {
-        id: hasEntryPoint ? entrypoint : "Files to browse",
-        title: hasEntryPoint ? entrypoint : "Type the file name",
-        mdIcon: hasEntryPoint ? "file_open" : "input",
-        section: "Files found",
-        // @ts-expect-error
-        children: files,
-        handler: ({ id }: { id: string }) => {
-          if (entrypoint) focusOnNetworkNode(id);
-        },
-      },
-    ];
+      }))
+      .sort(({ id: f1 }, { id: f2 }) => {
+        const f1BaseDir = f1.split("/").slice(0, -1).join("/");
+        const f2BaseDir = f2.split("/").slice(0, -1).join("/");
+        if (f1BaseDir.startsWith(f2BaseDir)) return 1;
+        if (f2BaseDir.startsWith(f1BaseDir)) return -1;
+        return 0;
+      });
   });
 }

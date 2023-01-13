@@ -25,7 +25,6 @@ import { initializeGlobalSearch } from "./global-search";
 import {
   buildNetworkIncremental,
   edges,
-  focusOnNetworkNode,
   getMethodToApplyOnNetworkElement,
   isNetworkEdge,
   isNetworkNode,
@@ -161,6 +160,21 @@ const cyclesStream$ = combineLatest([
 ]).pipe(
   tap(([data, cycles]) => {
     displaySkottStatistics({ ...data, cycles });
+
+    const cyclesContainer = document.querySelector(
+      "#circular-container > .option-label"
+    );
+
+    if (!cyclesContainer) return;
+
+    if (cycles.length === 0) {
+      cyclesContainer.textContent = "No Circular Dependencies";
+      return;
+    }
+
+    const checkboxContainer = document.querySelector(".checkbox-container");
+    checkboxContainer?.classList.remove("hidden-by-default");
+    cyclesContainer.textContent = "Circular Dependencies";
   }),
   catchError(() => EMPTY)
 );

@@ -110,6 +110,20 @@ kbd {
   transform: scale(1.2);
 }
 
+ninja-keys {
+  --ninja-width: 640px;
+  --ninja-overflow-background: rgba(0, 0, 0, 0.7);
+  --ninja-text-color: rgb(36, 38, 40);
+  --ninja-accent-color: rgb(29, 152, 255);
+  --ninja-secondary-background-color: rgb(239, 241, 244);
+  --ninja-selected-background: rgb(223, 233, 255);
+  --ninja-modal-shadow: rgb(0 0 0 / 50%) 0px 16px 70px;
+  --ninja-actions-height: 300px;
+  --ninja-group-text-color: rgb(3, 118, 213);
+  --ninja-placeholder-color: #8e8e8e;
+  --ninja-z-index: 1;
+}
+
 .explorer-option {
   display: flex;
   align-items: center;
