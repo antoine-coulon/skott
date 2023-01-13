@@ -387,3 +387,14 @@ export function makeThirdPartyDependencies(data: SkottStructureWithCycles) {
 
   return of(nodesWithEdges);
 }
+
+export function focusOnNetworkNode(nodeId: string) {
+  network?.selectNodes([nodeId], true);
+  network?.focus(nodeId, {
+    animation: {
+      duration: 400,
+      easingFunction: "easeInOutCubic",
+    },
+    scale: 1.1,
+  });
+}

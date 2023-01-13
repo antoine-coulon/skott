@@ -3944,6 +3944,24 @@ export const graphDataWithCycles = {
       builtinDependencies: [],
     },
   },
+  "src/main.ts": {
+    id: "src/main.ts",
+    adjacentTo: ["src/entrypoint.ts"],
+    body: {
+      size: 1380,
+      thirdPartyDependencies: [],
+      builtinDependencies: [],
+    },
+  },
+  "src/entrypoint.ts": {
+    id: "src/entrypoint.ts",
+    adjacentTo: [],
+    body: {
+      size: 1380,
+      thirdPartyDependencies: [],
+      builtinDependencies: [],
+    },
+  },
 };
 
 export const fakeCyclesData = [

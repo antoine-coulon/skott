@@ -1,4 +1,5 @@
 import "animate.css";
+import "ninja-keys";
 import {
   BehaviorSubject,
   catchError,
@@ -13,22 +14,18 @@ import {
   mergeMap,
   Observable,
   of,
-  pipe,
   shareReplay,
-  skipUntil,
-  skipWhile,
-  switchMap,
-  takeWhile,
   tap,
-  timer,
 } from "rxjs";
 import { EMPTY_OBSERVER } from "rxjs/internal/Subscriber";
 import { Edge, Node } from "vis-network";
 import { makeChunkStream } from "./chunk";
 import { fakeCyclesData, fakeSkottData } from "./fake-data";
+import { initializeGlobalSearch } from "./global-search";
 import {
   buildNetworkIncremental,
   edges,
+  focusOnNetworkNode,
   getMethodToApplyOnNetworkElement,
   isNetworkEdge,
   isNetworkNode,
@@ -278,6 +275,7 @@ function registerCoreSubscribers() {
     if (typeof value === "string" && value === "END_OF_STREAM") {
       network?.stabilize();
     }
+    initializeGlobalSearch(dataStream$);
   });
 
   cyclesStream$.subscribe(EMPTY_OBSERVER);
