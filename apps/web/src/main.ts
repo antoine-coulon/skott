@@ -143,20 +143,20 @@ function displaySkottStatistics(data: SkottStructureWithCycles) {
 }
 
 const fetchRequest = (url: string) =>
-  from(fetch(url)).pipe(mergeMap((value) => from(value.json())));
+  from(fetch(url)).pipe(
+    mergeMap((value) => from(value.json())),
+    shareReplay()
+  );
 
 const dataStream$ = fetchRequest("/api/analysis").pipe(
-  catchError(() => of(isDevelopmentEnvironment() ? fakeSkottData : {})),
   tap(displaySkottStatistics),
   catchError(() => EMPTY),
-  shareReplay(1)
+  shareReplay()
 );
 
 const cyclesStream$ = combineLatest([
   dataStream$,
-  fetchRequest("/api/cycles").pipe(
-    catchError(() => of(isDevelopmentEnvironment() ? fakeCyclesData : []))
-  ),
+  fetchRequest("/api/cycles"),
 ]).pipe(
   tap(([data, cycles]) => {
     displaySkottStatistics({ ...data, cycles });
