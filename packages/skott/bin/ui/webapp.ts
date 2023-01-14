@@ -75,23 +75,22 @@ export function openWebApplication(
 
   console.log(`\n ${kleur.italic("Prefetching data...")} `);
 
-  let computedCycles: string[][] = [];
-
-  srv.use("/cycles", (_, response: ServerResponse) => {
-    response.setHeader("Content-Type", "application/json");
-    if (computedCycles.length > 0) {
-      return response.end(computedCycles);
-    }
-
+  srv.get("/api/cycles", (_, response: ServerResponse) => {
     const cycles = skottInstance.findCircularDependencies();
-    computedCycles = computedCycles.concat(cycles);
 
-    return response.end(computedCycles);
+    response.setHeader("Content-Type", "application/json");
+    response.end(JSON.stringify(cycles));
   });
 
-  srv.use("/api", (_, response: ServerResponse) => {
+  srv.get("/api/analysis", (_, response: ServerResponse) => {
     response.setHeader("Content-Type", "application/json");
-    response.end({ ...skottStructure, cycles: [] });
+    response.end(
+      JSON.stringify({
+        ...skottStructure,
+        entrypoint: entrypoint ?? "none",
+        cycles: []
+      })
+    );
   });
 
   srv.listen(process.env.SKOTT_PORT || 0);
