@@ -1,4 +1,5 @@
 import "animate.css";
+import "ninja-keys";
 import {
   BehaviorSubject,
   catchError,
@@ -13,12 +14,14 @@ import {
   mergeMap,
   Observable,
   of,
+  shareReplay,
   tap,
 } from "rxjs";
 import { EMPTY_OBSERVER } from "rxjs/internal/Subscriber";
 import { Edge, Node } from "vis-network";
 import { makeChunkStream } from "./chunk";
-import { fakeSkottData } from "./fake-data";
+import { fakeCyclesData, fakeSkottData } from "./fake-data";
+import { initializeGlobalSearch } from "./global-search";
 import {
   buildNetworkIncremental,
   edges,
@@ -32,7 +35,11 @@ import {
   toggleCircularDependencies,
 } from "./network";
 import { SkottStructureWithCycles } from "./skott";
-import { isJavaScriptModule, isTypeScriptModule } from "./util";
+import {
+  isDevelopmentEnvironment,
+  isJavaScriptModule,
+  isTypeScriptModule,
+} from "./util";
 
 const domContentLoaded$ = fromEvent(document, "DOMContentLoaded");
 const networkLoadingState$ = new BehaviorSubject("loading");
@@ -135,25 +142,88 @@ function displaySkottStatistics(data: SkottStructureWithCycles) {
   jsStats.textContent = numberOfJavaScriptFiles.toString();
 }
 
-const dataStream$ = of(EMPTY).pipe(
-  mergeMap(() => from(fetch("/api"))),
-  mergeMap((value) => from(value.json())),
-  catchError(() => of(fakeSkottData)),
+const fetchRequest = (url: string) =>
+  from(fetch(url)).pipe(mergeMap((value) => from(value.json())));
+
+const dataStream$ = fetchRequest("/api/analysis").pipe(
+  catchError(() => of(isDevelopmentEnvironment() ? fakeSkottData : {})),
   tap(displaySkottStatistics),
+  catchError(() => EMPTY),
+  shareReplay(1)
+);
+
+const cyclesStream$ = combineLatest([
+  dataStream$,
+  fetchRequest("/api/cycles").pipe(
+    catchError(() => of(isDevelopmentEnvironment() ? fakeCyclesData : []))
+  ),
+]).pipe(
+  tap(([data, cycles]) => {
+    displaySkottStatistics({ ...data, cycles });
+
+    const cyclesContainer = document.querySelector(
+      "#circular-container > .option-label"
+    );
+
+    if (!cyclesContainer) return;
+
+    if (cycles.length === 0) {
+      cyclesContainer.textContent = "No Circular Dependencies";
+      return;
+    }
+
+    const checkboxContainer = document.querySelector(".checkbox-container");
+    checkboxContainer?.classList.remove("hidden-by-default");
+    cyclesContainer.textContent = "Circular Dependencies";
+  }),
   catchError(() => EMPTY)
 );
 
 const dataChunkedStream$ = combineLatest([dataStream$, domContentLoaded$]).pipe(
-  concatMap(([data]) => makeChunkStream(Object.values(data.graph), 50, 500)),
-  tap((chunk) => {
+  concatMap(([data]) =>
+    combineLatest([
+      makeChunkStream(Object.values(data.graph), 50, 500),
+      of({
+        entrypoint: data.entrypoint,
+      }),
+    ])
+  ),
+  tap(([chunk, metadata]) => {
     if (Array.isArray(chunk)) {
       networkLoadingState$.next("loading");
-      buildNetworkIncremental(chunk, () => {
+      buildNetworkIncremental(chunk, metadata, () => {
         initializeNetworkConstructionStateListeners();
       });
     }
   })
 );
+
+function processNetworkRendering(
+  payload: { data: SkottStructureWithCycles; action: string; enabled: boolean },
+  changeAction: "update" | "remove"
+) {
+  return determineNetworkElementsToUpdate(payload).pipe(
+    concatMap((linkedNodeAndEdges) =>
+      makeChunkStream(
+        linkedNodeAndEdges,
+        50,
+        // Removing is less expensive than adding/updating so we reduce debounce time
+        payload.enabled ? 300 : 50
+      )
+    ),
+    tap((linkedNodeAndEdges) => {
+      if (linkedNodeAndEdges === "END_OF_STREAM") {
+        return;
+      }
+
+      const linkedNodes = linkedNodeAndEdges.filter(isNetworkNode);
+      const linkedEdges = linkedNodeAndEdges.filter(isNetworkEdge);
+
+      nodes[changeAction](linkedNodes);
+      edges[changeAction](linkedEdges);
+    })
+  );
+}
 
 function makeOptionStream() {
   const readyDataStream$ = combineLatest([dataStream$, domContentLoaded$]);
@@ -182,27 +252,19 @@ function makeOptionStream() {
             const methodToApply = getMethodToApplyOnNetworkElement(
               payload.enabled
             );
-            return determineNetworkElementsToUpdate({ ...payload, data }).pipe(
-              concatMap((linkedNodeAndEdges) =>
-                makeChunkStream(
-                  linkedNodeAndEdges,
-                  50,
-                  // Removing is less expensive than adding/updating so we reduce debounce time
-                  payload.enabled ? 300 : 50
+
+            if (payload.action === "circular") {
+              return cyclesStream$.pipe(
+                map(([data, cycles]) => {
+                  return { ...payload, data: { ...data, cycles } };
+                }),
+                concatMap((payloadBody) =>
+                  processNetworkRendering(payloadBody, methodToApply)
                 )
-              ),
-              tap((linkedNodeAndEdges) => {
-                if (linkedNodeAndEdges === "END_OF_STREAM") {
-                  return;
-                }
+              );
+            }
 
-                const linkedNodes = linkedNodeAndEdges.filter(isNetworkNode);
-                const linkedEdges = linkedNodeAndEdges.filter(isNetworkEdge);
-
-                nodes[methodToApply](linkedNodes);
-                edges[methodToApply](linkedEdges);
-              })
-            );
+            return processNetworkRendering({ ...payload, data }, methodToApply);
           })
         )
       )
@@ -224,10 +286,13 @@ function registerCoreSubscribers() {
   optionStream$.subscribe(EMPTY_OBSERVER);
 
   dataChunkedStream$.subscribe((value) => {
-    if (value === "END_OF_STREAM") {
+    if (typeof value === "string" && value === "END_OF_STREAM") {
       network?.stabilize();
     }
+    initializeGlobalSearch(dataStream$);
   });
+
+  cyclesStream$.subscribe(EMPTY_OBSERVER);
 }
 
 registerCoreSubscribers();

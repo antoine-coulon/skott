@@ -1,9 +1,9 @@
 import { of } from "rxjs";
-import { SkottNode } from "skott";
+import { Skott, SkottNode } from "skott";
 import { DataSet } from "vis-data";
 import { Edge, Network, Node } from "vis-network";
 
-import { SkottStructureWithCycles } from "./skott";
+import { SkottMetadata, SkottStructureWithCycles } from "./skott";
 
 export let network: Network | null = null;
 export let nodes: DataSet<Node, "id">;
@@ -100,7 +100,10 @@ function getRandomArbitrary(min: number, max: number) {
   return Math.random() * (max - min) + min;
 }
 
-function makeNodesAndEdges(data: SkottNode[]): {
+function makeNodesAndEdges(
+  data: SkottNode[],
+  metadata: SkottMetadata
+): {
   graphNodes: Node[];
   graphEdges: Edge[];
 } {
@@ -116,13 +119,26 @@ function makeNodesAndEdges(data: SkottNode[]): {
   const dataSpacingFactor = data.length > 100 ? 2.5 : 1;
 
   data.forEach((node) => {
-    graphNodes.push({
+    const baseOptions = {
       id: node.id,
       label: node.id,
       x: getRandomArbitrary(-15, 15) * 100 * dataSpacingFactor,
       y: getRandomArbitrary(-15, 15) * 100 * dataSpacingFactor,
       ...defaultNodeOptions,
-    });
+    };
+
+    if (node.id === metadata.entrypoint) {
+      baseOptions.color = {
+        border: "#000000",
+        background: "#ebde02",
+        highlight: {
+          border: "#000000",
+          background: "#ebde02",
+        },
+      };
+    }
+
+    graphNodes.push(baseOptions);
 
     node.adjacentTo.forEach((adjacentNodeId: string) => {
       graphEdges.push({
@@ -168,9 +184,10 @@ function makeInitialNetwork(
 
 export function buildNetworkIncremental(
   chunkedData: SkottNode[],
+  metadata: SkottMetadata,
   onNetworkConstruction: () => void
 ) {
-  const { graphNodes, graphEdges } = makeNodesAndEdges(chunkedData);
+  const { graphNodes, graphEdges } = makeNodesAndEdges(chunkedData, metadata);
 
   if (!nodes) {
     makeInitialNetwork(graphNodes, graphEdges, onNetworkConstruction);
@@ -369,4 +386,15 @@ export function makeThirdPartyDependencies(data: SkottStructureWithCycles) {
   }
 
   return of(nodesWithEdges);
+}
+
+export function focusOnNetworkNode(nodeId: string) {
+  network?.selectNodes([nodeId], true);
+  network?.focus(nodeId, {
+    animation: {
+      duration: 400,
+      easingFunction: "easeInOutCubic",
+    },
+    scale: 1.1,
+  });
 }
