@@ -32,6 +32,7 @@
     "@typescript-eslint/typescript-estree": "^5.48.0",
     "compression": "^1.7.4",
     "digraph-js": "^2.0.2",
+    "effect": "2.0.0-next.13",
     "estree-walker": "^3.0.1",
     "fs-tree-structure": "workspace:*",
     "json5": "^2.2.2",
