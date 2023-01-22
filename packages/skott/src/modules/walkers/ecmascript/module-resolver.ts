@@ -1,7 +1,9 @@
 import { builtinModules } from "node:module";
 import path from "node:path";
 
-import type { FileReader } from "../../../filesystem/file-reader";
+import { Effect, pipe } from "effect";
+
+import { FileReader, FileReaderTag } from "../../../filesystem/file-reader.js";
 
 const NODE_PROTOCOL = "node:";
 
@@ -137,70 +139,79 @@ async function isExistingModule(
   }
 }
 
-// Given a module name, resolve it to a file path.
+/**
+ * A module is considered existing when the module name can be resolved to a
+ * readable file.
+ */
+function resolveToModuleIfExists(moduleName: string) {
+  return pipe(
+    Effect.service(FileReaderTag),
+    Effect.flatMap((fileReader) =>
+      Effect.tryPromise(() => fileReader.read(moduleName))
+    ),
+    Effect.map(() => moduleName)
+  );
+}
+
 export async function resolveImportedModulePath(
   module: string,
   fileReader: FileReader
 ): Promise<string> {
   const moduleExists = await isExistingModule(module, fileReader);
   /**
-   * If the module name is the module itself, we have nothing to do.
-   * If the module is supported and it appears that `moduleExists` is false, it
+   * If the module name can directly be resolved, we have nothing to do.
+   * Note: If the module is supported and it appears that `moduleExists` is false, it
    * might be the case where TypeScript is used with ECMAScript modules.
    */
   if (isFileSupportedByDefault(module) && moduleExists) {
     return module;
   }
 
-  /**
-   * In case of CommonJS modules, the module can be targetted through a directory
-   * import e.g: require("./lib") which will eventually resolve to "lib/index.js".
-   */
-  try {
-    const maybePathToModule = path.join(module, "index.js");
+  const ecmaScriptModuleCombinations = {
+    /**
+     * In case of CommonJS modules, the module can be targetted through a directory
+     * import e.g: require("./lib") which will eventually resolve to "lib/index.js".
+     */
+    JS_INDEX_MODULE: path.join(module, "index.js"),
+    /**
+     * Otherwise, it might be a simple JavaScript module.
+     * Example: `require("./lib")` will resolve to `./lib.js`.
+     */
+    JS_MODULE: module.concat(".js"),
+    /**
+     * In case of TypeScript modules, the module can be targetted through a directory
+     * import e.g: import "./lib" which will eventually resolve to "lib/index.ts".
+     */
+    TS_INDEX_MODULE: path.join(module, "index.ts"),
+    /**
+     * TypeScript file targetted, with classic TypeScript module declarations.
+     */
+    TS_MODULE: module.concat(".ts"),
+    /**
+     * In case of TypeScript modules but when targetting ECMAScript modules,
+     * modules are suffixed with ".js" but should resolve to their corresponding
+     * ".ts" file.
+     */
+    TS_MODULE_WITH_JS_EXTENSION: module
+      .split(path.extname(module))[0]
+      .concat(".ts")
+  };
 
-    await fileReader.read(maybePathToModule);
-
-    // If the file is found, we must resolve the path to the index.js file.
-    return maybePathToModule;
-  } catch {}
-
-  // TypeScript file, with classic TypeScript module declarations.
-  try {
-    const maybePathToModule = module.concat(".ts");
-
-    await fileReader.read(maybePathToModule);
-
-    return maybePathToModule;
-  } catch {}
-
-  /**
-   * In case of TypeScript modules, the module can be targetted through a directory
-   * import e.g: import "./lib" which will eventually resolve to "lib/index.ts".
-   */
-  try {
-    const maybePathToModule = path.join(module, "index.ts");
-
-    await fileReader.read(maybePathToModule);
-
-    // If the file is found, we must resolve the path to the index.ts file.
-    return maybePathToModule;
-  } catch {}
-
-  /**
-   * In case of TypeScript modules but when targetting ECMAScript modules,
-   * modules are suffixed with ".js" but should resolve to their corresponding
-   * ".ts" file.
-   */
-  try {
-    const maybePathToModule = module.split(path.extname(module))[0];
-    const javaScriptToTypeScriptFile = maybePathToModule.concat(".ts");
-    await fileReader.read(javaScriptToTypeScriptFile);
-
-    // If the file is found, we must resolve the path to the corresponding TypeScript file.
-    return javaScriptToTypeScriptFile;
-  } catch {}
-
-  // Otherwise, require("./lib") will resolve to "./lib.js".
-  return module.concat(".js");
+  return pipe(
+    resolveToModuleIfExists(ecmaScriptModuleCombinations.JS_INDEX_MODULE),
+    Effect.orElse(() =>
+      resolveToModuleIfExists(ecmaScriptModuleCombinations.TS_MODULE)
+    ),
+    Effect.orElse(() =>
+      resolveToModuleIfExists(ecmaScriptModuleCombinations.TS_INDEX_MODULE)
+    ),
+    Effect.orElse(() =>
+      resolveToModuleIfExists(
+        ecmaScriptModuleCombinations.TS_MODULE_WITH_JS_EXTENSION
+      )
+    ),
+    Effect.orElseSucceed(() => ecmaScriptModuleCombinations.JS_MODULE),
+    Effect.provideService(FileReaderTag)(fileReader),
+    Effect.unsafeRunPromise
+  );
 }

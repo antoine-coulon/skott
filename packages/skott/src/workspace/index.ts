@@ -1,8 +1,9 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
-import type { FileReader } from "../filesystem/file-reader";
-import { tryOrElse } from "../util.js";
+import { Effect, pipe } from "effect";
+
+import { FileReader, FileReaderTag } from "../filesystem/file-reader.js";
 
 export async function findWorkspaceEntrypointModule(): Promise<string> {
   // look for package.json
@@ -18,25 +19,49 @@ export async function findWorkspaceEntrypointModule(): Promise<string> {
   );
 }
 
+class ManifestFileReadingError {
+  readonly _tag = "ManifestFileReadingError";
+  constructor(private readonly message: string) {}
+}
+
+function readManifestAt(
+  manifestPath: string
+): Effect.Effect<FileReader, ManifestFileReadingError, string> {
+  return pipe(
+    Effect.service(FileReaderTag),
+    Effect.flatMap((fileReader) =>
+      Effect.tryPromise(() => fileReader.read(manifestPath))
+    ),
+    Effect.mapError(
+      () =>
+        new ManifestFileReadingError(
+          "The package.json manifest file could not be found or read."
+        )
+    )
+  );
+}
+
 export async function findManifestDependencies(
   baseDir: string,
   manifestPath: string,
   fileReader: FileReader
 ): Promise<string[]> {
-  let rawManifest = "";
-  const cwd = fileReader.getCurrentWorkingDir();
-  try {
-    rawManifest = await tryOrElse(
-      () => fileReader.read(path.join(cwd, manifestPath)),
-      () => fileReader.read(path.join(cwd, baseDir, manifestPath))
-    );
-  } catch {
-    throw new Error(
-      "The package.json manifest file could not be found or read."
-    );
-  }
-
-  return Object.keys(JSON.parse(rawManifest).dependencies);
+  return pipe(
+    Effect.sync(() => fileReader.getCurrentWorkingDir()),
+    Effect.flatMap((cwd) =>
+      pipe(
+        readManifestAt(path.join(cwd, manifestPath)),
+        Effect.orElse(() =>
+          readManifestAt(path.join(cwd, baseDir, manifestPath))
+        )
+      )
+    ),
+    Effect.map((rawManifest) =>
+      Object.keys(JSON.parse(rawManifest).dependencies)
+    ),
+    Effect.provideService(FileReaderTag)(fileReader),
+    Effect.unsafeRunPromise
+  );
 }
 
 /**

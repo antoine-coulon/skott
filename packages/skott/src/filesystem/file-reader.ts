@@ -3,6 +3,8 @@ import fsSync from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import { Context } from "effect";
+
 import {
   isDirSupportedByDefault,
   isFileSupportedByDefault
@@ -15,6 +17,8 @@ export interface FileReader {
   stats: (filename: string) => Promise<number>;
   getCurrentWorkingDir: () => string;
 }
+
+export const FileReaderTag = Context.Tag<FileReader>();
 
 export class FileSystemReader implements FileReader {
   read(filename: string): Promise<string> {
