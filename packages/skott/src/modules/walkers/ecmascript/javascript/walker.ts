@@ -1,4 +1,4 @@
-import { walk } from "estree-walker";
+import { walk as walkAST } from "estree-walker";
 import { parseScript } from "meriyah";
 
 import type { ModuleWalker, ModuleWalkerResult } from "../../common.js";
@@ -7,19 +7,21 @@ import { extractModuleDeclarations } from "../module-declaration.js";
 export class JavaScriptModuleWalker implements ModuleWalker {
   public async walk(fileContent: string): Promise<ModuleWalkerResult> {
     const moduleDeclarations = new Set<string>();
-    const node = parseScript(fileContent, {
-      module: true,
-      next: true,
-      jsx: true,
-      loc: false
-    });
-    const isRootNode = node.type === "Program";
+    try {
+      const node = parseScript(fileContent, {
+        module: true,
+        next: true,
+        jsx: true,
+        loc: false
+      });
+      const isRootNode = node.type === "Program";
 
-    walk(isRootNode ? node.body : node, {
-      enter(node) {
-        extractModuleDeclarations(node, moduleDeclarations);
-      }
-    });
+      walkAST(isRootNode ? node.body : node, {
+        enter(node) {
+          extractModuleDeclarations(node, moduleDeclarations);
+        }
+      });
+    } catch {}
 
     return { moduleDeclarations };
   }

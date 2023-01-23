@@ -552,3 +552,17 @@ describe("When a global analysis without any entrypoint is requested", () => {
     expect(files).to.deep.equal(["baz.ts", "dir/foo.ts", "index.mjs"]);
   });
 });
+
+describe("When some files cannot be parsed", () => {
+  it("should collect files without dependencies", async () => {
+    mountFakeFileSystem({
+      "invalid1.js": "export type Foo = string;",
+      "invalid2.ts": "_some_invalid_code_",
+      "valid.js": "export const foo = 'bar';"
+    });
+
+    const { files } = await buildSkottProjectUsingInMemoryFileExplorer();
+
+    expect(files).to.deep.equal(["invalid1.js", "invalid2.ts", "valid.js"]);
+  });
+});
