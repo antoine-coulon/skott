@@ -148,26 +148,35 @@ export async function displayThirdPartyDependencies(
   }
 
   if (showUnusedDependencies) {
-    const { thirdParty } = await skottInstance.findUnusedDependencies();
-    const indents = makeIndents(1);
-    if (thirdParty.length > 0) {
-      console.log(
-        `\n ${kleur.bold(
-          `Found ${kleur
-            .bold()
-            .red(
-              thirdParty.length
-            )} unused third-party dependencies in ${kleur.underline(
-            "production code"
-          )}:`
-        )} \n`
-      );
-      for (const dep of thirdParty) {
-        console.log(`${indents} ${kleur.bold().red(dep)}`);
+    try {
+      const { thirdParty } = await skottInstance.findUnusedDependencies();
+      const indents = makeIndents(1);
+      if (thirdParty.length > 0) {
+        console.log(
+          `\n ${kleur.bold(
+            `Found ${kleur
+              .bold()
+              .red(
+                thirdParty.length
+              )} unused third-party dependencies in ${kleur.underline(
+              "production code"
+            )}:`
+          )} \n`
+        );
+        for (const dep of thirdParty) {
+          console.log(`${indents} ${kleur.bold().red(dep)}`);
+        }
+      } else {
+        console.log(
+          `${kleur.bold().green(`\n ✓ all third-party dependencies are used.`)}`
+        );
       }
-    } else {
+    } catch (e) {
       console.log(
-        `${kleur.bold().green(`\n ✓ all third-party dependencies are used.`)}`
+        `${kleur.bold().red(
+          // @ts-ignore - error is handled by skott
+          `\n ✖ Could not search for unused dependencies. Reason: ${e.message}`
+        )}`
       );
     }
   }
