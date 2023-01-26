@@ -18,24 +18,27 @@ export class TypeScriptModuleWalker implements ModuleWalker {
     const moduleDeclarations = new Set<string>();
 
     function processWalk({ jsx } = { jsx: true }) {
-      return Effect.sync(() => {
-        const node = parse(fileContent, {
-          jsx,
-          loc: false,
-          comment: false
-        });
-        const isRootNode = node.type === "Program";
+      return Effect.tryCatch(
+        () => {
+          const node = parse(fileContent, {
+            jsx,
+            loc: false,
+            comment: false
+          });
+          const isRootNode = node.type === "Program";
 
-        walkAST(isRootNode ? node.body : node, {
-          enter(node) {
-            extractModuleDeclarations(
-              node,
-              moduleDeclarations,
-              trackTypeOnlyDependencies
-            );
-          }
-        });
-      });
+          walkAST(isRootNode ? node.body : node, {
+            enter(node) {
+              extractModuleDeclarations(
+                node,
+                moduleDeclarations,
+                trackTypeOnlyDependencies
+              );
+            }
+          });
+        },
+        () => Effect.fail(new Error())
+      );
     }
 
     pipe(

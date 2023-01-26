@@ -169,19 +169,33 @@ export function makeTestSuiteForJsxOrTsx(rawLanguage: "ts" | "js"): void {
 describe("When some TypeScript code is not TSX compliant", () => {
   it("should be able to parse the script disabling the jsx feature", async () => {
     const fileThatCanNotBeParsedAsTSX = `
-    export const unparsableTSXFunction = async <T>(
-      x: T
-    ) => {}
+      export const unparsableTSXFunction = async <T>(
+        x: T
+      ) => {}
+      
+      await import("./something");
     `;
 
     mountFakeFileSystem({
-      "index.ts": fileThatCanNotBeParsedAsTSX
+      "index.ts": fileThatCanNotBeParsedAsTSX,
+      "something.ts": ``
     });
 
-    const { files } = await buildSkottProjectUsingInMemoryFileExplorer({
+    const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
       entrypoint: "index.ts"
     });
 
-    expect(files).to.deep.equal(["index.ts"]);
+    expect(graph).to.deep.equal({
+      "index.ts": {
+        id: "index.ts",
+        adjacentTo: ["something.ts"],
+        body: fakeNodeBody
+      },
+      "something.ts": {
+        id: "something.ts",
+        adjacentTo: [],
+        body: fakeNodeBody
+      }
+    });
   });
 });
