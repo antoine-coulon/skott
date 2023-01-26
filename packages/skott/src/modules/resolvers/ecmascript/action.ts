@@ -1,46 +1,41 @@
 import type { DiGraph } from "digraph-js";
 
-import { SkottConfig, SkottNode } from "../../skott";
+import type { FollowModuleDeclarationOptions } from "../../../ioc.js";
+import type { SkottConfig, SkottNode } from "../../../skott.js";
+import {
+  isTypeScriptPathAlias,
+  resolvePathAlias
+} from "../../walkers/ecmascript/typescript/path-alias.js";
+
 import {
   extractNpmNameFromThirdPartyModuleDeclaration,
   isBinaryModule,
   isBuiltinModule,
   isJSONModule,
   isThirdPartyModule
-} from "../walkers/ecmascript/module-resolver.js";
-import {
-  isTypeScriptPathAlias,
-  resolvePathAlias
-} from "../walkers/ecmascript/typescript/path-alias";
+} from "./resolver.js";
 
-interface ResolverOptions<T extends DiGraph<SkottNode>> {
+interface ResolverOptions<T extends DiGraph<SkottNode>, A> {
   moduleDeclaration: string;
   projectGraph: T;
   config: SkottConfig;
   nodePath: string;
-}
-
-interface AdditionalModuleDeclaration {
-  moduleDeclaration: string;
-  isPathAlias: boolean;
+  followModuleDeclaration: (args: FollowModuleDeclarationOptions) => A;
 }
 
 interface ResolverResult {
   followModuleDeclaration: boolean;
-  additionalModuleDeclarationsToFollow: AdditionalModuleDeclaration[];
 }
 
-export default function resolver<T extends DiGraph<SkottNode>>({
+export default async function moduleAction<T extends DiGraph<SkottNode>, A>({
   moduleDeclaration,
   config,
   projectGraph,
-  nodePath
-}: ResolverOptions<T>): ResolverResult {
-  const additionalModuleDeclarations: AdditionalModuleDeclaration[] = [];
-
+  nodePath,
+  followModuleDeclaration
+}: ResolverOptions<T, A>): Promise<ResolverResult> {
   if (isBinaryModule(moduleDeclaration) || isJSONModule(moduleDeclaration)) {
     return {
-      additionalModuleDeclarationsToFollow: additionalModuleDeclarations,
       followModuleDeclaration: false
     };
   }
@@ -48,7 +43,6 @@ export default function resolver<T extends DiGraph<SkottNode>>({
   if (isBuiltinModule(moduleDeclaration)) {
     if (!config.dependencyTracking.builtin) {
       return {
-        additionalModuleDeclarationsToFollow: additionalModuleDeclarations,
         followModuleDeclaration: false
       };
     }
@@ -61,15 +55,15 @@ export default function resolver<T extends DiGraph<SkottNode>>({
     const resolvedModulePath = resolvePathAlias(moduleDeclaration);
 
     if (resolvedModulePath) {
-      additionalModuleDeclarations.push({
+      await followModuleDeclaration({
         moduleDeclaration: resolvedModulePath,
-        isPathAlias: true
+        rootPath: nodePath,
+        isPathAliasDeclaration: true
       });
     }
   } else if (isThirdPartyModule(moduleDeclaration)) {
     if (!config.dependencyTracking.thirdParty) {
       return {
-        additionalModuleDeclarationsToFollow: [],
         followModuleDeclaration: false
       };
     }
@@ -85,7 +79,6 @@ export default function resolver<T extends DiGraph<SkottNode>>({
   }
 
   return {
-    additionalModuleDeclarationsToFollow: additionalModuleDeclarations,
     followModuleDeclaration: true
   };
 }

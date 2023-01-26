@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { kExpectedModuleExtensions } from "../../src/modules/walkers/ecmascript/module-resolver";
+import { kExpectedModuleExtensions } from "../../src/modules/resolvers/ecmascript/resolver";
 
 import {
   buildSkottProjectUsingInMemoryFileExplorer,

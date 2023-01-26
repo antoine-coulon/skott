@@ -10,19 +10,19 @@ import {
 } from "./cache/index.js";
 import { FileReader } from "./filesystem/file-reader.js";
 import { FileWriter } from "./filesystem/file-writer.js";
-import NodeResolver from "./modules/resolvers/nodejs.js";
-import { WalkerSelector } from "./modules/walkers/common.js";
+import type { FollowModuleDeclarationOptions } from "./ioc.js";
+import selectModuleAction from "./modules/resolvers/ecmascript/action.js";
 import {
   isTypeScriptModule,
   kExpectedModuleExtensions,
   resolveImportedModulePath
-} from "./modules/walkers/ecmascript/module-resolver.js";
+} from "./modules/resolvers/ecmascript/resolver.js";
+import { WalkerSelector } from "./modules/walkers/common.js";
 import { buildPathAliases } from "./modules/walkers/ecmascript/typescript/path-alias.js";
 import {
   findManifestDependencies,
   findMatchesBetweenGraphAndManifestDependencies
 } from "./workspace/index.js";
-
 export type SkottNodeBody = {
   size: number;
   thirdPartyDependencies: string[];
@@ -103,7 +103,7 @@ export class Skott {
     return this.#cacheHandler.store;
   }
 
-  private formatNodePath(nodePath: string): string {
+  private resolveNodePath(nodePath: string): string {
     /**
      * When the base directory name has to be included, every node path should be
      * registered while being discovered without any further do
@@ -159,7 +159,7 @@ export class Skott {
 
   private async addNode(node: string): Promise<void> {
     this.#projectGraph.addVertex({
-      id: this.formatNodePath(node),
+      id: this.resolveNodePath(node),
       adjacentTo: [],
       body: {
         size: await this.fileReader.stats(node),
@@ -178,8 +178,8 @@ export class Skott {
   }): Promise<void> {
     await this.addNode(to);
     this.#projectGraph.addEdge({
-      from: this.formatNodePath(from),
-      to: this.formatNodePath(to)
+      from: this.resolveNodePath(from),
+      to: this.resolveNodePath(to)
     });
   }
 
@@ -188,7 +188,7 @@ export class Skott {
     fileContent: string
   ): Promise<Set<string>> {
     if (this.config.incremental) {
-      const cachedNode = this.#cacheHandler.get(this.formatNodePath(fileName));
+      const cachedNode = this.#cacheHandler.get(this.resolveNodePath(fileName));
 
       if (cachedNode && !isFileAffected(fileContent, cachedNode.hash)) {
         return this.#cacheHandler.restoreModuleDeclarations(
@@ -210,15 +210,11 @@ export class Skott {
     return moduleDeclarations;
   }
 
-  private async followModuleDeclarationsFromFile({
+  private async followModuleDeclarationFromFile({
     rootPath,
     moduleDeclaration,
     isPathAliasDeclaration = false
-  }: {
-    rootPath: string;
-    moduleDeclaration: string;
-    isPathAliasDeclaration?: boolean;
-  }): Promise<void> {
+  }: FollowModuleDeclarationOptions): Promise<void> {
     /**
      * When performing a global analysis, path aliases must be resolved from
      * the working directory the analysis was started from.
@@ -284,7 +280,7 @@ export class Skott {
 
     if (this.config.incremental) {
       this.#cacheHandler.addSourceFile(
-        this.formatNodePath(rootPath),
+        this.resolveNodePath(rootPath),
         fileContent
       );
     }
@@ -300,30 +296,19 @@ export class Skott {
       return;
     }
 
-    const formattedNodePath = this.formatNodePath(rootPath);
+    const formattedNodePath = this.resolveNodePath(rootPath);
 
     for (const moduleDeclaration of moduleDeclarations.values()) {
-      const { followModuleDeclaration, additionalModuleDeclarationsToFollow } =
-        NodeResolver({
-          config: this.config,
-          moduleDeclaration,
-          nodePath: formattedNodePath,
-          projectGraph: this.#projectGraph
-        });
-
-      for (const {
-        moduleDeclaration: additionalModuleDeclaration,
-        isPathAlias
-      } of additionalModuleDeclarationsToFollow) {
-        await this.followModuleDeclarationsFromFile({
-          rootPath,
-          moduleDeclaration: additionalModuleDeclaration,
-          isPathAliasDeclaration: isPathAlias
-        });
-      }
+      const { followModuleDeclaration } = await selectModuleAction({
+        config: this.config,
+        moduleDeclaration,
+        nodePath: formattedNodePath,
+        projectGraph: this.#projectGraph,
+        followModuleDeclaration: this.followModuleDeclarationFromFile.bind(this)
+      });
 
       if (followModuleDeclaration) {
-        await this.followModuleDeclarationsFromFile({
+        await this.followModuleDeclarationFromFile({
           rootPath,
           moduleDeclaration
         });

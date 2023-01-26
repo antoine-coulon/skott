@@ -1,8 +1,9 @@
+import { isTypeScriptModule } from "../resolvers/ecmascript/resolver.js";
+
 import {
   JavaScriptModuleWalker,
   TypeScriptModuleWalker
 } from "./ecmascript/index.js";
-import { isTypeScriptModule } from "./ecmascript/module-resolver.js";
 
 export interface ModuleWalkerResult {
   moduleDeclarations: Set<string>;

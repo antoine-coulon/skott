@@ -8,7 +8,7 @@ import { Context } from "effect";
 import {
   isDirSupportedByDefault,
   isFileSupportedByDefault
-} from "../modules/walkers/ecmascript/module-resolver.js";
+} from "../modules/resolvers/ecmascript/resolver.js";
 
 export interface FileReader {
   read: (filename: string) => Promise<string>;

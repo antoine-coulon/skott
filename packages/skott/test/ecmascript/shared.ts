@@ -4,12 +4,12 @@ import * as memfs from "memfs";
 
 import { FileReader } from "../../src/filesystem/file-reader.js";
 import { InMemoryFileWriter } from "../../src/filesystem/file-writer.js";
-import { WalkerSelector } from "../../src/modules/walkers/common.js";
 import {
   isDirSupportedByDefault,
   isFileSupportedByDefault,
   kExpectedModuleExtensions
-} from "../../src/modules/walkers/ecmascript/module-resolver.js";
+} from "../../src/modules/resolvers/ecmascript/resolver.js";
+import { WalkerSelector } from "../../src/modules/walkers/common.js";
 import { Skott, SkottNode } from "../../src/skott";
 
 /* eslint-disable no-sync */
