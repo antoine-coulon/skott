@@ -10,22 +10,14 @@ import {
 } from "./cache/index.js";
 import { FileReader } from "./filesystem/file-reader.js";
 import { FileWriter } from "./filesystem/file-writer.js";
+import NodeResolver from "./modules/resolvers/nodejs.js";
 import { WalkerSelector } from "./modules/walkers/common.js";
 import {
-  extractNpmNameFromThirdPartyModuleDeclaration,
-  isBinaryModule,
-  isBuiltinModule,
-  isJSONModule,
-  isThirdPartyModule,
   isTypeScriptModule,
   kExpectedModuleExtensions,
   resolveImportedModulePath
 } from "./modules/walkers/ecmascript/module-resolver.js";
-import {
-  buildPathAliases,
-  isTypeScriptPathAlias,
-  resolvePathAlias
-} from "./modules/walkers/ecmascript/typescript/path-alias.js";
+import { buildPathAliases } from "./modules/walkers/ecmascript/typescript/path-alias.js";
 import {
   findManifestDependencies,
   findMatchesBetweenGraphAndManifestDependencies
@@ -308,54 +300,34 @@ export class Skott {
       return;
     }
 
+    const formattedNodePath = this.formatNodePath(rootPath);
+
     for (const moduleDeclaration of moduleDeclarations.values()) {
-      if (
-        isBinaryModule(moduleDeclaration) ||
-        isJSONModule(moduleDeclaration)
-      ) {
-        continue;
-      }
-
-      const formattedNodePath = this.formatNodePath(rootPath);
-
-      if (isBuiltinModule(moduleDeclaration)) {
-        if (!this.config.dependencyTracking.builtin) {
-          continue;
-        }
-
-        this.#projectGraph.mergeVertexBody(formattedNodePath, (body) => {
-          body.builtinDependencies =
-            body.builtinDependencies.concat(moduleDeclaration);
+      const { followModuleDeclaration, additionalModuleDeclarationsToFollow } =
+        NodeResolver({
+          config: this.config,
+          moduleDeclaration,
+          nodePath: formattedNodePath,
+          projectGraph: this.#projectGraph
         });
-      } else if (isTypeScriptPathAlias(moduleDeclaration)) {
-        const resolvedModulePath = resolvePathAlias(moduleDeclaration);
 
-        if (resolvedModulePath) {
-          await this.followModuleDeclarationsFromFile({
-            rootPath,
-            moduleDeclaration: resolvedModulePath,
-            isPathAliasDeclaration: true
-          });
-        }
-      } else if (isThirdPartyModule(moduleDeclaration)) {
-        if (!this.config.dependencyTracking.thirdParty) {
-          continue;
-        }
-
-        const dependencyName =
-          extractNpmNameFromThirdPartyModuleDeclaration(moduleDeclaration);
-
-        this.#projectGraph.mergeVertexBody(formattedNodePath, (body) => {
-          body.thirdPartyDependencies = Array.from(
-            new Set(body.thirdPartyDependencies.concat(dependencyName))
-          );
+      for (const {
+        moduleDeclaration: additionalModuleDeclaration,
+        isPathAlias
+      } of additionalModuleDeclarationsToFollow) {
+        await this.followModuleDeclarationsFromFile({
+          rootPath,
+          moduleDeclaration: additionalModuleDeclaration,
+          isPathAliasDeclaration: isPathAlias
         });
       }
 
-      await this.followModuleDeclarationsFromFile({
-        rootPath,
-        moduleDeclaration
-      });
+      if (followModuleDeclaration) {
+        await this.followModuleDeclarationsFromFile({
+          rootPath,
+          moduleDeclaration
+        });
+      }
     }
   }
 

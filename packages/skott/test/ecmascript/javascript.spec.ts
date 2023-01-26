@@ -155,17 +155,17 @@ describe("When traversing a JavaScript/Node.js project", () => {
           it("should not consider Node.js core modules imports as file dependencies", async () => {
             mountFakeFileSystem({
               "index.js": `
-                      import { readFile } from "fs/promises";
-                      import { join } from "node:path";
-                      import { setImmediate } from "node:timers/promises";
+                import { readFile } from "fs/promises";
+                import { join } from "node:path";
+                import { setImmediate } from "node:timers/promises";
                       
-                      import * as foobar from "./foobar.js";
+                import * as foobar from "./foobar.js";
     
-                      console.log(foobar.foo.doSomething());
-                    `,
+                console.log(foobar.foo.doSomething());
+              `,
               "foobar.js": `
-                      export const foo = { doSomething: () => 'Hello, world!' };
-                    `
+                export const foo = { doSomething: () => 'Hello, world!' };
+              `
             });
 
             const skottProject =
