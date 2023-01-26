@@ -1,5 +1,5 @@
-import { expect } from "chai";
 import * as memfs from "memfs";
+import { describe, expect, it } from "vitest";
 
 import { FileReader } from "../../src/filesystem/file-reader.js";
 import { InMemoryFileWriter } from "../../src/filesystem/file-writer.js";

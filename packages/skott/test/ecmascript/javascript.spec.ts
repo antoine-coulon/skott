@@ -1,6 +1,6 @@
 /* eslint-disable max-lines */
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 
 import { makeTestSuiteForJsxOrTsx as makeTestSuiteForJsx } from "./jsx-and-tsx";
 import {

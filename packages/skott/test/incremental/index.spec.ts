@@ -1,5 +1,5 @@
 /* eslint-disable max-classes-per-file */
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 
 import { createNodeHash } from "../../src/cache/affected";
 import {

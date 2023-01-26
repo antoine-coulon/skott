@@ -1,4 +1,4 @@
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 
 import { InMemoryFileWriter } from "../../src/filesystem/file-writer";
 import { WalkerSelector } from "../../src/modules/walkers/common";
