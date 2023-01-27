@@ -19,35 +19,29 @@ interface ResolverOptions<T extends DiGraph<SkottNode>, A> {
   moduleDeclaration: string;
   projectGraph: T;
   config: SkottConfig;
-  nodePath: string;
+  rawNodePath: string;
+  resolvedNodePath: string;
   followModuleDeclaration: (args: FollowModuleDeclarationOptions) => A;
-}
-
-interface ResolverResult {
-  followModuleDeclaration: boolean;
 }
 
 export default async function moduleAction<T extends DiGraph<SkottNode>, A>({
   moduleDeclaration,
   config,
   projectGraph,
-  nodePath,
+  resolvedNodePath,
+  rawNodePath,
   followModuleDeclaration
-}: ResolverOptions<T, A>): Promise<ResolverResult> {
+}: ResolverOptions<T, A>): Promise<void> {
   if (isBinaryModule(moduleDeclaration) || isJSONModule(moduleDeclaration)) {
-    return {
-      followModuleDeclaration: false
-    };
+    return;
   }
 
   if (isBuiltinModule(moduleDeclaration)) {
     if (!config.dependencyTracking.builtin) {
-      return {
-        followModuleDeclaration: false
-      };
+      return;
     }
 
-    projectGraph.mergeVertexBody(nodePath, (body) => {
+    projectGraph.mergeVertexBody(resolvedNodePath, (body) => {
       body.builtinDependencies =
         body.builtinDependencies.concat(moduleDeclaration);
     });
@@ -57,28 +51,27 @@ export default async function moduleAction<T extends DiGraph<SkottNode>, A>({
     if (resolvedModulePath) {
       await followModuleDeclaration({
         moduleDeclaration: resolvedModulePath,
-        rootPath: nodePath,
+        rootPath: resolvedNodePath,
         isPathAliasDeclaration: true
       });
     }
   } else if (isThirdPartyModule(moduleDeclaration)) {
     if (!config.dependencyTracking.thirdParty) {
-      return {
-        followModuleDeclaration: false
-      };
+      return;
     }
 
     const dependencyName =
       extractNpmNameFromThirdPartyModuleDeclaration(moduleDeclaration);
 
-    projectGraph.mergeVertexBody(nodePath, (body) => {
+    projectGraph.mergeVertexBody(resolvedNodePath, (body) => {
       body.thirdPartyDependencies = Array.from(
         new Set(body.thirdPartyDependencies.concat(dependencyName))
       );
     });
   }
 
-  return {
-    followModuleDeclaration: true
-  };
+  await followModuleDeclaration({
+    rootPath: rawNodePath,
+    moduleDeclaration
+  });
 }

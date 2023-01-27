@@ -28,7 +28,7 @@ const defaultIncrementalConfig = {
 };
 
 class NotWorkingWalkerSelector {
-  public getAppropriateWalker(): void {
+  public selectAppropriateModuleWalker(): void {
     throw new Error("It should not get to there!");
   }
 }
@@ -400,7 +400,9 @@ describe("Incremental analysis", () => {
           const affectedFilesThatShouldNotBeRetrievedFromCache: string[] = [];
 
           class WalkerSelectorWithFileTracking {
-            public getAppropriateWalker(fileName: string): ModuleWalker {
+            public selectAppropriateModuleWalker(
+              fileName: string
+            ): ModuleWalker {
               // This step must only occur for the files that changed or that were added
               // We want to track which files are affected by the change
               // and assert that only the changed/added files are affected
@@ -700,7 +702,9 @@ describe("Incremental analysis", () => {
           const affectedFilesThatShouldNotBeRetrievedFromCache: string[] = [];
 
           class WalkerSelectorWithFileTracking {
-            public getAppropriateWalker(fileName: string): ModuleWalker {
+            public selectAppropriateModuleWalker(
+              fileName: string
+            ): ModuleWalker {
               // This step must only occur for the files that changed or that were added
               // We want to track which files are affected by the change
               // and assert that only the changed/added files are affected

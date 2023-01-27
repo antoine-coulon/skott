@@ -11,7 +11,7 @@ import {
 import { FileReader } from "./filesystem/file-reader.js";
 import { FileWriter } from "./filesystem/file-writer.js";
 import type { FollowModuleDeclarationOptions } from "./ioc.js";
-import selectModuleAction from "./modules/resolvers/ecmascript/action.js";
+import execModuleAction from "./modules/resolvers/ecmascript/action.js";
 import {
   isTypeScriptModule,
   kExpectedModuleExtensions,
@@ -23,6 +23,7 @@ import {
   findManifestDependencies,
   findMatchesBetweenGraphAndManifestDependencies
 } from "./workspace/index.js";
+
 export type SkottNodeBody = {
   size: number;
   thirdPartyDependencies: string[];
@@ -198,7 +199,8 @@ export class Skott {
       }
     }
 
-    const moduleWalker = this.walkerSelector.getAppropriateWalker(fileName);
+    const moduleWalker =
+      this.walkerSelector.selectAppropriateModuleWalker(fileName);
     const moduleWalkerConfig = {
       trackTypeOnlyDependencies: this.config.dependencyTracking.typeOnly
     };
@@ -210,7 +212,7 @@ export class Skott {
     return moduleDeclarations;
   }
 
-  private async followModuleDeclarationFromFile({
+  private async followModuleDeclaration({
     rootPath,
     moduleDeclaration,
     isPathAliasDeclaration = false
@@ -238,7 +240,7 @@ export class Skott {
         to: fullFilePathFromBaseDirectory
       });
 
-      await this.collectModuleDeclarationsFromFile(
+      await this.collectModuleDeclarations(
         fullFilePathFromBaseDirectory,
         nextFileContentToExplore
       );
@@ -262,7 +264,7 @@ export class Skott {
           to: restoredPath
         });
 
-        await this.collectModuleDeclarationsFromFile(
+        await this.collectModuleDeclarations(
           restoredPath,
           nextFileContentToExplore
         );
@@ -270,7 +272,7 @@ export class Skott {
     }
   }
 
-  private async collectModuleDeclarationsFromFile(
+  private async collectModuleDeclarations(
     rootPath: string,
     fileContent: string
   ): Promise<void> {
@@ -296,23 +298,17 @@ export class Skott {
       return;
     }
 
-    const formattedNodePath = this.resolveNodePath(rootPath);
+    const resolvedNodePath = this.resolveNodePath(rootPath);
 
     for (const moduleDeclaration of moduleDeclarations.values()) {
-      const { followModuleDeclaration } = await selectModuleAction({
-        config: this.config,
+      await execModuleAction({
         moduleDeclaration,
-        nodePath: formattedNodePath,
         projectGraph: this.#projectGraph,
-        followModuleDeclaration: this.followModuleDeclarationFromFile.bind(this)
+        rawNodePath: rootPath,
+        resolvedNodePath,
+        config: this.config,
+        followModuleDeclaration: this.followModuleDeclaration.bind(this)
       });
-
-      if (followModuleDeclaration) {
-        await this.followModuleDeclarationFromFile({
-          rootPath,
-          moduleDeclaration
-        });
-      }
     }
   }
 
@@ -395,10 +391,7 @@ export class Skott {
 
     this.#baseDir = path.dirname(entrypointModulePath);
     await this.addNode(entrypointModulePath);
-    await this.collectModuleDeclarationsFromFile(
-      entrypointModulePath,
-      rootFileContent
-    );
+    await this.collectModuleDeclarations(entrypointModulePath, rootFileContent);
   }
 
   private async buildFromRootDirectory(): Promise<void> {
@@ -415,7 +408,7 @@ export class Skott {
       }
 
       await this.addNode(rootFile);
-      await this.collectModuleDeclarationsFromFile(rootFile, rootFileContent);
+      await this.collectModuleDeclarations(rootFile, rootFileContent);
     }
   }
 

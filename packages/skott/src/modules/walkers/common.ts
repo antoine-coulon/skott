@@ -25,7 +25,7 @@ type Walkers = "JS" | "TS";
 export class WalkerSelector {
   #walkers = {} as Record<Walkers, ModuleWalker>;
 
-  public getAppropriateWalker(fileName: string): ModuleWalker {
+  public selectAppropriateModuleWalker(fileName: string): ModuleWalker {
     if (isTypeScriptModule(fileName)) {
       if (!this.#walkers.TS) {
         this.#walkers.TS = new TypeScriptModuleWalker();
