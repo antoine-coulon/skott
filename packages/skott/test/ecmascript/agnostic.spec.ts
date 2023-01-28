@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { kExpectedModuleExtensions } from "../../src/modules/resolvers/ecmascript/helpers.js";
+import { kExpectedModuleExtensions } from "../../src/modules/resolvers/base-resolver.js";
 import {
   buildSkottProjectUsingInMemoryFileExplorer,
   fakeNodeBody,

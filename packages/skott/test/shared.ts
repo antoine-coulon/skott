@@ -2,7 +2,7 @@ import * as memfs from "memfs";
 
 import { InMemoryFileReader } from "../src/filesystem/file-reader.js";
 import { InMemoryFileWriter } from "../src/filesystem/file-writer.js";
-import { kExpectedModuleExtensions } from "../src/modules/resolvers/ecmascript/helpers.js";
+import { kExpectedModuleExtensions } from "../src/modules/resolvers/base-resolver.js";
 import { WalkerSelector } from "../src/modules/walkers/common.js";
 import { Skott, SkottNode } from "../src/skott";
 

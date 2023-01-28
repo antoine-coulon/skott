@@ -1,82 +1,33 @@
-import { builtinModules } from "node:module";
 import path from "node:path";
 
-import { Effect, pipe } from "effect";
+import { DiGraph } from "digraph-js";
+import { Effect, Option, pipe } from "effect";
 
-import { FileReader, FileReaderTag } from "../../../filesystem/file-reader.js";
+import { FileReader, FileReaderTag } from "../../filesystem/file-reader.js";
+import { FollowModuleDeclarationOptions } from "../../ioc.js";
+import type { SkottConfig, SkottNode } from "../../skott.js";
 
-const NODE_PROTOCOL = "node:";
+import {
+  isMinifiedFile,
+  isTestFile,
+  isTypeScriptDeclarationFile
+} from "./ecmascript/resolver.js";
 
-export function isBuiltinModule(module: string): boolean {
-  // fs, path, etc
-  if (builtinModules.includes(module)) {
-    return true;
-  }
-
-  // node:fs
-  if (module.startsWith("node:")) {
-    const moduleName = module.slice(NODE_PROTOCOL.length);
-
-    // node:fs/promises
-    if (module.includes("/")) {
-      return isBuiltinModule(moduleName);
-    }
-
-    return builtinModules.includes(moduleName);
-  } else if (module.includes("/")) {
-    const [moduleName] = module.split("/");
-
-    return builtinModules.includes(moduleName);
-  }
-
-  return false;
+export interface DependencyResolverOptions {
+  moduleDeclaration: string;
+  projectGraph: DiGraph<SkottNode>;
+  config: SkottConfig;
+  rawNodePath: string;
+  resolvedNodePath: string;
+  followModuleDeclaration: (
+    args: FollowModuleDeclarationOptions
+  ) => Promise<void>;
 }
 
-export function isThirdPartyModule(module: string): boolean {
-  const extension = path.extname(module);
-  const hasExpectedExtension =
-    extension !== "" && kExpectedModuleExtensions.has(extension);
-
-  return !module.startsWith(".") && !hasExpectedExtension;
-}
-
-export function extractNpmNameFromThirdPartyModuleDeclaration(
-  moduleDeclarationPath: string
-): string {
-  const declarationPathSegments = moduleDeclarationPath.split("/");
-  const scopeOrName = declarationPathSegments[0];
-  const isScopedPackage = scopeOrName.startsWith("@");
-
-  if (isScopedPackage) {
-    return declarationPathSegments.slice(0, 2).join("/");
-  }
-
-  return scopeOrName;
-}
-
-export function isJSONModule(module: string): boolean {
-  return module.endsWith(".json");
-}
-
-export function isBinaryModule(module: string): boolean {
-  return module.endsWith(".node");
-}
-
-export function isJavaScriptModule(module: string): boolean {
-  const extension = path.extname(module);
-
-  return (
-    extension === ".js" ||
-    extension === ".jsx" ||
-    extension === ".mjs" ||
-    extension === ".cjs"
-  );
-}
-
-export function isTypeScriptModule(module: string): boolean {
-  const extension = path.extname(module);
-
-  return extension === ".ts" || extension === ".tsx";
+export interface DependencyResolver {
+  resolve(
+    options: DependencyResolverOptions
+  ): Promise<Option.Option<{ exitOnResolve: boolean }>>;
 }
 
 export const kExpectedModuleExtensions = new Set([
@@ -87,18 +38,6 @@ export const kExpectedModuleExtensions = new Set([
   ".ts",
   ".tsx"
 ]);
-
-function isTypeScriptDeclarationFile(module: string): boolean {
-  return module.endsWith(".d.ts");
-}
-
-function isTestFile(fileName: string): boolean {
-  return fileName.includes(".test") || fileName.includes(".spec");
-}
-
-function isMinifiedFile(fileName: string): boolean {
-  return fileName.includes(".min");
-}
 
 export function isFileSupportedByDefault(fileName: string): boolean {
   return (

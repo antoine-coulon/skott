@@ -8,7 +8,7 @@ import { generateMermaid } from "ligie";
 import ora from "ora";
 
 import skott from "../index.js";
-import { kExpectedModuleExtensions } from "../src/modules/resolvers/ecmascript/helpers.js";
+import { kExpectedModuleExtensions } from "../src/modules/resolvers/base-resolver.js";
 import { SkottInstance, SkottNode, SkottNodeBody } from "../src/skott.js";
 
 import {

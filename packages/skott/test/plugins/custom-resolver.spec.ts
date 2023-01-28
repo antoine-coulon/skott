@@ -5,14 +5,14 @@ import { InMemoryFileReader } from "../../src/filesystem/file-reader.js";
 import { InMemoryFileWriter } from "../../src/filesystem/file-writer.js";
 import {
   DependencyResolver,
-  DependencyResolverOptions,
-  EcmaScriptDependencyResolver
-} from "../../src/modules/resolvers/ecmascript/resolver.js";
+  DependencyResolverOptions
+} from "../../src/modules/resolvers/base-resolver.js";
+import { EcmaScriptDependencyResolver } from "../../src/modules/resolvers/ecmascript/resolver.js";
 import { WalkerSelector } from "../../src/modules/walkers/common.js";
 import { defaultConfig, Skott } from "../../src/skott.js";
 import { fakeNodeBody, mountFakeFileSystem } from "../shared.js";
 
-describe("When using the custom dependency resolver hook", () => {
+describe("When using dependency resolvers", () => {
   describe("When not providing any custom resolver", () => {
     test("should use the default Skott resolver to cover standard cases", async () => {
       mountFakeFileSystem({
@@ -57,7 +57,8 @@ describe("When using the custom dependency resolver hook", () => {
       });
     });
   });
-  describe("When using only one resolver", () => {
+
+  describe("When using only one custom resolver", () => {
     test("should allow the custom resolver to skip all module declarations", async () => {
       mountFakeFileSystem({
         "index.js": `
@@ -75,7 +76,7 @@ describe("When using the custom dependency resolver hook", () => {
         }
       }
 
-      const _skott = new Skott(
+      const skott = new Skott(
         { ...defaultConfig, entrypoint: "index.js" },
         new InMemoryFileReader(),
         new InMemoryFileWriter(),
@@ -83,7 +84,7 @@ describe("When using the custom dependency resolver hook", () => {
         [new CustomDependencyResolver()]
       );
 
-      const { getStructure } = await _skott.initialize();
+      const { getStructure } = await skott.initialize();
       const { graph } = await getStructure();
 
       expect(graph).to.deep.equal({
@@ -177,6 +178,7 @@ describe("When using the custom dependency resolver hook", () => {
               ]);
             });
 
+            // Exit to prevent the default resolver to handle the module declaration
             return Option.some({
               exitOnResolve: true
             });

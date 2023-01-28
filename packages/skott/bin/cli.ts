@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 import sade from "sade";
 
-import { kExpectedModuleExtensions } from "../src/modules/resolvers/ecmascript/helpers.js";
+import { kExpectedModuleExtensions } from "../src/modules/resolvers/base-resolver.js";
 
 import { displaySkott } from "./main.js";
 

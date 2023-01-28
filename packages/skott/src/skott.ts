@@ -13,13 +13,13 @@ import { FileReader } from "./filesystem/file-reader.js";
 import { FileWriter } from "./filesystem/file-writer.js";
 import type { FollowModuleDeclarationOptions } from "./ioc.js";
 import {
-  isTypeScriptModule,
+  DependencyResolver,
   kExpectedModuleExtensions,
   resolveImportedModulePath
-} from "./modules/resolvers/ecmascript/helpers.js";
+} from "./modules/resolvers/base-resolver.js";
 import {
-  DependencyResolver,
-  EcmaScriptDependencyResolver
+  EcmaScriptDependencyResolver,
+  isTypeScriptModule
 } from "./modules/resolvers/ecmascript/resolver.js";
 import { WalkerSelector } from "./modules/walkers/common.js";
 import { buildPathAliases } from "./modules/walkers/ecmascript/typescript/path-alias.js";
