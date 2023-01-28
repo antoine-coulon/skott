@@ -3,16 +3,16 @@ import * as memfs from "memfs";
 import { InMemoryFileReader } from "../src/filesystem/file-reader.js";
 import { InMemoryFileWriter } from "../src/filesystem/file-writer.js";
 import { kExpectedModuleExtensions } from "../src/modules/resolvers/base-resolver.js";
-import { WalkerSelector } from "../src/modules/walkers/common.js";
+import { ModuleWalkerSelector } from "../src/modules/walkers/common.js";
 import { Skott, SkottNode } from "../src/skott";
 
-type UnwrappedSkottStructure = {
+interface UnwrappedSkottStructure {
   graph: Record<string, SkottNode>;
   files: string[];
   circularDependencies: string[][];
   hasCircularDependencies: boolean;
   leaves: string[];
-};
+}
 
 export async function buildSkottProjectUsingInMemoryFileExplorer({
   entrypoint,
@@ -47,7 +47,7 @@ export async function buildSkottProjectUsingInMemoryFileExplorer({
     },
     new InMemoryFileReader(),
     new InMemoryFileWriter(),
-    new WalkerSelector()
+    new ModuleWalkerSelector()
   );
   const skottInstance = await skott.initialize();
   const structure = skottInstance.getStructure();

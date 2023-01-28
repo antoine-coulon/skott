@@ -8,7 +8,7 @@
 
 You can install skott either locally or globally
 ```bash
-npm install skott --save-dev 
+npm install skott 
 // or
 npm install skott -g
 ```

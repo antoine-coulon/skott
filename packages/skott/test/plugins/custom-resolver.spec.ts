@@ -8,7 +8,7 @@ import {
   DependencyResolverOptions
 } from "../../src/modules/resolvers/base-resolver.js";
 import { EcmaScriptDependencyResolver } from "../../src/modules/resolvers/ecmascript/resolver.js";
-import { WalkerSelector } from "../../src/modules/walkers/common.js";
+import { ModuleWalkerSelector } from "../../src/modules/walkers/common.js";
 import { defaultConfig, Skott } from "../../src/skott.js";
 import { fakeNodeBody, mountFakeFileSystem } from "../shared.js";
 
@@ -37,7 +37,7 @@ describe("When using dependency resolvers", () => {
         },
         new InMemoryFileReader(),
         new InMemoryFileWriter(),
-        new WalkerSelector()
+        new ModuleWalkerSelector()
       );
 
       const { getStructure } = await skott.initialize();
@@ -80,7 +80,7 @@ describe("When using dependency resolvers", () => {
         { ...defaultConfig, entrypoint: "index.js" },
         new InMemoryFileReader(),
         new InMemoryFileWriter(),
-        new WalkerSelector(),
+        new ModuleWalkerSelector(),
         [new CustomDependencyResolver()]
       );
 
@@ -131,7 +131,7 @@ describe("When using dependency resolvers", () => {
         { ...defaultConfig, entrypoint: "index.js" },
         new InMemoryFileReader(),
         new InMemoryFileWriter(),
-        new WalkerSelector(),
+        new ModuleWalkerSelector(),
         [new CustomDependencyResolver()]
       );
 
@@ -200,7 +200,7 @@ describe("When using dependency resolvers", () => {
         },
         new InMemoryFileReader(),
         new InMemoryFileWriter(),
-        new WalkerSelector(),
+        new ModuleWalkerSelector(),
         [new CustomDependencyResolver(), new EcmaScriptDependencyResolver()]
       );
 

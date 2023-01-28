@@ -21,7 +21,7 @@ import {
   EcmaScriptDependencyResolver,
   isTypeScriptModule
 } from "./modules/resolvers/ecmascript/resolver.js";
-import { WalkerSelector } from "./modules/walkers/common.js";
+import { ModuleWalkerSelector } from "./modules/walkers/common.js";
 import { buildPathAliases } from "./modules/walkers/ecmascript/typescript/path-alias.js";
 import {
   findManifestDependencies,
@@ -94,7 +94,7 @@ export class Skott {
     private readonly config: SkottConfig = defaultConfig,
     private readonly fileReader: FileReader,
     private readonly fileWriter: FileWriter,
-    private readonly walkerSelector: WalkerSelector,
+    private readonly walkerSelector: ModuleWalkerSelector,
     private readonly dependencyResolvers: DependencyResolver[] = [
       new EcmaScriptDependencyResolver()
     ]

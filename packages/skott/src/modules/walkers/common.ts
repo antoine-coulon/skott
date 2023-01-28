@@ -22,7 +22,7 @@ export type ModuleWalkerConfig = {
 
 type Walkers = "JS" | "TS";
 
-export class WalkerSelector {
+export class ModuleWalkerSelector {
   #walkers = {} as Record<Walkers, ModuleWalker>;
 
   public selectAppropriateModuleWalker(fileName: string): ModuleWalker {

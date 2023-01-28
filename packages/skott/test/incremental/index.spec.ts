@@ -12,7 +12,7 @@ import { InMemoryFileReader } from "../../src/filesystem/file-reader.js";
 import { InMemoryFileWriter } from "../../src/filesystem/file-writer.js";
 import {
   ModuleWalker,
-  WalkerSelector
+  ModuleWalkerSelector
 } from "../../src/modules/walkers/common.js";
 import { JavaScriptModuleWalker } from "../../src/modules/walkers/ecmascript/index.js";
 import { defaultConfig, Skott } from "../../src/skott.js";
@@ -35,7 +35,7 @@ class NotWorkingWalkerSelector {
 
 const fileWriter = new InMemoryFileWriter();
 const fileReader = new InMemoryFileReader();
-const walkerSelector = new WalkerSelector();
+const walkerSelector = new ModuleWalkerSelector();
 
 describe("Incremental analysis", () => {
   describe("When Skott runs an analysis for the first time", () => {

@@ -30,7 +30,6 @@
 
 ✅ Metadata collection for each traversed node (file size, view dependencies towards Node.js builtin modules and npm third-party libraries)
 
-
 ✅ Node.js binary and JSON modules are excluded by default
 
 ✅ Generate static files including raw JSON, [mermaid-js](https://github.com/mermaid-js/mermaid) diagrams (.svg, .png, .md) representing your project's graph directly generated from the CLI.
