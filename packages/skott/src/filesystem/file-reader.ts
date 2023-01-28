@@ -9,7 +9,7 @@ import * as memfs from "memfs";
 import {
   isDirSupportedByDefault,
   isFileSupportedByDefault
-} from "../modules/resolvers/ecmascript/resolver.js";
+} from "../modules/resolvers/ecmascript/helpers.js";
 
 export interface FileReader {
   read: (filename: string) => Promise<string>;

@@ -1,4 +1,4 @@
-import { isTypeScriptModule } from "../resolvers/ecmascript/resolver.js";
+import { isTypeScriptModule } from "../resolvers/ecmascript/helpers.js";
 
 import {
   JavaScriptModuleWalker,

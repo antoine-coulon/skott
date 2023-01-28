@@ -1,6 +1,7 @@
 import path from "node:path";
 
 import { DiGraph, VertexDefinition } from "digraph-js";
+import { Option } from "effect";
 import difference from "lodash.difference";
 
 import {
@@ -11,11 +12,14 @@ import {
 import { FileReader } from "./filesystem/file-reader.js";
 import { FileWriter } from "./filesystem/file-writer.js";
 import type { FollowModuleDeclarationOptions } from "./ioc.js";
-import execModuleAction from "./modules/resolvers/ecmascript/action.js";
 import {
   isTypeScriptModule,
   kExpectedModuleExtensions,
   resolveImportedModulePath
+} from "./modules/resolvers/ecmascript/helpers.js";
+import {
+  DependencyResolver,
+  EcmaScriptDependencyResolver
 } from "./modules/resolvers/ecmascript/resolver.js";
 import { WalkerSelector } from "./modules/walkers/common.js";
 import { buildPathAliases } from "./modules/walkers/ecmascript/typescript/path-alias.js";
@@ -86,12 +90,14 @@ export class Skott {
   #visitedNodes = new Set<string>();
   #baseDir = ".";
 
-  // eslint-disable-next-line max-params
   constructor(
     private readonly config: SkottConfig = defaultConfig,
     private readonly fileReader: FileReader,
     private readonly fileWriter: FileWriter,
-    private readonly walkerSelector: WalkerSelector
+    private readonly walkerSelector: WalkerSelector,
+    private readonly dependencyResolvers: DependencyResolver[] = [
+      new EcmaScriptDependencyResolver()
+    ]
   ) {
     this.#cacheHandler = new SkottCacheHandler(
       this.fileReader,
@@ -301,14 +307,22 @@ export class Skott {
     const resolvedNodePath = this.resolveNodePath(rootPath);
 
     for (const moduleDeclaration of moduleDeclarations.values()) {
-      await execModuleAction({
-        moduleDeclaration,
-        projectGraph: this.#projectGraph,
-        rawNodePath: rootPath,
-        resolvedNodePath,
-        config: this.config,
-        followModuleDeclaration: this.followModuleDeclaration.bind(this)
-      });
+      for (const resolver of this.dependencyResolvers) {
+        const result = await resolver.resolve({
+          moduleDeclaration,
+          projectGraph: this.#projectGraph,
+          config: this.config,
+          rawNodePath: rootPath,
+          resolvedNodePath,
+          followModuleDeclaration: this.followModuleDeclaration.bind(this)
+        });
+
+        if (Option.isSome(result)) {
+          if (result.value.exitOnResolve === true) {
+            break;
+          }
+        }
+      }
     }
   }
 

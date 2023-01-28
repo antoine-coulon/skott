@@ -26,6 +26,9 @@
   },
   "rules": {
     "indent": "off",
+    "max-params": "off",
+    "max-depth": "off",
+    "max-classes-per-file": "off",
     "no-useless-constructor": "off",
     "no-empty-function": "off",
     "brace-style": "off",
