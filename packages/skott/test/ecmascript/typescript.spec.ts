@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { makeTestSuiteForJsxOrTsx as makeTestSuiteForTsx } from "./jsx-and-tsx";
 import {
   buildSkottProjectUsingInMemoryFileExplorer,
   fakeNodeBody,
   mountFakeFileSystem
-} from "./shared";
+} from "../shared";
+
+import { makeTestSuiteForJsxOrTsx as makeTestSuiteForTsx } from "./jsx-and-tsx";
 
 describe("When traversing a TypeScript project", () => {
   describe("When the file does not have any module declarations", () => {

@@ -1,12 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import { kExpectedModuleExtensions } from "../../src/modules/resolvers/ecmascript/resolver";
-
 import {
   buildSkottProjectUsingInMemoryFileExplorer,
   fakeNodeBody,
   mountFakeFileSystem
-} from "./shared";
+} from "../shared";
 
 describe("When dealing with ECMAScript standards agnostic of TypeScript and JavaScript", () => {
   describe("When specifying a dirname while providing the entrypoint", () => {

@@ -5,11 +5,10 @@ import { FileReader } from "../../src/filesystem/file-reader.js";
 import { InMemoryFileWriter } from "../../src/filesystem/file-writer.js";
 import { WalkerSelector } from "../../src/modules/walkers/common.js";
 import { Skott, SkottStructure } from "../../src/skott.js";
-
 import {
   buildSkottProjectUsingInMemoryFileExplorer,
   mountFakeFileSystem
-} from "./shared";
+} from "../shared";
 
 class InMemoryFileReaderWithFakeStats implements FileReader {
   read(filename: string): Promise<string> {

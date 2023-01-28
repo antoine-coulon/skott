@@ -1,22 +1,22 @@
 /* eslint-disable max-classes-per-file */
 import { describe, expect, it } from "vitest";
 
-import { createNodeHash } from "../../src/cache/affected";
+import { createNodeHash } from "../../src/cache/affected.js";
 import {
   createInitialSkottNodeValue,
   kSkottCacheFileName,
   SkottCache,
   SkottCachedNode
-} from "../../src/cache/handler";
-import { InMemoryFileWriter } from "../../src/filesystem/file-writer";
-import { ModuleWalker, WalkerSelector } from "../../src/modules/walkers/common";
-import { JavaScriptModuleWalker } from "../../src/modules/walkers/ecmascript";
-import { defaultConfig, Skott } from "../../src/skott";
+} from "../../src/cache/handler.js";
+import { InMemoryFileReader } from "../../src/filesystem/file-reader.js";
+import { InMemoryFileWriter } from "../../src/filesystem/file-writer.js";
 import {
-  fakeNodeBody,
-  InMemoryFileReader,
-  mountFakeFileSystem
-} from "../ecmascript/shared";
+  ModuleWalker,
+  WalkerSelector
+} from "../../src/modules/walkers/common.js";
+import { JavaScriptModuleWalker } from "../../src/modules/walkers/ecmascript/index.js";
+import { defaultConfig, Skott } from "../../src/skott.js";
+import { fakeNodeBody, mountFakeFileSystem } from "../shared.js";
 
 function dictFromCache(cache: SkottCache): Record<string, SkottCachedNode> {
   return Object.fromEntries(cache.sourceFiles.entries());

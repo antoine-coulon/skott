@@ -4,7 +4,7 @@ import {
   buildSkottProjectUsingInMemoryFileExplorer,
   fakeNodeBody,
   mountFakeFileSystem
-} from "./shared";
+} from "../shared";
 
 export function makeTestSuiteForJsxOrTsx(rawLanguage: "ts" | "js"): void {
   const suiteLanguageLabel = rawLanguage === "ts" ? "TSX" : "JSX";

@@ -2,12 +2,13 @@
 
 import { describe, expect, it } from "vitest";
 
-import { makeTestSuiteForJsxOrTsx as makeTestSuiteForJsx } from "./jsx-and-tsx";
 import {
   buildSkottProjectUsingInMemoryFileExplorer,
   fakeNodeBody,
   mountFakeFileSystem
-} from "./shared";
+} from "../shared";
+
+import { makeTestSuiteForJsxOrTsx as makeTestSuiteForJsx } from "./jsx-and-tsx";
 
 describe("When traversing a JavaScript/Node.js project", () => {
   describe("When the project uses ECMAScript modules", () => {

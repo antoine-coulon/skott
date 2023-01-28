@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { InMemoryFileWriter } from "../../src/filesystem/file-writer";
-import { WalkerSelector } from "../../src/modules/walkers/common";
-import { defaultConfig, Skott, SkottConfig } from "../../src/skott";
-
-import { InMemoryFileReader, mountFakeFileSystem } from "./shared";
+import { InMemoryFileReader } from "../../src/filesystem/file-reader.js";
+import { InMemoryFileWriter } from "../../src/filesystem/file-writer.js";
+import { WalkerSelector } from "../../src/modules/walkers/common.js";
+import { defaultConfig, Skott, SkottConfig } from "../../src/skott.js";
+import { mountFakeFileSystem } from "../shared.js";
 
 describe("Searching for unused dependencies", () => {
   describe("When targetting third-party dependencies", () => {
