@@ -77,11 +77,14 @@ describe("When using dependency resolvers", () => {
       }
 
       const skott = new Skott(
-        { ...defaultConfig, entrypoint: "index.js" },
+        {
+          ...defaultConfig,
+          entrypoint: "index.js",
+          dependencyResolvers: [new CustomDependencyResolver()]
+        },
         new InMemoryFileReader(),
         new InMemoryFileWriter(),
-        new ModuleWalkerSelector(),
-        [new CustomDependencyResolver()]
+        new ModuleWalkerSelector()
       );
 
       const { getStructure } = await skott.initialize();
@@ -128,11 +131,14 @@ describe("When using dependency resolvers", () => {
       }
 
       const skott = new Skott(
-        { ...defaultConfig, entrypoint: "index.js" },
+        {
+          ...defaultConfig,
+          entrypoint: "index.js",
+          dependencyResolvers: [new CustomDependencyResolver()]
+        },
         new InMemoryFileReader(),
         new InMemoryFileWriter(),
-        new ModuleWalkerSelector(),
-        [new CustomDependencyResolver()]
+        new ModuleWalkerSelector()
       );
 
       const { getStructure } = await skott.initialize();
@@ -196,12 +202,15 @@ describe("When using dependency resolvers", () => {
             ...defaultConfig.dependencyTracking,
             thirdParty: true,
             builtin: true
-          }
+          },
+          dependencyResolvers: [
+            new CustomDependencyResolver(),
+            new EcmaScriptDependencyResolver()
+          ]
         },
         new InMemoryFileReader(),
         new InMemoryFileWriter(),
-        new ModuleWalkerSelector(),
-        [new CustomDependencyResolver(), new EcmaScriptDependencyResolver()]
+        new ModuleWalkerSelector()
       );
 
       const { getStructure } = await skott.initialize();

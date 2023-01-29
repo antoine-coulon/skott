@@ -3,6 +3,7 @@ import * as memfs from "memfs";
 import { InMemoryFileReader } from "../src/filesystem/file-reader.js";
 import { InMemoryFileWriter } from "../src/filesystem/file-writer.js";
 import { kExpectedModuleExtensions } from "../src/modules/resolvers/base-resolver.js";
+import { EcmaScriptDependencyResolver } from "../src/modules/resolvers/ecmascript/resolver.js";
 import { ModuleWalkerSelector } from "../src/modules/walkers/common.js";
 import { Skott, SkottNode } from "../src/skott";
 
@@ -43,7 +44,8 @@ export async function buildSkottProjectUsingInMemoryFileExplorer({
       },
       fileExtensions,
       tsConfigPath,
-      manifestPath
+      manifestPath,
+      dependencyResolvers: [new EcmaScriptDependencyResolver()]
     },
     new InMemoryFileReader(),
     new InMemoryFileWriter(),

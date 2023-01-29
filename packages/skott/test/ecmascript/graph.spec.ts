@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { FileReader } from "../../src/filesystem/file-reader.js";
 import { InMemoryFileWriter } from "../../src/filesystem/file-writer.js";
+import { EcmaScriptDependencyResolver } from "../../src/modules/resolvers/ecmascript/resolver.js";
 import { ModuleWalkerSelector } from "../../src/modules/walkers/common.js";
 import { Skott, SkottStructure } from "../../src/skott.js";
 import {
@@ -61,7 +62,8 @@ async function makeSkott(
       },
       fileExtensions: [".js", ".ts"],
       tsConfigPath: "./tsconfig.json",
-      manifestPath: "./package.json"
+      manifestPath: "./package.json",
+      dependencyResolvers: [new EcmaScriptDependencyResolver()]
     },
     new InMemoryFileReaderWithFakeStats(),
     new InMemoryFileWriter(),
@@ -125,7 +127,8 @@ describe("When building the project structure independently of JavaScript or Typ
           },
           fileExtensions: [".js"],
           tsConfigPath: "./tsconfig.json",
-          manifestPath: "./package.json"
+          manifestPath: "./package.json",
+          dependencyResolvers: [new EcmaScriptDependencyResolver()]
         },
         new InMemoryFileReaderWithFakeStats(),
         new InMemoryFileWriter(),

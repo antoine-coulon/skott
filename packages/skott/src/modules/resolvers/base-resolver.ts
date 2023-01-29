@@ -4,7 +4,6 @@ import { DiGraph } from "digraph-js";
 import { Effect, Option, pipe } from "effect";
 
 import { FileReader, FileReaderTag } from "../../filesystem/file-reader.js";
-import { FollowModuleDeclarationOptions } from "../../ioc.js";
 import type { SkottConfig, SkottNode } from "../../skott.js";
 
 import {
@@ -12,6 +11,12 @@ import {
   isTestFile,
   isTypeScriptDeclarationFile
 } from "./ecmascript/resolver.js";
+
+export interface FollowModuleDeclarationOptions {
+  rootPath: string;
+  moduleDeclaration: string;
+  isPathAliasDeclaration?: boolean;
+}
 
 export interface DependencyResolverOptions {
   moduleDeclaration: string;

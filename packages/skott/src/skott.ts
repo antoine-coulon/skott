@@ -11,9 +11,9 @@ import {
 } from "./cache/index.js";
 import { FileReader } from "./filesystem/file-reader.js";
 import { FileWriter } from "./filesystem/file-writer.js";
-import type { FollowModuleDeclarationOptions } from "./ioc.js";
 import {
   DependencyResolver,
+  FollowModuleDeclarationOptions,
   kExpectedModuleExtensions,
   resolveImportedModulePath
 } from "./modules/resolvers/base-resolver.js";
@@ -49,6 +49,7 @@ export interface SkottConfig {
   fileExtensions: string[];
   tsConfigPath: string;
   manifestPath: string;
+  dependencyResolvers: DependencyResolver[];
 }
 
 export interface SkottStructure {
@@ -81,7 +82,8 @@ export const defaultConfig = {
   },
   fileExtensions: [...kExpectedModuleExtensions],
   tsConfigPath: "tsconfig.json",
-  manifestPath: "package.json"
+  manifestPath: "package.json",
+  dependencyResolvers: [new EcmaScriptDependencyResolver()]
 };
 
 export class Skott {
@@ -91,13 +93,10 @@ export class Skott {
   #baseDir = ".";
 
   constructor(
-    private readonly config: SkottConfig = defaultConfig,
+    private readonly config: SkottConfig,
     private readonly fileReader: FileReader,
     private readonly fileWriter: FileWriter,
-    private readonly walkerSelector: ModuleWalkerSelector,
-    private readonly dependencyResolvers: DependencyResolver[] = [
-      new EcmaScriptDependencyResolver()
-    ]
+    private readonly walkerSelector: ModuleWalkerSelector
   ) {
     this.#cacheHandler = new SkottCacheHandler(
       this.fileReader,
@@ -307,7 +306,7 @@ export class Skott {
     const resolvedNodePath = this.resolveNodePath(rootPath);
 
     for (const moduleDeclaration of moduleDeclarations.values()) {
-      for (const resolver of this.dependencyResolvers) {
+      for (const resolver of this.config.dependencyResolvers) {
         const result = await resolver.resolve({
           moduleDeclaration,
           projectGraph: this.#projectGraph,
