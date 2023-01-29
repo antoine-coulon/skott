@@ -145,7 +145,9 @@ importers:
       eslint-plugin-import: ^2.26.0
       eslint-plugin-prettier: ^4.0.0
       estree-walker: ^3.0.1
+      fp-ts: 2.5.0
       fs-tree-structure: workspace:*
+      io-ts: ^2.2.20
       json5: ^2.2.2
       kleur: ^4.1.5
       ligie: ^0.0.6
@@ -168,7 +170,9 @@ importers:
       digraph-js: 2.0.2
       effect: 2.0.0-next.13
       estree-walker: 3.0.1
+      fp-ts: 2.5.0
       fs-tree-structure: link:../fs-tree-structure
+      io-ts: 2.2.20_fp-ts@2.5.0
       json5: 2.2.2
       kleur: 4.1.5
       ligie: 0.0.6
@@ -2313,6 +2317,10 @@ packages:
       fetch-blob: 3.2.0
     dev: false
 
+  /fp-ts/2.5.0:
+    resolution: {integrity: sha512-xkC9ZKl/i2cU+8FAsdyLcTvPRXphp42FcK5WmZpB47VXb4gggC3DHlVDKNLdbC+U8zz6yp1b0bj0mZg0axmZYQ==}
+    dev: false
+
   /fs-constants/1.0.0:
     resolution: {integrity: sha512-y6OAwoSIf7FyjMIv94u+b5rdheZEjzR63GTyZJm5qh4Bi+2YgwLCcI/fPFZkL5PSixOt6ZNKm+w+Hfp/Bciwow==}
     dev: false
@@ -2553,6 +2561,14 @@ packages:
       has: 1.0.3
       side-channel: 1.0.4
     dev: true
+
+  /io-ts/2.2.20_fp-ts@2.5.0:
+    resolution: {integrity: sha512-Rq2BsYmtwS5vVttie4rqrOCIfHCS9TgpRLFpKQCM1wZBBRY9nWVGmEvm2FnDbSE2un1UE39DvFpTR5UL47YDcA==}
+    peerDependencies:
+      fp-ts: ^2.5.0
+    dependencies:
+      fp-ts: 2.5.0
+    dev: false
 
   /is-bigint/1.0.4:
     resolution: {integrity: sha512-zB9CruMamjym81i2JZ3UMn54PKGsQzsJeo6xvN3HJJ4CAsQNB6iRutp2To77OfCNuoxspsIhzaPoO1zyCEhFOg==}

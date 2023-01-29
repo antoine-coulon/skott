@@ -2,6 +2,7 @@ import path from "node:path";
 
 import { DiGraph } from "digraph-js";
 import { Effect, Option, pipe } from "effect";
+import * as D from "io-ts/lib/Decoder.js";
 
 import { FileReader, FileReaderTag } from "../../filesystem/file-reader.js";
 import type { SkottConfig, SkottNode } from "../../skott.js";
@@ -33,6 +34,21 @@ export interface DependencyResolver {
   resolve(
     options: DependencyResolverOptions
   ): Promise<Option.Option<{ exitOnResolve: boolean }>>;
+}
+
+export function dependencyResolverDecoder(): D.Decoder<
+  unknown,
+  DependencyResolver
+> {
+  return {
+    decode: (v) =>
+      v &&
+      typeof v === "object" &&
+      "resolve" in v &&
+      typeof v.resolve === "function"
+        ? D.success(v as unknown as DependencyResolver)
+        : D.failure(v, "DependencyResolver")
+  };
 }
 
 export const kExpectedModuleExtensions = new Set([

@@ -1,19 +1,8 @@
+import { makeSkottConfig } from "./src/config.js";
 import { FileSystemReader } from "./src/filesystem/file-reader.js";
 import { FileSystemWriter } from "./src/filesystem/file-writer.js";
 import { ModuleWalkerSelector } from "./src/modules/walkers/common.js";
-import {
-  defaultConfig,
-  Skott,
-  SkottConfig,
-  SkottInstance
-} from "./src/skott.js";
-
-function makeSkottConfig(partialConfig: Partial<SkottConfig>): SkottConfig {
-  return {
-    ...partialConfig,
-    ...defaultConfig
-  };
-}
+import { Skott, SkottConfig, SkottInstance } from "./src/skott.js";
 
 export default async function skott(
   config: Partial<SkottConfig>
