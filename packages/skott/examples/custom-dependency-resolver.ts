@@ -1,7 +1,11 @@
-import { Option } from "effect";
+// Just for the sake of the example
+import * as _Effect from "effect";
 
 import skott from "../index.js";
-import { DependencyResolverOptions } from "../src/modules/resolvers/base-resolver.js";
+import {
+  continueResolution,
+  DependencyResolverOptions
+} from "../src/modules/resolvers/base-resolver.js";
 
 class CustomDependencyResolver {
   async resolve({
@@ -15,14 +19,14 @@ class CustomDependencyResolver {
       });
     }
 
-    return Option.none;
+    return continueResolution();
   }
 }
 
 skott({
-  entrypoint: "./with-custom-resolver.ts",
+  entrypoint: "./custom-dependency-resolver.ts",
   dependencyResolvers: [new CustomDependencyResolver()]
 }).then(({ getStructure }) => {
   const { graph } = getStructure();
-  console.log(graph["with-custom-resolver.ts"]);
+  console.log(graph["custom-dependency-resolver.ts"]);
 });

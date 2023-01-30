@@ -1,13 +1,12 @@
 import { builtinModules } from "node:module";
 import path from "node:path";
 
-import { Option } from "effect";
-
 import {
   isTypeScriptPathAlias,
   resolvePathAlias
 } from "../../walkers/ecmascript/typescript/path-alias.js";
 import {
+  continueResolution,
   DependencyResolver,
   DependencyResolverOptions,
   kExpectedModuleExtensions
@@ -112,12 +111,12 @@ export class EcmaScriptDependencyResolver implements DependencyResolver {
     followModuleDeclaration
   }: DependencyResolverOptions) {
     if (isBinaryModule(moduleDeclaration) || isJSONModule(moduleDeclaration)) {
-      return Option.none;
+      return continueResolution();
     }
 
     if (isBuiltinModule(moduleDeclaration)) {
       if (!config.dependencyTracking.builtin) {
-        return Option.none;
+        return continueResolution();
       }
 
       projectGraph.mergeVertexBody(resolvedNodePath, (body) => {
@@ -138,7 +137,7 @@ export class EcmaScriptDependencyResolver implements DependencyResolver {
       isThirdPartyModule(moduleDeclaration, kExpectedModuleExtensions)
     ) {
       if (!config.dependencyTracking.thirdParty) {
-        return Option.none;
+        return continueResolution();
       }
 
       const dependencyName =
@@ -156,7 +155,6 @@ export class EcmaScriptDependencyResolver implements DependencyResolver {
       moduleDeclaration
     });
 
-    // The default resolver should not allow other resolvers to run after
-    return Option.none;
+    return continueResolution();
   }
 }

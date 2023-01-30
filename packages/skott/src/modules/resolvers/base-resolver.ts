@@ -51,6 +51,18 @@ export function dependencyResolverDecoder(): D.Decoder<
   };
 }
 
+export function skipNextResolvers(): Option.Option<{
+  exitOnResolve: boolean;
+}> {
+  return Option.some({
+    exitOnResolve: true
+  });
+}
+
+export function continueResolution(): Option.Option<never> {
+  return Option.none;
+}
+
 export const kExpectedModuleExtensions = new Set([
   ".js",
   ".jsx",

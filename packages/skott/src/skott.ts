@@ -317,7 +317,7 @@ export class Skott {
         });
 
         if (Option.isSome(result)) {
-          if (result.value.exitOnResolve === true) {
+          if (result.value.exitOnResolve) {
             break;
           }
         }

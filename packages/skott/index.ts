@@ -18,7 +18,9 @@ export default async function skott(
 }
 
 export {
+  continueResolution,
   DependencyResolver,
-  DependencyResolverOptions
+  DependencyResolverOptions,
+  skipNextResolvers
 } from "./src/modules/resolvers/base-resolver.js";
 export * from "./src/skott.js";
