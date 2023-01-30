@@ -17,7 +17,9 @@
   },
   "type": "module",
   "exports": {
-    ".": "./dist/index.js"
+    ".": "./dist/index.js",
+    "./filesystem": "./dist/filesystem/*",
+    "./modules": "./dist/modules/*"
   },
   "types": "./dist/index.d.ts",
   "scripts": {
