@@ -5,7 +5,6 @@ import kleur from "kleur";
 import { open } from "openurl";
 import polka from "polka";
 import sirv from "sirv";
-// @ts-ignore - no types yet
 import resolveWebAppStaticPath from "skott-webapp";
 
 import { SkottInstance, SkottStructure } from "../../src/skott.js";
