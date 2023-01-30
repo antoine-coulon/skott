@@ -4,10 +4,10 @@ import { FileSystemWriter } from "./src/filesystem/file-writer.js";
 import { ModuleWalkerSelector } from "./src/modules/walkers/common.js";
 import { Skott, SkottConfig, SkottInstance } from "./src/skott.js";
 
-export default async function skott(
-  config: Partial<SkottConfig>
-): Promise<SkottInstance> {
-  const skottInstance = await new Skott(
+export default async function skott<T>(
+  config: Partial<SkottConfig<T>>
+): Promise<SkottInstance<T>> {
+  const skottInstance = await new Skott<T>(
     makeSkottConfig(config),
     new FileSystemReader(),
     new FileSystemWriter(),

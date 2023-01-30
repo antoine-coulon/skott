@@ -8,6 +8,7 @@ import {
 import {
   continueResolution,
   DependencyResolver,
+  DependencyResolverControlFlow,
   DependencyResolverOptions,
   kExpectedModuleExtensions
 } from "../base-resolver.js";
@@ -109,7 +110,7 @@ export class EcmaScriptDependencyResolver implements DependencyResolver {
     rawNodePath,
     resolvedNodePath,
     followModuleDeclaration
-  }: DependencyResolverOptions) {
+  }: DependencyResolverOptions): Promise<DependencyResolverControlFlow> {
     if (isBinaryModule(moduleDeclaration) || isJSONModule(moduleDeclaration)) {
       return continueResolution();
     }

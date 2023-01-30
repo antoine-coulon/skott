@@ -34,9 +34,9 @@ const config = D.struct({
   dependencyResolvers: D.array(dependencyResolverDecoder())
 });
 
-export function makeSkottConfig(
-  partialConfig: Partial<SkottConfig>
-): SkottConfig {
+export function makeSkottConfig<T>(
+  partialConfig: Partial<SkottConfig<T>>
+): SkottConfig<T> {
   return pipe(
     config.decode(partialConfig),
     either.fold((decodeError) => {

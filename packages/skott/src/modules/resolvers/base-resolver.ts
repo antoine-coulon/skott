@@ -19,10 +19,10 @@ export interface FollowModuleDeclarationOptions {
   isPathAliasDeclaration?: boolean;
 }
 
-export interface DependencyResolverOptions {
+export interface DependencyResolverOptions<T = unknown> {
   moduleDeclaration: string;
-  projectGraph: DiGraph<SkottNode>;
-  config: SkottConfig;
+  projectGraph: DiGraph<SkottNode<T>>;
+  config: SkottConfig<T>;
   rawNodePath: string;
   resolvedNodePath: string;
   followModuleDeclaration: (
@@ -30,15 +30,19 @@ export interface DependencyResolverOptions {
   ) => Promise<void>;
 }
 
-export interface DependencyResolver {
+export type DependencyResolverControlFlow = Option.Option<{
+  exitOnResolve: boolean;
+}>;
+
+export interface DependencyResolver<T = unknown> {
   resolve(
-    options: DependencyResolverOptions
-  ): Promise<Option.Option<{ exitOnResolve: boolean }>>;
+    options: DependencyResolverOptions<T>
+  ): Promise<DependencyResolverControlFlow>;
 }
 
-export function dependencyResolverDecoder(): D.Decoder<
+export function dependencyResolverDecoder<T>(): D.Decoder<
   unknown,
-  DependencyResolver
+  DependencyResolver<T>
 > {
   return {
     decode: (v) =>
@@ -46,7 +50,7 @@ export function dependencyResolverDecoder(): D.Decoder<
       typeof v === "object" &&
       "resolve" in v &&
       typeof v.resolve === "function"
-        ? D.success(v as unknown as DependencyResolver)
+        ? D.success(v as unknown as DependencyResolver<T>)
         : D.failure(v, "DependencyResolver")
   };
 }

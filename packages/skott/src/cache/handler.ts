@@ -6,10 +6,11 @@ import type { SkottConfig, SkottNode, SkottStructure } from "../skott.js";
 
 import { createNodeHash, isConfigurationAffected } from "./affected.js";
 
-export function createInitialSkottNodeValue(id: string): SkottNode {
+export function createInitialSkottNodeValue<T>(id: string): SkottNode<T> {
   return {
     id,
     adjacentTo: [],
+    // @ts-ignore
     body: {
       size: 0,
       builtinDependencies: [],
@@ -18,20 +19,20 @@ export function createInitialSkottNodeValue(id: string): SkottNode {
   };
 }
 
-export interface SkottCachedNode {
+export interface SkottCachedNode<T> {
   hash: string;
-  value: SkottNode;
+  value: SkottNode<T>;
 }
 
-export type SkottCache = {
+export type SkottCache<T> = {
   configurationHash: string;
-  sourceFiles: Map<SkottNode["id"], SkottCachedNode>;
+  sourceFiles: Map<SkottNode<T>["id"], SkottCachedNode<T>>;
 };
 
 export const kSkottCacheFileName = path.join(".skott", "cache.json");
 
 function readSkottCache<
-  T extends Record<string, SkottCachedNode> & { configuration: string }
+  T extends Record<string, SkottCachedNode<T>> & { configuration: string }
 >(readFile: () => string): T {
   try {
     return JSON.parse(readFile());
@@ -40,14 +41,14 @@ function readSkottCache<
   }
 }
 
-function createEmptyCache(): SkottCache {
+function createEmptyCache<T>(): SkottCache<T> {
   return {
     configurationHash: "",
     sourceFiles: new Map()
   };
 }
 
-export class SkottCacheHandler {
+export class SkottCacheHandler<T> {
   #cache = createEmptyCache();
   #nextCache = createEmptyCache();
   #currentConfigHash = "";
@@ -55,7 +56,7 @@ export class SkottCacheHandler {
   constructor(
     private readonly fileReader: FileReader,
     private readonly fileWriter: FileWriter,
-    private readonly config: SkottConfig
+    private readonly config: SkottConfig<T>
   ) {
     if (!this.config.incremental) {
       return;
@@ -67,11 +68,11 @@ export class SkottCacheHandler {
     } catch {}
   }
 
-  get store(): SkottCache {
-    return this.#cache;
+  get store(): SkottCache<T> {
+    return this.#cache as SkottCache<T>;
   }
 
-  private createCache(): SkottCache {
+  private createCache(): SkottCache<T> {
     const cache = readSkottCache(() =>
       // eslint-disable-next-line no-sync
       this.fileReader.readSync(
@@ -92,8 +93,8 @@ export class SkottCacheHandler {
     };
   }
 
-  public get(fileId: string): SkottCachedNode | undefined {
-    return this.#cache.sourceFiles.get(fileId);
+  public get(fileId: string): SkottCachedNode<T> | undefined {
+    return this.#cache.sourceFiles.get(fileId) as SkottCachedNode<T>;
   }
 
   /**
@@ -110,7 +111,7 @@ export class SkottCacheHandler {
   }
 
   public restoreModuleDeclarations(
-    node: SkottCachedNode,
+    node: SkottCachedNode<T>,
     baseDir: string
   ): Set<string> {
     return new Set(
@@ -135,11 +136,13 @@ export class SkottCacheHandler {
   }
 
   public async save(
-    latestComputedGraph: SkottStructure["graph"]
+    latestComputedGraph: SkottStructure<T>["graph"]
   ): Promise<void> {
     try {
-      const graphWithLatestHashes: Record<SkottNode["id"], SkottCachedNode> =
-        {};
+      const graphWithLatestHashes: Record<
+        SkottNode<T>["id"],
+        SkottCachedNode<T>
+      > = {};
 
       for (const [nodeId, nodeValue] of Object.entries(latestComputedGraph)) {
         const currentNode = this.#nextCache.sourceFiles.get(nodeId);

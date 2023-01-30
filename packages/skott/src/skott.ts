@@ -34,9 +34,9 @@ export type SkottNodeBody = {
   builtinDependencies: string[];
 };
 
-export type SkottNode = VertexDefinition<SkottNodeBody>;
+export type SkottNode<T = unknown> = VertexDefinition<SkottNodeBody & T>;
 
-export interface SkottConfig {
+export interface SkottConfig<T> {
   entrypoint?: string;
   circularMaxDepth?: number;
   includeBaseDir: boolean;
@@ -49,11 +49,11 @@ export interface SkottConfig {
   fileExtensions: string[];
   tsConfigPath: string;
   manifestPath: string;
-  dependencyResolvers: DependencyResolver[];
+  dependencyResolvers: DependencyResolver<T>[];
 }
 
-export interface SkottStructure {
-  graph: Record<string, SkottNode>;
+export interface SkottStructure<T = unknown> {
+  graph: Record<string, SkottNode<T>>;
   files: string[];
 }
 
@@ -61,8 +61,8 @@ export interface UnusedDependencies {
   thirdParty: string[];
 }
 
-export interface SkottInstance {
-  getStructure: () => SkottStructure;
+export interface SkottInstance<T = unknown> {
+  getStructure: () => SkottStructure<T>;
   findLeaves: () => string[];
   findCircularDependencies: () => string[][];
   findUnusedDependencies: () => Promise<UnusedDependencies>;
@@ -86,14 +86,14 @@ export const defaultConfig = {
   dependencyResolvers: [new EcmaScriptDependencyResolver()]
 };
 
-export class Skott {
-  #cacheHandler: SkottCacheHandler;
-  #projectGraph = new DiGraph<SkottNode>();
+export class Skott<T> {
+  #cacheHandler: SkottCacheHandler<T>;
+  #projectGraph = new DiGraph<SkottNode<T>>();
   #visitedNodes = new Set<string>();
   #baseDir = ".";
 
   constructor(
-    private readonly config: SkottConfig,
+    private readonly config: SkottConfig<T>,
     private readonly fileReader: FileReader,
     private readonly fileWriter: FileWriter,
     private readonly walkerSelector: ModuleWalkerSelector
@@ -105,7 +105,7 @@ export class Skott {
     );
   }
 
-  public getStructureCache(): SkottCache {
+  public getStructureCache(): SkottCache<T> {
     return this.#cacheHandler.store;
   }
 
@@ -167,6 +167,7 @@ export class Skott {
     this.#projectGraph.addVertex({
       id: this.resolveNodePath(node),
       adjacentTo: [],
+      // @ts-ignore
       body: {
         size: await this.fileReader.stats(node),
         thirdPartyDependencies: [],
@@ -378,7 +379,7 @@ export class Skott {
     };
   }
 
-  private makeProjectStructure(): SkottStructure {
+  private makeProjectStructure(): SkottStructure<T> {
     const projectStructure = this.#projectGraph.toDict();
 
     return {
@@ -425,7 +426,7 @@ export class Skott {
     }
   }
 
-  public async initialize(): Promise<SkottInstance> {
+  public async initialize(): Promise<SkottInstance<T>> {
     if (this.config.entrypoint) {
       await this.buildFromEntrypoint(this.config.entrypoint);
     } else {
