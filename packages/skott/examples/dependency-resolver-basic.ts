@@ -4,10 +4,11 @@ import * as _Effect from "effect";
 import skott from "../index.js";
 import {
   continueResolution,
+  DependencyResolver,
   DependencyResolverOptions
 } from "../src/modules/resolvers/base-resolver.js";
 
-class CustomDependencyResolver {
+class BasicDependencyResolver implements DependencyResolver {
   async resolve({
     moduleDeclaration,
     resolvedNodePath,
@@ -24,9 +25,9 @@ class CustomDependencyResolver {
 }
 
 skott({
-  entrypoint: "./custom-dependency-resolver.ts",
-  dependencyResolvers: [new CustomDependencyResolver()]
+  entrypoint: "./dependency-resolver-basic.ts",
+  dependencyResolvers: [new BasicDependencyResolver()]
 }).then(({ getStructure }) => {
   const { graph } = getStructure();
-  console.log(graph["custom-dependency-resolver.ts"]);
+  console.log(graph["dependency-resolver-basic.ts"]);
 });
