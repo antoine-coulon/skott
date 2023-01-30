@@ -86,6 +86,13 @@ const { getStructure, findCircularDependencies, findParentsOf, findLeaves } = aw
    * Defaults to `package.json`.
    */
   manifestPath: "./package.json",
+  /**
+   * (Optional) Provide custom dependency resolvers to take full control over the
+   * content that will be added to the graph nodes.
+   * Defaults to `EcmaScriptModuleResolver` which is used a standard dependency
+   * resolver for ECMAScript projects.
+   */
+  dependencyResolvers: [new TurborepoResolver()]
 });
 ```
 
