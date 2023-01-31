@@ -5,7 +5,7 @@ import { ModuleWalkerSelector } from "./src/modules/walkers/common.js";
 import { Skott, SkottConfig, SkottInstance } from "./src/skott.js";
 
 export default async function skott<T>(
-  config: Partial<SkottConfig<T>> & { cwd: string }
+  config: Partial<SkottConfig<T>> & { cwd?: string }
 ): Promise<SkottInstance<T>> {
   const { cwd, ...skottConfig } = decodeInputConfig(config);
   const skottInstance = await new Skott<T>(
