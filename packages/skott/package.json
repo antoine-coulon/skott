@@ -18,8 +18,8 @@
   "type": "module",
   "exports": {
     ".": "./dist/index.js",
-    "./filesystem": "./dist/filesystem/*",
-    "./modules": "./dist/modules/*"
+    "./filesystem/*": "./dist/src/filesystem/*.js",
+    "./modules/*": "./dist/src/modules/*.js"
   },
   "types": "./dist/index.d.ts",
   "scripts": {
