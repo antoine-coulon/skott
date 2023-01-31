@@ -143,7 +143,7 @@ export async function displaySkott(
       `\n Running ${kleur.blue().bold("Skott")} from current directory: ${kleur
         .yellow()
         .underline()
-        .bold(`${path.basename(process.cwd())}`)}`
+        .bold(`${path.basename(options.cwd)}`)}`
     );
   }
 
