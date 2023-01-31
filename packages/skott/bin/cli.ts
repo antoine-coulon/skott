@@ -117,6 +117,12 @@ const cli = sade("skott [entrypoint]", true)
     false
   )
 
+  .option(
+    "-w, --cwd",
+    "Define the base working directory to use for the analysis. Defaults to the current working directory.",
+    process.cwd()
+  )
+
   .example(
     "./node_modules/.bin/skott src/index.js --displayMode=file-tree --staticFile=md"
   )

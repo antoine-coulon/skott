@@ -31,12 +31,11 @@ const config = D.struct({
   ),
   tsConfigPath: withDefaultValue(defaultConfig.tsConfigPath)(D.string),
   manifestPath: withDefaultValue(defaultConfig.manifestPath)(D.string),
-  dependencyResolvers: D.array(dependencyResolverDecoder())
+  dependencyResolvers: D.array(dependencyResolverDecoder()),
+  cwd: withDefaultValue(process.cwd())(D.string)
 });
 
-export function makeSkottConfig<T>(
-  partialConfig: Partial<SkottConfig<T>>
-): SkottConfig<T> {
+export function decodeInputConfig<T>(partialConfig: Partial<SkottConfig<T>>) {
   return pipe(
     config.decode(partialConfig),
     either.fold((decodeError) => {

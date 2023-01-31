@@ -5,7 +5,7 @@ import {
   buildSkottProjectUsingInMemoryFileExplorer,
   fakeNodeBody,
   mountFakeFileSystem
-} from "../shared";
+} from "../shared.js";
 
 describe("When dealing with ECMAScript standards agnostic of TypeScript and JavaScript", () => {
   describe("When specifying a dirname while providing the entrypoint", () => {

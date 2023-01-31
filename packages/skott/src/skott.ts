@@ -37,10 +37,10 @@ export type SkottNodeBody = {
 export type SkottNode<T = unknown> = VertexDefinition<SkottNodeBody & T>;
 
 export interface SkottConfig<T> {
-  entrypoint?: string;
-  circularMaxDepth?: number;
+  entrypoint: string;
+  circularMaxDepth: number;
   includeBaseDir: boolean;
-  incremental?: boolean;
+  incremental: boolean;
   dependencyTracking: {
     thirdParty: boolean;
     builtin: boolean;

@@ -22,6 +22,10 @@ export interface FileReader {
 export const FileReaderTag = Context.Tag<FileReader>();
 
 export class FileSystemReader implements FileReader {
+  constructor(
+    private readonly config: { cwd: string } = { cwd: process.cwd() }
+  ) {}
+
   read(filename: string): Promise<string> {
     return fs.readFile(filename, { encoding: "utf-8", flag: R_OK });
   }
@@ -39,7 +43,7 @@ export class FileSystemReader implements FileReader {
   }
 
   getCurrentWorkingDir(): string {
-    return process.cwd();
+    return this.config.cwd;
   }
 
   async *readdir(
@@ -63,6 +67,8 @@ export class FileSystemReader implements FileReader {
 
 /* eslint-disable no-sync */
 export class InMemoryFileReader implements FileReader {
+  constructor(private readonly config: { cwd: string } = { cwd: "./" }) {}
+
   read(filename: string): Promise<string> {
     return new Promise((resolve) => {
       resolve(memfs.fs.readFileSync(filename, "utf-8") as string);
@@ -97,6 +103,6 @@ export class InMemoryFileReader implements FileReader {
   }
 
   getCurrentWorkingDir(): string {
-    return "./";
+    return this.config.cwd;
   }
 }

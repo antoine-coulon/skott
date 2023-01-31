@@ -2,7 +2,7 @@ import path from "node:path";
 
 import JSON5 from "json5";
 
-import { FileReader } from "../../../../filesystem/file-reader";
+import type { FileReader } from "../../../../filesystem/file-reader.js";
 
 const aliasLinks = new Map<string, string>();
 

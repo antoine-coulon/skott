@@ -9,6 +9,7 @@ import ora from "ora";
 
 import skott from "../index.js";
 import { kExpectedModuleExtensions } from "../src/modules/resolvers/base-resolver.js";
+import { EcmaScriptDependencyResolver } from "../src/modules/resolvers/ecmascript/resolver.js";
 import { SkottInstance, SkottNode, SkottNodeBody } from "../src/skott.js";
 
 import {
@@ -123,6 +124,7 @@ type CliOptions = {
   fileExtensions: string;
   tsconfig: string;
   manifest: string;
+  cwd: string;
 };
 
 export async function displaySkott(
@@ -174,7 +176,9 @@ export async function displaySkott(
       .split(",")
       .filter((ext) => kExpectedModuleExtensions.has(ext)),
     tsConfigPath: options.tsconfig,
-    manifestPath: options.manifest
+    manifestPath: options.manifest,
+    dependencyResolvers: [new EcmaScriptDependencyResolver()],
+    cwd: options.cwd
   });
 
   const timeTook = `${(performance.now() - start).toFixed(3)}ms`;
