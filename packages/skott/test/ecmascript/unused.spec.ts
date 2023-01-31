@@ -16,7 +16,7 @@ describe("Searching for unused dependencies", () => {
         typeOnly: false
       }
     };
-    function makeSkott(config: Partial<SkottConfig> = {}) {
+    function makeSkott(config: Partial<SkottConfig<unknown>> = {}) {
       return new Skott(
         { ...defaultConfigWithThirdPartyTracking, ...config },
         new InMemoryFileReader(),

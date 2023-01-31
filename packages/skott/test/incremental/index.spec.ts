@@ -18,7 +18,9 @@ import { JavaScriptModuleWalker } from "../../src/modules/walkers/ecmascript/ind
 import { defaultConfig, Skott } from "../../src/skott.js";
 import { fakeNodeBody, mountFakeFileSystem } from "../shared.js";
 
-function dictFromCache(cache: SkottCache): Record<string, SkottCachedNode> {
+function dictFromCache(
+  cache: SkottCache<unknown>
+): Record<string, SkottCachedNode<unknown>> {
   return Object.fromEntries(cache.sourceFiles.entries());
 }
 
@@ -44,7 +46,7 @@ describe("Incremental analysis", () => {
     function makeNewSkottInstance(
       entrypoint?: string,
       config = defaultIncrementalConfig
-    ): Skott {
+    ): Skott<unknown> {
       return new Skott(
         { ...config, entrypoint },
         fileReader,
