@@ -177,6 +177,7 @@ importers:
       kleur: 4.1.5
       ligie: 0.0.6
       lodash.difference: 4.5.0
+      memfs: 3.4.7
       meriyah: 4.2.1
       openurl: 1.1.1
       ora: 6.1.2
@@ -198,7 +199,6 @@ importers:
       eslint-import-resolver-typescript: 2.7.1_afl3vkhn63baibzal45igheroq
       eslint-plugin-import: 2.26.0_pwsymjm7xg6klozrs3xs4oaxbu
       eslint-plugin-prettier: 4.2.1_g4fztgbwjyq2fvmcscny2sj6fy
-      memfs: 3.4.7
       prettier: 2.7.1
       rimraf: 3.0.2
       vitest: 0.28.2
@@ -2334,7 +2334,6 @@ packages:
 
   /fs-monkey/1.0.3:
     resolution: {integrity: sha512-cybjIfiiE+pTWicSCLFHSrXZ6EilF30oh91FDP9S2B051prEa7QWfrVTQm10/dDpswBDXZugPa1Ogu8Yh+HV0Q==}
-    dev: true
 
   /fs.realpath/1.0.0:
     resolution: {integrity: sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw==}
@@ -2882,7 +2881,7 @@ packages:
     engines: {node: '>= 4.0.0'}
     dependencies:
       fs-monkey: 1.0.3
-    dev: true
+    dev: false
 
   /merge2/1.4.1:
     resolution: {integrity: sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==}
