@@ -56,8 +56,11 @@ export async function findManifestDependencies(
         )
       )
     ),
-    Effect.map((rawManifest) =>
-      Object.keys(JSON.parse(rawManifest).dependencies)
+    Effect.flatMap((rawManifest) =>
+      pipe(
+        Effect.attempt(() => Object.keys(JSON.parse(rawManifest).dependencies)),
+        Effect.orElse(() => Effect.succeed([]))
+      )
     ),
     Effect.provideService(FileReaderTag)(fileReader),
     Effect.unsafeRunPromise

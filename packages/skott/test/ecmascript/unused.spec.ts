@@ -31,6 +31,21 @@ describe("Searching for unused dependencies", () => {
           mountFakeFileSystem({
             "index.js": ``,
             "package.json": JSON.stringify({
+              name: "empty-package"
+            })
+          });
+
+          const skott = makeSkott();
+          const { findUnusedDependencies } = await skott.initialize();
+          const { thirdParty } = await findUnusedDependencies();
+
+          expect(thirdParty).to.deep.equal([]);
+        });
+
+        it("should not find any used dependency", async () => {
+          mountFakeFileSystem({
+            "index.js": ``,
+            "package.json": JSON.stringify({
               dependencies: {}
             })
           });
