@@ -20,7 +20,6 @@ import {
 import { EMPTY_OBSERVER } from "rxjs/internal/Subscriber";
 import { Edge, Node } from "vis-network";
 import { makeChunkStream } from "./chunk";
-import { fakeCyclesData, fakeSkottData } from "./fake-data";
 import { initializeGlobalSearch } from "./global-search";
 import {
   buildNetworkIncremental,
@@ -35,11 +34,7 @@ import {
   toggleCircularDependencies,
 } from "./network";
 import { SkottStructureWithCycles } from "./skott";
-import {
-  isDevelopmentEnvironment,
-  isJavaScriptModule,
-  isTypeScriptModule,
-} from "./util";
+import { isJavaScriptModule, isTypeScriptModule } from "./util";
 
 const domContentLoaded$ = fromEvent(document, "DOMContentLoaded");
 const networkLoadingState$ = new BehaviorSubject("loading");
@@ -113,15 +108,17 @@ function displaySkottStatistics(data: SkottStructureWithCycles) {
   let numberOfTypeScriptFiles = 0;
   let numberOfJavaScriptFiles = 0;
 
-  for (const node of Object.values(data.graph)) {
-    if (isTypeScriptModule(node.id)) {
+  for (const file of data.files) {
+    if (isTypeScriptModule(file)) {
       numberOfTypeScriptFiles++;
     }
 
-    if (isJavaScriptModule(node.id)) {
+    if (isJavaScriptModule(file)) {
       numberOfJavaScriptFiles++;
     }
+  }
 
+  for (const node of Object.values(data.graph)) {
     node.body.thirdPartyDependencies.forEach((dep) => {
       npmRegistry.add(dep);
     });
@@ -176,7 +173,17 @@ const cyclesStream$ = combineLatest([
     checkboxContainer?.classList.remove("hidden-by-default");
     cyclesContainer.textContent = "Circular Dependencies";
   }),
-  catchError(() => EMPTY)
+  catchError(() => {
+    const cyclesContainer = document.querySelector(
+      "#circular-container > .option-label"
+    );
+
+    if (!cyclesContainer) return EMPTY;
+
+    cyclesContainer.textContent = "Could not fetch Circular Dependencies";
+
+    return EMPTY;
+  })
 );
 
 const dataChunkedStream$ = combineLatest([dataStream$, domContentLoaded$]).pipe(

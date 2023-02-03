@@ -1,5 +1,5 @@
 import { of } from "rxjs";
-import { Skott, SkottNode } from "skott";
+import { SkottNode } from "skott";
 import { DataSet } from "vis-data";
 import { Edge, Network, Node } from "vis-network";
 
