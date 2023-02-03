@@ -48,6 +48,7 @@ canvas {
   flex: 1 0 auto;
   z-index: 1200;
   position: fixed;
+  height: calc(100vh - 2rem);
   top: 0px;
   outline: 0px;
   left: 0px;
