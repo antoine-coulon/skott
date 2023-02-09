@@ -152,7 +152,6 @@ importers:
       json5: ^2.2.2
       kleur: ^4.1.5
       ligie: ^0.0.6
-      lodash: ^4.17.21
       lodash.difference: ^4.5.0
       memfs: ^3.4.6
       meriyah: ^4.2.1
@@ -179,7 +178,6 @@ importers:
       json5: 2.2.2
       kleur: 4.1.5
       ligie: 0.0.6
-      lodash: 4.17.21
       lodash.difference: 4.5.0
       memfs: 3.4.7
       meriyah: 4.2.1
