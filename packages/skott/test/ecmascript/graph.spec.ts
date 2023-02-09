@@ -55,6 +55,7 @@ async function makeSkott(
       entrypoint,
       circularMaxDepth: Number.POSITIVE_INFINITY,
       includeBaseDir,
+      incremental: false,
       dependencyTracking: {
         thirdParty: true,
         builtin: true,
@@ -118,6 +119,7 @@ describe("When building the project structure independently of JavaScript or Typ
       const skott = new Skott(
         {
           entrypoint: "a.js",
+          incremental: false,
           circularMaxDepth: Number.POSITIVE_INFINITY,
           includeBaseDir: false,
           dependencyTracking: {
