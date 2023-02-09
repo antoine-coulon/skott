@@ -1,4 +1,5 @@
 import path from "node:path";
+import { performance } from "node:perf_hooks";
 
 import { TreeStructure } from "fs-tree-structure";
 import kleur from "kleur";
@@ -149,20 +150,30 @@ export async function displayThirdPartyDependencies(
 
   if (showUnusedDependencies) {
     try {
+      const start = performance.now();
       const { thirdParty } = await skottInstance.findUnusedDependencies();
+      const timeTook = `${(performance.now() - start).toFixed(3)}ms`;
+
       const indents = makeIndents(1);
       if (thirdParty.length > 0) {
         console.log(
-          `\n ${kleur.bold(
-            `Found ${kleur
+          `\n ${kleur
+            .bold()
+            .grey(
+              "Note: `unused` dependencies that are in fact used probably means the dependency should be moved to `devDependencies`. \n If it's already there, then it's probably a false alert."
+            )}
+          `,
+          `${kleur.bold(
+            `\n Found ${kleur
               .bold()
               .red(
                 thirdParty.length
-              )} unused third-party dependencies in ${kleur.underline(
-              "production code"
-            )}:`
-          )} \n`
+              )} third-party dependencies that ${kleur.yellow(
+              "might be unused"
+            )}`
+          )} (${kleur.bold().magenta(timeTook)}) \n`
         );
+
         for (const dep of thirdParty) {
           console.log(`${indents} ${kleur.bold().red(dep)}`);
         }

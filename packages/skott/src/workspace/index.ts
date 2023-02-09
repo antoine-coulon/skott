@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
+import depcheck from "depcheck";
 import { Effect, pipe } from "effect";
 
 import { FileReader, FileReaderTag } from "../filesystem/file-reader.js";
@@ -90,5 +91,48 @@ export function findMatchesBetweenGraphAndManifestDependencies(
     }
 
     return fullDependencyPath;
+  });
+}
+
+export function findUnusedImplicitDependencies(cwd: string): Promise<string[]> {
+  const depcheckDefaults = {
+    ignoreDirs: [
+      "sandbox",
+      "dist",
+      "generated",
+      ".generated",
+      "build",
+      "fixtures",
+      "jspm_packages"
+    ],
+    ignoreMatches: [
+      "gulp-*",
+      "grunt-*",
+      "karma-*",
+      "angular-*",
+      "babel-*",
+      "metalsmith-*",
+      "eslint-plugin-*",
+      "@types/*",
+      "grunt",
+      "mocha",
+      "ava"
+    ],
+    ignorePatterns: ["node_modules"]
+  };
+
+  /**
+   * TODO: Make sure depcheck only scans files that were not already analyzed by
+   * Skott otherwise files will be traversed more than once.
+   * The objective of adding depcheck is only to detect more implicit dependencies
+   * coming from configuration files (e.g. .babelrc, .eslintrc, etc.).
+   * One of the solutions could be using the graph from Skott and determine
+   * which files were already analyzed and generate a glob from it to include
+   * that in the "ignorePatterns" depcheck option.
+   */
+  return new Promise((resolve) => {
+    depcheck(cwd, depcheckDefaults, (results) => {
+      resolve(results.devDependencies.concat(results.dependencies));
+    }).catch(() => resolve([]));
   });
 }

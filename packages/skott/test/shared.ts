@@ -35,6 +35,7 @@ export async function buildSkottProjectUsingInMemoryFileExplorer({
   const skott = new Skott(
     {
       entrypoint,
+      incremental: false,
       circularMaxDepth: Number.POSITIVE_INFINITY,
       includeBaseDir,
       dependencyTracking: {
@@ -78,3 +79,9 @@ export function mountFakeFileSystem(
   memfs.vol.reset();
   memfs.vol.fromJSON(fs, mountingPoint);
 }
+
+export const inMemoryImplicitDependenciesFinder = {
+  implicitDependencies: {
+    findUnused: () => Promise.resolve([])
+  }
+};
