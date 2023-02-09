@@ -25,7 +25,8 @@ import { ModuleWalkerSelector } from "./modules/walkers/common.js";
 import { buildPathAliases } from "./modules/walkers/ecmascript/typescript/path-alias.js";
 import {
   findManifestDependencies,
-  findMatchesBetweenGraphAndManifestDependencies
+  findMatchesBetweenGraphAndManifestDependencies,
+  findUnusedImplicitDependencies
 } from "./workspace/index.js";
 
 export type SkottNodeBody = {
@@ -37,7 +38,7 @@ export type SkottNodeBody = {
 export type SkottNode<T = unknown> = VertexDefinition<SkottNodeBody & T>;
 
 export interface SkottConfig<T> {
-  entrypoint: string;
+  entrypoint?: string;
   circularMaxDepth: number;
   includeBaseDir: boolean;
   incremental: boolean;
@@ -61,11 +62,19 @@ export interface UnusedDependencies {
   thirdParty: string[];
 }
 
+export interface ImplicitUnusedDependenciesOptions {
+  implicitDependencies: {
+    findUnused: (cwd: string) => Promise<string[]>;
+  };
+}
+
 export interface SkottInstance<T = unknown> {
   getStructure: () => SkottStructure<T>;
   findLeaves: () => string[];
   findCircularDependencies: () => string[][];
-  findUnusedDependencies: () => Promise<UnusedDependencies>;
+  findUnusedDependencies: (
+    options?: ImplicitUnusedDependenciesOptions
+  ) => Promise<UnusedDependencies>;
   hasCircularDependencies: () => boolean;
   findParentsOf: (node: string) => string[];
 }
@@ -362,7 +371,13 @@ export class Skott<T> {
     return Array.from(graphDependencies);
   }
 
-  private async findUnusedDependencies(): Promise<UnusedDependencies> {
+  private async findUnusedDependencies(
+    options = {
+      implicitDependencies: {
+        findUnused: findUnusedImplicitDependencies
+      }
+    }
+  ): Promise<UnusedDependencies> {
     const manifestDependencies = await findManifestDependencies(
       this.#baseDir,
       this.config.manifestPath,
@@ -374,8 +389,19 @@ export class Skott<T> {
       manifestDependencies
     );
 
+    const unusedImplicitDependencies =
+      await options.implicitDependencies.findUnused(
+        path.join(this.fileReader.getCurrentWorkingDir(), this.#baseDir)
+      );
+
     return {
-      thirdParty: difference(manifestDependencies, matchedDependencies)
+      thirdParty: Array.from(
+        new Set(
+          difference(manifestDependencies, matchedDependencies).concat(
+            unusedImplicitDependencies
+          )
+        )
+      )
     };
   }
 

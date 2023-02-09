@@ -5,7 +5,11 @@ import { InMemoryFileWriter } from "../src/filesystem/file-writer.js";
 import { ModuleWalkerSelector } from "../src/modules/walkers/common.js";
 import { defaultConfig, Skott } from "../src/skott.js";
 
-import { fakeNodeBody, mountFakeFileSystem } from "./shared.js";
+import {
+  fakeNodeBody,
+  inMemoryImplicitDependenciesFinder,
+  mountFakeFileSystem
+} from "./shared.js";
 
 describe("Skott analysis runner", () => {
   test("Should be able to run Skott from a given cwd", async () => {
@@ -97,7 +101,9 @@ describe("Skott analysis runner", () => {
 
       const { thirdParty } = await skott
         .initialize()
-        .then(({ findUnusedDependencies }) => findUnusedDependencies());
+        .then(({ findUnusedDependencies }) =>
+          findUnusedDependencies(inMemoryImplicitDependenciesFinder)
+        );
 
       expect(thirdParty).toEqual(expectedUnused);
     }

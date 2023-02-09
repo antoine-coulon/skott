@@ -4,7 +4,10 @@ import { InMemoryFileReader } from "../../src/filesystem/file-reader.js";
 import { InMemoryFileWriter } from "../../src/filesystem/file-writer.js";
 import { ModuleWalkerSelector } from "../../src/modules/walkers/common.js";
 import { defaultConfig, Skott, SkottConfig } from "../../src/skott.js";
-import { mountFakeFileSystem } from "../shared.js";
+import {
+  inMemoryImplicitDependenciesFinder,
+  mountFakeFileSystem
+} from "../shared.js";
 
 describe("Searching for unused dependencies", () => {
   describe("When targetting third-party dependencies", () => {
@@ -16,6 +19,7 @@ describe("Searching for unused dependencies", () => {
         typeOnly: false
       }
     };
+
     function makeSkott(config: Partial<SkottConfig<unknown>> = {}) {
       return new Skott(
         { ...defaultConfigWithThirdPartyTracking, ...config },
@@ -37,7 +41,9 @@ describe("Searching for unused dependencies", () => {
 
           const skott = makeSkott();
           const { findUnusedDependencies } = await skott.initialize();
-          const { thirdParty } = await findUnusedDependencies();
+          const { thirdParty } = await findUnusedDependencies(
+            inMemoryImplicitDependenciesFinder
+          );
 
           expect(thirdParty).to.deep.equal([]);
         });
@@ -52,7 +58,9 @@ describe("Searching for unused dependencies", () => {
 
           const skott = makeSkott();
           const { findUnusedDependencies } = await skott.initialize();
-          const { thirdParty } = await findUnusedDependencies();
+          const { thirdParty } = await findUnusedDependencies(
+            inMemoryImplicitDependenciesFinder
+          );
 
           expect(thirdParty).to.deep.equal([]);
         });
@@ -71,7 +79,9 @@ describe("Searching for unused dependencies", () => {
 
           const skott = makeSkott();
           const { findUnusedDependencies } = await skott.initialize();
-          const { thirdParty } = await findUnusedDependencies();
+          const { thirdParty } = await findUnusedDependencies(
+            inMemoryImplicitDependenciesFinder
+          );
 
           expect(thirdParty).to.deep.equal(["skott"]);
         });
@@ -90,7 +100,9 @@ describe("Searching for unused dependencies", () => {
             entrypoint: "lib/index.js"
           });
           const { findUnusedDependencies } = await skott.initialize();
-          const { thirdParty } = await findUnusedDependencies();
+          const { thirdParty } = await findUnusedDependencies(
+            inMemoryImplicitDependenciesFinder
+          );
 
           expect(thirdParty).to.deep.equal(["@effect/core"]);
         });
@@ -109,7 +121,9 @@ describe("Searching for unused dependencies", () => {
             entrypoint: "lib/index.js"
           });
           const { findUnusedDependencies } = await skott.initialize();
-          const { thirdParty } = await findUnusedDependencies();
+          const { thirdParty } = await findUnusedDependencies(
+            inMemoryImplicitDependenciesFinder
+          );
 
           expect(thirdParty).to.deep.equal(["@nodesecure/ci"]);
         });
@@ -129,7 +143,9 @@ describe("Searching for unused dependencies", () => {
             manifestPath: "libs/package.json"
           });
           const { findUnusedDependencies } = await skott.initialize();
-          const { thirdParty } = await findUnusedDependencies();
+          const { thirdParty } = await findUnusedDependencies(
+            inMemoryImplicitDependenciesFinder
+          );
 
           expect(thirdParty).to.deep.equal(["@nodesecure/ci"]);
         });
@@ -159,7 +175,9 @@ describe("Searching for unused dependencies", () => {
 
           const skott = makeSkott();
           const { findUnusedDependencies } = await skott.initialize();
-          const { thirdParty } = await findUnusedDependencies();
+          const { thirdParty } = await findUnusedDependencies(
+            inMemoryImplicitDependenciesFinder
+          );
 
           expect(thirdParty).to.deep.equal([
             "skott",
@@ -167,6 +185,93 @@ describe("Searching for unused dependencies", () => {
             "lodash.difference",
             "ajv"
           ]);
+        });
+      });
+
+      describe("When using a complementary analysis to look for unused implicit dependencies", () => {
+        describe("When the complementary analysis does not find any unused dependencies", () => {
+          it("should only return unused find by skott main analysis", async () => {
+            mountFakeFileSystem({
+              "index.js": `
+                import {pipe} from '@effect-ts/core/Function';
+              `,
+              "package.json": JSON.stringify({
+                dependencies: {
+                  "@effect-ts/core": "*",
+                  "ajv-format": "*"
+                },
+                devDependencies: {}
+              })
+            });
+
+            const skott = makeSkott();
+            const { findUnusedDependencies } = await skott.initialize();
+            const { thirdParty } = await findUnusedDependencies(
+              inMemoryImplicitDependenciesFinder
+            );
+
+            expect(thirdParty).to.deep.equal(["ajv-format"]);
+          });
+        });
+
+        describe("When the complementary analysis finds additional unused dependencies", () => {
+          it("should concat all found unused dependencies", async () => {
+            mountFakeFileSystem({
+              "index.js": `
+                import {pipe} from '@effect-ts/core/Function';
+              `,
+              "package.json": JSON.stringify({
+                dependencies: {
+                  "@effect-ts/core": "*",
+                  "ajv-format": "*"
+                },
+                devDependencies: {}
+              })
+            });
+
+            const skott = makeSkott();
+            const { findUnusedDependencies } = await skott.initialize();
+            const { thirdParty } = await findUnusedDependencies({
+              implicitDependencies: {
+                findUnused: () => Promise.resolve(["typescript"])
+              }
+            });
+
+            expect(thirdParty).to.deep.equal(["ajv-format", "typescript"]);
+          });
+        });
+
+        describe("When the complementary analysis finds unused dependencies including duplicates", () => {
+          it("should keep a unique set of unused dependencies", async () => {
+            mountFakeFileSystem({
+              "index.js": `
+                import {pipe} from '@effect-ts/core/Function';
+              `,
+              "package.json": JSON.stringify({
+                dependencies: {
+                  "@effect-ts/core": "*",
+                  "ajv-format": "*",
+                  rxjs: "*"
+                }
+              })
+            });
+
+            const skott = makeSkott();
+            const { findUnusedDependencies } = await skott.initialize();
+            const { thirdParty } = await findUnusedDependencies({
+              implicitDependencies: {
+                findUnused: () =>
+                  Promise.resolve(["ajv-format", "eslint", "typescript"])
+              }
+            });
+
+            expect(thirdParty).to.deep.equal([
+              "ajv-format",
+              "rxjs",
+              "eslint",
+              "typescript"
+            ]);
+          });
         });
       });
     });
