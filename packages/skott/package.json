@@ -1,6 +1,6 @@
 {
   "name": "skott",
-  "version": "0.17.3",
+  "version": "0.18.0",
   "description": "Automatically construct and visualize Graphs generated from your JavaScript and TypeScript project",
   "author": "Antoine Coulon",
   "license": "MIT",
