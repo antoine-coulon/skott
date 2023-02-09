@@ -201,8 +201,7 @@ console.log(findCircularDependencies()); // logs [ [ "core.js", "utils.js" ] ]
 console.log(hasCircularDependencies()); // logs "true"
 ```
 
-### Search for unused dependencies using the graph generated from production code
-
+### Search for unused dependencies using the graph generated
 ```javascript
 import skott from "skott";
 

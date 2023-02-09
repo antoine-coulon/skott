@@ -24,7 +24,7 @@
 
 ✅ Deeply detects **circular dependencies** in an efficient way, with the ability to provide a max depth for the search
 
-✅ Detect **unused npm third-party dependencies** from the production code
+✅ Detect **unused npm third-party dependencies**
 
 ✅ Deeply **collect all dependencies of the project graph**
 
