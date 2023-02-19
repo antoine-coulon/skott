@@ -313,7 +313,7 @@ describe("When traversing a TypeScript project", () => {
               `,
               "lib.ts": `
                 import app from "app/skott";
-                import s from "shared";
+                import s from "shared/utils/foo";
                 import { script } from "@typescript-eslint/estree-parser";
               `,
               "src/config/json/index.ts": `
@@ -322,7 +322,7 @@ describe("When traversing a TypeScript project", () => {
               "src/core/apps/skott.ts": `
                 export function skottHtml(): string { return "<h1>skott</h1>"; }
               `,
-              "src/core/shared/index.ts": `
+              "src/core/shared/utils/foo/index.ts": `
                 export function shared(): string {}
               `,
               "tsconfig.json": JSON.stringify(tsConfig)
@@ -343,7 +343,7 @@ describe("When traversing a TypeScript project", () => {
               "lib.ts": {
                 adjacentTo: [
                   "src/core/apps/skott.ts",
-                  "src/core/shared/index.ts"
+                  "src/core/shared/utils/foo/index.ts"
                 ],
                 id: "lib.ts",
                 body: {
@@ -361,9 +361,9 @@ describe("When traversing a TypeScript project", () => {
                 id: "src/core/apps/skott.ts",
                 body: fakeNodeBody
               },
-              "src/core/shared/index.ts": {
+              "src/core/shared/utils/foo/index.ts": {
                 adjacentTo: [],
-                id: "src/core/shared/index.ts",
+                id: "src/core/shared/utils/foo/index.ts",
                 body: fakeNodeBody
               }
             });

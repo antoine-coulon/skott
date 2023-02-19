@@ -51,7 +51,7 @@ export function resolvePathAlias(
     return aliasWithoutGlob;
   }
 
-  const baseAliasDirname = path.dirname(moduleDeclaration);
+  const [baseAliasDirname] = path.dirname(moduleDeclaration).split(path.sep);
   const baseAlias = aliasLinks.get(baseAliasDirname);
 
   if (baseAlias) {
@@ -75,7 +75,8 @@ export function resolvePathAlias(
 }
 
 export function isTypeScriptPathAlias(moduleDeclaration: string): boolean {
-  if (aliasLinks.has(path.dirname(moduleDeclaration))) {
+  const [baseDirname] = path.dirname(moduleDeclaration).split("/");
+  if (aliasLinks.has(baseDirname)) {
     return true;
   }
 
