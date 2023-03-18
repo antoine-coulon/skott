@@ -1,8 +1,9 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
+import { pipe } from "@effect/data/Function";
+import * as Effect from "@effect/io/Effect";
 import depcheck from "depcheck";
-import { Effect, pipe } from "effect";
 
 import { FileReader, FileReaderTag } from "../filesystem/file-reader.js";
 
@@ -63,8 +64,8 @@ export async function findManifestDependencies(
         Effect.orElse(() => Effect.succeed([]))
       )
     ),
-    Effect.provideService(FileReaderTag)(fileReader),
-    Effect.unsafeRunPromise
+    Effect.provideService(FileReaderTag, fileReader),
+    Effect.runPromise
   );
 }
 

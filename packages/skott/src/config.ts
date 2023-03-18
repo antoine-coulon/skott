@@ -1,4 +1,4 @@
-import { identity, pipe } from "effect";
+import { identity, pipe } from "@effect/data/Function";
 import { either } from "fp-ts";
 import * as D from "io-ts/lib/Decoder.js";
 

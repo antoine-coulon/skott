@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import * as Option from "@effect/data/Option";
 import { describe, expect, test } from "vitest";
 
 import { InMemoryFileReader } from "../../src/filesystem/file-reader.js";
@@ -72,7 +72,7 @@ describe("When using dependency resolvers", () => {
       class CustomDependencyResolver implements DependencyResolver {
         async resolve() {
           // do nothing, so only the entrypoint should be added in the graph
-          return Option.none;
+          return Option.none();
         }
       }
 
@@ -126,7 +126,7 @@ describe("When using dependency resolvers", () => {
             });
           }
 
-          return Option.none;
+          return Option.none();
         }
       }
 
@@ -190,7 +190,7 @@ describe("When using dependency resolvers", () => {
             });
           }
 
-          return Option.none;
+          return Option.none();
         }
       }
 

@@ -1,7 +1,7 @@
 import path from "node:path";
 
+import * as Option from "@effect/data/Option";
 import { DiGraph, VertexDefinition } from "digraph-js";
-import { Option } from "effect";
 import difference from "lodash.difference";
 
 import {

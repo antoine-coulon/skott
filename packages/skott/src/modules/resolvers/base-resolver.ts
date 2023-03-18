@@ -1,7 +1,9 @@
 import path from "node:path";
 
+import { pipe } from "@effect/data/Function";
+import * as Option from "@effect/data/Option";
+import * as Effect from "@effect/io/Effect";
 import { DiGraph } from "digraph-js";
-import { Effect, Option, pipe } from "effect";
 import * as D from "io-ts/lib/Decoder.js";
 
 import { FileReader, FileReaderTag } from "../../filesystem/file-reader.js";
@@ -64,7 +66,7 @@ export function skipNextResolvers(): Option.Option<{
 }
 
 export function continueResolution(): Option.Option<never> {
-  return Option.none;
+  return Option.none();
 }
 
 export const kExpectedModuleExtensions = new Set([
@@ -187,7 +189,7 @@ export async function resolveImportedModulePath(
       )
     ),
     Effect.orElseSucceed(() => ecmaScriptModuleCombinations.JS_MODULE),
-    Effect.provideService(FileReaderTag)(fileReader),
-    Effect.unsafeRunPromise
+    Effect.provideService(FileReaderTag, fileReader),
+    Effect.runPromise
   );
 }

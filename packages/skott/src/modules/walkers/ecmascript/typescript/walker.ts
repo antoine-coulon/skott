@@ -1,5 +1,6 @@
+import { pipe } from "@effect/data/Function";
+import * as Effect from "@effect/io/Effect";
 import { parse } from "@typescript-eslint/typescript-estree";
-import { Effect, pipe } from "effect";
 import { walk as walkAST } from "estree-walker";
 
 import type {
@@ -45,7 +46,7 @@ export class TypeScriptModuleWalker implements ModuleWalker {
       processWalk(),
       Effect.orElse(() => processWalk({ jsx: false })),
       // eslint-disable-next-line no-sync
-      Effect.unsafeRunSyncExit
+      Effect.runSyncExit
     );
 
     return { moduleDeclarations };

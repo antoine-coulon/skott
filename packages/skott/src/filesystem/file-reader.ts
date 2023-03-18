@@ -3,7 +3,7 @@ import fsSync from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { Context } from "effect";
+import * as Context from "@effect/data/Context";
 import * as memfs from "memfs";
 
 import {

@@ -128,6 +128,8 @@ importers:
 
   packages/skott:
     specifiers:
+      '@effect/data': ^0.4.1
+      '@effect/io': ^0.8.0
       '@nodesecure/eslint-config': ^1.3.0
       '@skott/config': workspace:*
       '@types/compression': ^1.7.2
@@ -139,7 +141,6 @@ importers:
       compression: ^1.7.4
       depcheck: ^1.4.3
       digraph-js: ^2.0.2
-      effect: 2.0.0-next.13
       eslint: ^8.4.1
       eslint-config-prettier: ^8.3.0
       eslint-import-resolver-typescript: ^2.5.0
@@ -166,11 +167,12 @@ importers:
       typescript: ^4.9.4
       vitest: ^0.28.2
     dependencies:
+      '@effect/data': 0.4.1
+      '@effect/io': 0.8.0
       '@typescript-eslint/typescript-estree': 5.48.0_typescript@4.9.4
       compression: 1.7.4
       depcheck: 1.4.3
       digraph-js: 2.0.2
-      effect: 2.0.0-next.13
       estree-walker: 3.0.1
       fp-ts: 2.5.0
       fs-tree-structure: link:../fs-tree-structure
@@ -424,19 +426,14 @@ packages:
       '@jridgewell/trace-mapping': 0.3.9
     dev: true
 
-  /@effect/io/0.0.32:
-    resolution: {integrity: sha512-5Qd8fanB2EQCl0Hwggyzk0/vx8oGrjgKRgZyX14JlszzBi8UAJ6iC1vjjsMQbObRZRNF+fnmN+Zre0T4+Opl7w==}
-    dependencies:
-      '@effect/printer': 0.1.11
-      '@fp-ts/core': 0.0.9
-      '@fp-ts/data': 0.0.22
+  /@effect/data/0.4.1:
+    resolution: {integrity: sha512-FdQ0qbYL7t+GP5eWdAPC+oeN2w3zqnujrdDLp/sj58UtMxFSHg21crprmbmiAJAWsL5EdB9aZzcisBGn382xHg==}
     dev: false
 
-  /@effect/printer/0.1.11:
-    resolution: {integrity: sha512-95ha+/xFmDGG/FN0mZASJLBaU635IlhDcBxYO6sswqaheCz3s92Ouub+xTomjyPYtev5xAnVHQpZaaxcnjFaHQ==}
+  /@effect/io/0.8.0:
+    resolution: {integrity: sha512-JJUs05oiHzh/Eupf5mgeLRFA4RXJAJo2DNxPC4ZVXwhvgJeqJ/G0ftYo3znOO0vKLzXjw8WYrnXPBM1nYLPnfQ==}
     dependencies:
-      '@fp-ts/core': 0.0.9
-      '@fp-ts/data': 0.0.22
+      '@effect/data': 0.4.1
     dev: false
 
   /@egjs/hammerjs/2.0.17:
@@ -478,31 +475,6 @@ packages:
     transitivePeerDependencies:
       - supports-color
     dev: true
-
-  /@fp-ts/core/0.0.9:
-    resolution: {integrity: sha512-FuXKPHTEvvgxV3LulGJXkSpAghovh7wLxux+Pm9LKefC0gtZZQ4OajTjTK5RsQtpyKIsAn26PwdG6W6zksF/UA==}
-    dev: false
-
-  /@fp-ts/data/0.0.22:
-    resolution: {integrity: sha512-chgnnyMAT17WCfAIbD8vvnJOsPtA2Xi79oMNklexprI9YaV/2u8QeeerHCYKuEJihK6GuIJtAYSsOwjBYMfWcQ==}
-    dependencies:
-      '@fp-ts/core': 0.0.9
-    dev: false
-
-  /@fp-ts/optic/0.0.5:
-    resolution: {integrity: sha512-fJqD8XVoFVtkCY4D6o9CiCNxhCNRrYXpukl714+KSqJeQgEuEdpyldf+F33anyppEWjbGE2QnkHpuKlFXsRSkw==}
-    dependencies:
-      '@fp-ts/core': 0.0.9
-      '@fp-ts/data': 0.0.22
-    dev: false
-
-  /@fp-ts/schema/0.0.5:
-    resolution: {integrity: sha512-y2zsqJDbe2uKlzLgG80U8TSaW9rDpUzZaBwNNtmvst5x72qZ9d3K/GpmvfmVBSAZ/dNFKh24UyUqbTrjjrxFVA==}
-    dependencies:
-      '@fp-ts/core': 0.0.9
-      '@fp-ts/data': 0.0.22
-      fast-check: 3.6.2
-    dev: false
 
   /@humanwhocodes/config-array/0.9.5:
     resolution: {integrity: sha512-ObyMyWxZiCu/yTisA7uzx81s40xR2fD5Cg/2Kq7G02ajkNubJf6BopgDTmDyc3U7sXpNKM8cYOw7s7Tyr+DnCw==}
@@ -1794,17 +1766,6 @@ packages:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
     dev: true
 
-  /effect/2.0.0-next.13:
-    resolution: {integrity: sha512-qb8dcnDgRFMKHFzOej4hHgNGrUu2d5zGHpkJOLjTGlHyjekmTpJu8qvVR9ciA/pk5QxPU2B5BxoNtOTNWNZSVQ==}
-    dependencies:
-      '@effect/io': 0.0.32
-      '@effect/printer': 0.1.11
-      '@fp-ts/core': 0.0.9
-      '@fp-ts/data': 0.0.22
-      '@fp-ts/optic': 0.0.5
-      '@fp-ts/schema': 0.0.5
-    dev: false
-
   /electron-to-chromium/1.4.192:
     resolution: {integrity: sha512-8nCXyIQY9An88NXAp+PuPy5h3/w5ZY7Iu2lag65Q0XREprcat5F8gKhoHsBUnQcFuCRnmevpR8yEBYRU3d2HDw==}
     dev: true
@@ -2326,13 +2287,6 @@ packages:
       '@types/yauzl': 2.10.0
     transitivePeerDependencies:
       - supports-color
-    dev: false
-
-  /fast-check/3.6.2:
-    resolution: {integrity: sha512-htRkbkw8B1yVfvrLNiJTnpcvpXrdcgpwZUQdC07dsiUGXaHHWK38t6VCnTmAUf68atyos1+XXXY60VUbSgorAQ==}
-    engines: {node: '>=8.0.0'}
-    dependencies:
-      pure-rand: 6.0.0
     dev: false
 
   /fast-deep-equal/3.1.3:
@@ -3541,10 +3495,6 @@ packages:
       - encoding
       - supports-color
       - utf-8-validate
-    dev: false
-
-  /pure-rand/6.0.0:
-    resolution: {integrity: sha512-rLSBxJjP+4DQOgcJAx6RZHT2he2pkhQdSnofG5VWyVl6GRq/K02ISOuOLcsMOrtKDIJb8JN2zm3FFzWNbezdPw==}
     dev: false
 
   /query-ast/1.0.5:
