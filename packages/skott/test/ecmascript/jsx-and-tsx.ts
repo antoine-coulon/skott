@@ -164,6 +164,49 @@ export function makeTestSuiteForJsxOrTsx(rawLanguage: "ts" | "js"): void {
       });
     });
   });
+
+  describe("When implicetly refering to a TSX or JSX module", () => {
+    it("should resolve the module", async () => {
+      mountFakeFileSystem({
+        [`index.${rawLanguage}`]: `
+          import "./component_1";
+          import "./component_2.${jsxOrTsx}";
+        `,
+        [`component_1.${jsxOrTsx}`]: `
+          export default function Component() {
+            return <div>Hello World</div>;
+          }
+        `,
+        [`component_2.${jsxOrTsx}`]: `
+          export default function Component() {
+            return <div>Hello World</div>;
+          }
+        `
+      });
+
+      const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+        entrypoint: `index.${rawLanguage}`
+      });
+
+      expect(graph).to.be.deep.equal({
+        [`index.${rawLanguage}`]: {
+          adjacentTo: [`component_1.${jsxOrTsx}`, `component_2.${jsxOrTsx}`],
+          id: `index.${rawLanguage}`,
+          body: fakeNodeBody
+        },
+        [`component_1.${jsxOrTsx}`]: {
+          adjacentTo: [],
+          id: `component_1.${jsxOrTsx}`,
+          body: fakeNodeBody
+        },
+        [`component_2.${jsxOrTsx}`]: {
+          adjacentTo: [],
+          id: `component_2.${jsxOrTsx}`,
+          body: fakeNodeBody
+        }
+      });
+    });
+  });
 }
 
 describe("When some TypeScript code is not TSX compliant", () => {

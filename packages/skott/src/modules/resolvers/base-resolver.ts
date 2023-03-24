@@ -157,6 +157,11 @@ export async function resolveImportedModulePath(
      */
     JS_MODULE: module.concat(".js"),
     /**
+     * Otherwise, it might be a simple JSX module.
+     * Example: `require("./component")` will resolve to `./component.jsx`.
+     */
+    JSX_MODULE: module.concat(".jsx"),
+    /**
      * In case of TypeScript modules, the module can be targetted through a directory
      * import e.g: import "./lib" which will eventually resolve to "lib/index.ts".
      */
@@ -165,6 +170,11 @@ export async function resolveImportedModulePath(
      * TypeScript file targetted, with classic TypeScript module declarations.
      */
     TS_MODULE: module.concat(".ts"),
+    /**
+     * Otherwise, it might be a simple TSX module.
+     * Example: `require("./component")` will resolve to `./component.tsx`.
+     */
+    TSX_MODULE: module.concat(".tsx"),
     /**
      * In case of TypeScript modules but when targetting ECMAScript modules,
      * modules are suffixed with ".js" but should resolve to their corresponding
@@ -187,6 +197,15 @@ export async function resolveImportedModulePath(
       resolveToModuleIfExists(
         ecmaScriptModuleCombinations.TS_MODULE_WITH_JS_EXTENSION
       )
+    ),
+    Effect.orElse(() =>
+      resolveToModuleIfExists(ecmaScriptModuleCombinations.JS_MODULE)
+    ),
+    Effect.orElse(() =>
+      resolveToModuleIfExists(ecmaScriptModuleCombinations.TSX_MODULE)
+    ),
+    Effect.orElse(() =>
+      resolveToModuleIfExists(ecmaScriptModuleCombinations.JSX_MODULE)
     ),
     Effect.orElseSucceed(() => ecmaScriptModuleCombinations.JS_MODULE),
     Effect.provideService(FileReaderTag, fileReader),
