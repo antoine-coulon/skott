@@ -34,7 +34,7 @@ const cli = sade("skott [entrypoint]", true)
   .describe("Start the Skott analysis to fully build the graph")
 
   .option(
-    "-b, --baseDir",
+    "-b, --includeBaseDir",
     "Include the base directory name for each graph node. Relative to the entrypoint base directory or the current working directory.",
     false
   )
