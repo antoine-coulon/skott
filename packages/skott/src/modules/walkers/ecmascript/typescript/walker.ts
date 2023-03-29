@@ -26,9 +26,8 @@ export class TypeScriptModuleWalker implements ModuleWalker {
             loc: false,
             comment: false
           });
-          const isRootNode = node.type === "Program";
 
-          walkAST(isRootNode ? node.body : node, {
+          walkAST(node, {
             enter(node) {
               extractModuleDeclarations(
                 node,
