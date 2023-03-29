@@ -42,13 +42,13 @@ canvas {
   color: rgba(0, 0, 0, 0.87);
   transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
   box-shadow: none;
-  overflow-y: auto;
+  overflow-y: scroll;
   display: flex;
   flex-direction: column;
   flex: 1 0 auto;
   z-index: 1200;
   position: fixed;
-  height: calc(100vh - 2rem);
+  height: 95%;
   top: 0px;
   outline: 0px;
   left: 0px;
@@ -138,6 +138,7 @@ ninja-keys {
 .options-container {
   background: #f8f8f8;
   padding-top: 15px;
+  height: 100%;
 }
 
 .options-container > div {

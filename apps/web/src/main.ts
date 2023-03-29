@@ -180,7 +180,7 @@ const cyclesStream$ = combineLatest([
 
     if (!cyclesContainer) return EMPTY;
 
-    cyclesContainer.textContent = "Could not fetch Circular Dependencies";
+    cyclesContainer.textContent = "Could not fetch cycles";
 
     return EMPTY;
   })
