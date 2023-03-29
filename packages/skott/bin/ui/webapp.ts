@@ -99,16 +99,14 @@ export function openWebApplication(
 
   console.log(
     `\n ${kleur.bold(
-      `💻 Opened ${kleur.bold().green("@skott/webapp")} on`
-    )} ${kleur.bold().bgMagenta(`${bindedAddress}`)}`
+      `💻 Opened ${kleur.bold().green("skott webapp")} on`
+    )} ${kleur.bold().underline().magenta(`${bindedAddress}`)}`
   );
 
   open(bindedAddress, (error) => {
     if (error) {
       console.log(
-        `\n ${kleur
-          .red()
-          .bold(`Could not open @skott/webapp on ${bindedAddress}`)}`
+        `\n ${kleur.red().bold(`Could not open webapp on ${bindedAddress}`)}`
       );
     }
   });

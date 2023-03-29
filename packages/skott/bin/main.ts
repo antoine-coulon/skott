@@ -228,10 +228,18 @@ export async function displaySkott(
   }
 
   if (options.displayMode === "webapp") {
+    let baseEntrypointPath;
+
+    if (options.includeBaseDir && entrypoint) {
+      baseEntrypointPath = path.join(path.dirname(entrypoint), entrypoint);
+    } else if (entrypoint) {
+      baseEntrypointPath = path.basename(entrypoint);
+    }
+
     openWebApplication(
       skottInstance,
       skottStructure,
-      entrypoint,
+      baseEntrypointPath,
       dependencyTracking
     );
 
