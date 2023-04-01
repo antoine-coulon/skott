@@ -132,8 +132,12 @@ export function findUnusedImplicitDependencies(cwd: string): Promise<string[]> {
    * that in the "ignorePatterns" depcheck option.
    */
   return new Promise((resolve) => {
-    depcheck(cwd, depcheckDefaults, (results) => {
-      resolve(results.devDependencies.concat(results.dependencies));
-    }).catch(() => resolve([]));
+    try {
+      depcheck(cwd, depcheckDefaults, (unusedDependencies) => {
+        resolve(unusedDependencies.dependencies);
+      });
+    } catch {
+      resolve([]);
+    }
   });
 }

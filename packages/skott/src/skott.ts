@@ -391,7 +391,10 @@ export class Skott<T> {
 
     const unusedImplicitDependencies =
       await options.implicitDependencies.findUnused(
-        path.join(this.fileReader.getCurrentWorkingDir(), this.#baseDir)
+        path.join(
+          this.fileReader.getCurrentWorkingDir(),
+          path.dirname(this.config.manifestPath)
+        )
       );
 
     return {

@@ -123,13 +123,13 @@ export async function displayThirdPartyDependencies(
 
   if (thirdPartyRegistry.size === 0) {
     console.log(
-      `${kleur.bold().magenta("\n ✓ no third-party dependencies found")}`
+      `${kleur
+        .bold()
+        .magenta("\n ✓ no third-party dependencies found in the source code")}`
     );
-
-    return;
   }
 
-  console.log(`\n npm third-party dependencies: \n`);
+  console.log(`\n third-party dependencies: \n`);
 
   const sortedDependencies = [...thirdPartyRegistry.entries()].sort(
     ([a], [b]) => {
@@ -186,7 +186,7 @@ export async function displayThirdPartyDependencies(
       console.log(
         `${kleur.bold().red(
           // @ts-ignore - error is handled by skott
-          `\n ✖ Could not search for unused dependencies. Reason: ${e.message}`
+          `\n ✖ Could not search for unused dependencies. Reason: ${e.message}? \n`
         )}`
       );
     }
