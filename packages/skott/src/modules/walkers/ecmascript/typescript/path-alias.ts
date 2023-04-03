@@ -70,12 +70,13 @@ function isNotBasePathSegment(segment: string): boolean {
 }
 
 export function resolvePathAlias(
-  moduleDeclaration: string
+  moduleDeclaration: string,
+  baseDir: string
 ): string | undefined {
   const aliasWithoutGlob = aliasLinks.get(moduleDeclaration);
 
   if (aliasWithoutGlob) {
-    return aliasWithoutGlob;
+    return path.join(baseDir, aliasWithoutGlob);
   }
 
   let baseAliasDirname = path.dirname(moduleDeclaration);

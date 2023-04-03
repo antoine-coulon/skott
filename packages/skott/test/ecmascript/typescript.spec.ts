@@ -515,6 +515,48 @@ describe("When traversing a TypeScript project", () => {
             });
           });
         });
+
+        describe("When resolving tsconfig.json from a different location than the cwd", () => {
+          it("should resolve path alias relatively to the tsconfig location", async () => {
+            const tsConfig = {
+              compilerOptions: {
+                baseUrl: ".",
+                paths: {
+                  "@libs/auth": ["libs/auth/index.ts"]
+                }
+              }
+            };
+
+            mountFakeFileSystem({
+              "project/src/index.ts": `
+                import { foo } from "@libs/auth";
+              `,
+              "project/libs/auth/index.ts": `
+                export function foo(): string {}
+              `,
+              "project/tsconfig.json": JSON.stringify(tsConfig)
+            });
+
+            const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+              entrypoint: "project/src/index.ts",
+              includeBaseDir: false,
+              tsConfigPath: "project/tsconfig.json"
+            });
+
+            expect(graph).to.be.deep.equal({
+              "index.ts": {
+                adjacentTo: ["../libs/auth/index.ts"],
+                id: "index.ts",
+                body: fakeNodeBody
+              },
+              "../libs/auth/index.ts": {
+                adjacentTo: [],
+                id: "../libs/auth/index.ts",
+                body: fakeNodeBody
+              }
+            });
+          });
+        });
       });
     });
 
