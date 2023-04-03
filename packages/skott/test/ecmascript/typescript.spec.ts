@@ -207,7 +207,7 @@ describe("When traversing a TypeScript project", () => {
 
       describe("When the file includes path aliases", () => {
         describe("When the baseUrl is just the root mounting point", () => {
-          it("should build the graph of nodes by resolving paths aliases", async () => {
+          it("should resolve paths aliases relatively to a entrypoint at a the same level than the tsconfig", async () => {
             const tsConfig = {
               compilerOptions: {
                 baseUrl: ".",
@@ -246,6 +246,46 @@ describe("When traversing a TypeScript project", () => {
               "lib/index.ts": {
                 adjacentTo: [],
                 id: "lib/index.ts",
+                body: fakeNodeBody
+              }
+            });
+          });
+
+          it("should resolve paths aliases relatively to a entrypoint at a lower file level than the tsconfig", async () => {
+            const tsConfig = {
+              compilerOptions: {
+                baseUrl: ".",
+                paths: {
+                  "@libs/toolchain": ["libs/toolchain/index.ts"]
+                }
+              }
+            };
+
+            mountFakeFileSystem({
+              "apps/index.ts": `
+                import * as toolchain from "@libs/toolchain";
+              `,
+              "libs/toolchain/index.ts": `
+                export function foo(): string {}
+              `,
+              "tsconfig.json": JSON.stringify(tsConfig)
+            });
+
+            const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+              entrypoint: "apps/index.ts",
+              includeBaseDir: false,
+              tsConfigPath: "tsconfig.json"
+            });
+
+            expect(graph).to.be.deep.equal({
+              "index.ts": {
+                adjacentTo: ["../libs/toolchain/index.ts"],
+                id: "index.ts",
+                body: fakeNodeBody
+              },
+              "../libs/toolchain/index.ts": {
+                adjacentTo: [],
+                id: "../libs/toolchain/index.ts",
                 body: fakeNodeBody
               }
             });

@@ -119,11 +119,17 @@ export class Skott<T> {
   }
 
   private resolveNodePath(nodePath: string): string {
+    const fileHasNoBaseDir = path.dirname(nodePath) === ".";
+    const fileIsAlreadyRelativelyResolved = nodePath.includes("..");
     /**
      * When the base directory name has to be included, every node path should be
      * registered while being discovered without any further do
      */
-    if (this.config.includeBaseDir) {
+    if (
+      this.config.includeBaseDir ||
+      fileIsAlreadyRelativelyResolved ||
+      fileHasNoBaseDir
+    ) {
       return nodePath;
     }
 
@@ -237,7 +243,7 @@ export class Skott<T> {
      * the working directory the analysis was started from.
      */
     const baseDirectory = isPathAliasDeclaration
-      ? this.fileReader.getCurrentWorkingDir()
+      ? "./"
       : path.dirname(rootPath);
     const fullFilePathFromBaseDirectory = await resolveImportedModulePath(
       path.join(baseDirectory, moduleDeclaration),
