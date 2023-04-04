@@ -139,6 +139,20 @@ export async function displaySkott(
         .bold(`${entrypoint}`)}`
     );
   } else {
+    if (options.includeBaseDir === true) {
+      console.log(
+        `\n ${kleur
+          .red()
+          .bold(
+            "'--includeBaseDir=true' can only be used when providing an entrypoint."
+          )} `
+      );
+
+      process.exitCode = 1;
+
+      return;
+    }
+
     console.log(
       `\n Running ${kleur.blue().bold("Skott")} from current directory: ${kleur
         .yellow()

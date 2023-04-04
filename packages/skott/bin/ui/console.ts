@@ -186,7 +186,7 @@ export async function displayThirdPartyDependencies(
       console.log(
         `${kleur.bold().red(
           // @ts-ignore - error is handled by skott
-          `\n ✖ Could not search for unused dependencies. Reason: ${e.message}? \n`
+          `\n ✖ Could not search for unused dependencies. Reason: ${e.message} \n`
         )}`
       );
     }
