@@ -205,6 +205,56 @@ describe("When traversing a TypeScript project", () => {
         });
       });
 
+      describe("When the the file includes relative imports with no leading '.' or './' identifier", () => {
+        describe("When the baseUrl is the root mounting point", () => {
+          const baseUrls = ["./", "."];
+
+          it.each(baseUrls)(
+            "should resolve absolute imports relatively to the location of the tsconfig",
+            async (baseUrl) => {
+              const tsConfig = {
+                compilerOptions: {
+                  baseUrl
+                }
+              };
+
+              mountFakeFileSystem({
+                "index.ts": `
+                import { foo } from "lib/foo";
+              `,
+                "lib/foo.ts": `
+                export function foo(): string {}
+              `,
+                "tsconfig.json": JSON.stringify(tsConfig)
+              });
+
+              const { graph } =
+                await buildSkottProjectUsingInMemoryFileExplorer({
+                  entrypoint: "index.ts",
+                  includeBaseDir: false,
+                  trackThirdParty: true
+                });
+
+              expect(graph).to.be.deep.equal({
+                "index.ts": {
+                  adjacentTo: ["lib/foo.ts"],
+                  id: "index.ts",
+                  body: {
+                    ...fakeNodeBody,
+                    thirdPartyDependencies: []
+                  }
+                },
+                "lib/foo.ts": {
+                  adjacentTo: [],
+                  id: "lib/foo.ts",
+                  body: fakeNodeBody
+                }
+              });
+            }
+          );
+        });
+      });
+
       describe("When the file includes path aliases", () => {
         describe("When the baseUrl is just the root mounting point", () => {
           it("should resolve paths aliases relatively to a entrypoint at a the same level than the tsconfig", async () => {

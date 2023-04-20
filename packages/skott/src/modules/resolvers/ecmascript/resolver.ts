@@ -2,7 +2,9 @@ import { builtinModules } from "node:module";
 import path from "node:path";
 
 import {
+  customBaseUrl,
   isTypeScriptPathAlias,
+  isTypeScriptRelativePathWithNoLeadingIdentifier,
   resolvePathAlias
 } from "../../walkers/ecmascript/typescript/path-alias.js";
 import {
@@ -102,6 +104,21 @@ export function isMinifiedFile(fileName: string): boolean {
   return fileName.includes(".min");
 }
 
+function collectThirdPartyModule(
+  moduleDeclaration: string,
+  resolvedNodePath: string,
+  projectGraph: DependencyResolverOptions["projectGraph"]
+) {
+  const dependencyName =
+    extractNpmNameFromThirdPartyModuleDeclaration(moduleDeclaration);
+
+  projectGraph.mergeVertexBody(resolvedNodePath, (body) => {
+    body.thirdPartyDependencies = Array.from(
+      new Set(body.thirdPartyDependencies.concat(dependencyName))
+    );
+  });
+}
+
 export class EcmaScriptDependencyResolver implements DependencyResolver {
   async resolve({
     moduleDeclaration,
@@ -138,26 +155,51 @@ export class EcmaScriptDependencyResolver implements DependencyResolver {
         });
       }
     } else if (
+      isTypeScriptRelativePathWithNoLeadingIdentifier(moduleDeclaration)
+    ) {
+      const moduleSuccessfullyResolved = await followModuleDeclaration({
+        rootPath: rawNodePath,
+        moduleDeclaration,
+        isPathAliasDeclaration: true,
+        pathAliasBaseUrl: customBaseUrl
+      });
+
+      // In the context of TypeScript, a module declaration such as "libs/foo" could
+      // be interpreted as a path alias or a third-party module. If the module
+      // is not found following the module resolution, it means that it is probably a third-party
+      // module.
+      if (
+        !moduleSuccessfullyResolved &&
+        isThirdPartyModule(moduleDeclaration, kExpectedModuleExtensions)
+      ) {
+        if (!config.dependencyTracking.thirdParty) {
+          return continueResolution();
+        }
+
+        collectThirdPartyModule(
+          moduleDeclaration,
+          resolvedNodePath,
+          projectGraph
+        );
+      }
+    } else if (
       isThirdPartyModule(moduleDeclaration, kExpectedModuleExtensions)
     ) {
       if (!config.dependencyTracking.thirdParty) {
         return continueResolution();
       }
 
-      const dependencyName =
-        extractNpmNameFromThirdPartyModuleDeclaration(moduleDeclaration);
-
-      projectGraph.mergeVertexBody(resolvedNodePath, (body) => {
-        body.thirdPartyDependencies = Array.from(
-          new Set(body.thirdPartyDependencies.concat(dependencyName))
-        );
+      collectThirdPartyModule(
+        moduleDeclaration,
+        resolvedNodePath,
+        projectGraph
+      );
+    } else {
+      await followModuleDeclaration({
+        rootPath: rawNodePath,
+        moduleDeclaration
       });
     }
-
-    await followModuleDeclaration({
-      rootPath: rawNodePath,
-      moduleDeclaration
-    });
 
     return continueResolution();
   }

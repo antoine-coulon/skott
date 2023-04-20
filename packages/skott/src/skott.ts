@@ -236,14 +236,16 @@ export class Skott<T> {
   private async followModuleDeclaration({
     rootPath,
     moduleDeclaration,
-    isPathAliasDeclaration = false
-  }: FollowModuleDeclarationOptions): Promise<void> {
+    isPathAliasDeclaration = false,
+    pathAliasBaseUrl = "./"
+  }: FollowModuleDeclarationOptions): Promise<boolean> {
     /**
      * When performing a global analysis, path aliases must be resolved from
      * the working directory the analysis was started from.
      */
+    let isModuleSuccessfullyResolved = false;
     const baseDirectory = isPathAliasDeclaration
-      ? "./"
+      ? pathAliasBaseUrl
       : path.dirname(rootPath);
     const fullFilePathFromBaseDirectory = await resolveImportedModulePath(
       path.join(baseDirectory, moduleDeclaration),
@@ -266,7 +268,7 @@ export class Skott<T> {
         nextFileContentToExplore
       );
 
-      return;
+      isModuleSuccessfullyResolved = true;
     } catch {}
 
     if (this.config.incremental) {
@@ -291,6 +293,8 @@ export class Skott<T> {
         );
       } catch {}
     }
+
+    return isModuleSuccessfullyResolved;
   }
 
   private async collectModuleDeclarations(

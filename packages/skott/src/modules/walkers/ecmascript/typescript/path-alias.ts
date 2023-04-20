@@ -5,6 +5,7 @@ import JSON5 from "json5";
 import type { FileReader } from "../../../../filesystem/file-reader.js";
 
 const aliasLinks = new Map<string, string>();
+export let customBaseUrl: string | undefined;
 
 export async function buildPathAliases(
   fileReader: FileReader,
@@ -16,6 +17,11 @@ export async function buildPathAliases(
     );
     const tsConfigJson = JSON5.parse(baseTsConfig);
     const baseUrl = tsConfigJson.compilerOptions.baseUrl ?? ".";
+
+    if (!customBaseUrl) {
+      customBaseUrl = tsConfigJson.compilerOptions.baseUrl;
+    }
+
     const paths: Record<string, string[]> = tsConfigJson.compilerOptions.paths;
 
     if (paths) {
@@ -105,6 +111,16 @@ export function resolvePathAlias(
   }
 
   return baseAlias;
+}
+
+export function isTypeScriptRelativePathWithNoLeadingIdentifier(
+  moduleDeclaration: string
+): boolean {
+  return (
+    customBaseUrl !== undefined &&
+    !moduleDeclaration.startsWith(".") &&
+    !moduleDeclaration.startsWith("./")
+  );
 }
 
 export function isTypeScriptPathAlias(moduleDeclaration: string): boolean {

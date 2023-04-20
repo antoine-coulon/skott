@@ -19,6 +19,7 @@ export interface FollowModuleDeclarationOptions {
   rootPath: string;
   moduleDeclaration: string;
   isPathAliasDeclaration?: boolean;
+  pathAliasBaseUrl?: string;
 }
 
 export interface DependencyResolverOptions<T = unknown> {
@@ -29,7 +30,7 @@ export interface DependencyResolverOptions<T = unknown> {
   resolvedNodePath: string;
   followModuleDeclaration: (
     args: FollowModuleDeclarationOptions
-  ) => Promise<void>;
+  ) => Promise<boolean>;
 }
 
 export type DependencyResolverControlFlow = Option.Option<{
