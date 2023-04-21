@@ -2,7 +2,6 @@ import { builtinModules } from "node:module";
 import path from "node:path";
 
 import {
-  customBaseUrl,
   isTypeScriptPathAlias,
   isTypeScriptRelativePathWithNoLeadingIdentifier,
   resolvePathAlias
@@ -126,6 +125,7 @@ export class EcmaScriptDependencyResolver implements DependencyResolver {
     config,
     rawNodePath,
     resolvedNodePath,
+    workspaceConfiguration,
     followModuleDeclaration
   }: DependencyResolverOptions): Promise<DependencyResolverControlFlow> {
     if (isBinaryModule(moduleDeclaration) || isJSONModule(moduleDeclaration)) {
@@ -155,13 +155,16 @@ export class EcmaScriptDependencyResolver implements DependencyResolver {
         });
       }
     } else if (
-      isTypeScriptRelativePathWithNoLeadingIdentifier(moduleDeclaration)
+      isTypeScriptRelativePathWithNoLeadingIdentifier(
+        workspaceConfiguration.typescript.baseUrl,
+        moduleDeclaration
+      )
     ) {
       const moduleSuccessfullyResolved = await followModuleDeclaration({
         rootPath: rawNodePath,
         moduleDeclaration,
         isPathAliasDeclaration: true,
-        pathAliasBaseUrl: customBaseUrl
+        pathAliasBaseUrl: workspaceConfiguration.typescript.baseUrl
       });
 
       // In the context of TypeScript, a module declaration such as "libs/foo" could

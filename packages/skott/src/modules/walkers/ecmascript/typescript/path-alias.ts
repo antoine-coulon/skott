@@ -5,22 +5,21 @@ import JSON5 from "json5";
 import type { FileReader } from "../../../../filesystem/file-reader.js";
 
 const aliasLinks = new Map<string, string>();
-export let customBaseUrl: string | undefined;
+
+export interface TSConfig {
+  baseUrl?: string;
+}
 
 export async function buildPathAliases(
   fileReader: FileReader,
   tsConfigPath: string
-): Promise<void> {
+): Promise<TSConfig> {
   try {
     const baseTsConfig = await fileReader.read(
       path.join(fileReader.getCurrentWorkingDir(), tsConfigPath)
     );
     const tsConfigJson = JSON5.parse(baseTsConfig);
     const baseUrl = tsConfigJson.compilerOptions.baseUrl ?? ".";
-
-    if (!customBaseUrl) {
-      customBaseUrl = tsConfigJson.compilerOptions.baseUrl;
-    }
 
     const paths: Record<string, string[]> = tsConfigJson.compilerOptions.paths;
 
@@ -47,7 +46,13 @@ export async function buildPathAliases(
     if (extendedTsConfigPath) {
       await buildPathAliases(fileReader, extendedTsConfigPath);
     }
-  } catch {}
+
+    return {
+      baseUrl: tsConfigJson.compilerOptions.baseUrl
+    };
+  } catch {
+    return {};
+  }
 }
 
 function resolveAliasToRelativePath(
@@ -114,10 +119,11 @@ export function resolvePathAlias(
 }
 
 export function isTypeScriptRelativePathWithNoLeadingIdentifier(
+  baseUrl: string | undefined,
   moduleDeclaration: string
 ): boolean {
   return (
-    customBaseUrl !== undefined &&
+    baseUrl !== undefined &&
     !moduleDeclaration.startsWith(".") &&
     !moduleDeclaration.startsWith("./")
   );

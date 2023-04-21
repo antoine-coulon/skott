@@ -7,7 +7,11 @@ import { DiGraph } from "digraph-js";
 import * as D from "io-ts/lib/Decoder.js";
 
 import { FileReader, FileReaderTag } from "../../filesystem/file-reader.js";
-import type { SkottConfig, SkottNode } from "../../skott.js";
+import type {
+  SkottConfig,
+  SkottNode,
+  WorkspaceConfiguration
+} from "../../skott.js";
 
 import {
   isMinifiedFile,
@@ -28,6 +32,7 @@ export interface DependencyResolverOptions<T = unknown> {
   config: SkottConfig<T>;
   rawNodePath: string;
   resolvedNodePath: string;
+  workspaceConfiguration: WorkspaceConfiguration;
   followModuleDeclaration: (
     args: FollowModuleDeclarationOptions
   ) => Promise<boolean>;

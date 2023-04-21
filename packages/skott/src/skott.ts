@@ -22,7 +22,10 @@ import {
   isTypeScriptModule
 } from "./modules/resolvers/ecmascript/resolver.js";
 import { ModuleWalkerSelector } from "./modules/walkers/common.js";
-import { buildPathAliases } from "./modules/walkers/ecmascript/typescript/path-alias.js";
+import {
+  buildPathAliases,
+  TSConfig
+} from "./modules/walkers/ecmascript/typescript/path-alias.js";
 import {
   findManifestDependencies,
   findMatchesBetweenGraphAndManifestDependencies,
@@ -95,11 +98,18 @@ export const defaultConfig = {
   dependencyResolvers: [new EcmaScriptDependencyResolver()]
 };
 
+export interface WorkspaceConfiguration {
+  typescript: TSConfig;
+}
+
 export class Skott<T> {
   #cacheHandler: SkottCacheHandler<T>;
   #projectGraph = new DiGraph<SkottNode<T>>();
   #visitedNodes = new Set<string>();
   #baseDir = ".";
+  #workspaceConfiguration: WorkspaceConfiguration = {
+    typescript: {}
+  };
 
   constructor(
     private readonly config: SkottConfig<T>,
@@ -333,6 +343,7 @@ export class Skott<T> {
           config: this.config,
           rawNodePath: rootPath,
           resolvedNodePath,
+          workspaceConfiguration: this.#workspaceConfiguration,
           followModuleDeclaration: this.followModuleDeclaration.bind(this)
         });
 
@@ -434,7 +445,12 @@ export class Skott<T> {
     );
 
     if (isTypeScriptModule(entrypointModulePath)) {
-      await buildPathAliases(this.fileReader, this.config.tsConfigPath);
+      const rootTSConfig = await buildPathAliases(
+        this.fileReader,
+        this.config.tsConfigPath
+      );
+
+      this.#workspaceConfiguration.typescript = rootTSConfig;
     }
 
     const rootFileContent = await this.fileReader.read(entrypointModulePath);

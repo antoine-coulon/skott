@@ -210,7 +210,7 @@ describe("When traversing a TypeScript project", () => {
           const baseUrls = ["./", "."];
 
           it.each(baseUrls)(
-            "should resolve absolute imports relatively to the location of the tsconfig",
+            "should resolve imports relatively from the baseUrl to the location of the tsconfig",
             async (baseUrl) => {
               const tsConfig = {
                 compilerOptions: {
@@ -252,6 +252,56 @@ describe("When traversing a TypeScript project", () => {
               });
             }
           );
+        });
+
+        describe("When the baseUrl is a given directory", () => {
+          it("should resolve relative imports with no leading identifiers from the baseUrl to the location of the tsconfig", async () => {
+            const tsConfig = {
+              compilerOptions: {
+                baseUrl: "libs"
+              }
+            };
+
+            mountFakeFileSystem({
+              "index.ts": `
+                import { foo } from "foo";
+                import * as Effect from "@effect/io";
+                import * as smthing from "./something-else";
+              `,
+              "libs/foo.ts": `
+                export function foo(): string {}
+              `,
+              "something-else.ts": ``,
+              "tsconfig.json": JSON.stringify(tsConfig)
+            });
+
+            const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+              entrypoint: "index.ts",
+              includeBaseDir: false,
+              trackThirdParty: true
+            });
+
+            expect(graph).to.be.deep.equal({
+              "index.ts": {
+                adjacentTo: ["libs/foo.ts", "something-else.ts"],
+                id: "index.ts",
+                body: {
+                  ...fakeNodeBody,
+                  thirdPartyDependencies: ["@effect/io"]
+                }
+              },
+              "libs/foo.ts": {
+                adjacentTo: [],
+                id: "libs/foo.ts",
+                body: fakeNodeBody
+              },
+              "something-else.ts": {
+                adjacentTo: [],
+                id: "something-else.ts",
+                body: fakeNodeBody
+              }
+            });
+          });
         });
       });
 
