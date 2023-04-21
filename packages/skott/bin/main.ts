@@ -139,7 +139,7 @@ export async function displaySkott(
         .bold(`${entrypoint}`)}`
     );
   } else {
-    if (options.includeBaseDir === true) {
+    if (options.includeBaseDir) {
       console.log(
         `\n ${kleur
           .red()

@@ -22,7 +22,10 @@ import {
   isTypeScriptModule
 } from "./modules/resolvers/ecmascript/resolver.js";
 import { ModuleWalkerSelector } from "./modules/walkers/common.js";
-import { buildPathAliases } from "./modules/walkers/ecmascript/typescript/path-alias.js";
+import {
+  buildPathAliases,
+  TSConfig
+} from "./modules/walkers/ecmascript/typescript/path-alias.js";
 import {
   findManifestDependencies,
   findMatchesBetweenGraphAndManifestDependencies,
@@ -95,11 +98,18 @@ export const defaultConfig = {
   dependencyResolvers: [new EcmaScriptDependencyResolver()]
 };
 
+export interface WorkspaceConfiguration {
+  typescript: TSConfig;
+}
+
 export class Skott<T> {
   #cacheHandler: SkottCacheHandler<T>;
   #projectGraph = new DiGraph<SkottNode<T>>();
   #visitedNodes = new Set<string>();
   #baseDir = ".";
+  #workspaceConfiguration: WorkspaceConfiguration = {
+    typescript: {}
+  };
 
   constructor(
     private readonly config: SkottConfig<T>,
@@ -236,14 +246,16 @@ export class Skott<T> {
   private async followModuleDeclaration({
     rootPath,
     moduleDeclaration,
-    isPathAliasDeclaration = false
-  }: FollowModuleDeclarationOptions): Promise<void> {
+    isPathAliasDeclaration = false,
+    pathAliasBaseUrl = "./"
+  }: FollowModuleDeclarationOptions): Promise<boolean> {
     /**
      * When performing a global analysis, path aliases must be resolved from
      * the working directory the analysis was started from.
      */
+    let isModuleSuccessfullyResolved = false;
     const baseDirectory = isPathAliasDeclaration
-      ? "./"
+      ? pathAliasBaseUrl
       : path.dirname(rootPath);
     const fullFilePathFromBaseDirectory = await resolveImportedModulePath(
       path.join(baseDirectory, moduleDeclaration),
@@ -266,7 +278,7 @@ export class Skott<T> {
         nextFileContentToExplore
       );
 
-      return;
+      isModuleSuccessfullyResolved = true;
     } catch {}
 
     if (this.config.incremental) {
@@ -291,6 +303,8 @@ export class Skott<T> {
         );
       } catch {}
     }
+
+    return isModuleSuccessfullyResolved;
   }
 
   private async collectModuleDeclarations(
@@ -329,6 +343,7 @@ export class Skott<T> {
           config: this.config,
           rawNodePath: rootPath,
           resolvedNodePath,
+          workspaceConfiguration: this.#workspaceConfiguration,
           followModuleDeclaration: this.followModuleDeclaration.bind(this)
         });
 
@@ -430,7 +445,11 @@ export class Skott<T> {
     );
 
     if (isTypeScriptModule(entrypointModulePath)) {
-      await buildPathAliases(this.fileReader, this.config.tsConfigPath);
+      const rootTSConfig = await buildPathAliases(
+        this.fileReader,
+        this.config.tsConfigPath
+      );
+      this.#workspaceConfiguration.typescript = rootTSConfig;
     }
 
     const rootFileContent = await this.fileReader.read(entrypointModulePath);
@@ -444,7 +463,11 @@ export class Skott<T> {
   }
 
   private async buildFromRootDirectory(): Promise<void> {
-    await buildPathAliases(this.fileReader, this.config.tsConfigPath);
+    const rootTSConfig = await buildPathAliases(
+      this.fileReader,
+      this.config.tsConfigPath
+    );
+    this.#workspaceConfiguration.typescript = rootTSConfig;
 
     for await (const rootFile of this.fileReader.readdir(
       this.fileReader.getCurrentWorkingDir(),

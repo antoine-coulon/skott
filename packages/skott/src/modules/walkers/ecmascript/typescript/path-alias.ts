@@ -6,16 +6,21 @@ import type { FileReader } from "../../../../filesystem/file-reader.js";
 
 const aliasLinks = new Map<string, string>();
 
+export interface TSConfig {
+  baseUrl?: string;
+}
+
 export async function buildPathAliases(
   fileReader: FileReader,
   tsConfigPath: string
-): Promise<void> {
+): Promise<TSConfig> {
   try {
     const baseTsConfig = await fileReader.read(
       path.join(fileReader.getCurrentWorkingDir(), tsConfigPath)
     );
     const tsConfigJson = JSON5.parse(baseTsConfig);
     const baseUrl = tsConfigJson.compilerOptions.baseUrl ?? ".";
+
     const paths: Record<string, string[]> = tsConfigJson.compilerOptions.paths;
 
     if (paths) {
@@ -41,7 +46,13 @@ export async function buildPathAliases(
     if (extendedTsConfigPath) {
       await buildPathAliases(fileReader, extendedTsConfigPath);
     }
-  } catch {}
+
+    return {
+      baseUrl: tsConfigJson.compilerOptions.baseUrl
+    };
+  } catch {
+    return {};
+  }
 }
 
 function resolveAliasToRelativePath(
@@ -105,6 +116,17 @@ export function resolvePathAlias(
   }
 
   return baseAlias;
+}
+
+export function isTypeScriptRelativePathWithNoLeadingIdentifier(
+  baseUrl: string | undefined,
+  moduleDeclaration: string
+): boolean {
+  return (
+    baseUrl !== undefined &&
+    !moduleDeclaration.startsWith(".") &&
+    !moduleDeclaration.startsWith("./")
+  );
 }
 
 export function isTypeScriptPathAlias(moduleDeclaration: string): boolean {
