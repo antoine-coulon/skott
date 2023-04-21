@@ -449,7 +449,6 @@ export class Skott<T> {
         this.fileReader,
         this.config.tsConfigPath
       );
-
       this.#workspaceConfiguration.typescript = rootTSConfig;
     }
 
@@ -464,7 +463,11 @@ export class Skott<T> {
   }
 
   private async buildFromRootDirectory(): Promise<void> {
-    await buildPathAliases(this.fileReader, this.config.tsConfigPath);
+    const rootTSConfig = await buildPathAliases(
+      this.fileReader,
+      this.config.tsConfigPath
+    );
+    this.#workspaceConfiguration.typescript = rootTSConfig;
 
     for await (const rootFile of this.fileReader.readdir(
       this.fileReader.getCurrentWorkingDir(),
