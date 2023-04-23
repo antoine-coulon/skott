@@ -1,6 +1,7 @@
 import path from "node:path";
 
 import JSON5 from "json5";
+import type { CompilerOptions } from "typescript";
 
 import type { FileReader } from "../../../../filesystem/file-reader.js";
 
@@ -8,6 +9,11 @@ const aliasLinks = new Map<string, string>();
 
 export interface TSConfig {
   baseUrl?: string;
+}
+
+interface SupportedTSConfig {
+  extends?: string;
+  compilerOptions?: CompilerOptions;
 }
 
 export async function buildPathAliases(
@@ -18,10 +24,11 @@ export async function buildPathAliases(
     const baseTsConfig = await fileReader.read(
       path.join(fileReader.getCurrentWorkingDir(), tsConfigPath)
     );
-    const tsConfigJson = JSON5.parse(baseTsConfig);
-    const baseUrl = tsConfigJson.compilerOptions.baseUrl ?? ".";
+    const tsConfigJson = JSON5.parse<SupportedTSConfig>(baseTsConfig);
+    const baseUrl = tsConfigJson.compilerOptions?.baseUrl ?? ".";
 
-    const paths: Record<string, string[]> = tsConfigJson.compilerOptions.paths;
+    const paths: Record<string, string[]> =
+      tsConfigJson.compilerOptions?.paths ?? {};
 
     if (paths) {
       for (const [alias, aliasedPath] of Object.entries(paths)) {
@@ -48,7 +55,7 @@ export async function buildPathAliases(
     }
 
     return {
-      baseUrl: tsConfigJson.compilerOptions.baseUrl
+      baseUrl: tsConfigJson.compilerOptions?.baseUrl
     };
   } catch {
     return {};
