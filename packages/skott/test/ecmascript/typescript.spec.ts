@@ -836,63 +836,110 @@ describe("When traversing a TypeScript project", () => {
         });
       });
 
-      describe("When providing a base tsconfig extending other configs with both path aliases", () => {
-        it("should resolve all paths aliases starting from base config", async () => {
-          const tsConfigBase = {
-            compilerOptions: {
-              baseUrl: ".",
-              paths: {
-                "@path-alias1": ["path/alias1/index.ts"]
+      describe("When providing a base tsconfig extending other configs", () => {
+        describe("When only one of the two specify path aliases", () => {
+          it("should resolve all paths aliases using the config that specify some", async () => {
+            const tsConfigBase = {
+              compilerOptions: {
+                paths: {
+                  "@path-alias": ["path/alias/index.ts"]
+                }
               }
-            }
-          };
+            };
 
-          const tsConfigBuild = {
-            extends: "./tsconfig.base.json",
-            compilerOptions: {
-              baseUrl: ".",
-              paths: {
-                "@path-alias2": ["path/alias2/index.ts"]
-              }
-            }
-          };
+            const tsConfigBuild = {
+              extends: "./tsconfig.base.json"
+            };
 
-          mountFakeFileSystem({
-            "main/app/index.ts": `
-                import "@path-alias1";
-                import "@path-alias2";
-            `,
-            "path/alias1/index.ts": `
-                export function something() {}
-            `,
-            "path/alias2/index.ts": `
+            mountFakeFileSystem({
+              "main/app/index.ts": `
+                import "@path-alias";
+              `,
+              "path/alias/index.ts": `
                 export function something() {}
               `,
-            "tsconfig.base.json": JSON.stringify(tsConfigBase),
-            "tsconfig.build.json": JSON.stringify(tsConfigBuild)
-          });
+              "tsconfig.base.json": JSON.stringify(tsConfigBase),
+              "tsconfig.build.json": JSON.stringify(tsConfigBuild)
+            });
 
-          const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
-            trackThirdParty: true,
-            tsConfigPath: "tsconfig.build.json"
-          });
+            const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+              trackThirdParty: true,
+              tsConfigPath: "tsconfig.build.json"
+            });
 
-          expect(graph).to.be.deep.equal({
-            "main/app/index.ts": {
-              adjacentTo: ["path/alias1/index.ts", "path/alias2/index.ts"],
-              id: "main/app/index.ts",
-              body: fakeNodeBody
-            },
-            "path/alias1/index.ts": {
-              id: "path/alias1/index.ts",
-              adjacentTo: [],
-              body: fakeNodeBody
-            },
-            "path/alias2/index.ts": {
-              id: "path/alias2/index.ts",
-              adjacentTo: [],
-              body: fakeNodeBody
-            }
+            expect(graph).to.be.deep.equal({
+              "main/app/index.ts": {
+                adjacentTo: ["path/alias/index.ts"],
+                id: "main/app/index.ts",
+                body: fakeNodeBody
+              },
+              "path/alias/index.ts": {
+                id: "path/alias/index.ts",
+                adjacentTo: [],
+                body: fakeNodeBody
+              }
+            });
+          });
+        });
+
+        describe("When they both specify path aliases", () => {
+          it("should resolve all paths aliases starting from base config", async () => {
+            const tsConfigBase = {
+              compilerOptions: {
+                baseUrl: ".",
+                paths: {
+                  "@path-alias1": ["path/alias1/index.ts"]
+                }
+              }
+            };
+
+            const tsConfigBuild = {
+              extends: "./tsconfig.base.json",
+              compilerOptions: {
+                baseUrl: ".",
+                paths: {
+                  "@path-alias2": ["path/alias2/index.ts"]
+                }
+              }
+            };
+
+            mountFakeFileSystem({
+              "main/app/index.ts": `
+                import "@path-alias1";
+                import "@path-alias2";
+              `,
+              "path/alias1/index.ts": `
+                export function something() {}
+              `,
+              "path/alias2/index.ts": `
+                export function something() {}
+              `,
+              "tsconfig.base.json": JSON.stringify(tsConfigBase),
+              "tsconfig.build.json": JSON.stringify(tsConfigBuild)
+            });
+
+            const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+              trackThirdParty: true,
+              tsConfigPath: "tsconfig.build.json"
+            });
+
+            expect(graph).to.be.deep.equal({
+              "main/app/index.ts": {
+                adjacentTo: ["path/alias1/index.ts", "path/alias2/index.ts"],
+                id: "main/app/index.ts",
+                body: fakeNodeBody
+              },
+              "path/alias1/index.ts": {
+                id: "path/alias1/index.ts",
+                adjacentTo: [],
+                body: fakeNodeBody
+              },
+              "path/alias2/index.ts": {
+                id: "path/alias2/index.ts",
+                adjacentTo: [],
+                body: fakeNodeBody
+              }
+            });
           });
         });
       });
