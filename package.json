@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "ci:publish": "pnpm publish -r",
+    "ci:version": "pnpm changeset version"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.26.1"
+  }
+}
