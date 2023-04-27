@@ -93,21 +93,20 @@ export function isFileSupportedByDefault(fileName: string): boolean {
   );
 }
 
-// TODO: Merge with .gitignore
-export function isDirSupportedByDefault(directoryName: string): boolean {
-  const directoriesThatShouldBeIgnored = new Set([
-    "node_modules",
-    "dist",
-    "build",
-    "coverage",
-    "docs",
-    "examples",
-    "test",
-    "__tests__",
-    "temp"
-  ]);
+export const defaultIgnoredDirs = new Set([
+  "node_modules",
+  "dist",
+  "build",
+  "coverage",
+  "docs",
+  "examples",
+  "test",
+  "__tests__",
+  "temp"
+]);
 
-  return !directoriesThatShouldBeIgnored.has(directoryName);
+export function isDirSupportedByDefault(directoryName: string): boolean {
+  return !defaultIgnoredDirs.has(directoryName);
 }
 
 async function isExistingModule(

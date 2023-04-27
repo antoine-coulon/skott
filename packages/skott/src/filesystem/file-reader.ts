@@ -4,9 +4,11 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 import * as Context from "@effect/data/Context";
+import ignoreWalk from "ignore-walk";
 import * as memfs from "memfs";
 
 import {
+  defaultIgnoredDirs,
   isDirSupportedByDefault,
   isFileSupportedByDefault
 } from "../modules/resolvers/base-resolver.js";
@@ -50,16 +52,20 @@ export class FileSystemReader implements FileReader {
     root: string,
     fileExtensions: string[]
   ): AsyncGenerator<string> {
-    const rootDir = await fs.opendir(root);
-
-    for await (const dirent of rootDir) {
-      if (dirent.isDirectory() && isDirSupportedByDefault(dirent.name)) {
-        yield* this.readdir(path.join(root, dirent.name), fileExtensions);
-      } else if (
-        isFileSupportedByDefault(dirent.name) &&
-        fileExtensions.includes(path.extname(dirent.name))
+    const filepaths = await ignoreWalk({
+      path: root,
+      ignoreFiles: [".gitignore"]
+    });
+    for (const filepath of filepaths) {
+      if (
+        !path
+          .dirname(filepath)
+          .split(path.sep)
+          .some((dir) => defaultIgnoredDirs.has(dir)) &&
+        isFileSupportedByDefault(filepath) &&
+        fileExtensions.includes(path.extname(filepath))
       ) {
-        yield path.join(root, dirent.name);
+        yield filepath;
       }
     }
   }
