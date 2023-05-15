@@ -1,6 +1,9 @@
 {
-  "name": "@skott/config",
+  "name": "@skottorg/config",
   "version": "0.0.1",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "Skott shared config across monorepos",
   "author": "Antoine Coulon",
   "files": [
