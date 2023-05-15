@@ -1,0 +1,316 @@
+var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+};
+var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+};
+var _DiGraph_vertices;
+import isEqual from "lodash.isequal";
+import uniqWith from "lodash.uniqwith";
+export class DiGraph {
+    constructor() {
+        _DiGraph_vertices.set(this, void 0);
+        __classPrivateFieldSet(this, _DiGraph_vertices, new Map(), "f");
+    }
+    get isAcyclic() {
+        return !this.hasCycles();
+    }
+    toDict() {
+        return Object.fromEntries(__classPrivateFieldGet(this, _DiGraph_vertices, "f").entries());
+    }
+    hasVertex(vertexId) {
+        return __classPrivateFieldGet(this, _DiGraph_vertices, "f").has(vertexId);
+    }
+    addVertex(vertex) {
+        const graphVerticesIds = [...__classPrivateFieldGet(this, _DiGraph_vertices, "f").keys()];
+        if (!graphVerticesIds.includes(vertex.id)) {
+            __classPrivateFieldGet(this, _DiGraph_vertices, "f").set(vertex.id, vertex);
+        }
+    }
+    addVertices(...vertices) {
+        const graphVerticesIds = [...__classPrivateFieldGet(this, _DiGraph_vertices, "f").keys()];
+        for (const uniqueVertex of this.keepUniqueVertices(vertices)) {
+            if (!graphVerticesIds.includes(uniqueVertex.id)) {
+                this.addVertex(uniqueVertex);
+            }
+        }
+    }
+    deleteVertex(vertexId) {
+        __classPrivateFieldGet(this, _DiGraph_vertices, "f").delete(vertexId);
+        for (const vertexDependingOnDeletedVertex of this.getParents(vertexId)) {
+            this.deleteEdge({
+                from: vertexDependingOnDeletedVertex.id,
+                to: vertexId
+            });
+        }
+    }
+    addEdge({ from, to }) {
+        if (from === to) {
+            return;
+        }
+        const [fromVertex, toVertex] = [
+            __classPrivateFieldGet(this, _DiGraph_vertices, "f").get(from),
+            __classPrivateFieldGet(this, _DiGraph_vertices, "f").get(to)
+        ];
+        if (fromVertex && toVertex) {
+            const hasNotSameAdjacentVertex = !fromVertex.adjacentTo.find((adjacentVertex) => adjacentVertex === toVertex.id);
+            if (hasNotSameAdjacentVertex) {
+                fromVertex.adjacentTo = fromVertex.adjacentTo.concat(toVertex.id);
+            }
+        }
+    }
+    deleteEdge({ from, to }) {
+        const fromVertex = __classPrivateFieldGet(this, _DiGraph_vertices, "f").get(from);
+        if (fromVertex) {
+            fromVertex.adjacentTo = fromVertex.adjacentTo.filter((adjacentVertexId) => adjacentVertexId !== to);
+        }
+    }
+    /**
+     * This function updates the vertex's body with the provided value without
+     * doing any merging with the previous value. If you want to preserve/update
+     * values, check `mergeVertexBody` instead.
+     * @example
+     * updateVertexBody("Node1", {
+     *    // body only contains this property "newProperty" now.
+     *    newProperty: []
+     * });
+     *
+     */
+    updateVertexBody(vertexId, body) {
+        const rootVertexToMutate = __classPrivateFieldGet(this, _DiGraph_vertices, "f").get(vertexId);
+        if (rootVertexToMutate) {
+            rootVertexToMutate.body = body;
+        }
+    }
+    /**
+     * This function lets you choose the way of merging the vertex's body
+     * by providing a callback function with the corresponding vertex instance.
+     * @example
+     * mergeVertexBody("Node1", (nodeBody) => {
+     *    // either by directly mutating the value
+     *    nodeBody.someProperty.list[0] = {};
+     *    // either by providing a new reference
+     *    nodeBody.someProperty.list = newCollection.map(operation);
+     * });
+     */
+    mergeVertexBody(vertexId, mergeCallback) {
+        const rootVertexToMutate = __classPrivateFieldGet(this, _DiGraph_vertices, "f").get(vertexId);
+        if (rootVertexToMutate) {
+            mergeCallback(rootVertexToMutate.body);
+        }
+    }
+    /**
+     * Allows top-to-bottom traversals by finding only the first relationship level
+     * of children dependencies of the provided vertex.
+     * @example
+     * // given A --> B, A depends on B hence B is a children dependency of A
+     * assert.deepEqual(graph.getChildren("A"), [VertexB]) // ok
+     */
+    getChildren(rootVertexId) {
+        return [...__classPrivateFieldGet(this, _DiGraph_vertices, "f").values()].filter((vertex) => __classPrivateFieldGet(this, _DiGraph_vertices, "f").get(rootVertexId)?.adjacentTo.includes(vertex.id));
+    }
+    /**
+     * Same as `getChildren()`, but doesn't stop at the first level hence deeply
+     * collects all children dependencies in  a Depth-First Search manner.
+     * Allows top-to-bottom traversals i.e: which nodes are dependencies of
+     * the provided rootVertexId.
+     */
+    *getDeepChildren(rootVertexId) {
+        const rootVertex = __classPrivateFieldGet(this, _DiGraph_vertices, "f").get(rootVertexId);
+        if (!rootVertex) {
+            return;
+        }
+        for (const adjacentVertexId of rootVertex.adjacentTo) {
+            const adjacentVertex = __classPrivateFieldGet(this, _DiGraph_vertices, "f").get(adjacentVertexId);
+            if (!adjacentVertex) {
+                continue;
+            }
+            yield* this.findDeepDependencies("lower", rootVertex, adjacentVertex);
+        }
+    }
+    /**
+     * Allows bottom-to-top traversals by finding only the first relationship level
+     * of parent dependencies of the provided vertex.
+     * @example
+     * // given A --> B, A depends on B hence A is a parent dependency of B
+     * assert.deepEqual(graph.getParents("B"), [VertexA]) // ok
+     */
+    getParents(rootVertexId) {
+        return [...__classPrivateFieldGet(this, _DiGraph_vertices, "f").values()].filter((vertex) => vertex.adjacentTo.includes(rootVertexId));
+    }
+    /**
+     * Same as `getParents()`, but doesn't stop at the first level hence deeply
+     * collects all parent dependencies in a Depth-First Search manner.
+     * Allows bottom-to-top traversals i.e: which nodes are depending on
+     * the provided rootVertexId.
+     */
+    *getDeepParents(rootVertexId) {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const rootVertex = __classPrivateFieldGet(this, _DiGraph_vertices, "f").get(rootVertexId);
+        if (!rootVertex) {
+            return;
+        }
+        for (const adjacentVertex of this.getParents(rootVertex.id)) {
+            yield* this.findDeepDependencies("upper", rootVertex, adjacentVertex);
+        }
+    }
+    /**
+     * Returns `true` if atleast one circular dependency exists in the graph,
+     * otherwise, returns `false`.
+     * If you want to know precisely what are the circular dependencies and
+     * know what vertices are involved, use `findCycles()` instead.
+     */
+    hasCycles({ maxDepth } = { maxDepth: Number.POSITIVE_INFINITY }) {
+        let hasCycles = false;
+        if (maxDepth === 0) {
+            return hasCycles;
+        }
+        for (const [rootVertex, rootAdjacentVertex] of this.collectRootAdjacencyLists()) {
+            // early exit as we stop on the first cycle found
+            if (hasCycles) {
+                break;
+            }
+            const adjacencyList = new Set();
+            for (const deepAdjacentVertexId of this.findDeepDependencies("lower", rootVertex, rootAdjacentVertex, maxDepth)) {
+                adjacencyList.add(deepAdjacentVertexId);
+                if (deepAdjacentVertexId === rootVertex.id ||
+                    adjacencyList.has(rootVertex.id)) {
+                    hasCycles = true;
+                    break;
+                }
+            }
+        }
+        return hasCycles;
+    }
+    findCycles({ maxDepth } = { maxDepth: Number.POSITIVE_INFINITY }) {
+        const cyclicPathsWithMaybeDuplicates = [];
+        if (maxDepth === 0) {
+            return [];
+        }
+        for (const [rootVertex, rootAdjacentVertex] of this.collectRootAdjacencyLists()) {
+            const adjacencyList = new Set();
+            for (const deepAdjacentVertexId of this.findDeepDependencies("lower", rootVertex, rootAdjacentVertex, maxDepth)) {
+                adjacencyList.add(deepAdjacentVertexId);
+                if (deepAdjacentVertexId === rootVertex.id ||
+                    adjacencyList.has(rootVertex.id)) {
+                    const adjacencyListAsArray = [...adjacencyList];
+                    /**
+                     * We found a cycle, the first thing to do is to only keep the segment
+                     * from X to X with "X" being the root vertex of the current DFS.
+                     * It allows us to build sub cycles at any point in the path.
+                     */
+                    const verticesInBetweenCycle = adjacencyListAsArray.slice(0, adjacencyListAsArray.indexOf(rootVertex.id) + 1);
+                    cyclicPathsWithMaybeDuplicates.push(this.backtrackVerticesInvolvedInCycle([
+                        rootVertex.id,
+                        ...verticesInBetweenCycle
+                    ]));
+                }
+            }
+        }
+        return this.keepUniqueVerticesPaths([...cyclicPathsWithMaybeDuplicates]);
+    }
+    *limitCycleDetectionDepth(dependenciesWalker, maxDepth) {
+        /**
+         * At this point, we already traversed 2 levels of depth dependencies by:
+         * - accessing the root's node adjacency list (depth === 1)
+         * - then we continue by accessing the adjacent's node adjacency list (depth === 2)
+         * Consequently we start recursing using the limit only at depth 2 already
+         */
+        const TRAVERSAL_STEPS_ALREADY_DONE = 2;
+        for (let depth = 0; depth <= maxDepth - TRAVERSAL_STEPS_ALREADY_DONE; depth++) {
+            const { done, value } = dependenciesWalker.next();
+            if (done) {
+                return;
+            }
+            yield value;
+        }
+    }
+    *collectRootAdjacencyLists() {
+        for (const rootVertex of __classPrivateFieldGet(this, _DiGraph_vertices, "f").values()) {
+            for (const rootAdjacentVertexId of rootVertex.adjacentTo) {
+                const rootAdjacentVertex = __classPrivateFieldGet(this, _DiGraph_vertices, "f").get(rootAdjacentVertexId);
+                if (!rootAdjacentVertex) {
+                    continue;
+                }
+                yield [rootVertex, rootAdjacentVertex];
+            }
+        }
+    }
+    /**
+     * This method is used to deeply find either all lower dependencies of a given
+     * vertex or all its upper dependencies.
+     */
+    // eslint-disable-next-line max-params
+    *findDeepDependencies(dependencyTraversal, rootVertex, traversedVertex, depthLimit = Number.POSITIVE_INFINITY, verticesAlreadyVisited = []) {
+        if (verticesAlreadyVisited.includes(traversedVertex.id)) {
+            return;
+        }
+        yield traversedVertex.id;
+        verticesAlreadyVisited.push(traversedVertex.id);
+        // Cycle reached, we must exit before entering in the infinite loop
+        if (rootVertex.id === traversedVertex.id) {
+            return;
+        }
+        const nextDependencies = dependencyTraversal === "lower"
+            ? traversedVertex.adjacentTo
+            : this.getParents(traversedVertex.id).map(({ id }) => id);
+        for (const adjacentVertexId of nextDependencies) {
+            const adjacentVertex = __classPrivateFieldGet(this, _DiGraph_vertices, "f").get(adjacentVertexId);
+            if (adjacentVertex) {
+                yield* this.limitCycleDetectionDepth(this.findDeepDependencies(dependencyTraversal, rootVertex, adjacentVertex, depthLimit, verticesAlreadyVisited), depthLimit);
+            }
+        }
+    }
+    keepUniqueVerticesPaths(paths) {
+        return uniqWith(paths, (pathA, pathB) => {
+            // Narrow down the comparison to avoid unnecessary operations
+            if (pathA.length !== pathB.length) {
+                return false;
+            }
+            /**
+             * In order for paths to be compared by values, arrays must be sorted e.g:
+             * [a, b] !== [b, a] when strictly comparing values.
+             */
+            return isEqual(pathA.slice().sort(), pathB.slice().sort());
+        });
+    }
+    /**
+     * Once the cycle found, many vertices actually not involved in the cycle
+     * might have been visited. To only keep vertices that are effectively involved
+     * in the cyclic path, we must check that for any vertex there is an existing
+     * path from its ancestor leading to the root node.
+     */
+    backtrackVerticesInvolvedInCycle(verticesInCyclicPath) {
+        for (let i = verticesInCyclicPath.length; i > 1; i--) {
+            const currentNode = verticesInCyclicPath[i - 1];
+            // The node just before the current one who is eventually its parent
+            const nodeBeforeInPath = __classPrivateFieldGet(this, _DiGraph_vertices, "f").get(verticesInCyclicPath[i - 2]);
+            const isCurrentNodeParent = nodeBeforeInPath?.adjacentTo.includes(currentNode);
+            /**
+             * there is no path existing from the node just before to the current node,
+             * meaning that the cycle path can't be coming from that path.
+             */
+            if (!isCurrentNodeParent) {
+                // We must remove incrementally vertices that aren't involved in the cycle
+                verticesInCyclicPath.splice(i - 2, 1);
+            }
+        }
+        return [...new Set(verticesInCyclicPath)];
+    }
+    *keepUniqueVertices(vertices) {
+        const uniqueVerticesIds = new Set();
+        for (const vertex of vertices) {
+            if (!uniqueVerticesIds.has(vertex.id)) {
+                uniqueVerticesIds.add(vertex.id);
+                yield vertex;
+            }
+        }
+    }
+}
+_DiGraph_vertices = new WeakMap();
+//# sourceMappingURL=digraph.js.map

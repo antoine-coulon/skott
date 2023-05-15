@@ -1,0 +1,52 @@
+{
+  "name": "@mermaid-js/mermaid-cli",
+  "version": "9.1.7",
+  "description": "Command-line interface for mermaid",
+  "license": "MIT",
+  "repository": "git@github.com:mermaid-js/mermaid-cli.git",
+  "type": "module",
+  "author": "Tyler Long <tyler4long@gmail.com>",
+  "bin": {
+    "mmdc": "./src/cli.js"
+  },
+  "engines": {
+    "node": ">=14.1.0"
+  },
+  "exports": "./src/index.js",
+  "scripts": {
+    "upgrade": "yarn-upgrade-all && sh copy_modules.sh",
+    "prepare": "sh copy_modules.sh",
+    "prepack": "sh copy_modules.sh",
+    "test": "standard && yarn node --experimental-vm-modules $(yarn bin jest)",
+    "lint": "standard",
+    "lint-fix": "standard --fix"
+  },
+  "dependencies": {
+    "chalk": "^5.0.1",
+    "commander": "^9.0.0",
+    "puppeteer": "^18.0.5"
+  },
+  "devDependencies": {
+    "@fortawesome/fontawesome-free-webfonts": "^1.0.9",
+    "mermaid": "^9.1.2",
+    "jest": "^29.0.1",
+    "standard": "^17.0.0",
+    "yarn-upgrade-all": "^0.7.0"
+  },
+  "files": [
+    "src/",
+    "mermaid.min.js",
+    "index.html",
+    "fontawesome/*"
+  ],
+  "jest": {
+    "moduleNameMapper": {
+      "#(.*)": "<rootDir>/node_modules/$1"
+    }
+  },
+  "standard": {
+    "ignore": [
+      "mermaid.min.js"
+    ]
+  }
+}

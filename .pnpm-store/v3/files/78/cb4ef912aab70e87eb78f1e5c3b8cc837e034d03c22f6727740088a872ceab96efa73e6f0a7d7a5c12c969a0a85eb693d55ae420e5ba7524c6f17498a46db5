@@ -1,0 +1,123 @@
+{
+  "name": "meriyah",
+  "version": "4.2.1",
+  "description": "A 100% compliant, self-hosted javascript parser with high focus on both performance and stability",
+  "main": "dist/meriyah.cjs",
+  "module": "dist/meriyah.esm.js",
+  "jsnext:main": "dist/meriyah.esm.js",
+  "browser": "dist/meriyah.umd.min.js",
+  "unpkg": "dist/meriyah.umd.min.js",
+  "type": "module",
+  "exports": {
+    "import": "./dist/meriyah.esm.js",
+    "require": "./dist/meriyah.cjs"
+  },
+  "types": "dist/src/meriyah.d.ts",
+  "typings": "dist/src/meriyah.d.ts",
+  "license": "ISC",
+  "homepage": "https://github.com/meriyah/meriyah",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/meriyah/meriyah"
+  },
+  "bugs": {
+    "url": "https://github.com/meriyah/meriyah/issues"
+  },
+  "author": {
+    "name": "Kenny F.",
+    "url": "https://github.com/KFlash"
+  },
+  "contributors": [
+    {
+      "name": "Chunpeng Huo",
+      "url": "https://github.com/3cp"
+    }
+  ],
+  "keywords": [
+    "parsing",
+    "ecmascript",
+    "javascript",
+    "parser",
+    "performance",
+    "estree",
+    "es2018",
+    "es2019",
+    "es2020",
+    "es2021",
+    "esnext",
+    "lexer",
+    "ast",
+    "lightweight"
+  ],
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc -w",
+    "lint": "eslint \"{src,test}/**/*.{ts,js}\"",
+    "prettier": "node ./scripts/prettier.js write-changed",
+    "prettier-all": "node ./scripts/prettier.js write",
+    "bundle": "cross-env rimraf dist && node scripts/bundle.js",
+    "bundle:bench": "cross-env rimraf dist && node scripts/bundle.js bench",
+    "test": "mocha \"test/**/*.ts\"",
+    "test-single": "mocha",
+    "test:watch": "npm run test -- --watch --watch-extensions ts",
+    "test:verbose": "npm run test -- -R spec",
+    "test:watch:verbose": "npm run test:watch -- -R spec",
+    "prepare-nightly": "node scripts/bump-dev-version",
+    "coverage": "cross-env TS_NODE_PROJECT=\"test/tsconfig.json\" nyc -n \"src/**/*.ts\" -e .ts -i ts-node/register -r text-summary -r lcov -r html npm test",
+    "post_coverage": "cross-env cat ./coverage/lcov.info | coveralls",
+    "prepublishOnly": "npm run bundle",
+    "preversion": "npm test",
+    "version": "standard-changelog && git add CHANGELOG.md",
+    "postversion": "git push && git push --tags && npm publish"
+  },
+  "devDependencies": {
+    "@rollup/plugin-json": "^4.1.0",
+    "@types/mocha": "^8.2.0",
+    "@types/node": "^14.14.21",
+    "@typescript-eslint/eslint-plugin": "^4.13.0",
+    "@typescript-eslint/parser": "^4.13.0",
+    "chalk": "^4.1.0",
+    "coveralls": "^3.1.0",
+    "cross-env": "^7.0.3",
+    "eslint": "^7.17.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "glob": "^7.1.6",
+    "husky": "^4.3.7",
+    "mocha": "^8.2.1",
+    "nyc": "^15.1.0",
+    "path": "^0.12.7",
+    "prettier": "^2.2.1",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.38.1",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-typescript2": "^0.30.0",
+    "source-map-support": "^0.5.19",
+    "standard-changelog": "^2.0.27",
+    "test262-parser-tests": "0.0.5",
+    "ts-node": "^9.1.1",
+    "tsconfig-paths": "^3.9.0",
+    "tslib": "^2.1.0",
+    "typescript": "^4.1.3",
+    "unexpected": "^12.0.0",
+    "unicode-13.0.0": "^0.8.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "node ./scripts/prettier.js check-changed"
+    }
+  },
+  "engines": {
+    "node": ">=10.4.0"
+  }
+}

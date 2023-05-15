@@ -1,0 +1,33 @@
+{
+    "name": "@types/tar",
+    "version": "6.1.3",
+    "description": "TypeScript definitions for tar",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/tar",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "Maxime LUCE",
+            "url": "https://github.com/SomaticIT",
+            "githubUsername": "SomaticIT"
+        },
+        {
+            "name": "Connor Peet",
+            "url": "https://github.com/connor4312",
+            "githubUsername": "connor4312"
+        }
+    ],
+    "main": "",
+    "types": "index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/tar"
+    },
+    "scripts": {},
+    "dependencies": {
+        "@types/node": "*",
+        "minipass": "^3.3.5"
+    },
+    "typesPublisherContentHash": "73d2759e05ef82c75abf82485bcfc9688944e454f3ab49a061586d8a42e1fec8",
+    "typeScriptVersion": "4.1"
+}

@@ -1,0 +1,28 @@
+{
+  "name": "@effect/io",
+  "version": "0.8.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Effect-TS/io.git"
+  },
+  "dependencies": {
+    "@effect/data": "~0.4.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": [],
+  "exports": {
+    "./*": {
+      "import": {
+        "types": "./*.d.ts",
+        "default": "./mjs/*.mjs"
+      },
+      "require": {
+        "types": "./*.d.ts",
+        "default": "./*.js"
+      }
+    }
+  }
+}

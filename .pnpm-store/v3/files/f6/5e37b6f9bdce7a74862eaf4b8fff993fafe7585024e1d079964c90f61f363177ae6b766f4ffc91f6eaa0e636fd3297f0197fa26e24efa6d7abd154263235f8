@@ -1,0 +1,1 @@
+{"version":3,"file":"node.d.ts","sourceRoot":"","sources":["../../../../src/internal/RedBlackTree/node.ts"],"names":[],"mappings":"AAMA,MAAM,CAAC,OAAO,WAAW,IAAI,CAAC;IAC5B,KAAY,KAAK,GAAG,MAAM,GAAG;QAC3B,QAAQ,CAAC,KAAK,EAAE,OAAO,MAAM,CAAA;KAC9B,CAAA;CACF"}

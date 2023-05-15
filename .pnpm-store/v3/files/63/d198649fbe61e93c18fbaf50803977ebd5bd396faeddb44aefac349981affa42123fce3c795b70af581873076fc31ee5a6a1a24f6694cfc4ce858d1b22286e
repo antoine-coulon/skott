@@ -1,0 +1,128 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.size = exports.set = exports.remove = exports.modifyAt = exports.modify = exports.make = exports.has = exports.get = exports.fromIterable = exports.empty = void 0;
+var Dual = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/Function"));
+var HashMap = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/HashMap"));
+var MutableRef = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/MutableRef"));
+var Option = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/Option"));
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+/**
+ * @since 1.0.0
+ */
+
+const TypeId = /*#__PURE__*/Symbol.for("@effect/data/MutableHashMap");
+/** @internal */
+class MutableHashMapImpl {
+  constructor() {
+    this._id = TypeId;
+    this.backingMap = MutableRef.make(HashMap.empty());
+  }
+  [Symbol.iterator]() {
+    return this.backingMap.current[Symbol.iterator]();
+  }
+  toString() {
+    return `MutableHashMap(${Array.from(this).map(([k, v]) => `[${String(k)}, ${String(v)}]`).join(", ")})`;
+  }
+  toJSON() {
+    return {
+      _tag: "MutableHashMap",
+      values: Array.from(this)
+    };
+  }
+  [Symbol.for("nodejs.util.inspect.custom")]() {
+    return this.toJSON();
+  }
+}
+/**
+ * @since 1.0.0
+ * @category constructors
+ */
+const empty = () => new MutableHashMapImpl();
+/**
+ * @since 1.0.0
+ * @category constructors
+ */
+exports.empty = empty;
+const make = (...entries) => fromIterable(entries);
+/**
+ * @since 1.0.0
+ * @category conversions
+ */
+exports.make = make;
+const fromIterable = entries => {
+  const map = empty();
+  for (const entry of entries) {
+    set(map, entry[0], entry[1]);
+  }
+  return map;
+};
+/**
+ * @since 1.0.0
+ * @category elements
+ */
+exports.fromIterable = fromIterable;
+const get = /*#__PURE__*/Dual.dual(2, (self, key) => HashMap.get(self.backingMap.current, key));
+/**
+ * @since 1.0.0
+ * @category elements
+ */
+exports.get = get;
+const has = /*#__PURE__*/Dual.dual(2, (self, key) => Option.isSome(get(self, key)));
+/**
+ * Updates the value of the specified key within the `MutableHashMap` if it exists.
+ *
+ * @since 1.0.0
+ * @category mutations
+ */
+exports.has = has;
+const modify = /*#__PURE__*/Dual.dual(3, (self, key, f) => {
+  MutableRef.update(self.backingMap, HashMap.modify(key, f));
+  return self;
+});
+/**
+ * Set or remove the specified key in the `MutableHashMap` using the specified
+ * update function.
+ *
+ * @since 1.0.0
+ * @category mutations
+ */
+exports.modify = modify;
+const modifyAt = /*#__PURE__*/Dual.dual(3, (self, key, f) => {
+  const result = f(get(self, key));
+  if (Option.isSome(result)) {
+    set(self, key, result.value);
+  } else {
+    remove(self, key);
+  }
+  return self;
+});
+/**
+ * @since 1.0.0
+ * @category mutations
+ */
+exports.modifyAt = modifyAt;
+const remove = /*#__PURE__*/Dual.dual(2, (self, key) => {
+  MutableRef.update(self.backingMap, HashMap.remove(key));
+  return self;
+});
+/**
+ * @since 1.0.0
+ * @category mutations
+ */
+exports.remove = remove;
+const set = /*#__PURE__*/Dual.dual(3, (self, key, value) => {
+  MutableRef.update(self.backingMap, HashMap.set(key, value));
+  return self;
+});
+/**
+ * @since 1.0.0
+ * @category elements
+ */
+exports.set = set;
+const size = self => HashMap.size(MutableRef.get(self.backingMap));
+exports.size = size;
+//# sourceMappingURL=MutableHashMap.js.map

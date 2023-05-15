@@ -1,0 +1,1 @@
+{"version":3,"file":"deferred.mjs","names":["OP_STATE_PENDING","OP_STATE_DONE"],"sources":["../../../../src/internal_effect_untraced/opCodes/deferred.ts"],"sourcesContent":[null],"mappings":"AAAA;AACA,OAAO,MAAMA,gBAAgB,GAAG,SAAkB;AAKlD;AACA,OAAO,MAAMC,aAAa,GAAG,MAAe"}

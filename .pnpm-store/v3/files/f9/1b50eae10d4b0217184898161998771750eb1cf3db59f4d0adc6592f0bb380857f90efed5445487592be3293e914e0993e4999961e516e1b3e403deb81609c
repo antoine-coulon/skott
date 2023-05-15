@@ -1,0 +1,1 @@
+{"version":3,"file":"Stack.js","names":["Stack","constructor","value","previous","exports"],"sources":["../../../src/internal/Stack.ts"],"sourcesContent":[null],"mappings":";;;;;;AAAA;AACM,MAAOA,KAAK;EAChBC,YAAqBC,KAAQ,EAAWC,QAAmB;IAAtC,KAAAD,KAAK,GAALA,KAAK;IAAc,KAAAC,QAAQ,GAARA,QAAQ;EAAc;;AAC/DC,OAAA,CAAAJ,KAAA,GAAAA,KAAA"}

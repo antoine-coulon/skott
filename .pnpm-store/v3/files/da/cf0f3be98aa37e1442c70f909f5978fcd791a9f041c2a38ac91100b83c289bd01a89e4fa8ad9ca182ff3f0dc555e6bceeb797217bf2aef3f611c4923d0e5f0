@@ -1,0 +1,1 @@
+{"version":3,"file":"Pair.mjs","names":["internal","MetricPairTypeId","make","unsafeMake"],"sources":["../../../src/Metric/Pair.ts"],"sourcesContent":[null],"mappings":"AAAA;;;AAGA,OAAO,KAAKA,QAAQ,MAAM,iDAAiD;AAK3E;;;;AAIA,OAAO,MAAMC,gBAAgB,GAAkBD,QAAQ,CAACC,gBAAgB;AAsCxE;;;;AAIA,OAAO,MAAMC,IAAI,GAGSF,QAAQ,CAACE,IAAI;AAEvC;;;;AAIA,OAAO,MAAMC,UAAU,GAGGH,QAAQ,CAACG,UAAU"}

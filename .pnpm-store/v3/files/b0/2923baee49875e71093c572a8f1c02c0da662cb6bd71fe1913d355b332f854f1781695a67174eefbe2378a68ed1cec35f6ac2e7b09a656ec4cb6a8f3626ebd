@@ -1,0 +1,138 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.zip = exports.updateWith = exports.update = exports.transform = exports.patch = exports.orElseResult = exports.make = exports.hashSet = exports.hashMap = exports.environment = exports.empty = exports.diff = exports.combine = exports.chunk = void 0;
+var Dual = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/Function"));
+var D = /*#__PURE__*/_interopRequireWildcard( /*#__PURE__*/require("@effect/data/internal/Differ"));
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+const TypeId = D.DifferTypeId;
+/**
+ * An empty patch that describes no changes.
+ *
+ * @since 1.0.0
+ * @category patch
+ */
+const empty = self => self.empty;
+/**
+ * An empty patch that describes no changes.
+ *
+ * @since 1.0.0
+ * @category patch
+ */
+exports.empty = empty;
+const diff = /*#__PURE__*/Dual.dual(3, (self, oldValue, newValue) => self.diff(oldValue, newValue));
+/**
+ * Combines two patches to produce a new patch that describes the updates of
+ * the first patch and then the updates of the second patch. The combine
+ * operation should be associative. In addition, if the combine operation is
+ * commutative then joining multiple fibers concurrently will result in
+ * deterministic `FiberRef` values.
+ *
+ * @since 1.0.0
+ * @category patch
+ */
+exports.diff = diff;
+const combine = /*#__PURE__*/Dual.dual(3, (self, first, second) => self.combine(first, second));
+/**
+ * Applies a patch to an old value to produce a new value that is equal to the
+ * old value with the updates described by the patch.
+ *
+ * @since 1.0.0
+ * @category patch
+ */
+exports.combine = combine;
+const patch = /*#__PURE__*/Dual.dual(3, (self, patch, oldValue) => self.patch(patch, oldValue));
+/**
+ * Constructs a new `Differ`.
+ *
+ * @since 1.0.0
+ * @category constructors
+ */
+exports.patch = patch;
+const make = D.make;
+/**
+ * Constructs a differ that knows how to diff `Env` values.
+ *
+ * @since 1.0.0
+ * @category constructors
+ */
+exports.make = make;
+const environment = D.environment;
+/**
+ * Constructs a differ that knows how to diff a `Chunk` of values given a
+ * differ that knows how to diff the values.
+ *
+ * @since 1.0.0
+ * @category constructors
+ */
+exports.environment = environment;
+const chunk = D.chunk;
+/**
+ * Constructs a differ that knows how to diff a `HashMap` of keys and values given
+ * a differ that knows how to diff the values.
+ *
+ * @since 1.0.0
+ * @category constructors
+ */
+exports.chunk = chunk;
+const hashMap = D.hashMap;
+/**
+ * Constructs a differ that knows how to diff a `HashSet` of values.
+ *
+ * @since 1.0.0
+ * @category constructors
+ */
+exports.hashMap = hashMap;
+const hashSet = D.hashSet;
+/**
+ * Combines this differ and the specified differ to produce a differ that
+ * knows how to diff the sum of their values.
+ *
+ * @since 1.0.0
+ * @category mutations
+ */
+exports.hashSet = hashSet;
+const orElseResult = D.orElseResult;
+/**
+ * Transforms the type of values that this differ knows how to differ using
+ * the specified functions that map the new and old value types to each other.
+ *
+ * @since 1.0.0
+ * @category mutations
+ */
+exports.orElseResult = orElseResult;
+const transform = D.transform;
+/**
+ * Constructs a differ that just diffs two values by returning a function that
+ * sets the value to the new value. This differ does not support combining
+ * multiple updates to the value compositionally and should only be used when
+ * there is no compositional way to update them.
+ *
+ * @since 1.0.0
+ * @category mutations
+ */
+exports.transform = transform;
+const update = D.update;
+/**
+ * A variant of `update` that allows specifying the function that will be used
+ * to combine old values with new values.
+ *
+ * @since 1.0.0
+ * @category mutations
+ */
+exports.update = update;
+const updateWith = D.updateWith;
+/**
+ * Combines this differ and the specified differ to produce a new differ that
+ * knows how to diff the product of their values.
+ *
+ * @since 1.0.0
+ * @category mutations
+ */
+exports.updateWith = updateWith;
+const zip = D.zip;
+exports.zip = zip;
+//# sourceMappingURL=Differ.js.map

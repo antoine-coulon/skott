@@ -1,0 +1,1 @@
+{"version":3,"file":"core.d.ts","sourceRoot":"","sources":["../../../src/internal_effect_untraced/core.ts"],"names":[],"mappings":"AAkBA,OAAO,KAAK,KAAK,MAAM,MAAM,mBAAmB,CAAA;AAchD,OAAO,KAAK,OAAO,MAAM,oDAAoD,CAAA;AAuL7E,MAAM,WAAW,MAAO,SACtB,EAAE,CAAC,OAAO,CAAC,SAAS,EAAE;IACpB,MAAM,IAAI,MAAM,CAAC,MAAM,CAAC,OAAO,EAAE,OAAO,EAAE,OAAO,CAAC,CAAA;CACnD,CAAC;CACF"}

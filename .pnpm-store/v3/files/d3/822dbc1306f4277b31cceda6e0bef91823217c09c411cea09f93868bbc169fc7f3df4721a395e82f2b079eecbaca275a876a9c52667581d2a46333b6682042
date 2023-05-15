@@ -1,0 +1,135 @@
+/**
+ * @since 1.0.0
+ */
+import * as Equal from "@effect/data/Equal";
+import * as Hash from "@effect/data/Hash";
+const protoArr = /*#__PURE__*/(() => {
+  const proto = {
+    [Hash.symbol]() {
+      return Hash.array(this);
+    },
+    [Equal.symbol](that) {
+      if (Array.isArray(that) && this.length === that.length) {
+        return this.every((v, i) => Equal.equals(v, that[i]));
+      } else {
+        return false;
+      }
+    }
+  };
+  return Object.setPrototypeOf(proto, Array.prototype);
+})();
+const protoStruct = /*#__PURE__*/(() => {
+  const proto = {
+    [Hash.symbol]() {
+      return Hash.structure(this);
+    },
+    [Equal.symbol](that) {
+      const selfKeys = Object.keys(this);
+      const thatKeys = Object.keys(that);
+      if (selfKeys.length !== thatKeys.length) {
+        return false;
+      }
+      for (const key of selfKeys) {
+        if (!(key in that && Equal.equals(this[key], that[key]))) {
+          return false;
+        }
+      }
+      return true;
+    }
+  };
+  return Object.setPrototypeOf(proto, Object.prototype);
+})();
+/**
+ * @category constructors
+ * @since 1.0.0
+ */
+export const struct = as => unsafeStruct(Object.assign({}, as));
+/**
+ * @category constructors
+ * @since 1.0.0
+ */
+export const unsafeStruct = as => Object.setPrototypeOf(as, protoStruct);
+/**
+ * @category constructors
+ * @since 1.0.0
+ */
+export const tuple = (...as) => unsafeArray(as);
+/**
+ * @category constructors
+ * @since 1.0.0
+ */
+export const array = as => unsafeArray(as.slice(0));
+/**
+ * @category constructors
+ * @since 1.0.0
+ */
+export const unsafeArray = as => Object.setPrototypeOf(as, protoArr);
+const _case = () => args => args === undefined ? struct({}) : struct(args);
+export {
+/**
+ * Provides a constructor for the specified `Case`.
+ *
+ * @since 1.0.0
+ * @category constructors
+ */
+_case as case };
+/**
+ * Provides a tagged constructor for the specified `Case`.
+ *
+ * @since 1.0.0
+ * @category constructors
+ */
+export const tagged = tag =>
+// @ts-expect-error
+args => args === undefined ? struct({
+  _tag: tag
+}) : struct({
+  ...args,
+  _tag: tag
+});
+/**
+ * Provides a Tagged constructor for a Case Class.
+ *
+ * @since 1.0.0
+ * @category constructors
+ */
+export const TaggedClass = tag => () => {
+  class Base extends Class() {
+    constructor() {
+      super(...arguments);
+      this._tag = tag;
+    }
+  }
+  return Base;
+};
+/**
+ * Provides a constructor for a Case Class.
+ *
+ * @since 1.0.0
+ * @category constructors
+ */
+export const Class = () => {
+  class Base {
+    constructor(args) {
+      Object.assign(this, args);
+    }
+    [Hash.symbol]() {
+      return Hash.structure(this);
+    }
+    [Equal.symbol](that) {
+      const selfKeys = Object.keys(this);
+      const thatKeys = Object.keys(that);
+      if (selfKeys.length !== thatKeys.length) {
+        return false;
+      }
+      for (const key of selfKeys) {
+        if (!(key in that && Equal.equals(this[key], that[key]))) {
+          return false;
+        }
+      }
+      return true;
+    }
+  }
+  return Base;
+};
+//# sourceMappingURL=Data.mjs.map

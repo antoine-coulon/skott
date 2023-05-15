@@ -1,0 +1,1 @@
+{"version":3,"file":"Span.mjs","names":["internal","make","render"],"sources":["../../../src/Logger/Span.ts"],"sourcesContent":[null],"mappings":"AAAA;;;AAGA,OAAO,KAAKA,QAAQ,MAAM,6CAA6C;AAWvE;;;;AAIA,OAAO,MAAMC,IAAI,GAAkDD,QAAQ,CAACC,IAAI;AAEhF;;;;AAIA,OAAO,MAAMC,MAAM,GAA+CF,QAAQ,CAACE,MAAM"}

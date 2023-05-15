@@ -1,0 +1,777 @@
+/**
+ * The `Effect<R, E, A>` type is polymorphic in values of type `E` and we can
+ * work with any error type that we want. However, there is a lot of information
+ * that is not inside an arbitrary `E` value. So as a result, an `Effect` needs
+ * somewhere to store things like unexpected errors or defects, stack and
+ * execution traces, causes of fiber interruptions, and so forth.
+ *
+ * Effect-TS is very strict about preserving the full information related to a
+ * failure. It captures all type of errors into the `Cause` data type. `Effect`
+ * uses the `Cause<E>` data type to store the full story of failure. So its
+ * error model is lossless. It doesn't throw information related to the failure
+ * result. So we can figure out exactly what happened during the operation of
+ * our effects.
+ *
+ * It is important to note that `Cause` is an underlying data type representing
+ * errors occuring within an `Effect` workflow. Thus, we don't usually deal with
+ * `Cause`s directly. Even though it is not a data type that we deal with very
+ * often, the `Cause` of a failing `Effect` workflow can be accessed at any
+ * time, which gives us total access to all parallel and sequential errors in
+ * occurring within our codebase.
+ *
+ * @since 1.0.0
+ */
+import type * as Chunk from "@effect/data/Chunk";
+import type * as Either from "@effect/data/Either";
+import type * as Equal from "@effect/data/Equal";
+import type * as HashSet from "@effect/data/HashSet";
+import type * as Option from "@effect/data/Option";
+import type { Predicate } from "@effect/data/Predicate";
+import type { SourceLocation } from "@effect/io/Debug";
+import type * as FiberId from "@effect/io/Fiber/Id";
+import type * as OpCodes from "@effect/io/internal_effect_untraced/opCodes/cause";
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export declare const CauseTypeId: unique symbol;
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export type CauseTypeId = typeof CauseTypeId;
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export declare const RuntimeExceptionTypeId: unique symbol;
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export type RuntimeExceptionTypeId = typeof RuntimeExceptionTypeId;
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export declare const InterruptedExceptionTypeId: unique symbol;
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export type InterruptedExceptionTypeId = typeof InterruptedExceptionTypeId;
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export declare const IllegalArgumentExceptionTypeId: unique symbol;
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export type IllegalArgumentExceptionTypeId = typeof IllegalArgumentExceptionTypeId;
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export declare const NoSuchElementExceptionTypeId: unique symbol;
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export type NoSuchElementExceptionTypeId = typeof NoSuchElementExceptionTypeId;
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export declare const InvalidHubCapacityExceptionTypeId: unique symbol;
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export type InvalidHubCapacityExceptionTypeId = typeof InvalidHubCapacityExceptionTypeId;
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export declare const StackAnnotationTypeId: unique symbol;
+/**
+ * @since 1.0.0
+ * @category symbols
+ */
+export type StackAnnotationTypeId = typeof StackAnnotationTypeId;
+/**
+ * A `Cause` represents the full history of a failure resulting from running an
+ * `Effect` workflow.
+ *
+ * Effect-TS uses a data structure from functional programming called a semiring
+ * to represent the `Cause` data type. This allows us to take a base type `E`
+ * (which represents the error type of an `Effect`) and capture the sequential
+ * and parallel composition of errors in a fully lossless fashion.
+ *
+ * @since 1.0.0
+ * @category models
+ */
+export type Cause<E> = Empty | Fail<E> | Die | Interrupt | Annotated<E> | Sequential<E> | Parallel<E>;
+/**
+ * @since 1.0.0
+ */
+export declare namespace Cause {
+    /**
+     * @since 1.0.0
+     * @category models
+     */
+    interface Variance<E> {
+        readonly [CauseTypeId]: {
+            readonly _E: (_: never) => E;
+        };
+    }
+}
+/**
+ * @since 1.0.0
+ * @category models
+ */
+export interface StackAnnotationConstructor {
+    new (stack: Chunk.Chunk<SourceLocation>, seq: number): StackAnnotation;
+}
+/**
+ * @since 1.0.0
+ * @category models
+ */
+export interface StackAnnotation {
+    readonly [StackAnnotationTypeId]: StackAnnotationTypeId;
+    readonly stack: Chunk.Chunk<SourceLocation>;
+    readonly seq: number;
+}
+/**
+ * @since 1.0.0
+ * @category stack
+ */
+export declare const StackAnnotation: StackAnnotationConstructor;
+/**
+ * @since 1.0.0
+ * @category stack
+ */
+export declare const globalErrorSeq: import("@effect/data/MutableRef").MutableRef<number>;
+/**
+ * Represents a set of methods that can be used to reduce a `Cause<E>` to a
+ * specified value of type `Z` with access to a context of type `C`.
+ *
+ * @since 1.0.0
+ * @category models
+ */
+export interface CauseReducer<C, E, Z> {
+    readonly emptyCase: (context: C) => Z;
+    readonly failCase: (context: C, error: E) => Z;
+    readonly dieCase: (context: C, defect: unknown) => Z;
+    readonly interruptCase: (context: C, fiberId: FiberId.FiberId) => Z;
+    readonly annotatedCase: (context: C, value: Z, annotation: unknown) => Z;
+    readonly sequentialCase: (context: C, left: Z, right: Z) => Z;
+    readonly parallelCase: (context: C, left: Z, right: Z) => Z;
+}
+/**
+ * Represents a generic checked exception which occurs at runtime.
+ *
+ * @since 1.0.0
+ * @category models
+ */
+export interface RuntimeException {
+    readonly _tag: "RuntimeException";
+    readonly [RuntimeExceptionTypeId]: RuntimeExceptionTypeId;
+    readonly message?: string;
+}
+/**
+ * Represents a checked exception which occurs when a `Fiber` is interrupted.
+ *
+ * @since 1.0.0
+ * @category models
+ */
+export interface InterruptedException {
+    readonly _tag: "InterruptedException";
+    readonly [InterruptedExceptionTypeId]: InterruptedExceptionTypeId;
+    readonly message?: string;
+}
+/**
+ * Represents a checked exception which occurs when an invalid argument is
+ * provided to a method.
+ *
+ * @since 1.0.0
+ * @category models
+ */
+export interface IllegalArgumentException {
+    readonly _tag: "IllegalArgumentException";
+    readonly [IllegalArgumentExceptionTypeId]: IllegalArgumentExceptionTypeId;
+    readonly message?: string;
+}
+/**
+ * Represents a checked exception which occurs when an expected element was
+ * unable to be found.
+ *
+ * @since 1.0.0
+ * @category models
+ */
+export interface NoSuchElementException {
+    readonly _tag: "NoSuchElementException";
+    readonly [NoSuchElementExceptionTypeId]: NoSuchElementExceptionTypeId;
+    readonly message?: string;
+}
+/**
+ * Represents a checked exception which occurs when attempting to construct a
+ * `Hub` with an invalid capacity.
+ *
+ * @since 1.0.0
+ * @category models
+ */
+export interface InvalidHubCapacityException {
+    readonly _tag: "InvalidHubCapacityException";
+    readonly [InvalidHubCapacityExceptionTypeId]: InvalidHubCapacityExceptionTypeId;
+    readonly message?: string;
+}
+/**
+ * The `Empty` cause represents a lack of errors.
+ *
+ * @since 1.0.0
+ * @category models
+ */
+export interface Empty extends Cause.Variance<never>, Equal.Equal {
+    readonly _tag: OpCodes.OP_EMPTY;
+}
+/**
+ * The `Fail` cause represents a `Cause` which failed with an expected error of
+ * type `E`.
+ *
+ * @since 1.0.0
+ * @category models
+ */
+export interface Fail<E> extends Cause.Variance<E>, Equal.Equal {
+    readonly _tag: OpCodes.OP_FAIL;
+    readonly error: E;
+}
+/**
+ * The `Die` cause represents a `Cause` which failed as a result of a defect, or
+ * in other words, an unexpected error.
+ *
+ * type `E`.
+ * @since 1.0.0
+ * @category models
+ */
+export interface Die extends Cause.Variance<never>, Equal.Equal {
+    readonly _tag: OpCodes.OP_DIE;
+    readonly defect: unknown;
+}
+/**
+ * The `Interrupt` cause represents failure due to `Fiber` interruption, which
+ * contains the `FiberId` of the interrupted `Fiber`.
+ *
+ * @since 1.0.0
+ * @category models
+ */
+export interface Interrupt extends Cause.Variance<never>, Equal.Equal {
+    readonly _tag: OpCodes.OP_INTERRUPT;
+    readonly fiberId: FiberId.FiberId;
+}
+/**
+ * The `Annotated` cause represents a `Cause` which is annotated with some
+ * arbitrary metadata.
+ *
+ * For example, we can annotate a `Cause` with a trace to assist in debugging.
+ *
+ * @since 1.0.0
+ * @category models
+ */
+export interface Annotated<E> extends Cause.Variance<E>, Equal.Equal {
+    readonly _tag: OpCodes.OP_ANNOTATED;
+    readonly cause: Cause<E>;
+    readonly annotation: unknown;
+}
+/**
+ * The `Parallel` cause represents the composition of two causes which occurred
+ * in parallel.
+ *
+ * In Effect-TS programs, it is possible that two operations may be performed in
+ * parallel. In these cases, the `Effect` workflow can fail for more than one
+ * reason. If both computations fail, then there are actually two errors which
+ * occurred in parallel. In these cases, the errors can be represented by the
+ * `Parallel` cause.
+ *
+ * @since 1.0.0
+ * @category models
+ */
+export interface Parallel<E> extends Cause.Variance<E>, Equal.Equal {
+    readonly _tag: OpCodes.OP_PARALLEL;
+    readonly left: Cause<E>;
+    readonly right: Cause<E>;
+}
+/**
+ * The `Sequential` cause represents the composition of two causes which occurred
+ * sequentially.
+ *
+ * For example, if we perform Effect-TS's analog of `try-finally` (i.e.
+ * `Effect.ensuring`), and both the `try` and `finally` blocks fail, we have two
+ * errors which occurred sequentially. In these cases, the errors can be
+ * represented by the `Sequential` cause.
+ *
+ * @since 1.0.0
+ * @category models
+ */
+export interface Sequential<E> extends Cause.Variance<E>, Equal.Equal {
+    readonly _tag: OpCodes.OP_SEQUENTIAL;
+    readonly left: Cause<E>;
+    readonly right: Cause<E>;
+}
+/**
+ * Constructs a new `Empty` cause.
+ *
+ * @since 1.0.0
+ * @category constructors
+ */
+export declare const empty: Cause<never>;
+/**
+ * Constructs a new `Fail` cause from the specified `error`.
+ *
+ * @since 1.0.0
+ * @category constructors
+ */
+export declare const fail: <E>(error: E) => Cause<E>;
+/**
+ * Constructs a new `Die` cause from the specified `defect`.
+ *
+ * @since 1.0.0
+ * @category constructors
+ */
+export declare const die: (defect: unknown) => Cause<never>;
+/**
+ * Constructs a new `Interrupt` cause from the specified `fiberId`.
+ *
+ * @since 1.0.0
+ * @category constructors
+ */
+export declare const interrupt: (fiberId: FiberId.FiberId) => Cause<never>;
+/**
+ * Constructs a new `Annotated` cause from the specified `annotation`.
+ *
+ * @since 1.0.0
+ * @category constructors
+ */
+export declare const annotated: <E>(cause: Cause<E>, annotation: unknown) => Cause<E>;
+/**
+ * Constructs a new `Parallel` cause from the specified `left` and `right`
+ * causes.
+ *
+ * @since 1.0.0
+ * @category constructors
+ */
+export declare const parallel: <E, E2>(left: Cause<E>, right: Cause<E2>) => Cause<E | E2>;
+/**
+ * Constructs a new `Sequential` cause from the specified pecified `left` and
+ * `right` causes.
+ *
+ * @since 1.0.0
+ * @category constructors
+ */
+export declare const sequential: <E, E2>(left: Cause<E>, right: Cause<E2>) => Cause<E | E2>;
+/**
+ * Returns `true` if the specified value is a `Cause`, `false` otherwise.
+ *
+ * @since 1.0.0
+ * @category refinements
+ */
+export declare const isCause: (u: unknown) => u is Cause<never>;
+/**
+ * Returns `true` if the specified `Cause` is an `Empty` type, `false`
+ * otherwise.
+ *
+ * @since 1.0.0
+ * @category refinements
+ */
+export declare const isEmptyType: <E>(self: Cause<E>) => self is Empty;
+/**
+ * Returns `true` if the specified `Cause` is a `Fail` type, `false`
+ * otherwise.
+ *
+ * @since 1.0.0
+ * @category refinements
+ */
+export declare const isFailType: <E>(self: Cause<E>) => self is Fail<E>;
+/**
+ * Returns `true` if the specified `Cause` is a `Die` type, `false`
+ * otherwise.
+ *
+ * @since 1.0.0
+ * @category refinements
+ */
+export declare const isDieType: <E>(self: Cause<E>) => self is Die;
+/**
+ * Returns `true` if the specified `Cause` is an `Interrupt` type, `false`
+ * otherwise.
+ *
+ * @since 1.0.0
+ * @category refinements
+ */
+export declare const isInterruptType: <E>(self: Cause<E>) => self is Interrupt;
+/**
+ * Returns `true` if the specified `Cause` is an `Annotated` type, `false`
+ * otherwise.
+ *
+ * @since 1.0.0
+ * @category refinements
+ */
+export declare const isAnnotatedType: <E>(self: Cause<E>) => self is Annotated<E>;
+/**
+ * Returns `true` if the specified `Cause` is a `Sequential` type, `false`
+ * otherwise.
+ *
+ * @since 1.0.0
+ * @category refinements
+ */
+export declare const isSequentialType: <E>(self: Cause<E>) => self is Sequential<E>;
+/**
+ * Returns `true` if the specified `Cause` is a `Parallel` type, `false`
+ * otherwise.
+ *
+ * @since 1.0.0
+ * @category refinements
+ */
+export declare const isParallelType: <E>(self: Cause<E>) => self is Parallel<E>;
+/**
+ * Returns the size of the cause, calculated as the number of individual `Cause`
+ * nodes found in the `Cause` semiring structure.
+ *
+ * @since 1.0.0
+ * @category getters
+ */
+export declare const size: <E>(self: Cause<E>) => number;
+/**
+ * Returns `true` if the specified cause is empty, `false` otherwise.
+ *
+ * @since 1.0.0
+ * @category getters
+ */
+export declare const isEmpty: <E>(self: Cause<E>) => boolean;
+/**
+ * Returns `true` if the specified cause contains a failure, `false` otherwise.
+ *
+ * @since 1.0.0
+ * @category getters
+ */
+export declare const isFailure: <E>(self: Cause<E>) => boolean;
+/**
+ * Returns `true` if the specified cause contains a defect, `false` otherwise.
+ *
+ * @since 1.0.0
+ * @category getters
+ */
+export declare const isDie: <E>(self: Cause<E>) => boolean;
+/**
+ * Returns `true` if the specified cause contains an interruption, `false`
+ * otherwise.
+ *
+ * @since 1.0.0
+ * @category getters
+ */
+export declare const isInterrupted: <E>(self: Cause<E>) => boolean;
+/**
+ * Returns `true` if the specified cause contains only interruptions (without
+ * any `Die` or `Fail` causes), `false` otherwise.
+ *
+ * @since 1.0.0
+ * @category getters
+ */
+export declare const isInterruptedOnly: <E>(self: Cause<E>) => boolean;
+/**
+ * Returns a `List` of all recoverable errors of type `E` in the specified
+ * cause.
+ *
+ * @since 1.0.0
+ * @category getters
+ */
+export declare const failures: <E>(self: Cause<E>) => Chunk.Chunk<E>;
+/**
+ * Returns a `List` of all unrecoverable defects in the specified cause.
+ *
+ * @since 1.0.0
+ * @category getters
+ */
+export declare const defects: <E>(self: Cause<E>) => Chunk.Chunk<unknown>;
+/**
+ * Returns a `HashSet` of `FiberId`s for all fibers that interrupted the fiber
+ * described by the specified cause.
+ *
+ * @since 1.0.0
+ * @category getters
+ */
+export declare const interruptors: <E>(self: Cause<E>) => HashSet.HashSet<FiberId.FiberId>;
+/**
+ * Returns the `E` associated with the first `Fail` in this `Cause`, if one
+ * exists.
+ *
+ * @since 1.0.0
+ * @category getters
+ */
+export declare const failureOption: <E>(self: Cause<E>) => Option.Option<E>;
+/**
+ * Returns the first checked error on the `Left` if available, if there are
+ * no checked errors return the rest of the `Cause` that is known to contain
+ * only `Die` or `Interrupt` causes.
+ *
+ * @since 1.0.0
+ * @category getters
+ */
+export declare const failureOrCause: <E>(self: Cause<E>) => Either.Either<E, Cause<never>>;
+/**
+ * Converts the specified `Cause<Option<E>>` to an `Option<Cause<E>>` by
+ * recursively stripping out any failures with the error `None`.
+ *
+ * @since 1.0.0
+ * @category getters
+ */
+export declare const flipCauseOption: <E>(self: Cause<Option.Option<E>>) => Option.Option<Cause<E>>;
+/**
+ * Returns the defect associated with the first `Die` in this `Cause`, if one
+ * exists.
+ *
+ * @since 1.0.0
+ * @category getters
+ */
+export declare const dieOption: <E>(self: Cause<E>) => Option.Option<unknown>;
+/**
+ * Returns the `FiberId` associated with the first `Interrupt` in the specified
+ * cause, if one exists.
+ *
+ * @since 1.0.0
+ * @category getters
+ */
+export declare const interruptOption: <E>(self: Cause<E>) => Option.Option<FiberId.FiberId>;
+/**
+ * Remove all `Fail` and `Interrupt` nodes from the specified cause, and return
+ * a cause containing only `Die` cause/finalizer defects.
+ *
+ * @since 1.0.0
+ * @category getters
+ */
+export declare const keepDefects: <E>(self: Cause<E>) => Option.Option<Cause<never>>;
+/**
+ * Linearizes the specified cause into a `HashSet` of parallel causes where each
+ * parallel cause contains a linear sequence of failures.
+ *
+ * @since 1.0.0
+ * @category getters
+ */
+export declare const linearize: <E>(self: Cause<E>) => HashSet.HashSet<Cause<E>>;
+/**
+ * Remove all `Fail` and `Interrupt` nodes from the specified cause, and return
+ * a cause containing only `Die` cause/finalizer defects.
+ *
+ * @since 1.0.0
+ * @category getters
+ */
+export declare const stripFailures: <E>(self: Cause<E>) => Cause<never>;
+/**
+ * Remove all `Die` causes that the specified partial function is defined at,
+ * returning `Some` with the remaining causes or `None` if there are no
+ * remaining causes.
+ *
+ * @since 1.0.0
+ * @category getters
+ */
+export declare const stripSomeDefects: {
+    (pf: (defect: unknown) => Option.Option<unknown>): <E>(self: Cause<E>) => Option.Option<Cause<E>>;
+    <E>(self: Cause<E>, pf: (defect: unknown) => Option.Option<unknown>): Option.Option<Cause<E>>;
+};
+/**
+ * @since 1.0.0
+ * @category mapping
+ */
+export declare const as: {
+    <E2>(error: E2): <E>(self: Cause<E>) => Cause<E2>;
+    <E, E2>(self: Cause<E>, error: E2): Cause<E2>;
+};
+/**
+ * @since 1.0.0
+ * @category mapping
+ */
+export declare const map: {
+    <E, E2>(f: (e: E) => E2): (self: Cause<E>) => Cause<E2>;
+    <E, E2>(self: Cause<E>, f: (e: E) => E2): Cause<E2>;
+};
+/**
+ * @since 1.0.0
+ * @category sequencing
+ */
+export declare const flatMap: {
+    <E, E2>(f: (e: E) => Cause<E2>): (self: Cause<E>) => Cause<E2>;
+    <E, E2>(self: Cause<E>, f: (e: E) => Cause<E2>): Cause<E2>;
+};
+/**
+ * @since 1.0.0
+ * @category sequencing
+ */
+export declare const flatten: <E>(self: Cause<Cause<E>>) => Cause<E>;
+/**
+ * Returns `true` if the `self` cause contains or is equal to `that` cause,
+ * `false` otherwise.
+ *
+ * @since 1.0.0
+ * @category elements
+ */
+export declare const contains: {
+    <E2>(that: Cause<E2>): <E>(self: Cause<E>) => boolean;
+    <E, E2>(self: Cause<E>, that: Cause<E2>): boolean;
+};
+/**
+ * Squashes a `Cause` down to a single defect, chosen to be the "most important"
+ * defect.
+ *
+ * @since 1.0.0
+ * @category destructors
+ */
+export declare const squash: <E>(self: Cause<E>) => unknown;
+/**
+ * Squashes a `Cause` down to a single defect, chosen to be the "most important"
+ * defect. If a recoverable error is found, the provided function will be used
+ * to map the error a defect, and the resulting value will be returned.
+ *
+ * @since 1.0.0
+ * @category destructors
+ */
+export declare const squashWith: {
+    <E>(f: (error: E) => unknown): (self: Cause<E>) => unknown;
+    <E>(self: Cause<E>, f: (error: E) => unknown): unknown;
+};
+/**
+ * Uses the provided partial function to search the specified cause and attempt
+ * to extract information from it.
+ *
+ * @since 1.0.0
+ * @category elements
+ */
+export declare const find: {
+    <E, Z>(pf: (cause: Cause<E>) => Option.Option<Z>): (self: Cause<E>) => Option.Option<Z>;
+    <E, Z>(self: Cause<E>, pf: (cause: Cause<E>) => Option.Option<Z>): Option.Option<Z>;
+};
+/**
+ * Filters causes which match the provided predicate out of the specified cause.
+ *
+ * @since 1.0.0
+ * @category filtering
+ */
+export declare const filter: {
+    <E>(predicate: Predicate<Cause<E>>): (self: Cause<E>) => Cause<E>;
+    <E>(self: Cause<E>, predicate: Predicate<Cause<E>>): Cause<E>;
+};
+/**
+ * Folds the specified cause into a value of type `Z`.
+ *
+ * @since 1.0.0
+ * @category folding
+ */
+export declare const match: {
+    <Z, E>(emptyCase: Z, failCase: (error: E) => Z, dieCase: (defect: unknown) => Z, interruptCase: (fiberId: FiberId.FiberId) => Z, annotatedCase: (value: Z, annotation: unknown) => Z, sequentialCase: (left: Z, right: Z) => Z, parallelCase: (left: Z, right: Z) => Z): (self: Cause<E>) => Z;
+    <Z, E>(self: Cause<E>, emptyCase: Z, failCase: (error: E) => Z, dieCase: (defect: unknown) => Z, interruptCase: (fiberId: FiberId.FiberId) => Z, annotatedCase: (value: Z, annotation: unknown) => Z, sequentialCase: (left: Z, right: Z) => Z, parallelCase: (left: Z, right: Z) => Z): Z;
+};
+/**
+ * Reduces the specified cause into a value of type `Z`, beginning with the
+ * provided `zero` value.
+ *
+ * @since 1.0.0
+ * @category folding
+ */
+export declare const reduce: {
+    <Z, E>(zero: Z, pf: (accumulator: Z, cause: Cause<E>) => Option.Option<Z>): (self: Cause<E>) => Z;
+    <Z, E>(self: Cause<E>, zero: Z, pf: (accumulator: Z, cause: Cause<E>) => Option.Option<Z>): Z;
+};
+/**
+ * Reduces the specified cause into a value of type `Z` using a `Cause.Reducer`.
+ * Also allows for accessing the provided context during reduction.
+ *
+ * @since 1.0.0
+ * @category folding
+ */
+export declare const reduceWithContext: {
+    <C, E, Z>(context: C, reducer: CauseReducer<C, E, Z>): (self: Cause<E>) => Z;
+    <C, E, Z>(self: Cause<E>, context: C, reducer: CauseReducer<C, E, Z>): Z;
+};
+/**
+ * Represents a checked exception which occurs when a `Fiber` is interrupted.
+ *
+ * @since 1.0.0
+ * @category errors
+ */
+export declare const InterruptedException: (message?: string | undefined) => InterruptedException;
+/**
+ * Returns `true` if the specified value is an `InterruptedException`, `false`
+ * otherwise.
+
+ * @since 1.0.0
+ * @category refinements
+ */
+export declare const isInterruptedException: (u: unknown) => u is InterruptedException;
+/**
+ * Represents a checked exception which occurs when an invalid argument is
+ * provided to a method.
+ *
+ * @since 1.0.0
+ * @category errors
+ */
+export declare const IllegalArgumentException: (message?: string | undefined) => IllegalArgumentException;
+/**
+ * Returns `true` if the specified value is an `IllegalArgumentException`, `false`
+ * otherwise.
+
+ * @since 1.0.0
+ * @category refinements
+ */
+export declare const isIllegalArgumentException: (u: unknown) => u is IllegalArgumentException;
+/**
+ * Represents a checked exception which occurs when an expected element was
+ * unable to be found.
+ *
+ * @since 1.0.0
+ * @category errors
+ */
+export declare const NoSuchElementException: (message?: string | undefined) => NoSuchElementException;
+/**
+  * Returns `true` if the specified value is an `IllegalArgumentException`, `false`
+  * otherwise.
+
+  * @since 1.0.0
+  * @category refinements
+  */
+export declare const isNoSuchElementException: (u: unknown) => u is NoSuchElementException;
+/**
+ * Represents a generic checked exception which occurs at runtime.
+ *
+ * @since 1.0.0
+ * @category errors
+ */
+export declare const RuntimeException: (message?: string | undefined) => RuntimeException;
+/**
+  * Returns `true` if the specified value is an `RuntimeException`, `false`
+  * otherwise.
+
+  * @since 1.0.0
+  * @category refinements
+  */
+export declare const isRuntimeException: (u: unknown) => u is RuntimeException;
+/**
+ * Returns the specified `Cause` as a pretty-printed string.
+ *
+ * @since 1.0.0
+ * @category rendering
+ */
+export declare const pretty: <E>(cause: Cause<E>) => string;
+/**
+ * Checks if an annotation is a StackAnnotation
+ *
+ * @since 1.0.0
+ * @category guards
+ */
+export declare const isStackAnnotation: (u: unknown) => u is StackAnnotation;
+/**
+ * Removes any annotation from the cause
+ *
+ * @since 1.0.0
+ * @category filtering
+ */
+export declare const unannotate: <E>(cause: Cause<E>) => Cause<E>;
+//# sourceMappingURL=Cause.d.ts.map
