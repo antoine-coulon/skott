@@ -458,6 +458,7 @@ export class Skott<T> {
     const entrypointModulePath = await pipe(
       resolveImportedModulePath(entrypoint),
       Effect.provideService(FileReaderTag, this.fileReader),
+      Effect.mapError(() => new Error(`Entrypoint "${entrypoint}" not found`)),
       Effect.runPromise
     );
 

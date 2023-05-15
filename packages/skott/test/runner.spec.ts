@@ -51,18 +51,18 @@ describe("Skott analysis runner", () => {
   test("Should be able to collect unused third-party deps from multiple packages", async () => {
     const project1FS = {
       "./apps/app1/src/feature.ts": `
-            export function feature() {}
-          `,
+        export function feature() {}
+      `,
       "./apps/app1/src/index.ts": `
-            import { feature } from "./feature.ts";
-          `,
+        import { feature } from "./feature.ts";
+      `,
       "./apps/package.json": `
-            {
-                "dependencies": {
-                    "lodash": "^4.17.21"
-                }
-            }
-           `
+        {
+          "dependencies": {
+            "lodash": "^4.17.21"
+          }
+        }
+      `
     };
 
     const project2FS = {
@@ -107,5 +107,18 @@ describe("Skott analysis runner", () => {
 
       expect(thirdParty).toEqual(expectedUnused);
     }
+  });
+
+  test("Should produce an explicit error message when the entrypoint can't be found", async () => {
+    const skott = new Skott(
+      { ...defaultConfig, entrypoint: "not-existing.ts" },
+      new InMemoryFileReader(),
+      new InMemoryFileWriter(),
+      new ModuleWalkerSelector()
+    );
+
+    expect(skott.initialize()).rejects.toThrowError(
+      `Entrypoint "not-existing.ts" not found`
+    );
   });
 });
