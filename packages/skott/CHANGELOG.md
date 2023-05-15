@@ -8,4 +8,4 @@
 
 ### Patch Changes
 
-- skott-webapp@1.0.5
+- skott-webapp@1.0.6
