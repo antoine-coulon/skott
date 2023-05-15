@@ -1,6 +1,6 @@
 export class Logger {
   log(message: string) {
-    process.stdout.write(message);
+    process.stdout.write(`\n ${message} \n`);
   }
 }
 

@@ -506,8 +506,10 @@ export class Skott<T> {
 
   public async initialize(): Promise<SkottInstance<T>> {
     if (this.config.entrypoint) {
+      this.logger.log(`Building from entrypoint: ${this.config.entrypoint}`);
       await this.buildFromEntrypoint(this.config.entrypoint);
     } else {
+      this.logger.log(`Building from root directory`);
       await this.buildFromRootDirectory();
     }
 
