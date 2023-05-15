@@ -4,6 +4,9 @@
   "description": "Automatically construct and visualize Graphs generated from your JavaScript and TypeScript project",
   "author": "Antoine Coulon",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/antoine-coulon/skott.git"
