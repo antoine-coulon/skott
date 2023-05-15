@@ -5,8 +5,8 @@
 ### Patch Changes
 
 - 99db80d: Improve tsconfig deep alias resolution for path with glob patterns
-  Produce an explicit error message when the entrypoint can not be found
-  - skott-webapp@1.0.6
+- 4f54570: Produce an explicit error message when the entrypoint can not be found
+- skott-webapp@1.0.6
 
 ## 0.21.0
 
