@@ -5,6 +5,9 @@
   "author": "Antoine Coulon",
   "main": "index.js",
   "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
   "license": "MIT",
   "files": [
     "dist",
