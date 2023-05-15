@@ -1,1 +1,0 @@
-{"version":3,"file":"Label.mjs","names":["internal","MetricLabelTypeId","make","isMetricLabel"],"sources":["../../../src/Metric/Label.ts"],"sourcesContent":[null],"mappings":"AAIA,OAAO,KAAKA,QAAQ,MAAM,kDAAkD;AAE5E;;;;AAIA,OAAO,MAAMC,iBAAiB,GAAkBD,QAAQ,CAACC,iBAAiB;AAyB1E;;;;AAIA,OAAO,MAAMC,IAAI,GAAgDF,QAAQ,CAACE,IAAI;AAE9E;;;;AAIA,OAAO,MAAMC,aAAa,GAAqCH,QAAQ,CAACG,aAAa"}

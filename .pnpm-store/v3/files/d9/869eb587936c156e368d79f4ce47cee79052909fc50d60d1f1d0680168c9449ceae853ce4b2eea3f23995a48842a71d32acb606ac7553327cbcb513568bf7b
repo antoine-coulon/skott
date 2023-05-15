@@ -1,1 +1,0 @@
-{"version":3,"file":"Symbol.mjs","names":["predicate","equivalence","isSymbol","Equivalence","symbol"],"sources":["../../src/Symbol.ts"],"sourcesContent":[null],"mappings":"AAAA;;;AAIA,OAAO,KAAKA,SAAS,MAAM,wBAAwB;AACnD,OAAO,KAAKC,WAAW,MAAM,oCAAoC;AAEjE;;;;;;;;;;;;;;AAcA,OAAO,MAAMC,QAAQ,GAAgCF,SAAS,CAACE,QAAQ;AAEvE;;;;AAIA,OAAO,MAAMC,WAAW,GAAoCF,WAAW,CAACG,MAAM"}

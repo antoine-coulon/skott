@@ -1,1 +1,0 @@
-{"version":3,"file":"Registry.mjs","names":["internal","MetricRegistryTypeId","make"],"sources":["../../../src/Metric/Registry.ts"],"sourcesContent":[null],"mappings":"AAIA,OAAO,KAAKA,QAAQ,MAAM,qDAAqD;AAM/E;;;;AAIA,OAAO,MAAMC,oBAAoB,GAAkBD,QAAQ,CAACC,oBAAoB;AA4BhF;;;;AAIA,OAAO,MAAMC,IAAI,GAAgCF,QAAQ,CAACE,IAAI"}

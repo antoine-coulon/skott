@@ -1,1 +1,0 @@
-{"version":3,"file":"SemiCoproduct.mjs","names":["getSemigroup","F","combine","coproduct","combineMany","coproductMany"],"sources":["../../../src/typeclass/SemiCoproduct.ts"],"sourcesContent":[null],"mappings":"AAAA;;;AAwBA;;;AAGA,OAAO,MAAMA,YAAY,GAA0BC,CAAmB,IACpE,OAAmD;EACjDC,OAAO,EAAED,CAAC,CAACE,SAAS;EACpBC,WAAW,EAAEH,CAAC,CAACI;CAChB,CAAC"}
