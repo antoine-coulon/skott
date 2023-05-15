@@ -867,6 +867,44 @@ describe("When traversing a TypeScript project", () => {
                 }
               });
             });
+
+            it("should deeply resolve path alias using the base directory of the tsconfig", async () => {
+              const tsConfig = {
+                compilerOptions: {
+                  baseUrl: ".",
+                  paths: {
+                    "@components/*": ["components/*"]
+                  }
+                }
+              };
+
+              mountFakeFileSystem({
+                "project/index.ts": `
+                  import * as modal from "@components/modal/cancel";
+                `,
+                "project/components/modal/cancel.ts": ``,
+                "project/tsconfig.json": JSON.stringify(tsConfig)
+              });
+
+              const { graph } =
+                await buildSkottProjectUsingInMemoryFileExplorer({
+                  includeBaseDir: false,
+                  tsConfigPath: "project/tsconfig.json"
+                });
+
+              expect(graph).to.be.deep.equal({
+                "project/index.ts": {
+                  adjacentTo: ["project/components/modal/cancel.ts"],
+                  id: "project/index.ts",
+                  body: fakeNodeBody
+                },
+                "project/components/modal/cancel.ts": {
+                  adjacentTo: [],
+                  id: "project/components/modal/cancel.ts",
+                  body: fakeNodeBody
+                }
+              });
+            });
           });
         });
       });

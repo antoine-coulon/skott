@@ -121,7 +121,11 @@ export function resolvePathAlias(
     }
   }
 
-  return baseAlias;
+  if (!baseAlias) {
+    return undefined;
+  }
+
+  return path.join(baseDir, baseAlias);
 }
 
 export function isTypeScriptRelativePathWithNoLeadingIdentifier(
