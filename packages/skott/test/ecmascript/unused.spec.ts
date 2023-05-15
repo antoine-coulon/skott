@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { InMemoryFileReader } from "../../src/filesystem/file-reader.js";
 import { InMemoryFileWriter } from "../../src/filesystem/file-writer.js";
+import { FakeLogger } from "../../src/logger.js";
 import { ModuleWalkerSelector } from "../../src/modules/walkers/common.js";
 import { defaultConfig, Skott, SkottConfig } from "../../src/skott.js";
 import {
@@ -25,7 +26,8 @@ describe("Searching for unused dependencies", () => {
         { ...defaultConfigWithThirdPartyTracking, ...config },
         new InMemoryFileReader(),
         new InMemoryFileWriter(),
-        new ModuleWalkerSelector()
+        new ModuleWalkerSelector(),
+        new FakeLogger()
       );
     }
 

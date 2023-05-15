@@ -14,6 +14,7 @@ import {
 } from "./cache/index.js";
 import { FileReader, FileReaderTag } from "./filesystem/file-reader.js";
 import { FileWriter } from "./filesystem/file-writer.js";
+import { Logger } from "./logger.js";
 import {
   DependencyResolver,
   FollowModuleDeclarationOptions,
@@ -118,7 +119,8 @@ export class Skott<T> {
     private readonly config: SkottConfig<T>,
     private readonly fileReader: FileReader,
     private readonly fileWriter: FileWriter,
-    private readonly walkerSelector: ModuleWalkerSelector
+    private readonly walkerSelector: ModuleWalkerSelector,
+    private readonly logger: Logger
   ) {
     this.#cacheHandler = new SkottCacheHandler(
       this.fileReader,
