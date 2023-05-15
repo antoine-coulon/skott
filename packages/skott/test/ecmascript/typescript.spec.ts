@@ -723,44 +723,149 @@ describe("When traversing a TypeScript project", () => {
           });
         });
 
-        describe("When resolving tsconfig.json from a different location than the cwd", () => {
-          it("should resolve path alias relatively to the tsconfig location", async () => {
-            const tsConfig = {
-              compilerOptions: {
-                baseUrl: ".",
-                paths: {
-                  "@libs/auth": ["libs/auth/index.ts"]
+        describe("When resolving path aliases using a tsconfig.json from a different location than the cwd", () => {
+          describe("When providing an entrypoint", () => {
+            it("should resolve modules with tsconfig location higher in the file tree than the entrypoint", async () => {
+              const tsConfig = {
+                compilerOptions: {
+                  baseUrl: ".",
+                  paths: {
+                    "@libs/auth": ["libs/auth/index.ts"]
+                  }
                 }
-              }
-            };
+              };
 
-            mountFakeFileSystem({
-              "project/src/index.ts": `
-                import { foo } from "@libs/auth";
-              `,
-              "project/libs/auth/index.ts": `
-                export function foo(): string {}
-              `,
-              "project/tsconfig.json": JSON.stringify(tsConfig)
+              mountFakeFileSystem({
+                "project/src/index.ts": `
+                  import { foo } from "@libs/auth";
+                `,
+                "project/libs/auth/index.ts": `
+                  export function foo(): string {}
+                `,
+                "project/tsconfig.json": JSON.stringify(tsConfig)
+              });
+
+              const { graph } =
+                await buildSkottProjectUsingInMemoryFileExplorer({
+                  entrypoint: "project/src/index.ts",
+                  includeBaseDir: false,
+                  tsConfigPath: "project/tsconfig.json"
+                });
+
+              expect(graph).to.be.deep.equal({
+                "index.ts": {
+                  adjacentTo: ["../libs/auth/index.ts"],
+                  id: "index.ts",
+                  body: fakeNodeBody
+                },
+                "../libs/auth/index.ts": {
+                  adjacentTo: [],
+                  id: "../libs/auth/index.ts",
+                  body: fakeNodeBody
+                }
+              });
             });
 
-            const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
-              entrypoint: "project/src/index.ts",
-              includeBaseDir: false,
-              tsConfigPath: "project/tsconfig.json"
-            });
+            it("should resolve modules with tsconfig at the same file tree level than the entrypoint", async () => {
+              const tsConfig = {
+                compilerOptions: {
+                  baseUrl: ".",
+                  paths: {
+                    "@libs/auth": ["libs/auth/index.ts"],
+                    "@components/*": ["components/*"]
+                  }
+                }
+              };
 
-            expect(graph).to.be.deep.equal({
-              "index.ts": {
-                adjacentTo: ["../libs/auth/index.ts"],
-                id: "index.ts",
-                body: fakeNodeBody
-              },
-              "../libs/auth/index.ts": {
-                adjacentTo: [],
-                id: "../libs/auth/index.ts",
-                body: fakeNodeBody
-              }
+              mountFakeFileSystem({
+                "project/index.ts": `
+                  import { foo } from "@libs/auth";
+                  import * as btn from "@components/button";
+                `,
+                "project/libs/auth/index.ts": `
+                  export function foo(): string {}
+                `,
+                "project/components/button.ts": ``,
+                "project/tsconfig.json": JSON.stringify(tsConfig)
+              });
+
+              const { graph } =
+                await buildSkottProjectUsingInMemoryFileExplorer({
+                  entrypoint: "project/index.ts",
+                  includeBaseDir: false,
+                  tsConfigPath: "project/tsconfig.json"
+                });
+
+              expect(graph).to.be.deep.equal({
+                "index.ts": {
+                  adjacentTo: ["libs/auth/index.ts", "components/button.ts"],
+                  id: "index.ts",
+                  body: fakeNodeBody
+                },
+                "libs/auth/index.ts": {
+                  adjacentTo: [],
+                  id: "libs/auth/index.ts",
+                  body: fakeNodeBody
+                },
+                "components/button.ts": {
+                  adjacentTo: [],
+                  id: "components/button.ts",
+                  body: fakeNodeBody
+                }
+              });
+            });
+          });
+
+          describe("When running a bulk analysis", () => {
+            it("should resolve path alias using the base directory of the tsconfig", async () => {
+              const tsConfig = {
+                compilerOptions: {
+                  baseUrl: ".",
+                  paths: {
+                    "@libs/auth": ["libs/auth/index.ts"],
+                    "@components/*": ["components/*"]
+                  }
+                }
+              };
+
+              mountFakeFileSystem({
+                "project/index.ts": `
+                  import * as btn from "@components/button";
+                  import { foo } from "@libs/auth";
+                `,
+                "project/libs/auth/index.ts": `
+                  export function foo(): string {}
+                `,
+                "project/components/button.ts": ``,
+                "project/tsconfig.json": JSON.stringify(tsConfig)
+              });
+
+              const { graph } =
+                await buildSkottProjectUsingInMemoryFileExplorer({
+                  includeBaseDir: false,
+                  tsConfigPath: "project/tsconfig.json"
+                });
+
+              expect(graph).to.be.deep.equal({
+                "project/index.ts": {
+                  adjacentTo: [
+                    "project/components/button.ts",
+                    "project/libs/auth/index.ts"
+                  ],
+                  id: "project/index.ts",
+                  body: fakeNodeBody
+                },
+                "project/libs/auth/index.ts": {
+                  adjacentTo: [],
+                  id: "project/libs/auth/index.ts",
+                  body: fakeNodeBody
+                },
+                "project/components/button.ts": {
+                  adjacentTo: [],
+                  id: "project/components/button.ts",
+                  body: fakeNodeBody
+                }
+              });
             });
           });
         });

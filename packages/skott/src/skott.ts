@@ -1,6 +1,9 @@
 import path from "node:path";
 
+import { pipe } from "@effect/data/Function";
 import * as Option from "@effect/data/Option";
+import * as Effect from "@effect/io/Effect";
+import * as Exit from "@effect/io/Exit";
 import { DiGraph, VertexDefinition } from "digraph-js";
 import difference from "lodash.difference";
 
@@ -9,7 +12,7 @@ import {
   SkottCache,
   SkottCacheHandler
 } from "./cache/index.js";
-import { FileReader } from "./filesystem/file-reader.js";
+import { FileReader, FileReaderTag } from "./filesystem/file-reader.js";
 import { FileWriter } from "./filesystem/file-writer.js";
 import {
   DependencyResolver,
@@ -257,29 +260,19 @@ export class Skott<T> {
     const baseDirectory = isPathAliasDeclaration
       ? pathAliasBaseUrl
       : path.dirname(rootPath);
-    const fullFilePathFromBaseDirectory = await resolveImportedModulePath(
-      path.join(baseDirectory, moduleDeclaration),
-      this.fileReader
+
+    const moduleResolutionExit = await pipe(
+      resolveImportedModulePath(path.join(baseDirectory, moduleDeclaration)),
+      Effect.orElse(() =>
+        resolveImportedModulePath(path.join(this.#baseDir, moduleDeclaration))
+      ),
+      Effect.provideService(FileReaderTag, this.fileReader),
+      Effect.runPromiseExit
     );
 
-    try {
-      const nextFileContentToExplore = await this.fileReader.read(
-        fullFilePathFromBaseDirectory
-      );
-
-      await this.addNode(fullFilePathFromBaseDirectory);
-      await this.linkNodes({
-        from: rootPath,
-        to: fullFilePathFromBaseDirectory
-      });
-
-      await this.collectModuleDeclarations(
-        fullFilePathFromBaseDirectory,
-        nextFileContentToExplore
-      );
-
-      isModuleSuccessfullyResolved = true;
-    } catch {}
+    if (Exit.isFailure(moduleResolutionExit)) {
+      return false;
+    }
 
     if (this.config.incremental) {
       try {
@@ -301,8 +294,31 @@ export class Skott<T> {
           restoredPath,
           nextFileContentToExplore
         );
+
+        return true;
       } catch {}
     }
+
+    try {
+      const fullFilePathFromBaseDirectory = moduleResolutionExit.value;
+
+      const nextFileContentToExplore = await this.fileReader.read(
+        fullFilePathFromBaseDirectory
+      );
+
+      await this.addNode(fullFilePathFromBaseDirectory);
+      await this.linkNodes({
+        from: rootPath,
+        to: fullFilePathFromBaseDirectory
+      });
+
+      await this.collectModuleDeclarations(
+        fullFilePathFromBaseDirectory,
+        nextFileContentToExplore
+      );
+
+      isModuleSuccessfullyResolved = true;
+    } catch {}
 
     return isModuleSuccessfullyResolved;
   }
@@ -439,9 +455,10 @@ export class Skott<T> {
   }
 
   private async buildFromEntrypoint(entrypoint: string): Promise<void> {
-    const entrypointModulePath = await resolveImportedModulePath(
-      entrypoint,
-      this.fileReader
+    const entrypointModulePath = await pipe(
+      resolveImportedModulePath(entrypoint),
+      Effect.provideService(FileReaderTag, this.fileReader),
+      Effect.runPromise
     );
 
     if (isTypeScriptModule(entrypointModulePath)) {

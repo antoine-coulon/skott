@@ -101,10 +101,9 @@ export function resolvePathAlias(
   let baseAlias = aliasLinks.get(baseAliasDirname);
 
   if (baseAlias) {
-    return resolveAliasToRelativePath(
-      moduleDeclaration,
-      baseAlias,
-      baseAliasDirname
+    return path.join(
+      baseDir,
+      resolveAliasToRelativePath(moduleDeclaration, baseAlias, baseAliasDirname)
     );
   }
 

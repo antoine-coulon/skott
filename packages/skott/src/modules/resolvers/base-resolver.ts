@@ -109,17 +109,19 @@ export function isDirSupportedByDefault(directoryName: string): boolean {
   return !defaultIgnoredDirs.has(directoryName);
 }
 
-async function isExistingModule(
-  module: string,
-  fileReader: FileReader
-): Promise<boolean> {
-  try {
-    await fileReader.read(module);
-
-    return true;
-  } catch {
-    return false;
-  }
+function isExistingModule(
+  module: string
+): Effect.Effect<FileReader, never, boolean> {
+  return pipe(
+    Effect.service(FileReaderTag),
+    Effect.flatMap((fileReader) =>
+      pipe(
+        Effect.tryPromise(() => fileReader.read(module)),
+        Effect.map(() => true)
+      )
+    ),
+    Effect.orElse(() => Effect.succeed(false))
+  );
 }
 
 /**
@@ -130,90 +132,107 @@ function resolveToModuleIfExists(moduleName: string) {
   return pipe(
     Effect.service(FileReaderTag),
     Effect.flatMap((fileReader) =>
-      Effect.tryPromise(() => fileReader.read(moduleName))
-    ),
-    Effect.map(() => moduleName)
+      pipe(
+        Effect.tryPromise(() => fileReader.read(moduleName)),
+        Effect.map(() => moduleName)
+      )
+    )
   );
 }
 
-export async function resolveImportedModulePath(
-  module: string,
-  fileReader: FileReader
-): Promise<string> {
-  const moduleExists = await isExistingModule(module, fileReader);
-  /**
-   * If the module name can directly be resolved, we have nothing to do.
-   * Note: If the module is supported and it appears that `moduleExists` is false, it
-   * might be the case where TypeScript is used with ECMAScript modules.
-   */
-  if (isFileSupportedByDefault(module) && moduleExists) {
-    return module;
-  }
+class ModuleNotFoundError {
+  readonly _tag = "ModuleNotFoundError";
+  constructor(private readonly message: string) {}
+}
 
-  const ecmaScriptModuleCombinations = {
-    /**
-     * In case of CommonJS modules, the module can be targetted through a directory
-     * import e.g: require("./lib") which will eventually resolve to "lib/index.js".
-     */
-    JS_INDEX_MODULE: path.join(module, "index.js"),
-    /**
-     * Otherwise, it might be a simple JavaScript module.
-     * Example: `require("./lib")` will resolve to `./lib.js`.
-     */
-    JS_MODULE: module.concat(".js"),
-    /**
-     * Otherwise, it might be a simple JSX module.
-     * Example: `require("./component")` will resolve to `./component.jsx`.
-     */
-    JSX_MODULE: module.concat(".jsx"),
-    /**
-     * In case of TypeScript modules, the module can be targetted through a directory
-     * import e.g: import "./lib" which will eventually resolve to "lib/index.ts".
-     */
-    TS_INDEX_MODULE: path.join(module, "index.ts"),
-    /**
-     * TypeScript file targetted, with classic TypeScript module declarations.
-     */
-    TS_MODULE: module.concat(".ts"),
-    /**
-     * Otherwise, it might be a simple TSX module.
-     * Example: `require("./component")` will resolve to `./component.tsx`.
-     */
-    TSX_MODULE: module.concat(".tsx"),
-    /**
-     * In case of TypeScript modules but when targetting ECMAScript modules,
-     * modules are suffixed with ".js" but should resolve to their corresponding
-     * ".ts" file.
-     */
-    TS_MODULE_WITH_JS_EXTENSION: module
-      .split(path.extname(module))[0]
-      .concat(".ts")
-  };
-
+export function resolveImportedModulePath(
+  module: string
+): Effect.Effect<FileReader, ModuleNotFoundError, string> {
   return pipe(
-    resolveToModuleIfExists(ecmaScriptModuleCombinations.JS_INDEX_MODULE),
-    Effect.orElse(() =>
-      resolveToModuleIfExists(ecmaScriptModuleCombinations.TS_MODULE)
-    ),
-    Effect.orElse(() =>
-      resolveToModuleIfExists(ecmaScriptModuleCombinations.TS_INDEX_MODULE)
-    ),
-    Effect.orElse(() =>
-      resolveToModuleIfExists(
-        ecmaScriptModuleCombinations.TS_MODULE_WITH_JS_EXTENSION
-      )
-    ),
-    Effect.orElse(() =>
-      resolveToModuleIfExists(ecmaScriptModuleCombinations.JS_MODULE)
-    ),
-    Effect.orElse(() =>
-      resolveToModuleIfExists(ecmaScriptModuleCombinations.TSX_MODULE)
-    ),
-    Effect.orElse(() =>
-      resolveToModuleIfExists(ecmaScriptModuleCombinations.JSX_MODULE)
-    ),
-    Effect.orElseSucceed(() => ecmaScriptModuleCombinations.JS_MODULE),
-    Effect.provideService(FileReaderTag, fileReader),
-    Effect.runPromise
+    Effect.service(FileReaderTag),
+    Effect.zipRight(isExistingModule(module)),
+    Effect.flatMap((moduleExists) => {
+      /**
+       * If the module name can directly be resolved, we have nothing to do.
+       * Note: If the module is supported and it appears that `moduleExists` is false, it
+       * might be the case where TypeScript is used with ECMAScript modules.
+       */
+      if (isFileSupportedByDefault(module) && moduleExists) {
+        return Effect.succeed(module);
+      }
+
+      const ecmaScriptModuleCombinations = {
+        /**
+         * In case of CommonJS modules, the module can be targetted through a directory
+         * import e.g: require("./lib") which will eventually resolve to "lib/index.js".
+         */
+        JS_INDEX_MODULE: path.join(module, "index.js"),
+        /**
+         * Otherwise, it might be a simple JavaScript module.
+         * Example: `require("./lib")` will resolve to `./lib.js`.
+         */
+        JS_MODULE: module.concat(".js"),
+        /**
+         * Otherwise, it might be a simple JSX module.
+         * Example: `require("./component")` will resolve to `./component.jsx`.
+         */
+        JSX_MODULE: module.concat(".jsx"),
+        /**
+         * In case of TypeScript modules, the module can be targetted through a directory
+         * import e.g: import "./lib" which will eventually resolve to "lib/index.ts".
+         */
+        TS_INDEX_MODULE: path.join(module, "index.ts"),
+        /**
+         * TypeScript file targetted, with classic TypeScript module declarations.
+         */
+        TS_MODULE: module.concat(".ts"),
+        /**
+         * Otherwise, it might be a simple TSX module.
+         * Example: `require("./component")` will resolve to `./component.tsx`.
+         */
+        TSX_MODULE: module.concat(".tsx"),
+        /**
+         * In case of TypeScript modules but when targetting ECMAScript modules,
+         * modules are suffixed with ".js" but should resolve to their corresponding
+         * ".ts" file.
+         */
+        TS_MODULE_WITH_JS_EXTENSION: module
+          .split(path.extname(module))[0]
+          .concat(".ts")
+      };
+
+      return pipe(
+        resolveToModuleIfExists(ecmaScriptModuleCombinations.JS_INDEX_MODULE),
+        Effect.orElse(() =>
+          resolveToModuleIfExists(ecmaScriptModuleCombinations.TS_MODULE)
+        ),
+        Effect.orElse(() =>
+          resolveToModuleIfExists(ecmaScriptModuleCombinations.TS_INDEX_MODULE)
+        ),
+        Effect.orElse(() =>
+          resolveToModuleIfExists(
+            ecmaScriptModuleCombinations.TS_MODULE_WITH_JS_EXTENSION
+          )
+        ),
+        Effect.orElse(() =>
+          resolveToModuleIfExists(ecmaScriptModuleCombinations.JS_MODULE)
+        ),
+        Effect.orElse(() =>
+          resolveToModuleIfExists(ecmaScriptModuleCombinations.TSX_MODULE)
+        ),
+        Effect.orElse(() =>
+          resolveToModuleIfExists(ecmaScriptModuleCombinations.JSX_MODULE)
+        ),
+        Effect.orElse(() =>
+          resolveToModuleIfExists(ecmaScriptModuleCombinations.JS_INDEX_MODULE)
+        )
+      );
+    }),
+    Effect.mapError(
+      () =>
+        new ModuleNotFoundError(
+          `Module declaration "${module}" could not be resolved`
+        )
+    )
   );
 }
