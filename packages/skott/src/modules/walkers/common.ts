@@ -1,3 +1,4 @@
+import { Logger } from "../../logger.js";
 import { isTypeScriptModule } from "../resolvers/ecmascript/resolver.js";
 
 import {
@@ -11,8 +12,10 @@ export interface ModuleWalkerResult {
 
 export interface ModuleWalker {
   walk(
+    fileName: string,
     fileContent: string,
-    config: ModuleWalkerConfig
+    config: ModuleWalkerConfig,
+    logger: Logger
   ): Promise<ModuleWalkerResult>;
 }
 

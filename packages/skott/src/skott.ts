@@ -247,11 +247,16 @@ export class Skott<T> {
     };
 
     this.logger.info(
-      `Searching module declarations from ${fileName} with ${moduleWalker.constructor.name}`
+      `Looking for ${highlight(fileName)} module declarations ${lowlight(
+        `using ${moduleWalker.constructor.name}`
+      )}`
     );
+
     const { moduleDeclarations } = await moduleWalker.walk(
+      fileName,
       fileContent,
-      moduleWalkerConfig
+      moduleWalkerConfig,
+      this.logger
     );
 
     return moduleDeclarations;

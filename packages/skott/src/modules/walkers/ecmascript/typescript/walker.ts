@@ -3,6 +3,7 @@ import * as Effect from "@effect/io/Effect";
 import { parse } from "@typescript-eslint/typescript-estree";
 import { walk as walkAST } from "estree-walker";
 
+import { Logger, highlight } from "../../../../logger.js";
 import type {
   ModuleWalker,
   ModuleWalkerConfig,
@@ -12,8 +13,10 @@ import { extractModuleDeclarations } from "../module-declaration.js";
 
 export class TypeScriptModuleWalker implements ModuleWalker {
   public async walk(
+    fileName: string,
     fileContent: string,
-    config: ModuleWalkerConfig
+    config: ModuleWalkerConfig,
+    logger: Logger
   ): Promise<ModuleWalkerResult> {
     const trackTypeOnlyDependencies = config.trackTypeOnlyDependencies;
     const moduleDeclarations = new Set<string>();
@@ -37,13 +40,18 @@ export class TypeScriptModuleWalker implements ModuleWalker {
             }
           });
         },
-        () => Effect.fail(new Error())
+        () => Effect.fail("_")
       );
     }
 
     pipe(
       processWalk(),
       Effect.orElse(() => processWalk({ jsx: false })),
+      Effect.tapError(() =>
+        Effect.sync(() =>
+          logger.failure(`${highlight(fileName)}: file could not be parsed`)
+        )
+      ),
       // eslint-disable-next-line no-sync
       Effect.runSyncExit
     );

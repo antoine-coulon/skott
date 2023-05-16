@@ -1,12 +1,23 @@
 import { walk as walkAST } from "estree-walker";
 import { parseScript } from "meriyah";
 
-import type { ModuleWalker, ModuleWalkerResult } from "../../common.js";
+import { Logger, highlight } from "../../../../logger.js";
+import type {
+  ModuleWalker,
+  ModuleWalkerConfig,
+  ModuleWalkerResult
+} from "../../common.js";
 import { extractModuleDeclarations } from "../module-declaration.js";
 
 export class JavaScriptModuleWalker implements ModuleWalker {
-  public async walk(fileContent: string): Promise<ModuleWalkerResult> {
+  public async walk(
+    fileName: string,
+    fileContent: string,
+    _: ModuleWalkerConfig,
+    logger: Logger
+  ): Promise<ModuleWalkerResult> {
     const moduleDeclarations = new Set<string>();
+
     try {
       const node = parseScript(fileContent, {
         module: true,
@@ -20,7 +31,9 @@ export class JavaScriptModuleWalker implements ModuleWalker {
           extractModuleDeclarations(node, moduleDeclarations);
         }
       });
-    } catch {}
+    } catch {
+      logger.failure(`${highlight(fileName)}: file could not be parsed`);
+    }
 
     return { moduleDeclarations };
   }
