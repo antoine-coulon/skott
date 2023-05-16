@@ -10,6 +10,7 @@ import {
 } from "../../src/cache/handler.js";
 import { InMemoryFileReader } from "../../src/filesystem/file-reader.js";
 import { InMemoryFileWriter } from "../../src/filesystem/file-writer.js";
+import { FakeLogger } from "../../src/logger.js";
 import {
   ModuleWalker,
   ModuleWalkerSelector
@@ -38,6 +39,7 @@ class NotWorkingWalkerSelector {
 const fileWriter = new InMemoryFileWriter();
 const fileReader = new InMemoryFileReader();
 const walkerSelector = new ModuleWalkerSelector();
+const logger = new FakeLogger();
 
 describe("Incremental analysis", () => {
   describe("When Skott runs an analysis for the first time", () => {
@@ -51,7 +53,8 @@ describe("Incremental analysis", () => {
         { ...config, entrypoint },
         fileReader,
         fileWriter,
-        walkerSelector
+        walkerSelector,
+        logger
       );
     }
 
@@ -294,7 +297,8 @@ describe("Incremental analysis", () => {
               { ...defaultIncrementalConfig, entrypoint: undefined },
               fileReader,
               fileWriter,
-              walkerSelector
+              walkerSelector,
+              logger
             );
 
             await skott.initialize();
@@ -325,7 +329,8 @@ describe("Incremental analysis", () => {
               { ...defaultIncrementalConfig, entrypoint: undefined },
               fileReader,
               fileWriter,
-              new NotWorkingWalkerSelector() as any
+              new NotWorkingWalkerSelector() as any,
+              logger
             );
 
             const { getStructure } =
@@ -360,7 +365,8 @@ describe("Incremental analysis", () => {
             initialConfiguration,
             fileReader,
             fileWriter,
-            walkerSelector
+            walkerSelector,
+            logger
           );
 
           await skottWithoutCache.initialize();
@@ -418,7 +424,8 @@ describe("Incremental analysis", () => {
             { ...defaultIncrementalConfig, entrypoint: undefined },
             fileReader,
             fileWriter,
-            new WalkerSelectorWithFileTracking() as any
+            new WalkerSelectorWithFileTracking() as any,
+            logger
           );
 
           const { getStructure } = await skottWithCache.initialize();
@@ -485,7 +492,8 @@ describe("Incremental analysis", () => {
               initialConfiguration,
               fileReader,
               fileWriter,
-              walkerSelector
+              walkerSelector,
+              logger
             );
 
             const { getStructure } = await skott.initialize();
@@ -524,7 +532,8 @@ describe("Incremental analysis", () => {
               initialConfiguration,
               fileReader,
               fileWriter,
-              new NotWorkingWalkerSelector() as any
+              new NotWorkingWalkerSelector() as any,
+              logger
             );
 
             const { getStructure: getStructureSecondInstance } =
@@ -573,7 +582,8 @@ describe("Incremental analysis", () => {
               initialConfig,
               fileReader,
               fileWriter,
-              walkerSelector
+              walkerSelector,
+              logger
             );
 
             const { getStructure } = await skottWithoutCache.initialize();
@@ -613,7 +623,8 @@ describe("Incremental analysis", () => {
               initialConfig,
               fileReader,
               fileWriter,
-              new NotWorkingWalkerSelector() as any
+              new NotWorkingWalkerSelector() as any,
+              logger
             );
 
             const { getStructure: getStructureRebuiltBasedOnCache } =
@@ -659,7 +670,8 @@ describe("Incremental analysis", () => {
             initialConfiguration,
             fileReader,
             fileWriter,
-            walkerSelector
+            walkerSelector,
+            logger
           );
 
           const { getStructure } = await skott.initialize();
@@ -720,7 +732,8 @@ describe("Incremental analysis", () => {
             initialConfiguration,
             fileReader,
             fileWriter,
-            new WalkerSelectorWithFileTracking() as any
+            new WalkerSelectorWithFileTracking() as any,
+            logger
           );
 
           await skottWithCache.initialize();

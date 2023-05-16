@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest";
 
 import { InMemoryFileReader } from "../../src/filesystem/file-reader.js";
 import { InMemoryFileWriter } from "../../src/filesystem/file-writer.js";
+import { FakeLogger } from "../../src/logger.js";
 import {
   DependencyResolver,
   DependencyResolverOptions
@@ -37,7 +38,8 @@ describe("When using dependency resolvers", () => {
         },
         new InMemoryFileReader(),
         new InMemoryFileWriter(),
-        new ModuleWalkerSelector()
+        new ModuleWalkerSelector(),
+        new FakeLogger()
       );
 
       const { getStructure } = await skott.initialize();
@@ -84,7 +86,8 @@ describe("When using dependency resolvers", () => {
         },
         new InMemoryFileReader(),
         new InMemoryFileWriter(),
-        new ModuleWalkerSelector()
+        new ModuleWalkerSelector(),
+        new FakeLogger()
       );
 
       const { getStructure } = await skott.initialize();
@@ -138,7 +141,8 @@ describe("When using dependency resolvers", () => {
         },
         new InMemoryFileReader(),
         new InMemoryFileWriter(),
-        new ModuleWalkerSelector()
+        new ModuleWalkerSelector(),
+        new FakeLogger()
       );
 
       const { getStructure } = await skott.initialize();
@@ -210,7 +214,8 @@ describe("When using dependency resolvers", () => {
         },
         new InMemoryFileReader(),
         new InMemoryFileWriter(),
-        new ModuleWalkerSelector()
+        new ModuleWalkerSelector(),
+        new FakeLogger()
       );
 
       const { getStructure } = await skott.initialize();

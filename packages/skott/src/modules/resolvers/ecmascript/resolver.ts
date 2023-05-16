@@ -1,6 +1,7 @@
 import { builtinModules } from "node:module";
 import path from "node:path";
 
+import { highlight } from "../../../logger.js";
 import {
   isTypeScriptPathAlias,
   isTypeScriptRelativePathWithNoLeadingIdentifier,
@@ -118,6 +119,19 @@ function collectThirdPartyModule(
   });
 }
 
+function lowlightSkipped(moduleDeclaration: string) {
+  return `Skipped ${highlight(moduleDeclaration)}`;
+}
+
+function highlightResolved(
+  moduleDeclaration: string,
+  category: string
+): string {
+  return `Resolved ${highlight(moduleDeclaration)} as a ${highlight(
+    category
+  )} module`;
+}
+
 export class EcmaScriptDependencyResolver implements DependencyResolver {
   async resolve({
     moduleDeclaration,
@@ -126,16 +140,23 @@ export class EcmaScriptDependencyResolver implements DependencyResolver {
     rawNodePath,
     resolvedNodePath,
     workspaceConfiguration,
+    logger,
     followModuleDeclaration
   }: DependencyResolverOptions): Promise<DependencyResolverControlFlow> {
     if (isBinaryModule(moduleDeclaration) || isJSONModule(moduleDeclaration)) {
+      logger.info(lowlightSkipped(moduleDeclaration));
+
       return continueResolution();
     }
 
     if (isBuiltinModule(moduleDeclaration)) {
       if (!config.dependencyTracking.builtin) {
+        logger.info(lowlightSkipped(moduleDeclaration));
+
         return continueResolution();
       }
+
+      logger.success(highlightResolved(moduleDeclaration, "builtin"));
 
       projectGraph.mergeVertexBody(resolvedNodePath, (body) => {
         body.builtinDependencies =
@@ -148,11 +169,19 @@ export class EcmaScriptDependencyResolver implements DependencyResolver {
       );
 
       if (resolvedModulePath) {
+        logger.success(
+          highlightResolved(moduleDeclaration, "TypeScript path alias")
+        );
+
         await followModuleDeclaration({
           moduleDeclaration: resolvedModulePath,
           rootPath: resolvedNodePath,
           isPathAliasDeclaration: true
         });
+      } else {
+        logger.failure(
+          `${highlight(moduleDeclaration)} alias could not be resolved`
+        );
       }
     } else if (
       isTypeScriptRelativePathWithNoLeadingIdentifier(
@@ -176,8 +205,12 @@ export class EcmaScriptDependencyResolver implements DependencyResolver {
         isThirdPartyModule(moduleDeclaration, kExpectedModuleExtensions)
       ) {
         if (!config.dependencyTracking.thirdParty) {
+          logger.info(lowlightSkipped(moduleDeclaration));
+
           return continueResolution();
         }
+
+        logger.success(highlightResolved(moduleDeclaration, "third-party"));
 
         collectThirdPartyModule(
           moduleDeclaration,
@@ -189,8 +222,12 @@ export class EcmaScriptDependencyResolver implements DependencyResolver {
       isThirdPartyModule(moduleDeclaration, kExpectedModuleExtensions)
     ) {
       if (!config.dependencyTracking.thirdParty) {
+        logger.info(lowlightSkipped(moduleDeclaration));
+
         return continueResolution();
       }
+
+      logger.success(highlightResolved(moduleDeclaration, "third-party"));
 
       collectThirdPartyModule(
         moduleDeclaration,
@@ -198,6 +235,8 @@ export class EcmaScriptDependencyResolver implements DependencyResolver {
         projectGraph
       );
     } else {
+      logger.success(highlightResolved(moduleDeclaration, "file"));
+
       await followModuleDeclaration({
         rootPath: rawNodePath,
         moduleDeclaration

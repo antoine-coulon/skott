@@ -7,6 +7,7 @@ import { DiGraph } from "digraph-js";
 import * as D from "io-ts/lib/Decoder.js";
 
 import { FileReader, FileReaderTag } from "../../filesystem/file-reader.js";
+import { Logger, LoggerTag, highlight } from "../../logger.js";
 import type {
   SkottConfig,
   SkottNode,
@@ -33,6 +34,7 @@ export interface DependencyResolverOptions<T = unknown> {
   rawNodePath: string;
   resolvedNodePath: string;
   workspaceConfiguration: WorkspaceConfiguration;
+  logger: Logger;
   followModuleDeclaration: (
     args: FollowModuleDeclarationOptions
   ) => Promise<boolean>;
@@ -131,9 +133,20 @@ function isExistingModule(
 function resolveToModuleIfExists(moduleName: string) {
   return pipe(
     Effect.service(FileReaderTag),
-    Effect.flatMap((fileReader) =>
+    Effect.zip(Effect.service(LoggerTag)),
+    Effect.flatMap(([fileReader, logger]) =>
       pipe(
         Effect.tryPromise(() => fileReader.read(moduleName)),
+        Effect.tapBoth(
+          () =>
+            Effect.sync(() => {
+              logger.failure(`Failed to resolve ${highlight(moduleName)}`);
+            }),
+          () =>
+            Effect.sync(() => {
+              logger.success(`Successfully resolved ${highlight(moduleName)}`);
+            })
+        ),
         Effect.map(() => moduleName)
       )
     )
@@ -147,18 +160,30 @@ class ModuleNotFoundError {
 
 export function resolveImportedModulePath(
   module: string
-): Effect.Effect<FileReader, ModuleNotFoundError, string> {
+): Effect.Effect<FileReader | Logger, ModuleNotFoundError, string> {
   return pipe(
-    Effect.service(FileReaderTag),
-    Effect.zipRight(isExistingModule(module)),
-    Effect.flatMap((moduleExists) => {
+    Effect.service(LoggerTag),
+    Effect.tap((logger) =>
+      Effect.sync(() =>
+        logger.info(`Start resolution for ${highlight(module)}`)
+      )
+    ),
+    Effect.zip(isExistingModule(module)),
+    Effect.flatMap(([logger, moduleExists]) => {
       /**
        * If the module name can directly be resolved, we have nothing to do.
        * Note: If the module is supported and it appears that `moduleExists` is false, it
        * might be the case where TypeScript is used with ECMAScript modules.
        */
       if (isFileSupportedByDefault(module) && moduleExists) {
-        return Effect.succeed(module);
+        return pipe(
+          Effect.succeed(module),
+          Effect.tap((module) =>
+            Effect.sync(() =>
+              logger.success(`Succesfully resolved ${highlight(module)}`)
+            )
+          )
+        );
       }
 
       const ecmaScriptModuleCombinations = {

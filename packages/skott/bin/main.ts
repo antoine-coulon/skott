@@ -111,20 +111,21 @@ function makeCircularDependenciesUI(
 
 type CliOptions = {
   circularMaxDepth: number;
+  cwd: string;
+  displayMode: string;
+  exitCodeOnCircularDependencies: number;
+  fileExtensions: string;
   includeBaseDir: boolean;
   incremental: boolean;
-  displayMode: string;
-  staticFile: string;
-  exitCodeOnCircularDependencies: number;
+  manifest: string;
   showCircularDependencies: boolean;
   showUnusedDependencies: boolean;
-  trackThirdPartyDependencies: boolean;
+  staticFile: string;
   trackBuiltinDependencies: boolean;
+  trackThirdPartyDependencies: boolean;
   trackTypeOnlyDependencies: boolean;
-  fileExtensions: string;
   tsconfig: string;
-  manifest: string;
-  cwd: string;
+  verbose: true;
 };
 
 export async function displaySkott(
@@ -171,7 +172,12 @@ export async function displaySkott(
     );
   }
 
-  const spinner = ora(`Initializing ${kleur.blue().bold("Skott")}`).start();
+  let spinner;
+
+  if (!options.verbose) {
+    spinner = ora(`Initializing ${kleur.blue().bold("Skott")}`).start();
+  }
+
   const start = performance.now();
 
   const dependencyTracking = {
@@ -192,21 +198,25 @@ export async function displaySkott(
     tsConfigPath: options.tsconfig,
     manifestPath: options.manifest,
     dependencyResolvers: [new EcmaScriptDependencyResolver()],
-    cwd: options.cwd
+    cwd: options.cwd,
+    verbose: options.verbose
   });
 
   const timeTook = `${(performance.now() - start).toFixed(3)}ms`;
-  spinner.text = `Finished Skott initialization (${kleur
-    .magenta()
-    .bold(timeTook)})`;
-  spinner.color = "green";
+
+  if (spinner) {
+    spinner.text = `Finished Skott initialization (${kleur
+      .magenta()
+      .bold(timeTook)})`;
+    spinner.color = "green";
+  }
 
   const skottStructure = skottInstance.getStructure();
   const { graph, files } = skottStructure;
   const filesWord = files.length > 1 ? "files" : "file";
   const timeTookStructure = `${(performance.now() - start).toFixed(3)}ms`;
 
-  spinner.stop();
+  spinner?.stop();
   console.log(
     `\n Processed ${kleur.bold().green(files.length)} ${filesWord} (${kleur
       .magenta()

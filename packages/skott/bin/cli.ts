@@ -117,6 +117,8 @@ const cli = sade("skott [entrypoint]", true)
     false
   )
 
+  .option("-v, --verbose", "Enable verbose mode. Display all the logs", false)
+
   .option(
     "-w, --cwd",
     "Define the base working directory to use for the analysis. Defaults to the current working directory.",

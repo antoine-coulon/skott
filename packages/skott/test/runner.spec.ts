@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { InMemoryFileReader } from "../src/filesystem/file-reader.js";
 import { InMemoryFileWriter } from "../src/filesystem/file-writer.js";
+import { FakeLogger } from "../src/logger.js";
 import { ModuleWalkerSelector } from "../src/modules/walkers/common.js";
 import { defaultConfig, Skott } from "../src/skott.js";
 
@@ -27,7 +28,8 @@ describe("Skott analysis runner", () => {
       defaultConfig,
       new InMemoryFileReader({ cwd: "./apps" }),
       new InMemoryFileWriter(),
-      new ModuleWalkerSelector()
+      new ModuleWalkerSelector(),
+      new FakeLogger()
     );
 
     const { graph } = await skott
@@ -96,7 +98,8 @@ describe("Skott analysis runner", () => {
         defaultConfig,
         new InMemoryFileReader({ cwd }),
         new InMemoryFileWriter(),
-        new ModuleWalkerSelector()
+        new ModuleWalkerSelector(),
+        new FakeLogger()
       );
 
       const { thirdParty } = await skott
@@ -114,7 +117,8 @@ describe("Skott analysis runner", () => {
       { ...defaultConfig, entrypoint: "not-existing.ts" },
       new InMemoryFileReader(),
       new InMemoryFileWriter(),
-      new ModuleWalkerSelector()
+      new ModuleWalkerSelector(),
+      new FakeLogger()
     );
 
     expect(skott.initialize()).rejects.toThrowError(

@@ -4,6 +4,7 @@ import JSON5 from "json5";
 import type { CompilerOptions } from "typescript";
 
 import type { FileReader } from "../../../../filesystem/file-reader.js";
+import { Logger } from "../../../../logger.js";
 
 const aliasLinks = new Map<string, string>();
 
@@ -18,9 +19,12 @@ interface SupportedTSConfig {
 
 export async function buildPathAliases(
   fileReader: FileReader,
-  tsConfigPath: string
+  tsConfigPath: string,
+  logger: Logger
 ): Promise<TSConfig> {
   try {
+    logger.info(`Reading from tsconfig: ${tsConfigPath}`);
+
     const baseTsConfig = await fileReader.read(
       path.join(fileReader.getCurrentWorkingDir(), tsConfigPath)
     );
@@ -31,6 +35,8 @@ export async function buildPathAliases(
       tsConfigJson.compilerOptions?.paths ?? {};
 
     if (paths) {
+      logger.info(`Extracting path aliases from tsconfig: ${tsConfigPath}`);
+
       for (const [alias, aliasedPath] of Object.entries(paths)) {
         /**
          * When the path alias is like "foo/*": ["foo/lib/*"], we must be sure
@@ -51,13 +57,17 @@ export async function buildPathAliases(
     // path aliases elsewhere.
     const extendedTsConfigPath = tsConfigJson.extends;
     if (extendedTsConfigPath) {
-      await buildPathAliases(fileReader, extendedTsConfigPath);
+      await buildPathAliases(fileReader, extendedTsConfigPath, logger);
     }
 
     return {
       baseUrl: tsConfigJson.compilerOptions?.baseUrl
     };
-  } catch {
+  } catch (exception: any) {
+    logger.failure(
+      `An exception occured reading from tsconfig: ${tsConfigPath}. Reason ${exception.message}}`
+    );
+
     return {};
   }
 }

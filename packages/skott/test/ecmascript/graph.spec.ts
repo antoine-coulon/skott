@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { FileReader } from "../../src/filesystem/file-reader.js";
 import { InMemoryFileWriter } from "../../src/filesystem/file-writer.js";
+import { FakeLogger } from "../../src/logger.js";
 import { EcmaScriptDependencyResolver } from "../../src/modules/resolvers/ecmascript/resolver.js";
 import { ModuleWalkerSelector } from "../../src/modules/walkers/common.js";
 import { Skott, SkottStructure } from "../../src/skott.js";
@@ -68,7 +69,8 @@ async function makeSkott(
     },
     new InMemoryFileReaderWithFakeStats(),
     new InMemoryFileWriter(),
-    new ModuleWalkerSelector()
+    new ModuleWalkerSelector(),
+    new FakeLogger()
   );
   const skottInstance = await skott.initialize();
 
@@ -134,7 +136,8 @@ describe("When building the project structure independently of JavaScript or Typ
         },
         new InMemoryFileReaderWithFakeStats(),
         new InMemoryFileWriter(),
-        new ModuleWalkerSelector()
+        new ModuleWalkerSelector(),
+        new FakeLogger()
       );
 
       const skottInstance = await skott.initialize();

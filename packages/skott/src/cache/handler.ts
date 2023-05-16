@@ -2,6 +2,7 @@ import path from "node:path";
 
 import type { FileReader } from "../filesystem/file-reader.js";
 import type { FileWriter } from "../filesystem/file-writer.js";
+import type { Logger } from "../logger.js";
 import type { SkottConfig, SkottNode, SkottStructure } from "../skott.js";
 
 import { createNodeHash, isConfigurationAffected } from "./affected.js";
@@ -33,10 +34,12 @@ export const kSkottCacheFileName = path.join(".skott", "cache.json");
 
 function readSkottCache<
   T extends Record<string, SkottCachedNode<T>> & { configuration: string }
->(readFile: () => string): T {
+>(logger: Logger, readFile: () => string): T {
   try {
     return JSON.parse(readFile());
   } catch {
+    logger.failure("(cache) could not read cache file");
+
     return {} as T;
   }
 }
@@ -56,13 +59,15 @@ export class SkottCacheHandler<T> {
   constructor(
     private readonly fileReader: FileReader,
     private readonly fileWriter: FileWriter,
-    private readonly config: SkottConfig<T>
+    private readonly config: SkottConfig<T>,
+    private readonly logger: Logger
   ) {
     if (!this.config.incremental) {
       return;
     }
 
     try {
+      this.logger.info("(cache) hashing current configuration");
       this.#currentConfigHash = createNodeHash(JSON.stringify(this.config));
       this.#cache = this.createCache();
     } catch {}
@@ -73,7 +78,13 @@ export class SkottCacheHandler<T> {
   }
 
   private createCache(): SkottCache<T> {
-    const cache = readSkottCache(() =>
+    this.logger.info(
+      `(cache) reading from cache ${
+        (this.fileReader.getCurrentWorkingDir(), kSkottCacheFileName)
+      }`
+    );
+
+    const cache = readSkottCache(this.logger, () =>
       // eslint-disable-next-line no-sync
       this.fileReader.readSync(
         path.join(this.fileReader.getCurrentWorkingDir(), kSkottCacheFileName)
@@ -81,11 +92,17 @@ export class SkottCacheHandler<T> {
     );
 
     if (isConfigurationAffected(this.#currentConfigHash, cache.configuration)) {
+      this.logger.info("(cache) configuration changed, creating new cache");
+
       return {
         configurationHash: this.#currentConfigHash,
         sourceFiles: new Map()
       };
     }
+
+    this.logger.info(
+      "(cache) configuration unchanged, restoring source files from cache"
+    );
 
     return {
       configurationHash: cache.configuration,
@@ -123,12 +140,14 @@ export class SkottCacheHandler<T> {
   }
 
   public addSourceFile(fileId: string, fileContent: string): void {
+    this.logger.info(`(cache) creating hash for ${fileId}`);
     const hashedContent = createNodeHash(fileContent);
     const currentlyCachedNode = this.#cache.sourceFiles.get(fileId);
     const cacheNodeValue = currentlyCachedNode
       ? currentlyCachedNode.value
       : createInitialSkottNodeValue(fileId);
 
+    this.logger.info(`(cache) saving ${fileId} with hash ${hashedContent}`);
     this.#nextCache.sourceFiles.set(fileId, {
       hash: hashedContent,
       value: cacheNodeValue
@@ -143,6 +162,8 @@ export class SkottCacheHandler<T> {
         SkottNode<T>["id"],
         SkottCachedNode<T>
       > = {};
+
+      const endInfo = this.logger.startInfo(`(cache) saving graph to cache`);
 
       for (const [nodeId, nodeValue] of Object.entries(latestComputedGraph)) {
         const currentNode = this.#nextCache.sourceFiles.get(nodeId);
@@ -163,10 +184,16 @@ export class SkottCacheHandler<T> {
         })
       );
 
+      endInfo(`(cache) cache successfully saved`);
+
       this.#cache = {
         configurationHash: this.#currentConfigHash,
         sourceFiles: new Map(Object.entries(graphWithLatestHashes))
       };
-    } catch {}
+    } catch (error: any) {
+      this.logger.failure(
+        `(cache) something went wrong while saving cache. Reason: ${error.message}`
+      );
+    }
   }
 }
