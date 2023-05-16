@@ -6,6 +6,8 @@ on:
 env:
   CI: true
   PNPM_CACHE_FOLDER: .pnpm-store
+  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
 jobs:
   version:
     timeout-minutes: 15
@@ -15,17 +17,22 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
       - name: Setup node.js
         uses: actions/setup-node@v3
         with:
           node-version: 16
+
       - name: Install pnpm
         run: npm i pnpm@latest -g
+
       - name: Setup pnpm config
         run: pnpm config set store-dir $PNPM_CACHE_FOLDER
+
       - name: Install dependencies
         run: pnpm install 
-      - name: Create Pull Request to update versions
+
+      - name: Update and publish versions
         uses: changesets/action@v1
         with:
           version: pnpm ci:version
@@ -34,4 +41,3 @@ jobs:
           publish: pnpm ci:publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
