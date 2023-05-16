@@ -198,7 +198,8 @@ export async function displaySkott(
     tsConfigPath: options.tsconfig,
     manifestPath: options.manifest,
     dependencyResolvers: [new EcmaScriptDependencyResolver()],
-    cwd: options.cwd
+    cwd: options.cwd,
+    verbose: options.verbose
   });
 
   const timeTook = `${(performance.now() - start).toFixed(3)}ms`;

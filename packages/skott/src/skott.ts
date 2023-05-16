@@ -47,17 +47,17 @@ export type SkottNode<T = unknown> = VertexDefinition<SkottNodeBody & T>;
 export interface SkottConfig<T> {
   entrypoint?: string;
   circularMaxDepth: number;
-  includeBaseDir: boolean;
-  incremental: boolean;
+  dependencyResolvers: DependencyResolver<T>[];
   dependencyTracking: {
     thirdParty: boolean;
     builtin: boolean;
     typeOnly: boolean;
   };
   fileExtensions: string[];
-  tsConfigPath: string;
+  includeBaseDir: boolean;
+  incremental: boolean;
   manifestPath: string;
-  dependencyResolvers: DependencyResolver<T>[];
+  tsConfigPath: string;
 }
 
 export interface SkottStructure<T = unknown> {
@@ -88,18 +88,18 @@ export interface SkottInstance<T = unknown> {
 
 export const defaultConfig = {
   entrypoint: "",
-  includeBaseDir: false,
-  incremental: false,
   circularMaxDepth: Number.POSITIVE_INFINITY,
+  dependencyResolvers: [new EcmaScriptDependencyResolver()],
   dependencyTracking: {
     thirdParty: false,
     builtin: false,
     typeOnly: true
   },
   fileExtensions: [...kExpectedModuleExtensions],
-  tsConfigPath: "tsconfig.json",
+  includeBaseDir: false,
+  incremental: false,
   manifestPath: "package.json",
-  dependencyResolvers: [new EcmaScriptDependencyResolver()]
+  tsConfigPath: "tsconfig.json"
 };
 
 export interface WorkspaceConfiguration {
