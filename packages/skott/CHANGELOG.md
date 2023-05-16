@@ -1,5 +1,15 @@
 # skott
 
+## 0.22.0
+
+### Minor Changes
+
+- 4b22b26: Provide a verbose flag to display internal logs including caching, module resolution, module parsing
+
+### Patch Changes
+
+- skott-webapp@1.0.6
+
 ## 0.21.1
 
 ### Patch Changes
