@@ -252,12 +252,12 @@ export class Skott<T> {
       )}`
     );
 
-    const { moduleDeclarations } = await moduleWalker.walk(
+    const { moduleDeclarations } = await moduleWalker.walk({
       fileName,
       fileContent,
-      moduleWalkerConfig,
-      this.logger
-    );
+      config: moduleWalkerConfig,
+      logger: this.logger
+    });
 
     return moduleDeclarations;
   }

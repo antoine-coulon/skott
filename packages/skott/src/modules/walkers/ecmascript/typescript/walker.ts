@@ -3,21 +3,21 @@ import * as Effect from "@effect/io/Effect";
 import { parse } from "@typescript-eslint/typescript-estree";
 import { walk as walkAST } from "estree-walker";
 
-import { Logger, highlight } from "../../../../logger.js";
+import { highlight } from "../../../../logger.js";
 import type {
   ModuleWalker,
-  ModuleWalkerConfig,
-  ModuleWalkerResult
+  ModuleWalkerResult,
+  WalkerOptions
 } from "../../common.js";
 import { extractModuleDeclarations } from "../module-declaration.js";
 
 export class TypeScriptModuleWalker implements ModuleWalker {
-  public async walk(
-    fileName: string,
-    fileContent: string,
-    config: ModuleWalkerConfig,
-    logger: Logger
-  ): Promise<ModuleWalkerResult> {
+  public async walk({
+    fileContent,
+    fileName,
+    config,
+    logger
+  }: WalkerOptions): Promise<ModuleWalkerResult> {
     const trackTypeOnlyDependencies = config.trackTypeOnlyDependencies;
     const moduleDeclarations = new Set<string>();
 

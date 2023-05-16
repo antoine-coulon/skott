@@ -10,13 +10,15 @@ export interface ModuleWalkerResult {
   moduleDeclarations: Set<string>;
 }
 
+export interface WalkerOptions {
+  fileName: string;
+  fileContent: string;
+  config: ModuleWalkerConfig;
+  logger: Logger;
+}
+
 export interface ModuleWalker {
-  walk(
-    fileName: string,
-    fileContent: string,
-    config: ModuleWalkerConfig,
-    logger: Logger
-  ): Promise<ModuleWalkerResult>;
+  walk(options: WalkerOptions): Promise<ModuleWalkerResult>;
 }
 
 export type ModuleWalkerConfig = {

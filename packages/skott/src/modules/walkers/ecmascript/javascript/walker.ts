@@ -1,21 +1,20 @@
 import { walk as walkAST } from "estree-walker";
 import { parseScript } from "meriyah";
 
-import { Logger, highlight } from "../../../../logger.js";
+import { highlight } from "../../../../logger.js";
 import type {
   ModuleWalker,
-  ModuleWalkerConfig,
-  ModuleWalkerResult
+  ModuleWalkerResult,
+  WalkerOptions
 } from "../../common.js";
 import { extractModuleDeclarations } from "../module-declaration.js";
 
 export class JavaScriptModuleWalker implements ModuleWalker {
-  public async walk(
-    fileName: string,
-    fileContent: string,
-    _: ModuleWalkerConfig,
-    logger: Logger
-  ): Promise<ModuleWalkerResult> {
+  public async walk({
+    fileName,
+    fileContent,
+    logger
+  }: WalkerOptions): Promise<ModuleWalkerResult> {
     const moduleDeclarations = new Set<string>();
 
     try {
