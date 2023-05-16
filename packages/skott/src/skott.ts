@@ -14,7 +14,7 @@ import {
 } from "./cache/index.js";
 import { FileReader, FileReaderTag } from "./filesystem/file-reader.js";
 import { FileWriter } from "./filesystem/file-writer.js";
-import { Logger } from "./logger.js";
+import { highlight, LoggerTag, lowlight, SkottLogger } from "./logger.js";
 import {
   DependencyResolver,
   FollowModuleDeclarationOptions,
@@ -120,12 +120,13 @@ export class Skott<T> {
     private readonly fileReader: FileReader,
     private readonly fileWriter: FileWriter,
     private readonly walkerSelector: ModuleWalkerSelector,
-    private readonly logger: Logger
+    private readonly logger: SkottLogger
   ) {
     this.#cacheHandler = new SkottCacheHandler(
       this.fileReader,
       this.fileWriter,
-      this.config
+      this.config,
+      this.logger
     );
   }
 
@@ -228,6 +229,10 @@ export class Skott<T> {
       const cachedNode = this.#cacheHandler.get(this.resolveNodePath(fileName));
 
       if (cachedNode && !isFileAffected(fileContent, cachedNode.hash)) {
+        this.logger.info(
+          `Restoring module declarations from unaffected ${fileName}`
+        );
+
         return this.#cacheHandler.restoreModuleDeclarations(
           cachedNode,
           this.#baseDir
@@ -240,6 +245,10 @@ export class Skott<T> {
     const moduleWalkerConfig = {
       trackTypeOnlyDependencies: this.config.dependencyTracking.typeOnly
     };
+
+    this.logger.info(
+      `Searching module declarations from ${fileName} with ${moduleWalker.constructor.name}`
+    );
     const { moduleDeclarations } = await moduleWalker.walk(
       fileContent,
       moduleWalkerConfig
@@ -269,6 +278,7 @@ export class Skott<T> {
         resolveImportedModulePath(path.join(this.#baseDir, moduleDeclaration))
       ),
       Effect.provideService(FileReaderTag, this.fileReader),
+      Effect.provideService(LoggerTag, this.logger),
       Effect.runPromiseExit
     );
 
@@ -355,6 +365,12 @@ export class Skott<T> {
 
     for (const moduleDeclaration of moduleDeclarations.values()) {
       for (const resolver of this.config.dependencyResolvers) {
+        this.logger.info(
+          `Resolving ${highlight(moduleDeclaration)} ${lowlight(
+            `using ${resolver.constructor.name}`
+          )}`
+        );
+
         const result = await resolver.resolve({
           moduleDeclaration,
           projectGraph: this.#projectGraph,
@@ -362,6 +378,7 @@ export class Skott<T> {
           rawNodePath: rootPath,
           resolvedNodePath,
           workspaceConfiguration: this.#workspaceConfiguration,
+          logger: this.logger,
           followModuleDeclaration: this.followModuleDeclaration.bind(this)
         });
 
@@ -460,14 +477,20 @@ export class Skott<T> {
     const entrypointModulePath = await pipe(
       resolveImportedModulePath(entrypoint),
       Effect.provideService(FileReaderTag, this.fileReader),
+      Effect.provideService(LoggerTag, this.logger),
       Effect.mapError(() => new Error(`Entrypoint "${entrypoint}" not found`)),
+      Effect.tapBoth(
+        ({ message }) => Effect.sync(() => this.logger.failure(message)),
+        () => Effect.sync(() => this.logger.success(`${entrypoint} found.`))
+      ),
       Effect.runPromise
     );
 
     if (isTypeScriptModule(entrypointModulePath)) {
       const rootTSConfig = await buildPathAliases(
         this.fileReader,
-        this.config.tsConfigPath
+        this.config.tsConfigPath,
+        this.logger
       );
       this.#workspaceConfiguration.typescript = rootTSConfig;
     }
@@ -485,7 +508,8 @@ export class Skott<T> {
   private async buildFromRootDirectory(): Promise<void> {
     const rootTSConfig = await buildPathAliases(
       this.fileReader,
-      this.config.tsConfigPath
+      this.config.tsConfigPath,
+      this.logger
     );
     this.#workspaceConfiguration.typescript = rootTSConfig;
 
@@ -506,10 +530,10 @@ export class Skott<T> {
 
   public async initialize(): Promise<SkottInstance<T>> {
     if (this.config.entrypoint) {
-      this.logger.log(`Building from entrypoint: ${this.config.entrypoint}`);
+      this.logger.info(`Building from entrypoint: ${this.config.entrypoint}`);
       await this.buildFromEntrypoint(this.config.entrypoint);
     } else {
-      this.logger.log(`Building from root directory`);
+      this.logger.info(`Building from root directory`);
       await this.buildFromRootDirectory();
     }
 
