@@ -41,7 +41,17 @@
 
 > **Note**
 >
-> **skott** can either build the project graph using an entrypoint file or build it starting from the current root directory and recursively traverse all directories/folders. Currently, supported files are **.js, .jsx, .cjs, .mjs, .ts, .tsx**. Some directories will be ignored by default, please check [the code](https://github.com/antoine-coulon/skott/blob/56fd0b3347ba5113be8d70bc07d09a4065e0b124/packages/skott/src/modules/walkers/ecmascript/module-resolver.ts#L93) to see more about that. 
+> **skott** can either build the project graph using an entrypoint file or build it starting from the current root directory and recursively traverse all directories/folders. Currently, supported files are **.js, .jsx, .cjs, .mjs, .ts, .tsx**. In addition to `.gitignore`-d files, some directories will be ignored by default, please check [the code](https://github.com/antoine-coulon/skott/blob/56fd0b3347ba5113be8d70bc07d09a4065e0b124/packages/skott/src/modules/walkers/ecmascript/module-resolver.ts#L93) to see more about that. 
+
+## Why you should use skott or an equivalent project
+
+The whole purpose of Skott is to build a graph from your project source code and offer many features relying on that generated graph.
+
+Overall, a generated project graph in software engineering acts as a **powerful tool that enhances code comprehension, project management, code maintenance and refactoring, and collaboration**. It provides a holistic view of the project's structure, dependencies, and relationships, enabling developers to make informed decisions and streamline their development process.
+
+Moreover, Skott aims to provide a comprehensive visual representation of the project's structure, dependencies, and relationships between different components. This visual overview **allows developers to better understand the overall architecture and organization of the codebase, making it easier to navigate and identify potential areas of improvement or optimization**. 
+
+In the essence the main goal of Skott is to **help developers understand the codebase's structure and to enable more effective refactoring, reducing code duplication, getting rid of circular dependencies and improving overall code quality**.
 
 ## Why you should care about circular dependencies and dead code
 
