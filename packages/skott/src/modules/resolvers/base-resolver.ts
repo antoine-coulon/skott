@@ -95,6 +95,10 @@ export function isFileSupportedByDefault(fileName: string): boolean {
   );
 }
 
+export function isManifestFile(fileName: string): boolean {
+  return fileName.endsWith("package.json");
+}
+
 export const defaultIgnoredDirs = new Set([
   "node_modules",
   "dist",

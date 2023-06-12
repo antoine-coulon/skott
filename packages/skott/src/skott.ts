@@ -18,6 +18,7 @@ import { highlight, LoggerTag, lowlight, SkottLogger } from "./logger.js";
 import {
   DependencyResolver,
   FollowModuleDeclarationOptions,
+  isManifestFile,
   kExpectedModuleExtensions,
   resolveImportedModulePath
 } from "./modules/resolvers/base-resolver.js";
@@ -75,8 +76,16 @@ export interface ImplicitUnusedDependenciesOptions {
   };
 }
 
+interface SkottWorkspace {
+  [workspaceProjectName: string]: Record<
+    "dependencies" | "devDependencies" | "peerDependencies",
+    Record<string, string>
+  >;
+}
+
 export interface SkottInstance<T = unknown> {
   getStructure: () => SkottStructure<T>;
+  getWorkspace: () => SkottWorkspace;
   findLeaves: () => string[];
   findCircularDependencies: () => string[][];
   findUnusedDependencies: (
@@ -104,6 +113,7 @@ export const defaultConfig = {
 
 export interface WorkspaceConfiguration {
   typescript: TSConfig;
+  manifests: SkottWorkspace;
 }
 
 export class Skott<T> {
@@ -112,7 +122,8 @@ export class Skott<T> {
   #visitedNodes = new Set<string>();
   #baseDir = ".";
   #workspaceConfiguration: WorkspaceConfiguration = {
-    typescript: {}
+    typescript: {},
+    manifests: {}
   };
 
   constructor(
@@ -510,6 +521,34 @@ export class Skott<T> {
     await this.collectModuleDeclarations(entrypointModulePath, rootFileContent);
   }
 
+  private extractInformationFromManifest(
+    manifestContent: string,
+    rootFile: string
+  ) {
+    try {
+      const manifestParsed = JSON.parse(manifestContent);
+
+      if (manifestParsed.name) {
+        this.logger.info(
+          `Found ${manifestParsed.name} manifest file at: ${rootFile}`
+        );
+        this.#workspaceConfiguration.manifests[manifestParsed.name] = {
+          dependencies: manifestParsed.dependencies ?? {},
+          devDependencies: manifestParsed.devDependencies ?? {},
+          peerDependencies: manifestParsed.peerDependencies ?? {}
+        };
+      } else {
+        this.logger.failure(
+          `Found manifest file at ${rootFile} but it does not contain "name" field.`.concat(
+            `The project won't be included in the workspace tree.`
+          )
+        );
+      }
+    } catch {
+      this.logger.failure(`Unable to parse manifest file at ${rootFile}.`);
+    }
+  }
+
   private async buildFromRootDirectory(): Promise<void> {
     const rootTSConfig = await buildPathAliases(
       this.fileReader,
@@ -523,6 +562,12 @@ export class Skott<T> {
       this.config.fileExtensions
     )) {
       const rootFileContent = await this.fileReader.read(rootFile);
+
+      if (isManifestFile(rootFile)) {
+        this.extractInformationFromManifest(rootFileContent, rootFile);
+
+        continue;
+      }
 
       if (this.config.incremental) {
         this.#cacheHandler.addSourceFile(rootFile, rootFileContent);
@@ -549,6 +594,7 @@ export class Skott<T> {
 
     return {
       getStructure: this.makeProjectStructure.bind(this),
+      getWorkspace: () => this.#workspaceConfiguration.manifests,
       findCircularDependencies: this.circularDependencies.bind(this),
       hasCircularDependencies: this.hasCircularDependencies.bind(this),
       findLeaves: this.findLeaves.bind(this),

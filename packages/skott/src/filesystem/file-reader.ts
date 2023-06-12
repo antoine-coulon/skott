@@ -10,7 +10,8 @@ import * as memfs from "memfs";
 import {
   defaultIgnoredDirs,
   isDirSupportedByDefault,
-  isFileSupportedByDefault
+  isFileSupportedByDefault,
+  isManifestFile
 } from "../modules/resolvers/base-resolver.js";
 
 export interface FileReader {
@@ -96,8 +97,9 @@ export class InMemoryFileReader implements FileReader {
           yield* this.readdir(path.join(root, _dirent), fileExtensions);
         }
       } else if (
-        isFileSupportedByDefault(_dirent) &&
-        fileExtensions.includes(path.extname(_dirent))
+        isManifestFile(_dirent) ||
+        (isFileSupportedByDefault(_dirent) &&
+          fileExtensions.includes(path.extname(_dirent)))
       ) {
         yield path.join(root, _dirent);
       }
