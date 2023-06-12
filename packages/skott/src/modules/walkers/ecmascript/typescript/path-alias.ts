@@ -117,7 +117,14 @@ export function resolvePathAlias(
     );
   }
 
-  while (isNotBasePathSegment(baseAliasDirname)) {
+  /**
+   * In some cases I'm not able to identify yet, the path alias is never resolved
+   * resulting in an endless loop. This is a temporary fix until the logs are
+   * providing enough information to fix the root cause.
+   */
+  let pathDepthAttempts = 0;
+  while (isNotBasePathSegment(baseAliasDirname) && pathDepthAttempts < 10) {
+    pathDepthAttempts += 1;
     baseAliasDirname = path.dirname(baseAliasDirname);
     const deepBaseAlias = aliasLinks.get(baseAliasDirname);
 
@@ -127,6 +134,7 @@ export function resolvePathAlias(
         deepBaseAlias,
         baseAliasDirname
       );
+      pathDepthAttempts = 0;
       break;
     }
   }
@@ -157,11 +165,19 @@ export function isTypeScriptPathAlias(moduleDeclaration: string): boolean {
     return true;
   }
 
-  while (isNotBasePathSegment(pathSegmentToMatch)) {
+  /**
+   * In some cases I'm not able to identify yet, the path alias is never resolved
+   * resulting in an endless loop. This is a temporary fix until the logs are
+   * providing enough information to fix the root cause.
+   */
+  let pathDepthAttempts = 0;
+  while (isNotBasePathSegment(pathSegmentToMatch) && pathDepthAttempts < 10) {
+    pathDepthAttempts += 1;
     pathSegmentToMatch = path.dirname(pathSegmentToMatch);
 
     if (aliasLinks.has(pathSegmentToMatch)) {
       isPathAlias = true;
+      pathDepthAttempts = 0;
       break;
     }
   }
