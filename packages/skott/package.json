@@ -31,8 +31,11 @@
     "prepublishOnly": "pnpm run test && pnpm run build",
     "prestart": "pnpm run build",
     "start": "node dist/bin/cli.js",
-    "test": "vitest run",
-    "test:watch": "vitest --watch"
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "vitest run --config=test/vitest.unit.js",
+    "test:integration": "vitest run --config=test/vitest.integration.js",
+    "test:unit:watch": "vitest --watch --logHeapUsage --config=test/vitest.unit.js",
+    "test:integration:watch": "vitest --watch --logHeapUsage --config=test/vitest.integration.js"
   },
   "dependencies": {
     "@effect/data": "^0.4.1",
