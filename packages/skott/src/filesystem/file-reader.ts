@@ -57,7 +57,9 @@ export class FileSystemReader implements FileReader {
       ignoreFiles: [".gitignore"]
     });
 
-    for (const filePath of filePaths) {
+    const filePathsWithRoot = filePaths.map((fp) => path.join(root, fp));
+
+    for (const filePath of filePathsWithRoot) {
       const isFileMatchingExtensions = providedFileExtensions.includes(
         path.extname(filePath)
       );
