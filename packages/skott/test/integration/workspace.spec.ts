@@ -55,5 +55,54 @@ describe("When running Skott with a real file system", () => {
     });
   });
 
-  test.skip("Should detect unused deps");
+  describe("When collecting unused dependencies using both skott + depcheck analysis from a single-repo", () => {
+    test("Should merge the devDeps additionnally found by depcheck with the prodDeps found by skott", async () => {
+      const fsRootDir = `skott-real-temp-fs`;
+
+      const runSandbox = createRealFileSystem(fsRootDir, {
+        "skott-real-temp-fs/package.json": createNpmManifest({
+          name: "library1",
+          dependencies: {
+            rxjs: "^7.3.0",
+            "ts-pattern": "^7.3.0"
+          },
+          devDependencies: {
+            eslint: "^3.19.0",
+            "eslint-plugin-import": "^2.22.1"
+          }
+        }),
+        "skott-real-temp-fs/index.ts": `
+          import { Observable } from 'rxjs';
+        `
+      });
+
+      expect.assertions(1);
+
+      const skott = new Skott(
+        {
+          ...defaultConfig,
+          dependencyTracking: {
+            ...defaultConfig.dependencyTracking,
+            thirdParty: true
+          }
+        },
+        new FileSystemReader({ cwd: fsRootDir }),
+        new InMemoryFileWriter(),
+        new ModuleWalkerSelector(),
+        new FakeLogger()
+      );
+
+      await runSandbox(async () => {
+        const { findUnusedDependencies } = await skott.initialize();
+
+        const { thirdParty } = await findUnusedDependencies();
+
+        expect(thirdParty).toEqual([
+          "ts-pattern",
+          "eslint",
+          "eslint-plugin-import"
+        ]);
+      });
+    });
+  });
 });

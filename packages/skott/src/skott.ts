@@ -428,7 +428,7 @@ export class Skott<T> {
     return [...uniqueSetOfParents];
   }
 
-  private findAllThirdPartyDependencies(): string[] {
+  private findThirdPartyDependenciesFromGraph(): string[] {
     const graphDependencies = new Set<string>();
 
     for (const { body } of Object.values(this.#projectGraph.toDict())) {
@@ -450,7 +450,8 @@ export class Skott<T> {
       this.config.manifestPath,
       this.fileReader
     );
-    const graphDependencies = this.findAllThirdPartyDependencies();
+    const graphDependencies = this.findThirdPartyDependenciesFromGraph();
+
     const matchedDependencies = findMatchesBetweenGraphAndManifestDependencies(
       graphDependencies,
       manifestDependencies

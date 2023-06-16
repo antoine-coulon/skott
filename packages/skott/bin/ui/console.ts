@@ -160,7 +160,11 @@ export async function displayThirdPartyDependencies(
           `\n ${kleur
             .bold()
             .grey(
-              "Note: `unused` dependencies that are in fact used probably means the dependency should be moved to `devDependencies`. \n If it's already there, then it's probably a false alert."
+              "Note: dependencies used elsewhere than the currently targeted source"
+                .concat("files might be wrongly reported as 'unused'.")
+                .concat(
+                  "\n Please double check their potential use before removing them."
+                )
             )}
           `,
           `${kleur.bold(

@@ -96,7 +96,9 @@ export function findMatchesBetweenGraphAndManifestDependencies(
   });
 }
 
-export function findUnusedImplicitDependencies(cwd: string): Promise<string[]> {
+export function findUnusedImplicitDependencies(
+  rootDir: string
+): Promise<string[]> {
   const depcheckDefaults = {
     ignoreDirs: [
       "sandbox",
@@ -106,19 +108,6 @@ export function findUnusedImplicitDependencies(cwd: string): Promise<string[]> {
       "build",
       "fixtures",
       "jspm_packages"
-    ],
-    ignoreMatches: [
-      "gulp-*",
-      "grunt-*",
-      "karma-*",
-      "angular-*",
-      "babel-*",
-      "metalsmith-*",
-      "eslint-plugin-*",
-      "@types/*",
-      "grunt",
-      "mocha",
-      "ava"
     ],
     ignorePatterns: ["node_modules"]
   };
@@ -134,9 +123,16 @@ export function findUnusedImplicitDependencies(cwd: string): Promise<string[]> {
    */
   return new Promise((resolve) => {
     try {
-      depcheck(cwd, depcheckDefaults, (unusedDependencies) => {
-        resolve(unusedDependencies.dependencies);
-      });
+      depcheck(
+        path.join(process.cwd(), rootDir),
+        depcheckDefaults,
+        (unusedDependencies) => {
+          resolve([
+            ...unusedDependencies.dependencies,
+            ...unusedDependencies.devDependencies
+          ]);
+        }
+      );
     } catch {
       resolve([]);
     }
