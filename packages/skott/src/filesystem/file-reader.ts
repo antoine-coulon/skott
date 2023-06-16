@@ -8,7 +8,6 @@ import ignoreWalk from "ignore-walk";
 import * as memfs from "memfs";
 
 import {
-  defaultIgnoredDirs,
   isDirSupportedByDefault,
   isFileSupportedByDefault,
   isManifestFile
@@ -51,22 +50,24 @@ export class FileSystemReader implements FileReader {
 
   async *readdir(
     root: string,
-    fileExtensions: string[]
+    providedFileExtensions: string[]
   ): AsyncGenerator<string> {
-    const filepaths = await ignoreWalk({
+    const filePaths = await ignoreWalk({
       path: root,
       ignoreFiles: [".gitignore"]
     });
-    for (const filepath of filepaths) {
-      if (
-        !path
-          .dirname(filepath)
-          .split(path.sep)
-          .some((dir) => defaultIgnoredDirs.has(dir)) &&
-        isFileSupportedByDefault(filepath) &&
-        fileExtensions.includes(path.extname(filepath))
-      ) {
-        yield filepath;
+
+    for (const filePath of filePaths) {
+      const isFileMatchingExtensions = providedFileExtensions.includes(
+        path.extname(filePath)
+      );
+      const isSupportedFile =
+        isDirSupportedByDefault(path.dirname(filePath)) &&
+        isFileSupportedByDefault(filePath) &&
+        isFileMatchingExtensions;
+
+      if (isSupportedFile || isManifestFile(filePath)) {
+        yield filePath;
       }
     }
   }
