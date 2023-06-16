@@ -1,16 +1,16 @@
 import * as Option from "@effect/data/Option";
 import { describe, expect, test } from "vitest";
 
-import { InMemoryFileReader } from "../../src/filesystem/file-reader.js";
-import { InMemoryFileWriter } from "../../src/filesystem/file-writer.js";
-import { FakeLogger } from "../../src/logger.js";
+import { InMemoryFileReader } from "../../../src/filesystem/file-reader.js";
+import { InMemoryFileWriter } from "../../../src/filesystem/file-writer.js";
+import { FakeLogger } from "../../../src/logger.js";
 import {
   DependencyResolver,
   DependencyResolverOptions
-} from "../../src/modules/resolvers/base-resolver.js";
-import { EcmaScriptDependencyResolver } from "../../src/modules/resolvers/ecmascript/resolver.js";
-import { ModuleWalkerSelector } from "../../src/modules/walkers/common.js";
-import { defaultConfig, Skott } from "../../src/skott.js";
+} from "../../../src/modules/resolvers/base-resolver.js";
+import { EcmaScriptDependencyResolver } from "../../../src/modules/resolvers/ecmascript/resolver.js";
+import { ModuleWalkerSelector } from "../../../src/modules/walkers/common.js";
+import { defaultConfig, Skott } from "../../../src/skott.js";
 import { fakeNodeBody, mountFakeFileSystem } from "../shared.js";
 
 describe("When using dependency resolvers", () => {
