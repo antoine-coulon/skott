@@ -3,13 +3,13 @@ import path from "node:path";
 
 type AsyncCallback = () => Promise<void>;
 
-export function createRealFileSystem(
-  fsRootDir: string,
-  entries: Record<string, string>
-) {
+export function createRealFileSystem<
+  RootDir extends string,
+  File extends `${string}.${string}`
+>(fsRootDir: RootDir, entries: Record<`${RootDir}/${File}`, string>) {
   async function make() {
     try {
-      for (const [filePath, content] of Object.entries(entries)) {
+      for (const [filePath, content] of Object.entries<string>(entries)) {
         await fs.mkdir(path.dirname(filePath), {
           recursive: true
         });
