@@ -144,7 +144,7 @@ export async function displaySkott(
       console.log(
         `\n ${kleur
           .red()
-          .bold("`--cwd` can't be used when providing an entrypoint")} `
+          .bold("`--cwd` can't be customized when providing an entrypoint")} `
       );
 
       process.exitCode = 1;
