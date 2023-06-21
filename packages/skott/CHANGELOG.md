@@ -5,7 +5,7 @@
 ### Patch Changes
 
 - da54fb9: Fix endless loop when resolving malformed TS path aliases.
-  - skott-webapp@1.0.6
+- skott-webapp@1.0.6
 
 ## 0.22.0
 
