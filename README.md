@@ -26,7 +26,7 @@
 
 ✅ Deeply detects **circular dependencies** in an efficient way, with the ability to provide a max depth for the search
 
-✅ Detect **unused npm third-party dependencies**
+✅ Detect **unused npm third-party dependencies**. Note that all unused `devDependencies` are not guaranteed to be detected as `depcheck` [only provides analysis for set of supported libraries](https://github.com/depcheck/depcheck) (eslint, karma, mocha, etc).
 
 ✅ Deeply **collect all dependencies of the project graph**
 

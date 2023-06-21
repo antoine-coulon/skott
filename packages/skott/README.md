@@ -31,7 +31,7 @@ When `Circular dependencies` are found in the graph, they can also be toggled vi
 ```javascript
 import skott from "skott";
 
-const { getStructure, findCircularDependencies, findParentsOf, findLeaves } = await skott({
+const { getStructure, getWorkspace, findCircularDependencies, findParentsOf, findLeaves } = await skott({
   /**
    * (Optional) Entrypoint of the project. If not provided, `skott` will search for all
    * supported files starting from the current working directory.
@@ -299,3 +299,50 @@ console.log(graph["lib.js"].body);
   builtinDependencies: ["node:fs"] 
 }
 ```
+
+### Explore workspace content
+
+Let's suppose we're currently using pnpm workspaces and we have the following workspace:
+
+```
+/apps/my-app/package.json
+/libs/my-lib/package.json
+```
+
+Skott allows you to traverse the workspace and collect all manifest files with their own dependencies. 
+
+main.js
+```javascript
+import skott from "skott";
+
+const { getWorkspace } = await skott();
+
+console.log(getWorkspace());
+// Prints
+{ 
+  "my-app": {
+    dependencies: {
+      // 
+    },
+    devDependencies: {
+      //
+    },
+    peerDependencies: {
+      //
+    }
+  },
+  "my-lib": {
+    dependencies: {
+      // 
+    },
+    devDependencies: {
+      //
+    },
+    peerDependencies: {
+      //
+    }
+  }
+}
+```
+
+This feature could help creating a dependency graph only using manifests instead of parsing and traversing the whole source code graph using static analysis.

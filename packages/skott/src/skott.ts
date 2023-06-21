@@ -18,6 +18,7 @@ import { highlight, LoggerTag, lowlight, SkottLogger } from "./logger.js";
 import {
   DependencyResolver,
   FollowModuleDeclarationOptions,
+  isManifestFile,
   kExpectedModuleExtensions,
   resolveImportedModulePath
 } from "./modules/resolvers/base-resolver.js";
@@ -31,9 +32,11 @@ import {
   TSConfig
 } from "./modules/walkers/ecmascript/typescript/path-alias.js";
 import {
+  extractInformationFromManifest,
   findManifestDependencies,
   findMatchesBetweenGraphAndManifestDependencies,
-  findUnusedImplicitDependencies
+  findUnusedImplicitDependencies,
+  type ManifestDependenciesByName
 } from "./workspace/index.js";
 
 export type SkottNodeBody = {
@@ -77,6 +80,7 @@ export interface ImplicitUnusedDependenciesOptions {
 
 export interface SkottInstance<T = unknown> {
   getStructure: () => SkottStructure<T>;
+  getWorkspace: () => ManifestDependenciesByName;
   findLeaves: () => string[];
   findCircularDependencies: () => string[][];
   findUnusedDependencies: (
@@ -104,6 +108,7 @@ export const defaultConfig = {
 
 export interface WorkspaceConfiguration {
   typescript: TSConfig;
+  manifests: ManifestDependenciesByName;
 }
 
 export class Skott<T> {
@@ -112,7 +117,8 @@ export class Skott<T> {
   #visitedNodes = new Set<string>();
   #baseDir = ".";
   #workspaceConfiguration: WorkspaceConfiguration = {
-    typescript: {}
+    typescript: {},
+    manifests: {}
   };
 
   constructor(
@@ -422,7 +428,7 @@ export class Skott<T> {
     return [...uniqueSetOfParents];
   }
 
-  private findAllThirdPartyDependencies(): string[] {
+  private findThirdPartyDependenciesFromGraph(): string[] {
     const graphDependencies = new Set<string>();
 
     for (const { body } of Object.values(this.#projectGraph.toDict())) {
@@ -444,7 +450,8 @@ export class Skott<T> {
       this.config.manifestPath,
       this.fileReader
     );
-    const graphDependencies = this.findAllThirdPartyDependencies();
+    const graphDependencies = this.findThirdPartyDependenciesFromGraph();
+
     const matchedDependencies = findMatchesBetweenGraphAndManifestDependencies(
       graphDependencies,
       manifestDependencies
@@ -524,6 +531,17 @@ export class Skott<T> {
     )) {
       const rootFileContent = await this.fileReader.read(rootFile);
 
+      if (isManifestFile(rootFile)) {
+        extractInformationFromManifest(
+          rootFileContent,
+          rootFile,
+          this.logger,
+          this.#workspaceConfiguration.manifests
+        );
+
+        continue;
+      }
+
       if (this.config.incremental) {
         this.#cacheHandler.addSourceFile(rootFile, rootFileContent);
       }
@@ -549,6 +567,7 @@ export class Skott<T> {
 
     return {
       getStructure: this.makeProjectStructure.bind(this),
+      getWorkspace: () => this.#workspaceConfiguration.manifests,
       findCircularDependencies: this.circularDependencies.bind(this),
       hasCircularDependencies: this.hasCircularDependencies.bind(this),
       findLeaves: this.findLeaves.bind(this),

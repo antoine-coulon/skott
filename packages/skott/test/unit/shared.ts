@@ -1,12 +1,12 @@
 import * as memfs from "memfs";
 
-import { InMemoryFileReader } from "../src/filesystem/file-reader.js";
-import { InMemoryFileWriter } from "../src/filesystem/file-writer.js";
-import { FakeLogger } from "../src/logger.js";
-import { kExpectedModuleExtensions } from "../src/modules/resolvers/base-resolver.js";
-import { EcmaScriptDependencyResolver } from "../src/modules/resolvers/ecmascript/resolver.js";
-import { ModuleWalkerSelector } from "../src/modules/walkers/common.js";
-import { Skott, SkottNode } from "../src/skott";
+import { InMemoryFileReader } from "../../src/filesystem/file-reader.js";
+import { InMemoryFileWriter } from "../../src/filesystem/file-writer.js";
+import { FakeLogger } from "../../src/logger.js";
+import { kExpectedModuleExtensions } from "../../src/modules/resolvers/base-resolver.js";
+import { EcmaScriptDependencyResolver } from "../../src/modules/resolvers/ecmascript/resolver.js";
+import { ModuleWalkerSelector } from "../../src/modules/walkers/common.js";
+import { Skott, SkottNode } from "../../src/skott";
 
 interface UnwrappedSkottStructure {
   graph: Record<string, SkottNode>;

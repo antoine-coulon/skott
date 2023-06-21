@@ -139,13 +139,25 @@ export async function displaySkott(
         .underline()
         .bold(`${entrypoint}`)}`
     );
+
+    if (options.cwd !== process.cwd()) {
+      console.log(
+        `\n ${kleur
+          .red()
+          .bold("`--cwd` can't be customized when providing an entrypoint")} `
+      );
+
+      process.exitCode = 1;
+
+      return;
+    }
   } else {
     if (options.includeBaseDir) {
       console.log(
         `\n ${kleur
           .red()
           .bold(
-            "'--includeBaseDir=true' can only be used when providing an entrypoint."
+            "`--includeBaseDir` can only be used when providing an entrypoint"
           )} `
       );
 

@@ -6,6 +6,7 @@ import * as Effect from "@effect/io/Effect";
 import depcheck from "depcheck";
 
 import { FileReader, FileReaderTag } from "../filesystem/file-reader.js";
+import { SkottLogger } from "../logger.js";
 
 export async function findWorkspaceEntrypointModule(): Promise<string> {
   // look for package.json
@@ -95,7 +96,9 @@ export function findMatchesBetweenGraphAndManifestDependencies(
   });
 }
 
-export function findUnusedImplicitDependencies(cwd: string): Promise<string[]> {
+export function findUnusedImplicitDependencies(
+  rootDir: string
+): Promise<string[]> {
   const depcheckDefaults = {
     ignoreDirs: [
       "sandbox",
@@ -105,19 +108,6 @@ export function findUnusedImplicitDependencies(cwd: string): Promise<string[]> {
       "build",
       "fixtures",
       "jspm_packages"
-    ],
-    ignoreMatches: [
-      "gulp-*",
-      "grunt-*",
-      "karma-*",
-      "angular-*",
-      "babel-*",
-      "metalsmith-*",
-      "eslint-plugin-*",
-      "@types/*",
-      "grunt",
-      "mocha",
-      "ava"
     ],
     ignorePatterns: ["node_modules"]
   };
@@ -133,11 +123,59 @@ export function findUnusedImplicitDependencies(cwd: string): Promise<string[]> {
    */
   return new Promise((resolve) => {
     try {
-      depcheck(cwd, depcheckDefaults, (unusedDependencies) => {
-        resolve(unusedDependencies.dependencies);
-      });
+      depcheck(
+        path.join(process.cwd(), rootDir),
+        depcheckDefaults,
+        (unusedDependencies) => {
+          resolve([
+            ...unusedDependencies.dependencies,
+            ...unusedDependencies.devDependencies
+          ]);
+        }
+      );
     } catch {
       resolve([]);
     }
   });
+}
+
+type ManifestDependencyType =
+  | "dependencies"
+  | "devDependencies"
+  | "peerDependencies";
+
+export interface ManifestDependenciesByName {
+  [workspaceProjectName: string]: Record<
+    ManifestDependencyType,
+    Record<string, string>
+  >;
+}
+
+export function extractInformationFromManifest(
+  manifestContent: string,
+  rootFile: string,
+  logger: SkottLogger,
+  manifests: ManifestDependenciesByName
+) {
+  try {
+    const manifestParsed = JSON.parse(manifestContent);
+
+    if (manifestParsed.name) {
+      logger.info(`Found ${manifestParsed.name} manifest file at: ${rootFile}`);
+
+      manifests[manifestParsed.name as ManifestDependencyType] = {
+        dependencies: manifestParsed.dependencies ?? {},
+        devDependencies: manifestParsed.devDependencies ?? {},
+        peerDependencies: manifestParsed.peerDependencies ?? {}
+      };
+    } else {
+      logger.failure(
+        `Found manifest file at ${rootFile} but it does not contain "name" field.`.concat(
+          `The project won't be included in the workspace tree.`
+        )
+      );
+    }
+  } catch {
+    logger.failure(`Unable to parse manifest file at ${rootFile}.`);
+  }
 }

@@ -1,5 +1,6 @@
 import { identity, pipe } from "@effect/data/Function";
-import { either } from "fp-ts";
+import * as O from "@effect/data/Option";
+import * as E from "fp-ts/lib/Either.js";
 import * as D from "io-ts/lib/Decoder.js";
 
 import { dependencyResolverDecoder } from "./modules/resolvers/base-resolver.js";
@@ -31,15 +32,21 @@ const config = D.struct({
   ),
   tsConfigPath: withDefaultValue(defaultConfig.tsConfigPath)(D.string),
   manifestPath: withDefaultValue(defaultConfig.manifestPath)(D.string),
-  dependencyResolvers: D.array(dependencyResolverDecoder()),
+  dependencyResolvers: withDefaultValue(defaultConfig.dependencyResolvers)(
+    D.array(dependencyResolverDecoder())
+  ),
   cwd: withDefaultValue(process.cwd())(D.string),
   verbose: withDefaultValue(false)(D.boolean)
 });
 
-export function decodeInputConfig<T>(partialConfig: Partial<SkottConfig<T>>) {
+export function decodeInputConfig<T>(
+  partialConfig: O.Option<Partial<SkottConfig<T>>>
+) {
   return pipe(
-    config.decode(partialConfig),
-    either.fold((decodeError) => {
+    partialConfig,
+    O.getOrNull,
+    config.decode,
+    E.fold((decodeError) => {
       throw new Error(`Invalid Skott config. Reason: ${D.draw(decodeError)}`);
     }, identity)
   );

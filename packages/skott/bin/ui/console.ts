@@ -125,11 +125,13 @@ export async function displayThirdPartyDependencies(
     console.log(
       `${kleur
         .bold()
-        .magenta("\n ✓ no third-party dependencies found in the source code")}`
+        .magenta(
+          "\n ✓ no third-party production dependencies found in the source code"
+        )}`
     );
   }
 
-  console.log(`\n third-party dependencies: \n`);
+  console.log(`\n production third-party dependencies: \n`);
 
   const sortedDependencies = [...thirdPartyRegistry.entries()].sort(
     ([a], [b]) => {
@@ -160,7 +162,9 @@ export async function displayThirdPartyDependencies(
           `\n ${kleur
             .bold()
             .grey(
-              "Note: `unused` dependencies that are in fact used probably means the dependency should be moved to `devDependencies`. \n If it's already there, then it's probably a false alert."
+              "Note: dependencies used elsewhere than the currently targeted source" +
+                " files might be wrongly reported as 'unused'." +
+                " Please double check their potential use before removing them."
             )}
           `,
           `${kleur.bold(
@@ -168,7 +172,7 @@ export async function displayThirdPartyDependencies(
               .bold()
               .red(
                 thirdParty.length
-              )} third-party dependencies that ${kleur.yellow(
+              )} third-party dependencies (dev/prod) that ${kleur.yellow(
               "might be unused"
             )}`
           )} (${kleur.bold().magenta(timeTook)}) \n`

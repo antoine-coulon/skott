@@ -95,6 +95,10 @@ export function isFileSupportedByDefault(fileName: string): boolean {
   );
 }
 
+export function isManifestFile(fileName: string): boolean {
+  return fileName.endsWith("package.json");
+}
+
 export const defaultIgnoredDirs = new Set([
   "node_modules",
   "dist",
@@ -108,7 +112,10 @@ export const defaultIgnoredDirs = new Set([
 ]);
 
 export function isDirSupportedByDefault(directoryName: string): boolean {
-  return !defaultIgnoredDirs.has(directoryName);
+  return (
+    !defaultIgnoredDirs.has(directoryName) &&
+    !directoryName.split(path.sep).some((dir) => defaultIgnoredDirs.has(dir))
+  );
 }
 
 function isExistingModule(
