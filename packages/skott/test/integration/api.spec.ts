@@ -10,10 +10,8 @@ import { Skott, defaultConfig } from "../../src/skott.js";
 import { createRealFileSystem } from "./file-system.js";
 describe("When running Skott using all real dependencies", () => {
   describe("When providing various configurations", () => {
-    test("Should instantiate Skott", async () => {
-      const skottInstance = await skott({
-        cwd: "./"
-      });
+    test("Should support empty config", async () => {
+      const skottInstance = await skott();
 
       expect(skottInstance).toBeDefined();
     });
@@ -42,7 +40,7 @@ describe("When running Skott using all real dependencies", () => {
       }
 
       await expect(makeSkott()).rejects.toThrow(
-        "Illegal configuration: `cwd` can't be used when providing an entrypoint"
+        "Illegal configuration: `cwd` can't be customized when providing an entrypoint"
       );
     });
   });
