@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 
+import skott from "../../index.js";
 import { FileSystemReader } from "../../src/filesystem/file-reader.js";
 import { InMemoryFileWriter } from "../../src/filesystem/file-writer.js";
 import { FakeLogger } from "../../src/logger.js";
@@ -8,7 +9,43 @@ import { Skott, defaultConfig } from "../../src/skott.js";
 
 import { createRealFileSystem } from "./file-system.js";
 describe("When running Skott using all real dependencies", () => {
-  describe.skip("When providing the configuration", () => {});
+  describe("When providing various configurations", () => {
+    test("Should instantiate Skott", async () => {
+      const skottInstance = await skott({
+        cwd: "./"
+      });
+
+      expect(skottInstance).toBeDefined();
+    });
+
+    test("Should not allow `includeBaseDir` to be truthy when no entrypoint is provided", async () => {
+      function makeSkott() {
+        return skott({
+          cwd: "./",
+          entrypoint: undefined,
+          includeBaseDir: true
+        });
+      }
+
+      await expect(makeSkott()).rejects.toThrow(
+        "Illegal configuration: `includeBaseDir` can only be used when providing an entrypoint"
+      );
+    });
+
+    test("Should not allow `cwd` to be customized when using an entrypoint", async () => {
+      function makeSkott() {
+        return skott({
+          cwd: "./apps/some-app",
+          verbose: false,
+          entrypoint: "./anything.ts"
+        });
+      }
+
+      await expect(makeSkott()).rejects.toThrow(
+        "Illegal configuration: `cwd` can't be used when providing an entrypoint"
+      );
+    });
+  });
 
   describe("When traversing files using the root dir as a starting point", () => {
     test("Should ignore files listed in `.gitignore`", async () => {

@@ -31,7 +31,9 @@ const config = D.struct({
   ),
   tsConfigPath: withDefaultValue(defaultConfig.tsConfigPath)(D.string),
   manifestPath: withDefaultValue(defaultConfig.manifestPath)(D.string),
-  dependencyResolvers: D.array(dependencyResolverDecoder()),
+  dependencyResolvers: withDefaultValue(defaultConfig.dependencyResolvers)(
+    D.array(dependencyResolverDecoder())
+  ),
   cwd: withDefaultValue(process.cwd())(D.string),
   verbose: withDefaultValue(false)(D.boolean)
 });
