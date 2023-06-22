@@ -89,7 +89,7 @@ describe("Searching for unused dependencies", () => {
             expect(thirdParty).to.deep.equal(["skott"]);
           });
 
-          it.skip("should find the unused dependency", async () => {
+          it("should find the unused dependency when using an entrypoint", async () => {
             mountFakeFileSystem({
               "index.js": `
                 import * as E from "fp-ts/lib/Either.js";
@@ -104,7 +104,44 @@ describe("Searching for unused dependencies", () => {
               })
             });
 
-            const skott = makeSkott();
+            const skott = makeSkott({
+              entrypoint: "index.js",
+              dependencyTracking: {
+                thirdParty: true,
+                builtin: false,
+                typeOnly: false
+              }
+            });
+            const { findUnusedDependencies } = await skott.initialize();
+            const { thirdParty } = await findUnusedDependencies(
+              inMemoryImplicitDependenciesFinder
+            );
+
+            expect(thirdParty).to.deep.equal(["ramda"]);
+          });
+
+          it("should find the unused dependency when NOT using an entrypoint", async () => {
+            mountFakeFileSystem({
+              "index.js": `
+                import * as E from "fp-ts/lib/Either.js";
+                import * as D from "io-ts/lib/Decoder.js";
+              `,
+              "package.json": JSON.stringify({
+                dependencies: {
+                  "fp-ts": "^1.0.0",
+                  "io-ts": "^1.0.0",
+                  ramda: "^1.0.0"
+                }
+              })
+            });
+
+            const skott = makeSkott({
+              dependencyTracking: {
+                thirdParty: true,
+                builtin: false,
+                typeOnly: false
+              }
+            });
             const { findUnusedDependencies } = await skott.initialize();
             const { thirdParty } = await findUnusedDependencies(
               inMemoryImplicitDependenciesFinder

@@ -488,21 +488,6 @@ export class Skott<T> {
   }
 
   private async buildFromEntrypoint(entrypoint: string): Promise<void> {
-    await pipe(
-      findRootManifest(this.#baseDir, this.config.manifestPath),
-      Effect.tap(({ dependencies }) =>
-        Effect.sync(() => {
-          this.#workspaceConfiguration.manifests.root = {
-            dependencies,
-            devDependencies: {},
-            peerDependencies: {}
-          };
-        })
-      ),
-      Effect.provideService(FileReaderTag, this.fileReader),
-      Effect.runPromiseExit
-    );
-
     const entrypointModulePath = await pipe(
       resolveImportedModulePath(entrypoint),
       Effect.provideService(FileReaderTag, this.fileReader),
@@ -568,7 +553,44 @@ export class Skott<T> {
     }
   }
 
+  private extractRootManifestInformation<T>(this: Skott<T>) {
+    return pipe(
+      findRootManifest(this.#baseDir, this.config.manifestPath),
+      Effect.tap(({ dependencies, name }) =>
+        Effect.sync(() => {
+          this.#workspaceConfiguration.manifests[name ?? "root"] = {
+            dependencies,
+            devDependencies: {},
+            peerDependencies: {}
+          };
+        })
+      ),
+      Effect.tapBoth(
+        () =>
+          Effect.flatMap(Effect.service(LoggerTag), ({ failure }) =>
+            Effect.sync(() =>
+              failure(
+                "Root manifest not found. Third-party dependencies will to be resolved with other heuristics."
+              )
+            )
+          ),
+        () =>
+          Effect.flatMap(Effect.service(LoggerTag), ({ success }) =>
+            Effect.sync(() =>
+              success(
+                "Root manifest found. Third-party dependencies will to be resolved from it."
+              )
+            )
+          )
+      ),
+      Effect.provideService(LoggerTag, this.logger),
+      Effect.provideService(FileReaderTag, this.fileReader)
+    );
+  }
+
   public async initialize(): Promise<SkottInstance<T>> {
+    await pipe(this.extractRootManifestInformation(), Effect.runPromiseExit);
+
     if (this.config.entrypoint) {
       this.logger.info(`Building from entrypoint: ${this.config.entrypoint}`);
       await this.buildFromEntrypoint(this.config.entrypoint);

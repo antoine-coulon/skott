@@ -27,6 +27,7 @@ class InMemoryFileReaderWithFakeStats implements FileReader {
   async *readdir(): AsyncGenerator<string> {
     yield Promise.resolve("fake");
   }
+
   stats(filename: string): Promise<number> {
     return new Promise((resolve) => {
       memfs.fs.stat(filename, (err, data) => {
@@ -312,8 +313,8 @@ describe("When building the project structure independently of JavaScript or Typ
             });
           });
 
-          describe("When using the reachable package.json manifest", () => {
-            it("should only use the dependencies from the manifest to categorize a module import as third-party", async () => {
+          describe("When there is one reachable package.json manifest", () => {
+            it("should mainly use the dependencies from the manifest to categorize a module import as third-party but also fallback to source code heuristics", async () => {
               mountFakeFileSystem({
                 "index.js": `
                   import * as anything from "./lib.js";
@@ -332,7 +333,8 @@ describe("When building the project structure independently of JavaScript or Typ
               const indexFile = graph["index.js"];
 
               expect(indexFile.body.thirdPartyDependencies).to.deep.equal([
-                "fp-ts"
+                "fp-ts",
+                "@effect/io"
               ]);
             });
           });

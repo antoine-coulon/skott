@@ -2,6 +2,7 @@ import { builtinModules } from "node:module";
 import path from "node:path";
 
 import { highlight } from "../../../logger.js";
+import type { ManifestDependenciesByName } from "../../../workspace/index.js";
 import {
   isTypeScriptPathAlias,
   isTypeScriptRelativePathWithNoLeadingIdentifier,
@@ -45,19 +46,35 @@ export function isBuiltinModule(module: string): boolean {
 export function isThirdPartyModule(
   module: string,
   expectedModuleExtensions: Set<string>,
-  manifestDependencies: string[] = []
+  manifests: ManifestDependenciesByName
 ): boolean {
-  if (manifestDependencies.length > 0) {
-    return manifestDependencies.some((manifestDependency) =>
-      module.startsWith(manifestDependency)
-    );
-  }
-
   const extension = path.extname(module);
   const hasExpectedExtension =
     extension !== "" && expectedModuleExtensions.has(extension);
 
-  return !module.startsWith(".") && !hasExpectedExtension;
+  const isThirdPartyUsingHeuristics =
+    !module.startsWith(".") && !hasExpectedExtension;
+
+  /**
+   * Only single manifest is supported for now. In the case where we have multiple
+   * manifest, we must precisely determine which manifest to use to decide
+   * if a module should be flagged as third-party as each dependency should be
+   * scoped by its parent package.json.
+   *
+   * In the case where there are multiple manifests, we just want to rely on
+   * the source code heuristics.
+   */
+  if (Object.keys(manifests).length === 1) {
+    const rootManifest = manifests[Object.keys(manifests)[0]];
+    const rootProductionDeps = Object.keys(rootManifest.dependencies ?? {});
+
+    return (
+      rootProductionDeps.some((dep) => module.startsWith(dep)) ||
+      isThirdPartyUsingHeuristics
+    );
+  }
+
+  return isThirdPartyUsingHeuristics;
 }
 
 export function extractNpmNameFromThirdPartyModuleDeclaration(
@@ -150,9 +167,6 @@ export class EcmaScriptDependencyResolver implements DependencyResolver {
     logger,
     followModuleDeclaration
   }: DependencyResolverOptions): Promise<DependencyResolverControlFlow> {
-    const rootManifestDependencies =
-      workspaceConfiguration.manifests.root?.dependencies ?? {};
-
     if (isBinaryModule(moduleDeclaration) || isJSONModule(moduleDeclaration)) {
       logger.info(lowlightSkipped(moduleDeclaration));
 
@@ -215,7 +229,7 @@ export class EcmaScriptDependencyResolver implements DependencyResolver {
         isThirdPartyModule(
           moduleDeclaration,
           kExpectedModuleExtensions,
-          Object.keys(rootManifestDependencies)
+          workspaceConfiguration.manifests
         )
       ) {
         if (!config.dependencyTracking.thirdParty) {
@@ -236,7 +250,7 @@ export class EcmaScriptDependencyResolver implements DependencyResolver {
       isThirdPartyModule(
         moduleDeclaration,
         kExpectedModuleExtensions,
-        Object.keys(rootManifestDependencies)
+        workspaceConfiguration.manifests
       )
     ) {
       if (!config.dependencyTracking.thirdParty) {
