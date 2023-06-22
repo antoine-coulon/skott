@@ -159,14 +159,6 @@ export async function displayThirdPartyDependencies(
       const indents = makeIndents(1);
       if (thirdParty.length > 0) {
         console.log(
-          `\n ${kleur
-            .bold()
-            .grey(
-              "Note: dependencies used elsewhere than the currently targeted source" +
-                " files might be wrongly reported as 'unused'." +
-                " Please double check their potential use before removing them."
-            )}
-          `,
           `${kleur.bold(
             `\n Found ${kleur
               .bold()
@@ -175,7 +167,17 @@ export async function displayThirdPartyDependencies(
               )} third-party dependencies (dev/prod) that ${kleur.yellow(
               "might be unused"
             )}`
-          )} (${kleur.bold().magenta(timeTook)}) \n`
+          )} (${kleur.bold().magenta(timeTook)}) \n`,
+          `\n ${kleur
+            .bold()
+            .grey(
+              "Note: production dependencies used elsewhere than in the currently targeted source" +
+                " files (e.g. configuration files not analyzed by skott) might be wrongly " +
+                " reported as 'unused'. Please double check their potential use in other places than" +
+                " source files before removing them. You might also want to move them as 'devDependencies'" +
+                " if that is the case."
+            )}
+          `
         );
 
         for (const dep of thirdParty) {
