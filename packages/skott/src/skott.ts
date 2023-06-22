@@ -14,7 +14,14 @@ import {
 } from "./cache/index.js";
 import { FileReader, FileReaderTag } from "./filesystem/file-reader.js";
 import { FileWriter } from "./filesystem/file-writer.js";
-import { highlight, LoggerTag, lowlight, SkottLogger } from "./logger.js";
+import {
+  highlight,
+  logFailureM,
+  LoggerTag,
+  logSuccessM,
+  lowlight,
+  SkottLogger
+} from "./logger.js";
 import {
   DependencyResolver,
   FollowModuleDeclarationOptions,
@@ -553,7 +560,7 @@ export class Skott<T> {
     }
   }
 
-  private extractRootManifestInformation<T>(this: Skott<T>) {
+  private extractRootManifestInformation() {
     return pipe(
       findRootManifest(this.#baseDir, this.config.manifestPath),
       Effect.tap(({ dependencies, name }) =>
@@ -567,20 +574,12 @@ export class Skott<T> {
       ),
       Effect.tapBoth(
         () =>
-          Effect.flatMap(Effect.service(LoggerTag), ({ failure }) =>
-            Effect.sync(() =>
-              failure(
-                "Root manifest not found. Third-party dependencies will to be resolved with other heuristics."
-              )
-            )
+          logFailureM(
+            "Root manifest not found. Third-party dependencies will to be resolved with other heuristics."
           ),
         () =>
-          Effect.flatMap(Effect.service(LoggerTag), ({ success }) =>
-            Effect.sync(() =>
-              success(
-                "Root manifest found. Third-party dependencies will to be resolved from it."
-              )
-            )
+          logSuccessM(
+            "Root manifest found. Third-party dependencies will to be resolved from it."
           )
       ),
       Effect.provideService(LoggerTag, this.logger),
