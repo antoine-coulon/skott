@@ -35,6 +35,7 @@ import {
   extractInformationFromManifest,
   findManifestDependencies,
   findMatchesBetweenGraphAndManifestDependencies,
+  findRootManifest,
   findUnusedImplicitDependencies,
   type ManifestDependenciesByName
 } from "./workspace/index.js";
@@ -445,11 +446,12 @@ export class Skott<T> {
       }
     }
   ): Promise<UnusedDependencies> {
-    const manifestDependencies = await findManifestDependencies(
-      this.#baseDir,
-      this.config.manifestPath,
-      this.fileReader
+    const manifestDependencies = await pipe(
+      findManifestDependencies(this.#baseDir, this.config.manifestPath),
+      Effect.provideService(FileReaderTag, this.fileReader),
+      Effect.runPromise
     );
+
     const graphDependencies = this.findThirdPartyDependenciesFromGraph();
 
     const matchedDependencies = findMatchesBetweenGraphAndManifestDependencies(
@@ -486,6 +488,21 @@ export class Skott<T> {
   }
 
   private async buildFromEntrypoint(entrypoint: string): Promise<void> {
+    await pipe(
+      findRootManifest(this.#baseDir, this.config.manifestPath),
+      Effect.tap(({ dependencies }) =>
+        Effect.sync(() => {
+          this.#workspaceConfiguration.manifests.root = {
+            dependencies,
+            devDependencies: {},
+            peerDependencies: {}
+          };
+        })
+      ),
+      Effect.provideService(FileReaderTag, this.fileReader),
+      Effect.runPromiseExit
+    );
+
     const entrypointModulePath = await pipe(
       resolveImportedModulePath(entrypoint),
       Effect.provideService(FileReaderTag, this.fileReader),

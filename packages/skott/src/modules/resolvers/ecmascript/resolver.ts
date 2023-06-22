@@ -44,8 +44,15 @@ export function isBuiltinModule(module: string): boolean {
 
 export function isThirdPartyModule(
   module: string,
-  expectedModuleExtensions: Set<string>
+  expectedModuleExtensions: Set<string>,
+  manifestDependencies: string[] = []
 ): boolean {
+  if (manifestDependencies.length > 0) {
+    return manifestDependencies.some((manifestDependency) =>
+      module.startsWith(manifestDependency)
+    );
+  }
+
   const extension = path.extname(module);
   const hasExpectedExtension =
     extension !== "" && expectedModuleExtensions.has(extension);
@@ -143,6 +150,9 @@ export class EcmaScriptDependencyResolver implements DependencyResolver {
     logger,
     followModuleDeclaration
   }: DependencyResolverOptions): Promise<DependencyResolverControlFlow> {
+    const rootManifestDependencies =
+      workspaceConfiguration.manifests.root?.dependencies ?? {};
+
     if (isBinaryModule(moduleDeclaration) || isJSONModule(moduleDeclaration)) {
       logger.info(lowlightSkipped(moduleDeclaration));
 
@@ -202,7 +212,11 @@ export class EcmaScriptDependencyResolver implements DependencyResolver {
       // module.
       if (
         !moduleSuccessfullyResolved &&
-        isThirdPartyModule(moduleDeclaration, kExpectedModuleExtensions)
+        isThirdPartyModule(
+          moduleDeclaration,
+          kExpectedModuleExtensions,
+          Object.keys(rootManifestDependencies)
+        )
       ) {
         if (!config.dependencyTracking.thirdParty) {
           logger.info(lowlightSkipped(moduleDeclaration));
@@ -219,7 +233,11 @@ export class EcmaScriptDependencyResolver implements DependencyResolver {
         );
       }
     } else if (
-      isThirdPartyModule(moduleDeclaration, kExpectedModuleExtensions)
+      isThirdPartyModule(
+        moduleDeclaration,
+        kExpectedModuleExtensions,
+        Object.keys(rootManifestDependencies)
+      )
     ) {
       if (!config.dependencyTracking.thirdParty) {
         logger.info(lowlightSkipped(moduleDeclaration));
