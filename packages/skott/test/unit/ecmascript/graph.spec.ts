@@ -27,6 +27,7 @@ class InMemoryFileReaderWithFakeStats implements FileReader {
   async *readdir(): AsyncGenerator<string> {
     yield Promise.resolve("fake");
   }
+
   stats(filename: string): Promise<number> {
     return new Promise((resolve) => {
       memfs.fs.stat(filename, (err, data) => {
@@ -221,91 +222,119 @@ describe("When building the project structure independently of JavaScript or Typ
         });
 
         describe("When tracking third-party dependencies", async () => {
-          it("should find one third-party dependency", async () => {
-            mountFakeFileSystem({
-              "index.js": `
-              import * as anything from "./lib.js";
-              import { parseScript } from 'meriyah';
-              import path from "path";
-              import * as fs from "node:fs"; 
-            `,
-              "lib.js": ""
-            });
-
-            const { graph } = await makeSkott();
-            const indexFile = graph["index.js"];
-
-            expect(indexFile.body.thirdPartyDependencies).to.deep.equal([
-              "meriyah"
-            ]);
-          });
-
-          it("should find all types of third-party dependencies", async () => {
-            memfs.vol.fromJSON(
-              {
+          describe("When relying on source-code analysis only", () => {
+            it("should find one third-party dependency", async () => {
+              mountFakeFileSystem({
                 "index.js": `
                 import * as anything from "./lib.js";
                 import { parseScript } from 'meriyah';
-                import 'side-effect-library';
-                import { getStrategy } from "@nodesecure/vulnera";
-                import difference from "lodash.difference";
-                import _ from "next-plugin-preval/config";
-              `,
-                "lib.js": ""
-              },
-              "./"
-            );
-
-            const { graph } = await makeSkott();
-            const indexFile = graph["index.js"];
-
-            expect(indexFile.body.thirdPartyDependencies).to.deep.equal([
-              "meriyah",
-              "side-effect-library",
-              "@nodesecure/vulnera",
-              "lodash.difference",
-              "next-plugin-preval"
-            ]);
-          });
-
-          describe("When third-party dependencies are exposing namespaces", () => {
-            it("should keep only one version of a same dependency", async () => {
-              mountFakeFileSystem({
-                "index.js": `
-                  import { pipe } from '@effect-ts/core/Function';
-                  import { Has } from '@effect-ts/core/Has';
-                  import * as System from '@effect-ts/system';
-                `
-              });
-
-              const { graph } = await makeSkott();
-
-              const indexFile = graph["index.js"];
-
-              expect(indexFile.body.thirdPartyDependencies).to.deep.equal([
-                "@effect-ts/core",
-                "@effect-ts/system"
-              ]);
-            });
-          });
-
-          describe("When the entrypoint contains a base directory", () => {
-            it("should find one third-party dependency", async () => {
-              mountFakeFileSystem({
-                "src/index.js": `
-                import * as anything from "./lib.js";
-                import { parse } from '@typescript-eslint/typescript-estree';
                 import path from "path";
                 import * as fs from "node:fs"; 
               `,
-                "src/lib.js": ""
+                "lib.js": ""
               });
 
-              const { graph } = await makeSkott("src/index.js", false);
+              const { graph } = await makeSkott();
               const indexFile = graph["index.js"];
 
               expect(indexFile.body.thirdPartyDependencies).to.deep.equal([
-                "@typescript-eslint/typescript-estree"
+                "meriyah"
+              ]);
+            });
+
+            it("should find all types of third-party dependencies", async () => {
+              memfs.vol.fromJSON(
+                {
+                  "index.js": `
+                  import * as anything from "./lib.js";
+                  import { parseScript } from 'meriyah';
+                  import 'side-effect-library';
+                  import { getStrategy } from "@nodesecure/vulnera";
+                  import difference from "lodash.difference";
+                  import _ from "next-plugin-preval/config";
+                `,
+                  "lib.js": ""
+                },
+                "./"
+              );
+
+              const { graph } = await makeSkott();
+              const indexFile = graph["index.js"];
+
+              expect(indexFile.body.thirdPartyDependencies).to.deep.equal([
+                "meriyah",
+                "side-effect-library",
+                "@nodesecure/vulnera",
+                "lodash.difference",
+                "next-plugin-preval"
+              ]);
+            });
+
+            describe("When third-party dependencies are exposing namespaces", () => {
+              it("should keep only one version of a same dependency", async () => {
+                mountFakeFileSystem({
+                  "index.js": `
+                    import { pipe } from '@effect-ts/core/Function';
+                    import { Has } from '@effect-ts/core/Has';
+                    import * as System from '@effect-ts/system';
+                  `
+                });
+
+                const { graph } = await makeSkott();
+
+                const indexFile = graph["index.js"];
+
+                expect(indexFile.body.thirdPartyDependencies).to.deep.equal([
+                  "@effect-ts/core",
+                  "@effect-ts/system"
+                ]);
+              });
+            });
+
+            describe("When the entrypoint contains a base directory", () => {
+              it("should find one third-party dependency", async () => {
+                mountFakeFileSystem({
+                  "src/index.js": `
+                  import * as anything from "./lib.js";
+                  import { parse } from '@typescript-eslint/typescript-estree';
+                  import path from "path";
+                  import * as fs from "node:fs"; 
+                `,
+                  "src/lib.js": ""
+                });
+
+                const { graph } = await makeSkott("src/index.js", false);
+                const indexFile = graph["index.js"];
+
+                expect(indexFile.body.thirdPartyDependencies).to.deep.equal([
+                  "@typescript-eslint/typescript-estree"
+                ]);
+              });
+            });
+          });
+
+          describe("When there is one reachable package.json manifest", () => {
+            it("should mainly use the dependencies from the manifest to categorize a module import as third-party but also fallback to source code heuristics", async () => {
+              mountFakeFileSystem({
+                "index.js": `
+                  import * as anything from "./lib.js";
+                  import * as E from "fp-ts/lib/Either.js";
+                  import * as Z from "@effect/io";
+                `,
+                "lib.js": "",
+                "package.json": JSON.stringify({
+                  dependencies: {
+                    "fp-ts": "1.0.0"
+                  }
+                })
+              });
+
+              const { graph } = await makeSkott();
+              const indexFile = graph["index.js"];
+
+              expect(indexFile.body.thirdPartyDependencies).to.deep.equal([
+                "fp-ts",
+                "@effect/io"
               ]);
             });
           });

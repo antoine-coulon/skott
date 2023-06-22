@@ -1,6 +1,7 @@
 import { performance } from "perf_hooks";
 
 import * as Context from "@effect/data/Context";
+import * as Effect from "@effect/io/Effect";
 import kleur from "kleur";
 
 interface LogMessage<T = void> {
@@ -56,6 +57,18 @@ export class Logger implements SkottLogger {
   failure(message: string) {
     process.stderr.write(logMessage(kleur.red().bold("✖ ").concat(message)));
   }
+}
+
+export function logFailureM(message: string) {
+  return Effect.serviceWithEffect(LoggerTag, ({ failure }) =>
+    Effect.sync(() => failure(message))
+  );
+}
+
+export function logSuccessM(message: string) {
+  return Effect.serviceWithEffect(LoggerTag, ({ success }) =>
+    Effect.sync(() => success(message))
+  );
 }
 
 export class FakeLogger implements SkottLogger {

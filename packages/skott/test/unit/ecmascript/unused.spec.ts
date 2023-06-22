@@ -69,92 +69,161 @@ describe("Searching for unused dependencies", () => {
       });
 
       describe("When there is only one unused third-party dependency", () => {
-        it("should find the unused dependency using package.json located in the cwd", async () => {
-          mountFakeFileSystem({
-            "index.js": `function foo() {}`,
-            "package.json": JSON.stringify({
-              dependencies: {
-                skott: "^1.0.0"
-              }
-            })
+        describe("When there is a package.json in the cwd", () => {
+          it("should find the unused dependency", async () => {
+            mountFakeFileSystem({
+              "index.js": `function foo() {}`,
+              "package.json": JSON.stringify({
+                dependencies: {
+                  skott: "^1.0.0"
+                }
+              })
+            });
+
+            const skott = makeSkott();
+            const { findUnusedDependencies } = await skott.initialize();
+            const { thirdParty } = await findUnusedDependencies(
+              inMemoryImplicitDependenciesFinder
+            );
+
+            expect(thirdParty).to.deep.equal(["skott"]);
           });
 
-          const skott = makeSkott();
-          const { findUnusedDependencies } = await skott.initialize();
-          const { thirdParty } = await findUnusedDependencies(
-            inMemoryImplicitDependenciesFinder
-          );
+          it("should find the unused dependency when using an entrypoint", async () => {
+            mountFakeFileSystem({
+              "index.js": `
+                import * as E from "fp-ts/lib/Either.js";
+                import * as D from "io-ts/lib/Decoder.js";
+              `,
+              "package.json": JSON.stringify({
+                dependencies: {
+                  "fp-ts": "^1.0.0",
+                  "io-ts": "^1.0.0",
+                  ramda: "^1.0.0"
+                }
+              })
+            });
 
-          expect(thirdParty).to.deep.equal(["skott"]);
+            const skott = makeSkott({
+              entrypoint: "index.js",
+              dependencyTracking: {
+                thirdParty: true,
+                builtin: false,
+                typeOnly: false
+              }
+            });
+            const { findUnusedDependencies } = await skott.initialize();
+            const { thirdParty } = await findUnusedDependencies(
+              inMemoryImplicitDependenciesFinder
+            );
+
+            expect(thirdParty).to.deep.equal(["ramda"]);
+          });
+
+          it("should find the unused dependency when NOT using an entrypoint", async () => {
+            mountFakeFileSystem({
+              "index.js": `
+                import * as E from "fp-ts/lib/Either.js";
+                import * as D from "io-ts/lib/Decoder.js";
+              `,
+              "package.json": JSON.stringify({
+                dependencies: {
+                  "fp-ts": "^1.0.0",
+                  "io-ts": "^1.0.0",
+                  ramda: "^1.0.0"
+                }
+              })
+            });
+
+            const skott = makeSkott({
+              dependencyTracking: {
+                thirdParty: true,
+                builtin: false,
+                typeOnly: false
+              }
+            });
+            const { findUnusedDependencies } = await skott.initialize();
+            const { thirdParty } = await findUnusedDependencies(
+              inMemoryImplicitDependenciesFinder
+            );
+
+            expect(thirdParty).to.deep.equal(["ramda"]);
+          });
         });
 
-        it("should find the unused dependency using package.json located in the base directory of the entrypoint", async () => {
-          mountFakeFileSystem({
-            "lib/index.js": `function foo() {}`,
-            "lib/package.json": JSON.stringify({
-              dependencies: {
-                "@effect/core": "^1.0.0"
-              }
-            })
-          });
+        describe("When there is a package.json in the base directory of the entrypoint", () => {
+          it("should find the unused dependency starting from the base directory", async () => {
+            mountFakeFileSystem({
+              "lib/index.js": `function foo() {}`,
+              "lib/package.json": JSON.stringify({
+                dependencies: {
+                  "@effect/core": "^1.0.0"
+                }
+              })
+            });
 
-          const skott = makeSkott({
-            entrypoint: "lib/index.js"
-          });
-          const { findUnusedDependencies } = await skott.initialize();
-          const { thirdParty } = await findUnusedDependencies(
-            inMemoryImplicitDependenciesFinder
-          );
+            const skott = makeSkott({
+              entrypoint: "lib/index.js"
+            });
+            const { findUnusedDependencies } = await skott.initialize();
+            const { thirdParty } = await findUnusedDependencies(
+              inMemoryImplicitDependenciesFinder
+            );
 
-          expect(thirdParty).to.deep.equal(["@effect/core"]);
+            expect(thirdParty).to.deep.equal(["@effect/core"]);
+          });
         });
 
-        it("should find the unused dependency using package.json located in the cwd while the entrypoint has a base dir located deeper in the FS", async () => {
-          mountFakeFileSystem({
-            "lib/index.js": `function foo() {}`,
-            "package.json": JSON.stringify({
-              dependencies: {
-                "@nodesecure/ci": "^1.0.0"
-              }
-            })
-          });
+        describe("When the entrypoint is one level deeper than the location of the package.json", () => {
+          it("should find the unused dependency using package.json located in the cwd", async () => {
+            mountFakeFileSystem({
+              "lib/index.js": `function foo() {}`,
+              "package.json": JSON.stringify({
+                dependencies: {
+                  "@nodesecure/ci": "^1.0.0"
+                }
+              })
+            });
 
-          const skott = makeSkott({
-            entrypoint: "lib/index.js"
-          });
-          const { findUnusedDependencies } = await skott.initialize();
-          const { thirdParty } = await findUnusedDependencies(
-            inMemoryImplicitDependenciesFinder
-          );
+            const skott = makeSkott({
+              entrypoint: "lib/index.js"
+            });
+            const { findUnusedDependencies } = await skott.initialize();
+            const { thirdParty } = await findUnusedDependencies(
+              inMemoryImplicitDependenciesFinder
+            );
 
-          expect(thirdParty).to.deep.equal(["@nodesecure/ci"]);
+            expect(thirdParty).to.deep.equal(["@nodesecure/ci"]);
+          });
         });
 
-        it("should find the unused dependency using package.json path provided from the config", async () => {
-          mountFakeFileSystem({
-            "libs/some-lib/index.js": `function foo() {}`,
-            "libs/package.json": JSON.stringify({
-              dependencies: {
-                "@nodesecure/ci": "^1.0.0"
-              }
-            })
-          });
+        describe("When providing a package.json `manifestPath` to use to find unused dependencies", () => {
+          it("should find the unused dependency using package.json path provided", async () => {
+            mountFakeFileSystem({
+              "libs/some-lib/index.js": `function foo() {}`,
+              "libs/package.json": JSON.stringify({
+                dependencies: {
+                  "@nodesecure/ci": "^1.0.0"
+                }
+              })
+            });
 
-          const skott = makeSkott({
-            entrypoint: "libs/some-lib/index.js",
-            manifestPath: "libs/package.json"
-          });
-          const { findUnusedDependencies } = await skott.initialize();
-          const { thirdParty } = await findUnusedDependencies(
-            inMemoryImplicitDependenciesFinder
-          );
+            const skott = makeSkott({
+              entrypoint: "libs/some-lib/index.js",
+              manifestPath: "libs/package.json"
+            });
+            const { findUnusedDependencies } = await skott.initialize();
+            const { thirdParty } = await findUnusedDependencies(
+              inMemoryImplicitDependenciesFinder
+            );
 
-          expect(thirdParty).to.deep.equal(["@nodesecure/ci"]);
+            expect(thirdParty).to.deep.equal(["@nodesecure/ci"]);
+          });
         });
       });
 
       describe("When there are multiple unused amongst other used third-party dependencies", () => {
-        it("should find the unused dependency using root package.json", async () => {
+        it("should find the unused dependencies using root package.json", async () => {
           mountFakeFileSystem({
             "index.js": `
               import {of} from 'rxjs/internal';
@@ -187,6 +256,30 @@ describe("Searching for unused dependencies", () => {
             "lodash.difference",
             "ajv"
           ]);
+        });
+
+        it("should find the unused dependency using root package.json", async () => {
+          mountFakeFileSystem({
+            "index.js": `
+              import {of} from '@org/lib';
+              import {pipe} from '@org/libV2';
+            `,
+            "package.json": JSON.stringify({
+              dependencies: {
+                ramda: "*",
+                "@org/lib": "*",
+                "@org/libV2": "*"
+              }
+            })
+          });
+
+          const skott = makeSkott();
+          const { findUnusedDependencies } = await skott.initialize();
+          const { thirdParty } = await findUnusedDependencies(
+            inMemoryImplicitDependenciesFinder
+          );
+
+          expect(thirdParty).to.deep.equal(["ramda"]);
         });
       });
 

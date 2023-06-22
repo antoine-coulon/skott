@@ -95,6 +95,7 @@ export class InMemoryFileReader implements FileReader {
   ): AsyncGenerator<string> {
     for (const dirent of memfs.fs.readdirSync(root)) {
       const _dirent = dirent as string;
+
       if (memfs.fs.lstatSync(path.join(root, _dirent)).isDirectory()) {
         if (isDirSupportedByDefault(path.join(root, _dirent))) {
           yield* this.readdir(path.join(root, _dirent), fileExtensions);

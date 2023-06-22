@@ -14,7 +14,14 @@ import {
 } from "./cache/index.js";
 import { FileReader, FileReaderTag } from "./filesystem/file-reader.js";
 import { FileWriter } from "./filesystem/file-writer.js";
-import { highlight, LoggerTag, lowlight, SkottLogger } from "./logger.js";
+import {
+  highlight,
+  logFailureM,
+  LoggerTag,
+  logSuccessM,
+  lowlight,
+  SkottLogger
+} from "./logger.js";
 import {
   DependencyResolver,
   FollowModuleDeclarationOptions,
@@ -35,6 +42,7 @@ import {
   extractInformationFromManifest,
   findManifestDependencies,
   findMatchesBetweenGraphAndManifestDependencies,
+  findRootManifest,
   findUnusedImplicitDependencies,
   type ManifestDependenciesByName
 } from "./workspace/index.js";
@@ -445,11 +453,12 @@ export class Skott<T> {
       }
     }
   ): Promise<UnusedDependencies> {
-    const manifestDependencies = await findManifestDependencies(
-      this.#baseDir,
-      this.config.manifestPath,
-      this.fileReader
+    const manifestDependencies = await pipe(
+      findManifestDependencies(this.#baseDir, this.config.manifestPath),
+      Effect.provideService(FileReaderTag, this.fileReader),
+      Effect.runPromise
     );
+
     const graphDependencies = this.findThirdPartyDependenciesFromGraph();
 
     const matchedDependencies = findMatchesBetweenGraphAndManifestDependencies(
@@ -551,7 +560,36 @@ export class Skott<T> {
     }
   }
 
+  private extractRootManifestInformation() {
+    return pipe(
+      findRootManifest(this.#baseDir, this.config.manifestPath),
+      Effect.tap(({ dependencies, name }) =>
+        Effect.sync(() => {
+          this.#workspaceConfiguration.manifests[name ?? "root"] = {
+            dependencies,
+            devDependencies: {},
+            peerDependencies: {}
+          };
+        })
+      ),
+      Effect.tapBoth(
+        () =>
+          logFailureM(
+            "Root manifest not found. Third-party dependencies will to be resolved with other heuristics."
+          ),
+        () =>
+          logSuccessM(
+            "Root manifest found. Third-party dependencies will to be resolved from it."
+          )
+      ),
+      Effect.provideService(LoggerTag, this.logger),
+      Effect.provideService(FileReaderTag, this.fileReader)
+    );
+  }
+
   public async initialize(): Promise<SkottInstance<T>> {
+    await pipe(this.extractRootManifestInformation(), Effect.runPromiseExit);
+
     if (this.config.entrypoint) {
       this.logger.info(`Building from entrypoint: ${this.config.entrypoint}`);
       await this.buildFromEntrypoint(this.config.entrypoint);

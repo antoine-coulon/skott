@@ -44,13 +44,39 @@ function readManifestAt(
   );
 }
 
-export async function findManifestDependencies(
-  baseDir: string,
-  manifestPath: string,
-  fileReader: FileReader
-): Promise<string[]> {
+export function findRootManifest(baseDir: string, manifestPath: string) {
   return pipe(
-    Effect.sync(() => fileReader.getCurrentWorkingDir()),
+    Effect.service(FileReaderTag),
+    Effect.map((fileReader) => fileReader.getCurrentWorkingDir()),
+    Effect.flatMap((cwd) =>
+      pipe(
+        readManifestAt(path.join(cwd, manifestPath)),
+        Effect.orElse(() =>
+          readManifestAt(path.join(cwd, baseDir, manifestPath))
+        )
+      )
+    ),
+    Effect.flatMap((rawManifest) =>
+      pipe(
+        Effect.attempt(() => JSON.parse(rawManifest) as Record<string, any>),
+        Effect.mapError(
+          () =>
+            new ManifestFileReadingError(
+              "The package.json manifest file could not be found or read."
+            )
+        )
+      )
+    )
+  );
+}
+
+export function findManifestDependencies(
+  baseDir: string,
+  manifestPath: string
+) {
+  return pipe(
+    Effect.service(FileReaderTag),
+    Effect.map((fileReader) => fileReader.getCurrentWorkingDir()),
     Effect.flatMap((cwd) =>
       pipe(
         readManifestAt(path.join(cwd, manifestPath)),
@@ -62,11 +88,9 @@ export async function findManifestDependencies(
     Effect.flatMap((rawManifest) =>
       pipe(
         Effect.attempt(() => Object.keys(JSON.parse(rawManifest).dependencies)),
-        Effect.orElse(() => Effect.succeed([]))
+        Effect.orElse(() => Effect.succeed<string[]>([]))
       )
-    ),
-    Effect.provideService(FileReaderTag, fileReader),
-    Effect.runPromise
+    )
   );
 }
 
@@ -76,15 +100,15 @@ export async function findManifestDependencies(
  * whole path with the dependency name in the manifest file (e.g. "rxjs").
  */
 export function findMatchesBetweenGraphAndManifestDependencies(
-  graphDependencies: string[],
-  manifestDependencies: string[]
+  depsExtractedFromGraph: string[],
+  depsExtractedFromManifest: string[]
 ): string[] {
-  return graphDependencies.map((fullDependencyPath) => {
+  return depsExtractedFromGraph.map((fullDependencyPath) => {
     const hasScopeOrNamespace = fullDependencyPath.includes("/");
 
     if (hasScopeOrNamespace) {
-      const baseDependencyWithoutNamespace = manifestDependencies.find(
-        (manifestDep) => fullDependencyPath.startsWith(manifestDep)
+      const baseDependencyWithoutNamespace = depsExtractedFromManifest.find(
+        (manifestDep) => fullDependencyPath === manifestDep
       );
 
       if (baseDependencyWithoutNamespace) {
@@ -124,7 +148,7 @@ export function findUnusedImplicitDependencies(
   return new Promise((resolve) => {
     try {
       depcheck(
-        path.join(process.cwd(), rootDir),
+        path.resolve(process.cwd(), rootDir),
         depcheckDefaults,
         (unusedDependencies) => {
           resolve([

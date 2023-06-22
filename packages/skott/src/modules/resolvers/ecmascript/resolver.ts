@@ -2,6 +2,7 @@ import { builtinModules } from "node:module";
 import path from "node:path";
 
 import { highlight } from "../../../logger.js";
+import type { ManifestDependenciesByName } from "../../../workspace/index.js";
 import {
   isTypeScriptPathAlias,
   isTypeScriptRelativePathWithNoLeadingIdentifier,
@@ -44,13 +45,36 @@ export function isBuiltinModule(module: string): boolean {
 
 export function isThirdPartyModule(
   module: string,
-  expectedModuleExtensions: Set<string>
+  expectedModuleExtensions: Set<string>,
+  manifests: ManifestDependenciesByName
 ): boolean {
   const extension = path.extname(module);
   const hasExpectedExtension =
     extension !== "" && expectedModuleExtensions.has(extension);
 
-  return !module.startsWith(".") && !hasExpectedExtension;
+  const isThirdPartyUsingHeuristics =
+    !module.startsWith(".") && !hasExpectedExtension;
+
+  /**
+   * Only single manifest is supported for now. In the case where we have multiple
+   * manifest, we must precisely determine which manifest to use to decide
+   * if a module should be flagged as third-party as each dependency should be
+   * scoped by its parent package.json.
+   *
+   * In the case where there are multiple manifests, we just want to rely on
+   * the source code heuristics.
+   */
+  if (Object.keys(manifests).length === 1) {
+    const rootManifest = manifests[Object.keys(manifests)[0]];
+    const rootProductionDeps = Object.keys(rootManifest.dependencies ?? {});
+
+    return (
+      rootProductionDeps.some((dep) => module.startsWith(dep)) ||
+      isThirdPartyUsingHeuristics
+    );
+  }
+
+  return isThirdPartyUsingHeuristics;
 }
 
 export function extractNpmNameFromThirdPartyModuleDeclaration(
@@ -202,7 +226,11 @@ export class EcmaScriptDependencyResolver implements DependencyResolver {
       // module.
       if (
         !moduleSuccessfullyResolved &&
-        isThirdPartyModule(moduleDeclaration, kExpectedModuleExtensions)
+        isThirdPartyModule(
+          moduleDeclaration,
+          kExpectedModuleExtensions,
+          workspaceConfiguration.manifests
+        )
       ) {
         if (!config.dependencyTracking.thirdParty) {
           logger.info(lowlightSkipped(moduleDeclaration));
@@ -219,7 +247,11 @@ export class EcmaScriptDependencyResolver implements DependencyResolver {
         );
       }
     } else if (
-      isThirdPartyModule(moduleDeclaration, kExpectedModuleExtensions)
+      isThirdPartyModule(
+        moduleDeclaration,
+        kExpectedModuleExtensions,
+        workspaceConfiguration.manifests
+      )
     ) {
       if (!config.dependencyTracking.thirdParty) {
         logger.info(lowlightSkipped(moduleDeclaration));
