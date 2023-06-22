@@ -34,8 +34,8 @@
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "vitest run --logHeapUsage --config=test/vitest.unit.js",
     "test:integration": "vitest run --logHeapUsage --config=test/vitest.integration.js",
-    "test:unit:watch": "vitest --watch --changed --config=test/vitest.unit.js",
-    "test:integration:watch": "vitest --watch --changed --config=test/vitest.integration.js"
+    "test:unit:watch": "vitest --watch --config=test/vitest.unit.js",
+    "test:integration:watch": "vitest --watch --config=test/vitest.integration.js"
   },
   "dependencies": {
     "@effect/data": "^0.4.1",
