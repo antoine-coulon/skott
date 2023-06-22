@@ -1,5 +1,15 @@
 # skott
 
+## 0.24.0
+
+### Minor Changes
+
+- 6713bfd: Improve third-party module resolution using root `package.json` manifest file when possible otherwise fallbacking to source code heuristics.
+
+### Patch Changes
+
+- skott-webapp@1.0.6
+
 ## 0.23.0
 
 ### Minor Changes
