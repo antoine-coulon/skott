@@ -148,7 +148,7 @@ export function findUnusedImplicitDependencies(
   return new Promise((resolve) => {
     try {
       depcheck(
-        path.join(process.cwd(), rootDir),
+        path.resolve(process.cwd(), rootDir),
         depcheckDefaults,
         (unusedDependencies) => {
           resolve([
