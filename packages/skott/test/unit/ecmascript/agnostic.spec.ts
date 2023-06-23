@@ -109,7 +109,7 @@ describe("When dealing with ECMAScript standards agnostic of TypeScript and Java
       it("should include the relative dirname in every path of the graph", async () => {
         mountFakeFileSystem({
           "my-app-folder/my-project/index.js": `
-          import { createHtml } '../apps/dashboard/index.js';
+          import { createHtml } from '../apps/dashboard/index.js';
           render(createHtml());
         `,
           "my-app-folder/my-project/libs/temporal/index.js": `
