@@ -1,5 +1,5 @@
 {
-  "extends": "@skott/config/tsconfig.json",
+  "extends": "@skottorg/config/tsconfig.json",
   "include": [
     "src/**/*.ts",
     "bin/**/*.ts",

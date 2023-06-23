@@ -30,6 +30,7 @@ export class TypeScriptModuleWalker implements ModuleWalker {
             comment: false
           });
 
+          // @ts-expect-error
           walkAST(node, {
             enter(node) {
               extractModuleDeclarations(

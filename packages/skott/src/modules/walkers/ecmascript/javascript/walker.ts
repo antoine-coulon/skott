@@ -25,6 +25,7 @@ export class JavaScriptModuleWalker implements ModuleWalker {
         loc: false
       });
 
+      // @ts-expect-error
       walkAST(node, {
         enter(node) {
           extractModuleDeclarations(node, moduleDeclarations);
