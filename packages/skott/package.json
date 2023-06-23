@@ -32,8 +32,8 @@
     "prestart": "pnpm run build",
     "start": "node dist/bin/cli.js",
     "test": "npm run test:unit && npm run test:integration",
-    "test:unit": "vitest run --logHeapUsage --config=test/vitest.unit.js",
-    "test:integration": "vitest run --logHeapUsage --config=test/vitest.integration.js",
+    "test:unit": "vitest run --config=test/vitest.unit.js",
+    "test:integration": "vitest run --config=test/vitest.integration.js",
     "test:unit:watch": "vitest --watch --config=test/vitest.unit.js",
     "test:integration:watch": "vitest --watch --config=test/vitest.integration.js"
   },
