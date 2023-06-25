@@ -125,4 +125,129 @@ describe("Skott analysis runner", () => {
       `Entrypoint "not-existing.ts" not found`
     );
   });
+
+  describe("When using ignore pattern", () => {
+    describe("When using bulk analysis with no imports between files", () => {
+      test("Should ignore all files within `tests` folder", async () => {
+        mountFakeFileSystem({
+          "./src/apps/app1/src/feature.ts": ``,
+          "./src/apps/app1/src/index.ts": ``,
+          "./src/tests/test-1.ts": ``,
+          "./src/tests/test-2.ts": ``
+        });
+
+        const skott = new Skott(
+          defaultConfig,
+          new InMemoryFileReader({
+            cwd: "./",
+            ignorePattern: "**/tests/**/*.ts"
+          }),
+          new InMemoryFileWriter(),
+          new ModuleWalkerSelector(),
+          new FakeLogger()
+        );
+
+        const { files } = await skott
+          .initialize()
+          .then(({ getStructure }) => getStructure());
+
+        expect(files).toEqual([
+          "src/apps/app1/src/feature.ts",
+          "src/apps/app1/src/index.ts"
+        ]);
+      });
+    });
+
+    describe("When using bulk analysis with imports between files", () => {
+      test("Should even discard files that are imported from non-ignored files", async () => {
+        mountFakeFileSystem({
+          "./apps/app1/feature.ts": `
+            import { lib } from "../../libs/lib-1/test-1.ts";
+            export function feature() {}
+          `,
+          "./apps/app1/index.ts": `
+            import { feature } from "./feature.ts";
+          `,
+          "./libs/lib-1/test-1.ts": `
+            export function lib() {}
+          `
+        });
+
+        const skott = new Skott(
+          { ...defaultConfig },
+          new InMemoryFileReader({ ignorePattern: "libs/**/*.ts", cwd: "./" }),
+          new InMemoryFileWriter(),
+          new ModuleWalkerSelector(),
+          new FakeLogger()
+        );
+
+        const { graph, files } = await skott
+          .initialize()
+          .then(({ getStructure }) => getStructure());
+
+        expect(files).toEqual(["apps/app1/feature.ts", "apps/app1/index.ts"]);
+
+        expect(graph).toEqual({
+          "apps/app1/index.ts": {
+            id: "apps/app1/index.ts",
+            adjacentTo: ["apps/app1/feature.ts"],
+            body: fakeNodeBody
+          },
+          "apps/app1/feature.ts": {
+            id: "apps/app1/feature.ts",
+            adjacentTo: [],
+            body: fakeNodeBody
+          }
+        });
+      });
+    });
+
+    describe("When using an entrypoint with imports between files", () => {
+      test("Should even discard files that are imported from non-ignored files", async () => {
+        mountFakeFileSystem({
+          "./apps/app1/feature.ts": `
+            import { lib } from "../../libs/lib-1/test-1.ts";
+            export function feature() {}
+          `,
+          "./apps/app1/index.ts": `
+            import { feature } from "./feature.ts";
+          `,
+          "./libs/lib-1/test-1.ts": `
+            export function lib() {}
+          `
+        });
+
+        const skott = new Skott(
+          {
+            ...defaultConfig,
+            entrypoint: "apps/app1/index.ts",
+            includeBaseDir: true
+          },
+          new InMemoryFileReader({ ignorePattern: "libs/**/*.ts", cwd: "./" }),
+          new InMemoryFileWriter(),
+          new ModuleWalkerSelector(),
+          new FakeLogger()
+        );
+
+        const { graph, files } = await skott
+          .initialize()
+          .then(({ getStructure }) => getStructure());
+
+        expect(files).toEqual(["apps/app1/index.ts", "apps/app1/feature.ts"]);
+
+        expect(graph).toEqual({
+          "apps/app1/index.ts": {
+            id: "apps/app1/index.ts",
+            adjacentTo: ["apps/app1/feature.ts"],
+            body: fakeNodeBody
+          },
+          "apps/app1/feature.ts": {
+            id: "apps/app1/feature.ts",
+            adjacentTo: [],
+            body: fakeNodeBody
+          }
+        });
+      });
+    });
+  });
 });

@@ -6,6 +6,7 @@ import path from "node:path";
 import * as Context from "@effect/data/Context";
 import ignoreWalk from "ignore-walk";
 import * as memfs from "memfs";
+import { minimatch } from "minimatch";
 
 import {
   isDirSupportedByDefault,
@@ -23,12 +24,29 @@ export interface FileReader {
 
 export const FileReaderTag = Context.Tag<FileReader>();
 
+interface FileSystemConfig {
+  cwd: string;
+  ignorePattern?: string;
+}
+
+function isFileIgnored(filename: string, ignorePattern?: string): boolean {
+  return minimatch(filename, ignorePattern ?? "");
+}
+
 export class FileSystemReader implements FileReader {
   constructor(
-    private readonly config: { cwd: string } = { cwd: process.cwd() }
+    private readonly config: FileSystemConfig = {
+      cwd: process.cwd(),
+      ignorePattern: ""
+    }
   ) {}
 
   read(filename: string): Promise<string> {
+    if (isFileIgnored(filename, this.config.ignorePattern)) {
+      return Promise.reject(
+        `File ${filename} is ignored due to the ignore pattern ${this.config.ignorePattern}`
+      );
+    }
     return fs.readFile(filename, { encoding: "utf-8", flag: R_OK });
   }
 
@@ -69,7 +87,9 @@ export class FileSystemReader implements FileReader {
         isFileMatchingExtensions;
 
       if (isSupportedFile || isManifestFile(filePath)) {
-        yield filePath;
+        if (!isFileIgnored(filePath, this.config.ignorePattern)) {
+          yield filePath;
+        }
       }
     }
   }
@@ -77,9 +97,19 @@ export class FileSystemReader implements FileReader {
 
 /* eslint-disable no-sync */
 export class InMemoryFileReader implements FileReader {
-  constructor(private readonly config: { cwd: string } = { cwd: "./" }) {}
+  #ignorePattern: string;
+
+  constructor(
+    private readonly config: FileSystemConfig = { cwd: "./", ignorePattern: "" }
+  ) {
+    this.#ignorePattern = config.ignorePattern ?? "";
+  }
 
   read(filename: string): Promise<string> {
+    if (isFileIgnored(filename, this.#ignorePattern)) {
+      return Promise.reject("_discard_");
+    }
+
     return new Promise((resolve) => {
       resolve(memfs.fs.readFileSync(filename, "utf-8") as string);
     });
@@ -103,7 +133,8 @@ export class InMemoryFileReader implements FileReader {
       } else if (
         isManifestFile(_dirent) ||
         (isFileSupportedByDefault(_dirent) &&
-          fileExtensions.includes(path.extname(_dirent)))
+          fileExtensions.includes(path.extname(_dirent)) &&
+          !isFileIgnored(path.join(root, _dirent), this.#ignorePattern))
       ) {
         yield path.join(root, _dirent);
       }
