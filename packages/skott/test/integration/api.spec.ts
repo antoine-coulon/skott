@@ -60,7 +60,7 @@ describe("When running Skott using all real dependencies", () => {
 
       const skott = new Skott(
         defaultConfig,
-        new FileSystemReader({ cwd: fsRootDir }),
+        new FileSystemReader({ cwd: fsRootDir, ignorePattern: "" }),
         new InMemoryFileWriter(),
         new ModuleWalkerSelector(),
         new FakeLogger()

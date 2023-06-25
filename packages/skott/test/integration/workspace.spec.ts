@@ -31,7 +31,7 @@ describe("When running Skott with a real file system", () => {
 
     const skott = new Skott(
       { ...defaultConfig },
-      new FileSystemReader({ cwd: fsRootDir }),
+      new FileSystemReader({ cwd: fsRootDir, ignorePattern: "" }),
       new InMemoryFileWriter(),
       new ModuleWalkerSelector(),
       new FakeLogger()
@@ -89,7 +89,7 @@ describe("When running Skott with a real file system", () => {
             thirdParty: true
           }
         },
-        new FileSystemReader({ cwd: fsRootDir }),
+        new FileSystemReader({ cwd: fsRootDir, ignorePattern: "" }),
         new InMemoryFileWriter(),
         new ModuleWalkerSelector(),
         new FakeLogger()

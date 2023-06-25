@@ -26,7 +26,7 @@ describe("Skott analysis runner", () => {
 
     const skott = new Skott(
       defaultConfig,
-      new InMemoryFileReader({ cwd: "./apps" }),
+      new InMemoryFileReader({ cwd: "./apps", ignorePattern: "" }),
       new InMemoryFileWriter(),
       new ModuleWalkerSelector(),
       new FakeLogger()
@@ -96,7 +96,7 @@ describe("Skott analysis runner", () => {
 
       const skott = new Skott(
         defaultConfig,
-        new InMemoryFileReader({ cwd }),
+        new InMemoryFileReader({ cwd, ignorePattern: "" }),
         new InMemoryFileWriter(),
         new ModuleWalkerSelector(),
         new FakeLogger()

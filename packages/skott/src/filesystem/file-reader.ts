@@ -26,11 +26,11 @@ export const FileReaderTag = Context.Tag<FileReader>();
 
 interface FileSystemConfig {
   cwd: string;
-  ignorePattern?: string;
+  ignorePattern: string;
 }
 
-function isFileIgnored(filename: string, ignorePattern?: string): boolean {
-  return minimatch(filename, ignorePattern ?? "");
+function isFileIgnored(filename: string, ignorePattern: string): boolean {
+  return minimatch(filename, ignorePattern);
 }
 
 export class FileSystemReader implements FileReader {
@@ -97,16 +97,12 @@ export class FileSystemReader implements FileReader {
 
 /* eslint-disable no-sync */
 export class InMemoryFileReader implements FileReader {
-  #ignorePattern: string;
-
   constructor(
     private readonly config: FileSystemConfig = { cwd: "./", ignorePattern: "" }
-  ) {
-    this.#ignorePattern = config.ignorePattern ?? "";
-  }
+  ) {}
 
   read(filename: string): Promise<string> {
-    if (isFileIgnored(filename, this.#ignorePattern)) {
+    if (isFileIgnored(filename, this.config.ignorePattern)) {
       return Promise.reject("_discard_");
     }
 
@@ -134,7 +130,7 @@ export class InMemoryFileReader implements FileReader {
         isManifestFile(_dirent) ||
         (isFileSupportedByDefault(_dirent) &&
           fileExtensions.includes(path.extname(_dirent)) &&
-          !isFileIgnored(path.join(root, _dirent), this.#ignorePattern))
+          !isFileIgnored(path.join(root, _dirent), this.config.ignorePattern))
       ) {
         yield path.join(root, _dirent);
       }
