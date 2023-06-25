@@ -6,7 +6,10 @@ import { FakeLogger } from "../../src/logger.js";
 import { ModuleWalkerSelector } from "../../src/modules/walkers/common.js";
 import { Skott, defaultConfig } from "../../src/skott.js";
 
-import { createNpmManifest, createRealFileSystem } from "./file-system.js";
+import {
+  createNpmManifest,
+  createRealFileSystem
+} from "./create-fs-sandbox.js";
 
 describe("When running Skott with a real file system", () => {
   test("Should collect workspace dependencies", async () => {

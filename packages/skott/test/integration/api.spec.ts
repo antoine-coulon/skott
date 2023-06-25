@@ -7,7 +7,7 @@ import { FakeLogger } from "../../src/logger.js";
 import { ModuleWalkerSelector } from "../../src/modules/walkers/common.js";
 import { Skott, defaultConfig } from "../../src/skott.js";
 
-import { createRealFileSystem } from "./file-system.js";
+import { createRealFileSystem } from "./create-fs-sandbox.js";
 describe("When running Skott using all real dependencies", () => {
   describe("When providing various configurations", () => {
     test("Should support empty config", async () => {
