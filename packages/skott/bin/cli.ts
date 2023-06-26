@@ -88,6 +88,12 @@ const cli = sade("skott [entrypoint]", true)
   )
 
   .option(
+    "-ig, --ignorePattern",
+    "Provide ignore pattern to exclude files from the analysis",
+    ""
+  )
+
+  .option(
     "-s, --showCircularDependencies",
     "Show all circular dependencies in the graph",
     false

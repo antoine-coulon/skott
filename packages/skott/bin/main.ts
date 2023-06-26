@@ -115,6 +115,7 @@ type CliOptions = {
   displayMode: string;
   exitCodeOnCircularDependencies: number;
   fileExtensions: string;
+  ignorePattern: string;
   includeBaseDir: boolean;
   incremental: boolean;
   manifest: string;
@@ -200,6 +201,7 @@ export async function displaySkott(
 
   const skottInstance = await skott({
     entrypoint: entrypoint ? entrypoint : undefined,
+    ignorePattern: options.ignorePattern,
     incremental: options.incremental,
     circularMaxDepth: options.circularMaxDepth ?? Number.POSITIVE_INFINITY,
     includeBaseDir: options.includeBaseDir,

@@ -29,10 +29,6 @@ interface FileSystemConfig {
   ignorePattern: string;
 }
 
-function isFileIgnored(filename: string, ignorePattern: string): boolean {
-  return minimatch(filename, ignorePattern);
-}
-
 export class FileSystemReader implements FileReader {
   constructor(
     private readonly config: FileSystemConfig = {
@@ -41,8 +37,21 @@ export class FileSystemReader implements FileReader {
     }
   ) {}
 
+  private isFileIgnored(filename: string): boolean {
+    if (this.config.ignorePattern === "") {
+      return false;
+    }
+
+    return (
+      minimatch(
+        filename,
+        path.join(this.config.cwd, path.sep, this.config.ignorePattern)
+      ) || minimatch(filename, this.config.ignorePattern)
+    );
+  }
+
   read(filename: string): Promise<string> {
-    if (isFileIgnored(filename, this.config.ignorePattern)) {
+    if (this.isFileIgnored(filename)) {
       return Promise.reject(
         `File ${filename} is ignored due to the ignore pattern ${this.config.ignorePattern}`
       );
@@ -87,7 +96,7 @@ export class FileSystemReader implements FileReader {
         isFileMatchingExtensions;
 
       if (isSupportedFile || isManifestFile(filePath)) {
-        if (!isFileIgnored(filePath, this.config.ignorePattern)) {
+        if (!this.isFileIgnored(filePath)) {
           yield filePath;
         }
       }
@@ -101,8 +110,12 @@ export class InMemoryFileReader implements FileReader {
     private readonly config: FileSystemConfig = { cwd: "./", ignorePattern: "" }
   ) {}
 
+  private isFileIgnored(filename: string): boolean {
+    return minimatch(filename, this.config.ignorePattern);
+  }
+
   read(filename: string): Promise<string> {
-    if (isFileIgnored(filename, this.config.ignorePattern)) {
+    if (this.isFileIgnored(filename)) {
       return Promise.reject("_discard_");
     }
 
@@ -130,7 +143,7 @@ export class InMemoryFileReader implements FileReader {
         isManifestFile(_dirent) ||
         (isFileSupportedByDefault(_dirent) &&
           fileExtensions.includes(path.extname(_dirent)) &&
-          !isFileIgnored(path.join(root, _dirent), this.config.ignorePattern))
+          !this.isFileIgnored(path.join(root, _dirent)))
       ) {
         yield path.join(root, _dirent);
       }

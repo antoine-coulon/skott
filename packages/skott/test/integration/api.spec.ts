@@ -8,6 +8,8 @@ import { ModuleWalkerSelector } from "../../src/modules/walkers/common.js";
 import { Skott, defaultConfig } from "../../src/skott.js";
 
 import { createRealFileSystem } from "./create-fs-sandbox.js";
+import path from "node:path";
+
 describe("When running Skott using all real dependencies", () => {
   describe("When providing various configurations", () => {
     test("Should support empty config", async () => {
@@ -87,7 +89,7 @@ describe("When running Skott using all real dependencies", () => {
 
     describe("When using `ignorePattern` config option", () => {
       describe("When running bulk analysis", () => {
-        test("Should ignore files listed in `ignorePattern` config option", async () => {
+        test("Should ignore files using pattern relative to an absolute directory path", async () => {
           const fsRootDir = `skott-ignore-temp-fs`;
 
           const runSandbox = createRealFileSystem(fsRootDir, {
@@ -102,7 +104,7 @@ describe("When running Skott using all real dependencies", () => {
             defaultConfig,
             new FileSystemReader({
               cwd: fsRootDir,
-              ignorePattern: `${fsRootDir}/**/project-b/**/*`
+              ignorePattern: `src/project-b/**/*`
             }),
             new InMemoryFileWriter(),
             new ModuleWalkerSelector(),
@@ -119,6 +121,93 @@ describe("When running Skott using all real dependencies", () => {
               "skott-ignore-temp-fs/src/project-a/file.ts"
             ]);
           });
+        });
+
+        test("Should ignore files using pattern relative to a relative directory path", async () => {
+          const fsRootDir = `./skott-ignore-temp-fs`;
+
+          const runSandbox = createRealFileSystem(fsRootDir, {
+            "./skott-ignore-temp-fs/src/project-a/file.ts": `export interface File { name: string }`,
+            "./skott-ignore-temp-fs/src/project-b/file.ts": `export interface File { name: string }`,
+            "./skott-ignore-temp-fs/lib/index.ts": `console.log("hello world")`
+          });
+
+          expect.assertions(1);
+
+          const skott = new Skott(
+            defaultConfig,
+            new FileSystemReader({
+              cwd: fsRootDir,
+              ignorePattern: `src/project-b/**/*`
+            }),
+            new InMemoryFileWriter(),
+            new ModuleWalkerSelector(),
+            new FakeLogger()
+          );
+
+          await runSandbox(async () => {
+            const { files } = await skott
+              .initialize()
+              .then(({ getStructure }) => getStructure());
+
+            expect(files).toEqual([
+              "skott-ignore-temp-fs/lib/index.ts",
+              "skott-ignore-temp-fs/src/project-a/file.ts"
+            ]);
+          });
+        });
+
+        test("Should ignore files + their imported files using pattern relative to a relative directory path", async () => {
+          const fsRootDir = `skott-ignore-temp-fs`;
+
+          const runSandbox = createRealFileSystem(fsRootDir, {
+            "skott-ignore-temp-fs/project-a/file.ts": `import ../util/dates`,
+            "skott-ignore-temp-fs/project-b/nested/file.ts": `import ../../util/dates`,
+            "skott-ignore-temp-fs/util/dates/index.ts": `console.log("hello world")`
+          });
+
+          expect.assertions(1);
+
+          const skott = new Skott(
+            defaultConfig,
+            new FileSystemReader({
+              cwd: fsRootDir,
+              ignorePattern: `util/dates/**/*`
+            }),
+            new InMemoryFileWriter(),
+            new ModuleWalkerSelector(),
+            new FakeLogger()
+          );
+
+          await runSandbox(async () => {
+            const { files } = await skott
+              .initialize()
+              .then(({ getStructure }) => getStructure());
+
+            expect(files).toEqual([
+              "skott-ignore-temp-fs/project-a/file.ts",
+              "skott-ignore-temp-fs/project-b/nested/file.ts"
+            ]);
+          });
+        });
+
+        test("Should ignore files + their relatively imported files using pattern relative to a relative directory path", async () => {
+          const skott = new Skott(
+            defaultConfig,
+            new FileSystemReader({
+              cwd: process.cwd(),
+              ignorePattern: `src/**/*`
+            }),
+            new InMemoryFileWriter(),
+            new ModuleWalkerSelector(),
+            new FakeLogger()
+          );
+
+          const { files } = await skott
+            .initialize()
+            .then(({ getStructure }) => getStructure());
+
+          expect(files.filter((f) => f.includes("src"))).toEqual([]);
         });
       });
 
@@ -143,7 +232,7 @@ describe("When running Skott using all real dependencies", () => {
             },
             new FileSystemReader({
               cwd: fsRootDir,
-              ignorePattern: `${fsRootDir}/lib/**/*`
+              ignorePattern: `lib/**/*`
             }),
             new InMemoryFileWriter(),
             new ModuleWalkerSelector(),
@@ -165,7 +254,9 @@ describe("When running Skott using all real dependencies", () => {
           const runSandbox = createRealFileSystem(fsRootDir, {
             "skott-ignore-temp-fs/project-a/file.ts": `
               import "../lib/index";
+              import "../sub-folder/lib/index";
             `,
+            "skott-ignore-temp-fs/sub-folder/lib/index.ts": `console.log("hello world")`,
             "skott-ignore-temp-fs/lib/index.ts": `console.log("hello world")`
           });
 
@@ -179,7 +270,7 @@ describe("When running Skott using all real dependencies", () => {
             },
             new FileSystemReader({
               cwd: fsRootDir,
-              ignorePattern: `**/lib/**/*`
+              ignorePattern: `lib/**/*`
             }),
             new InMemoryFileWriter(),
             new ModuleWalkerSelector(),
@@ -191,7 +282,7 @@ describe("When running Skott using all real dependencies", () => {
               .initialize()
               .then(({ getStructure }) => getStructure());
 
-            expect(files).toEqual(["file.ts"]);
+            expect(files).toEqual(["file.ts", "../sub-folder/lib/index.ts"]);
           });
         });
       });
