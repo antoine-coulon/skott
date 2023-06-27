@@ -30,12 +30,7 @@ interface FileSystemConfig {
 }
 
 export class FileSystemReader implements FileReader {
-  constructor(
-    private readonly config: FileSystemConfig = {
-      cwd: process.cwd(),
-      ignorePattern: ""
-    }
-  ) {}
+  constructor(private readonly config: FileSystemConfig) {}
 
   private isFileIgnored(filename: string): boolean {
     if (this.config.ignorePattern === "") {
