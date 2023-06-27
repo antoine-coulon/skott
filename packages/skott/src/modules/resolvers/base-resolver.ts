@@ -16,7 +16,6 @@ import type {
 
 import {
   isMinifiedFile,
-  isTestFile,
   isTypeScriptDeclarationFile
 } from "./ecmascript/resolver.js";
 
@@ -90,7 +89,6 @@ export function isFileSupportedByDefault(fileName: string): boolean {
   return (
     kExpectedModuleExtensions.has(path.extname(fileName)) &&
     !isTypeScriptDeclarationFile(fileName) &&
-    !isTestFile(fileName) &&
     !isMinifiedFile(fileName)
   );
 }
@@ -102,12 +100,10 @@ export function isManifestFile(fileName: string): boolean {
 export const defaultIgnoredDirs = new Set([
   "node_modules",
   "dist",
+  "out",
   "build",
   "coverage",
   "docs",
-  "examples",
-  "test",
-  "__tests__",
   "temp"
 ]);
 

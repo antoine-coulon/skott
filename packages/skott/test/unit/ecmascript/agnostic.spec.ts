@@ -518,10 +518,15 @@ describe("When a global analysis without any entrypoint is requested", () => {
     });
 
     expect(files).to.deep.equal([
+      "__tests__/foo.js",
       "bar.js",
       "baz.ts",
       "foo.controller.js",
-      "foo.js"
+      "foo.js",
+      "foo.spec.js",
+      "foo.spec.ts",
+      "foo.test.js",
+      "test/foo.js"
     ]);
   });
 
@@ -535,11 +540,11 @@ describe("When a global analysis without any entrypoint is requested", () => {
       "buzz.d.ts": "",
       "node_modules/bar/foo.js": "",
       "dist/foo.js": "",
-      "foo.spec.js": "",
       "foo.spec.ts": "",
-      "foo.test.js": "",
+      "foo.spec.js": "",
+      "foo.test.ts": "",
       "test/foo.js": "",
-      "__tests__/foo.js": "",
+      "__tests__/foo.ts": "",
       "dir/foo.ts": "",
       "index.mjs": ""
     });
@@ -548,7 +553,14 @@ describe("When a global analysis without any entrypoint is requested", () => {
       fileExtensions: [".ts", ".mjs"]
     });
 
-    expect(files).to.deep.equal(["baz.ts", "dir/foo.ts", "index.mjs"]);
+    expect(files).to.deep.equal([
+      "__tests__/foo.ts",
+      "baz.ts",
+      "dir/foo.ts",
+      "foo.spec.ts",
+      "foo.test.ts",
+      "index.mjs"
+    ]);
   });
 });
 
