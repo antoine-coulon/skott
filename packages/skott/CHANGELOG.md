@@ -1,5 +1,12 @@
 # skott
 
+## 0.25.1
+
+### Patch Changes
+
+- d27c83e: Ignore files with leading dots by default when using ignore patterns
+  - skott-webapp@1.0.6
+
 ## 0.25.0
 
 ### Minor Changes
