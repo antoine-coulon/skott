@@ -6,7 +6,7 @@ import path from "node:path";
 import * as Context from "@effect/data/Context";
 import ignoreWalk from "ignore-walk";
 import * as memfs from "memfs";
-import { minimatch } from "minimatch";
+import { type MinimatchOptions, minimatch } from "minimatch";
 
 import {
   isDirSupportedByDefault,
@@ -29,6 +29,14 @@ interface FileSystemConfig {
   ignorePattern: string;
 }
 
+const minimatchDefaultOptions: MinimatchOptions = {
+  dot: true
+};
+
+function matchWith(filename: string, options = minimatchDefaultOptions) {
+  return (pattern: string) => minimatch(filename, pattern, options);
+}
+
 export class FileSystemReader implements FileReader {
   constructor(private readonly config: FileSystemConfig) {}
 
@@ -37,11 +45,11 @@ export class FileSystemReader implements FileReader {
       return false;
     }
 
+    const match = matchWith(filename);
+
     return (
-      minimatch(
-        filename,
-        path.join(this.config.cwd, path.sep, this.config.ignorePattern)
-      ) || minimatch(filename, this.config.ignorePattern)
+      match(path.join(this.config.cwd, path.sep, this.config.ignorePattern)) ||
+      match(this.config.ignorePattern)
     );
   }
 
@@ -106,7 +114,11 @@ export class InMemoryFileReader implements FileReader {
   ) {}
 
   private isFileIgnored(filename: string): boolean {
-    return minimatch(filename, this.config.ignorePattern);
+    return minimatch(
+      filename,
+      this.config.ignorePattern,
+      minimatchDefaultOptions
+    );
   }
 
   read(filename: string): Promise<string> {
