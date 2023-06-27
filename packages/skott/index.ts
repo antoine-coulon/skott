@@ -10,6 +10,7 @@ import { Skott, SkottConfig, SkottInstance } from "./src/skott.js";
 interface InputConfig<T> extends Partial<SkottConfig<T>> {
   cwd?: string;
   verbose?: boolean;
+  ignorePattern?: string;
 }
 
 function raiseIllegalConfigException(configuration: string): never {
@@ -41,12 +42,13 @@ export default async function skott<T>(
 
   checkIllegalConfigs(config);
 
-  const { cwd, verbose, ...skottConfig } = decodeInputConfig(config);
+  const { cwd, verbose, ignorePattern, ...skottConfig } =
+    decodeInputConfig(config);
   const logger = verbose ? new Logger() : new FakeLogger();
 
   const skottInstance = await new Skott<T>(
     skottConfig,
-    new FileSystemReader({ cwd }),
+    new FileSystemReader({ cwd, ignorePattern }),
     new FileSystemWriter(),
     new ModuleWalkerSelector(),
     logger

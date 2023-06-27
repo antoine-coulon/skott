@@ -35,8 +35,12 @@ const config = D.struct({
   dependencyResolvers: withDefaultValue(defaultConfig.dependencyResolvers)(
     D.array(dependencyResolverDecoder())
   ),
+  /**
+   * External runner only config
+   */
   cwd: withDefaultValue(process.cwd())(D.string),
-  verbose: withDefaultValue(false)(D.boolean)
+  verbose: withDefaultValue(false)(D.boolean),
+  ignorePattern: withDefaultValue("")(D.string)
 });
 
 export function decodeInputConfig<T>(

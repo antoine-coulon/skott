@@ -2,11 +2,15 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 type AsyncCallback = () => Promise<void>;
+type FsDelimiter = `` | `/` | `./`;
 
 export function createRealFileSystem<
   RootDir extends string,
   File extends `${string}.${string}`
->(fsRootDir: RootDir, entries: Record<`${RootDir}/${File}`, string>) {
+>(
+  fsRootDir: RootDir,
+  entries: Record<`${FsDelimiter}${RootDir}/${File}`, string>
+) {
   async function make() {
     try {
       for (const [filePath, content] of Object.entries<string>(entries)) {
