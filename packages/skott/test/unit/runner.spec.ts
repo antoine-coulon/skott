@@ -127,6 +127,34 @@ describe("Skott analysis runner", () => {
   });
 
   describe("When using ignore pattern", () => {
+    describe("When using a pattern specific to file names", () => {
+      test("Should ignore all test files including `.spec` and `.test` prefixes", async () => {
+        mountFakeFileSystem({
+          "./src/apps/app1/src/feature.ts": ``,
+          "./src/apps/app1/src/feature.spec.ts": ``,
+          "./src/lib/feature.test.ts": ``,
+          "./src/lib/feature.unit.test.ts": ``
+        });
+
+        const skott = new Skott(
+          defaultConfig,
+          new InMemoryFileReader({
+            cwd: "./",
+            ignorePattern: "**/*.+(spec|test).*"
+          }),
+          new InMemoryFileWriter(),
+          new ModuleWalkerSelector(),
+          new FakeLogger()
+        );
+
+        const { files } = await skott
+          .initialize()
+          .then(({ getStructure }) => getStructure());
+
+        expect(files).toEqual(["src/apps/app1/src/feature.ts"]);
+      });
+    });
+
     describe("When using bulk analysis with no imports between files", () => {
       test("Should ignore all files within `tests` folder", async () => {
         mountFakeFileSystem({
