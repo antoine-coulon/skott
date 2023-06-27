@@ -184,6 +184,30 @@ describe("Skott analysis runner", () => {
           "src/apps/app1/src/index.ts"
         ]);
       });
+
+      test("Should ignore files with special names", async () => {
+        mountFakeFileSystem({
+          "./src/apps/app1/src/feature.ts": ``,
+          "./src/config/.eslintrc.js": ``
+        });
+
+        const skott = new Skott(
+          defaultConfig,
+          new InMemoryFileReader({
+            cwd: "./",
+            ignorePattern: "src/config/**/*"
+          }),
+          new InMemoryFileWriter(),
+          new ModuleWalkerSelector(),
+          new FakeLogger()
+        );
+
+        const { files } = await skott
+          .initialize()
+          .then(({ getStructure }) => getStructure());
+
+        expect(files).toEqual(["src/apps/app1/src/feature.ts"]);
+      });
     });
 
     describe("When using bulk analysis with imports between files", () => {
