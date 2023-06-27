@@ -5,7 +5,6 @@
 ### Patch Changes
 
 - d27c83e: Ignore files with leading dots by default when using ignore patterns
-  - skott-webapp@1.0.6
 
 ## 0.25.0
 
@@ -15,29 +14,17 @@
 
   Breaking changes: test files (folders: `__tests__`, `test`, `examples`, files: `*.spec.*`, `*.test.*`) are now included by default in the analysis.
 
-### Patch Changes
-
-- skott-webapp@1.0.6
-
 ## 0.24.0
 
 ### Minor Changes
 
 - 6713bfd: Improve third-party module resolution using root `package.json` manifest file when possible otherwise fallbacking to source code heuristics.
 
-### Patch Changes
-
-- skott-webapp@1.0.6
-
 ## 0.23.0
 
 ### Minor Changes
 
 - d5f21c4Add: `getWorkspace` on skott instance that returns a dictionary with all workspace manifests and dependencies listed in each one of them. Allow devDependencies to be reported when using `showUnusedDependencies` CLI flag. Raise exceptions when using the skott API and providing illegal configurations.
-
-### Patch Changes
-
-- skott-webapp@1.0.6
 
 ## 0.22.1
 
@@ -52,17 +39,12 @@
 
 - 4b22b26: Provide a verbose flag to display internal logs including caching, module resolution, module parsing
 
-### Patch Changes
-
-- skott-webapp@1.0.6
-
 ## 0.21.1
 
 ### Patch Changes
 
 - 99db80d: Improve tsconfig deep alias resolution for path with glob patterns
 - 4f54570: Produce an explicit error message when the entrypoint can not be found
-- skott-webapp@1.0.6
 
 ## 0.21.0
 
