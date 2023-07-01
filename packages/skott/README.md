@@ -39,6 +39,13 @@ const { getStructure, getWorkspace, findCircularDependencies, findParentsOf, fin
    */ 
   entrypoint: "src/index.ts",
   /**
+   * (Optional) Ignore pattern that applies during file traversal and module 
+   * resolution. Each module matching the pattern will be discarded from the 
+   * graph.
+   * Defaults to `none`;
+   */ 
+  ignorePattern: "src/examples/**/*"
+  /**
    * (Optional) Whether to run Skott using the incremental pattern. By setting "true",
    * Skott will create a `.skott/cache.json` file to only detect and re-process what
    * changed since the last analysis.
@@ -57,9 +64,19 @@ const { getStructure, getWorkspace, findCircularDependencies, findParentsOf, fin
    */
   circularMaxDepth: 20,
   /**
+   * (Optional) Sets the base directory to start the analysis from. It's useful
+   * when you want to run skott from a parent directory targetting a specific sub
+   * directory (in the context of monorepo for instance). Using `cwd=some-path` 
+   * is equivalent to `cd some-path && skott`.
+   * Defaults to `process.cwd()`.
+   */
+  cwd: "./",
+  /**
    * (Optional) Whether the base directory of the entrypoint should be included in relative 
    * file paths. For the specified `src/index.ts` above, it would consider the 
    * root path to be `./` consequently `src/` would never appear in any file paths.
+   * Note: `includeBaseDir` can only be set to "true" when there is an `entrypoint`
+   * provided.
    * Defaults to `false`.
    */
   includeBaseDir: false,
@@ -92,7 +109,12 @@ const { getStructure, getWorkspace, findCircularDependencies, findParentsOf, fin
    * Defaults to `EcmaScriptModuleResolver` which is used a standard dependency
    * resolver for ECMAScript projects.
    */
-  dependencyResolvers: [new TurborepoResolver()]
+  dependencyResolvers: [new TurborepoResolver()],
+  /**
+   * (Optional) Enable verbose internal logging.
+   * Defaults to `false`
+   */
+  verbose: true
 });
 ```
 

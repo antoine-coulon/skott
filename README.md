@@ -20,7 +20,7 @@
 
 ✅ Works with any custom **dependency resolver** (useful for specific monorepos integration)
 
-✅ File tree traversal supports Git ignored files (via `.gitignore` files)
+✅ File tree traversal supports **ignore pattern** and **Git ignored files** (via `.gitignore` files)
 
 ✅ Runs **incrementally** (experimental), meaning that Skott will _only analyze_ files that were modified/added since the last run, offering performance boosts.
 
