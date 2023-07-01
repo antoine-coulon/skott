@@ -1,5 +1,9 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 importers:
 
   .:
@@ -199,8 +203,8 @@ importers:
         specifier: ^1.4.3
         version: 1.4.3
       digraph-js:
-        specifier: ^2.1.0
-        version: 2.1.0
+        specifier: ^2.2.2
+        version: 2.2.2
       estree-walker:
         specifier: ^3.0.3
         version: 3.0.3
@@ -2192,8 +2196,8 @@ packages:
     engines: {node: '>=0.3.1'}
     dev: true
 
-  /digraph-js@2.1.0:
-    resolution: {integrity: sha512-CQNO8BZows6PNz4yPYY97JelaX3/DUtsEqXys29U6teTqCLYzg1jRTiu4tqYTexgMlQ/EReX5kRPUSjDXdaARg==}
+  /digraph-js@2.2.2:
+    resolution: {integrity: sha512-nOx4kkuNcdt9ZrYPng/EK5E5BRbho1mVKzRWULZtTL2OYi6RTPvVaIH0shMDA2JsmtZZeM+7N3wsv5Gt/9zVqw==}
     engines: {node: '>=16.0.0'}
     dependencies:
       lodash.isequal: 4.5.0

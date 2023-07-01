@@ -46,6 +46,7 @@ import {
   findUnusedImplicitDependencies,
   type ManifestDependenciesByName
 } from "./workspace/index.js";
+import { makeTraversalApi, TraversalApi } from "./traversal.js";
 
 export type SkottNodeBody = {
   size: number;
@@ -87,6 +88,7 @@ export interface ImplicitUnusedDependenciesOptions {
 }
 
 export interface SkottInstance<T = unknown> {
+  useGraph: () => TraversalApi<T>;
   getStructure: () => SkottStructure<T>;
   getWorkspace: () => ManifestDependenciesByName;
   findLeaves: () => string[];
@@ -604,6 +606,7 @@ export class Skott<T> {
     }
 
     return {
+      useGraph: () => makeTraversalApi(this.#projectGraph),
       getStructure: this.makeProjectStructure.bind(this),
       getWorkspace: () => this.#workspaceConfiguration.manifests,
       findCircularDependencies: this.circularDependencies.bind(this),
