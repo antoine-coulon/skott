@@ -1,5 +1,5 @@
 import { DiGraph } from "digraph-js";
-import type { SkottNode } from "./skott.js";
+import type { SkottNode } from "./node.js";
 
 export interface TraversalApi<T> {
   traverseFiles: (options?: {

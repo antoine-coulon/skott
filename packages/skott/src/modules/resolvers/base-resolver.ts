@@ -8,16 +8,13 @@ import * as D from "io-ts/lib/Decoder.js";
 
 import { FileReader, FileReaderTag } from "../../filesystem/file-reader.js";
 import { Logger, LoggerTag, highlight } from "../../logger.js";
-import type {
-  SkottConfig,
-  SkottNode,
-  WorkspaceConfiguration
-} from "../../skott.js";
+import type { SkottConfig, WorkspaceConfiguration } from "../../skott.js";
 
 import {
   isMinifiedFile,
   isTypeScriptDeclarationFile
 } from "./ecmascript/resolver.js";
+import type { SkottNode } from "../../graph/node.js";
 
 export interface FollowModuleDeclarationOptions {
   rootPath: string;

@@ -4,7 +4,7 @@ import { pipe } from "@effect/data/Function";
 import * as Option from "@effect/data/Option";
 import * as Effect from "@effect/io/Effect";
 import * as Exit from "@effect/io/Exit";
-import { DiGraph, VertexDefinition } from "digraph-js";
+import { DiGraph } from "digraph-js";
 import difference from "lodash.difference";
 
 import {
@@ -46,15 +46,8 @@ import {
   findUnusedImplicitDependencies,
   type ManifestDependenciesByName
 } from "./workspace/index.js";
-import { makeTraversalApi, TraversalApi } from "./traversal.js";
-
-export type SkottNodeBody = {
-  size: number;
-  thirdPartyDependencies: string[];
-  builtinDependencies: string[];
-};
-
-export type SkottNode<T = unknown> = VertexDefinition<SkottNodeBody & T>;
+import { makeTraversalApi, TraversalApi } from "./graph/traversal.js";
+import { SkottNode } from "./graph/node.js";
 
 export interface SkottConfig<T> {
   entrypoint?: string;
