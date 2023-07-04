@@ -1,6 +1,7 @@
 import type { DiGraph } from "digraph-js";
 import type { SkottNode } from "./node.js";
 import { SkottConfig } from "../skott.js";
+import * as Option from "@effect/data/Option";
 
 export const CollectLevel = {
   Deep: "deep",
@@ -11,6 +12,7 @@ export type CollectLevelValues =
   (typeof CollectLevel)[keyof typeof CollectLevel];
 
 export interface TraversalApi<T> {
+  getFileNode(id: string): SkottNode<T>;
   traverseFiles: (options?: {
     rootFile?: string;
     moduleImportsCollection?: "deepFirst" | "shallowFirst";
@@ -40,6 +42,8 @@ export function makeTraversalApi<T>(
   const nodes = graph.toDict();
 
   return {
+    getFileNode: (id) => nodes[id],
+
     *traverseFiles(options) {
       const rootNode = options?.rootFile;
       const moduleImportsCollection =
@@ -81,13 +85,13 @@ export function makeTraversalApi<T>(
       });
     },
 
-    findCircularDependencies(): string[][] {
+    findCircularDependencies(): SkottNode["id"][][] {
       return graph.findCycles({
         maxDepth: config.circularMaxDepth ?? Number.POSITIVE_INFINITY
       });
     },
 
-    findLeaves(): string[] {
+    findLeaves(): SkottNode["id"][] {
       return Object.entries(nodes)
         .filter(([_, node]) => node.adjacentTo.length === 0)
         .map(([leafId]) => leafId);
