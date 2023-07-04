@@ -1,10 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import {
-  fakeNodeBody,
-  inMemoryImplicitDependenciesFinder,
-  mountFakeFileSystem
-} from "./shared.js";
+import { mountFakeFileSystem } from "./shared.js";
 
 import { InMemoryFileReader } from "../../src/filesystem/file-reader.js";
 import { InMemoryFileWriter } from "../../src/filesystem/file-writer.js";
@@ -15,38 +11,42 @@ import { CollectLevel } from "../../src/graph/traversal.js";
 
 describe("Skott API", () => {
   describe("When using graph API", () => {
-    function makeFs() {
-      mountFakeFileSystem({
-        "a.ts": `
-            import { featureB } from "./b";
-        `,
-        "b.ts": `
-            import { featureD } from "./d";
-            import { featureC } from "./c";
-        `,
-        "c.ts": `
-            export function featureC() {}
-        `,
-        "d.ts": `
-            import { featureE } from "./e";
-            export function featureD() {}
-        `,
-        "e.ts": `
-            export function featureE() {}
-        `
-      });
-    }
-
-    test("Should traverse the whole graph (BFS) when no starting node is provided", async () => {
-      makeFs();
-
-      const skott = new Skott(
+    function makeSkott() {
+      return new Skott(
         defaultConfig,
         new InMemoryFileReader(),
         new InMemoryFileWriter(),
         new ModuleWalkerSelector(),
         new FakeLogger()
       );
+    }
+
+    function mountFakeFs() {
+      mountFakeFileSystem({
+        "a.ts": `
+          import { featureB } from "./b";
+        `,
+        "b.ts": `
+          import { featureD } from "./d";
+          import { featureC } from "./c";
+        `,
+        "c.ts": `
+          export function featureC() {}
+        `,
+        "d.ts": `
+          import { featureE } from "./e";
+          export function featureD() {}
+        `,
+        "e.ts": `
+          export function featureE() {}
+        `
+      });
+    }
+
+    test("Should traverse the whole graph (BFS) when no starting node is provided", async () => {
+      mountFakeFs();
+
+      const skott = makeSkott();
 
       const { traverseFiles } = await skott
         .initialize()
@@ -66,15 +66,9 @@ describe("Skott API", () => {
     });
 
     test("Should traverse the whole graph (BFS) starting from root node", async () => {
-      makeFs();
+      mountFakeFs();
 
-      const skott = new Skott(
-        defaultConfig,
-        new InMemoryFileReader(),
-        new InMemoryFileWriter(),
-        new ModuleWalkerSelector(),
-        new FakeLogger()
-      );
+      const skott = makeSkott();
 
       const { traverseFiles } = await skott
         .initialize()
@@ -97,15 +91,9 @@ describe("Skott API", () => {
     });
 
     test("Should traverse the whole graph (DFS) when no root node is provided", async () => {
-      makeFs();
+      mountFakeFs();
 
-      const skott = new Skott(
-        defaultConfig,
-        new InMemoryFileReader(),
-        new InMemoryFileWriter(),
-        new ModuleWalkerSelector(),
-        new FakeLogger()
-      );
+      const skott = makeSkott();
 
       const { traverseFiles } = await skott
         .initialize()
@@ -125,15 +113,9 @@ describe("Skott API", () => {
     });
 
     test("Should traverse the whole graph (DFS) starting from root node", async () => {
-      makeFs();
+      mountFakeFs();
 
-      const skott = new Skott(
-        defaultConfig,
-        new InMemoryFileReader(),
-        new InMemoryFileWriter(),
-        new ModuleWalkerSelector(),
-        new FakeLogger()
-      );
+      const skott = makeSkott();
 
       const { traverseFiles } = await skott
         .initialize()
@@ -159,23 +141,17 @@ describe("Skott API", () => {
       test("Should collect direct imported files starting from a root file", async () => {
         mountFakeFileSystem({
           "a.ts": `
-              import { featureB } from "./b";
+            import { featureB } from "./b";
           `,
           "b.ts": `
-              import { featureC } from "./c";
+            import { featureC } from "./c";
           `,
           "c.ts": `
-              export function featureC() {}
+            export function featureC() {}
           `
         });
 
-        const skott = new Skott(
-          defaultConfig,
-          new InMemoryFileReader(),
-          new InMemoryFileWriter(),
-          new ModuleWalkerSelector(),
-          new FakeLogger()
-        );
+        const skott = makeSkott();
 
         const { collectFilesDependencies } = await skott
           .initialize()
@@ -190,23 +166,17 @@ describe("Skott API", () => {
       test("Should collect files directly importing a root file", async () => {
         mountFakeFileSystem({
           "a.ts": `
-              import { featureB } from "./b";
+            import { featureB } from "./b";
           `,
           "b.ts": `
-              import { featureC } from "./c";
+            import { featureC } from "./c";
           `,
           "c.ts": `
-              export function featureC() {}
+            export function featureC() {}
           `
         });
 
-        const skott = new Skott(
-          defaultConfig,
-          new InMemoryFileReader(),
-          new InMemoryFileWriter(),
-          new ModuleWalkerSelector(),
-          new FakeLogger()
-        );
+        const skott = makeSkott();
 
         const { collectFilesDependingOn } = await skott
           .initialize()
@@ -228,24 +198,18 @@ describe("Skott API", () => {
       test("Should collect all imported files starting from a root file", async () => {
         mountFakeFileSystem({
           "a.ts": `
-              import { featureB } from "./b";
-              import { featureB } from "./c";
+            import { featureB } from "./b";
+            import { featureB } from "./c";
           `,
           "b.ts": `
-              import { featureC } from "./c";
+            import { featureC } from "./c";
           `,
           "c.ts": `
-              export function featureC() {}
+            export function featureC() {}
           `
         });
 
-        const skott = new Skott(
-          defaultConfig,
-          new InMemoryFileReader(),
-          new InMemoryFileWriter(),
-          new ModuleWalkerSelector(),
-          new FakeLogger()
-        );
+        const skott = makeSkott();
 
         const { collectFilesDependencies } = await skott
           .initialize()
@@ -265,24 +229,18 @@ describe("Skott API", () => {
       test("Should collect all files directly or indirectly importing a root file", async () => {
         mountFakeFileSystem({
           "a.ts": `
-              import { featureB } from "./b";
-              import { featureB } from "./c";
+            import { featureB } from "./b";
+            import { featureB } from "./c";
           `,
           "b.ts": `
-              import { featureC } from "./c";
+            import { featureC } from "./c";
           `,
           "c.ts": `
-              export function featureC() {}
+            export function featureC() {}
           `
         });
 
-        const skott = new Skott(
-          defaultConfig,
-          new InMemoryFileReader(),
-          new InMemoryFileWriter(),
-          new ModuleWalkerSelector(),
-          new FakeLogger()
-        );
+        const skott = makeSkott();
 
         const { collectFilesDependingOn } = await skott
           .initialize()

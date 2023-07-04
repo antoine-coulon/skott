@@ -47,7 +47,7 @@ import {
   type ManifestDependenciesByName
 } from "./workspace/index.js";
 import { makeTraversalApi, TraversalApi } from "./graph/traversal.js";
-import { SkottNode } from "./graph/node.js";
+import type { SkottNode } from "./graph/node.js";
 
 export interface SkottConfig<T> {
   entrypoint?: string;
