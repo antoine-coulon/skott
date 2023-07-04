@@ -6,7 +6,7 @@ import { FakeLogger } from "../../src/logger.js";
 import { kExpectedModuleExtensions } from "../../src/modules/resolvers/base-resolver.js";
 import { EcmaScriptDependencyResolver } from "../../src/modules/resolvers/ecmascript/resolver.js";
 import { ModuleWalkerSelector } from "../../src/modules/walkers/common.js";
-import { Skott } from "../../src/skott";
+import { Skott } from "../../src/skott.js";
 import type { SkottNode } from "../../src/graph/node.js";
 
 interface UnwrappedSkottStructure {

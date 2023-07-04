@@ -1,5 +1,4 @@
 import { describe, expect, test } from "vitest";
-import * as O from "@effect/data/Option";
 
 import { mountFakeFileSystem } from "./shared.js";
 

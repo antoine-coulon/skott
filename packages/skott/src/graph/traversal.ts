@@ -1,7 +1,6 @@
 import type { DiGraph } from "digraph-js";
 import type { SkottNode } from "./node.js";
 import { SkottConfig } from "../skott.js";
-import * as Option from "@effect/data/Option";
 
 export const CollectLevel = {
   Deep: "deep",
