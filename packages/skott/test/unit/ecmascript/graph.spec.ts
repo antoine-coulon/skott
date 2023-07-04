@@ -11,6 +11,8 @@ import {
   buildSkottProjectUsingInMemoryFileExplorer,
   mountFakeFileSystem
 } from "../shared";
+import { CollectLevel } from "../../../src/graph/traversal.js";
+import { SkottNode } from "../../../src/graph/node.js";
 
 class InMemoryFileReaderWithFakeStats implements FileReader {
   read(filename: string): Promise<string> {
@@ -141,17 +143,23 @@ describe("When building the project structure independently of JavaScript or Typ
         new FakeLogger()
       );
 
-      const skottInstance = await skott.initialize();
-      expect(skottInstance.findParentsOf("d.js")).to.deep.equal([
+      const { collectFilesDependingOn } = await skott
+        .initialize()
+        .then(({ useGraph }) => useGraph());
+
+      function extractIdsFromGraph(node: SkottNode["id"]) {
+        return collectFilesDependingOn(node, CollectLevel.Deep).map(
+          ({ id }) => id
+        );
+      }
+
+      expect(extractIdsFromGraph("d.js")).to.deep.equal([
         "c.js",
         "b.js",
         "a.js"
       ]);
-      expect(skottInstance.findParentsOf("c.js")).to.deep.equal([
-        "b.js",
-        "a.js"
-      ]);
-      expect(skottInstance.findParentsOf("a.js")).to.deep.equal([]);
+      expect(extractIdsFromGraph("c.js")).to.deep.equal(["b.js", "a.js"]);
+      expect(extractIdsFromGraph("a.js")).to.deep.equal([]);
     });
   });
 

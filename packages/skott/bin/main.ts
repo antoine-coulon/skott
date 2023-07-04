@@ -69,7 +69,8 @@ function makeCircularDependenciesUI(
   options: CliOptions
 ): string[][] {
   const circularDependencies: string[][] = [];
-  const { findCircularDependencies, hasCircularDependencies } = skottInstance;
+  const { findCircularDependencies, hasCircularDependencies } =
+    skottInstance.useGraph();
 
   // only find circular dependencies on-demand as it can be expensive
   if (options.showCircularDependencies) {
