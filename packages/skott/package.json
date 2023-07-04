@@ -22,7 +22,8 @@
   "exports": {
     ".": "./dist/index.js",
     "./filesystem/*": "./dist/src/filesystem/*.js",
-    "./modules/*": "./dist/src/modules/*.js"
+    "./modules/*": "./dist/src/modules/*.js",
+    "./graph/*": "./dist/src/graph/*.js"
   },
   "types": "./dist/index.d.ts",
   "scripts": {

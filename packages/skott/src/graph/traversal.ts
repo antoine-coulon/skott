@@ -1,4 +1,4 @@
-import { DiGraph } from "digraph-js";
+import type { DiGraph } from "digraph-js";
 import type { SkottNode } from "./node.js";
 
 export const CollectLevel = {
