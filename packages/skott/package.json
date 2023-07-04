@@ -22,7 +22,8 @@
   "exports": {
     ".": "./dist/index.js",
     "./filesystem/*": "./dist/src/filesystem/*.js",
-    "./modules/*": "./dist/src/modules/*.js"
+    "./modules/*": "./dist/src/modules/*.js",
+    "./graph/*": "./dist/src/graph/*.js"
   },
   "types": "./dist/index.d.ts",
   "scripts": {
@@ -43,7 +44,7 @@
     "@typescript-eslint/typescript-estree": "^5.60.0",
     "compression": "^1.7.4",
     "depcheck": "^1.4.3",
-    "digraph-js": "^2.1.0",
+    "digraph-js": "^2.2.3",
     "estree-walker": "^3.0.3",
     "fp-ts": "2.5.0",
     "fs-tree-structure": "workspace:*",

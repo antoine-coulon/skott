@@ -4,7 +4,7 @@ import { pipe } from "@effect/data/Function";
 import * as Option from "@effect/data/Option";
 import * as Effect from "@effect/io/Effect";
 import * as Exit from "@effect/io/Exit";
-import { DiGraph, VertexDefinition } from "digraph-js";
+import { DiGraph } from "digraph-js";
 import difference from "lodash.difference";
 
 import {
@@ -46,14 +46,8 @@ import {
   findUnusedImplicitDependencies,
   type ManifestDependenciesByName
 } from "./workspace/index.js";
-
-export type SkottNodeBody = {
-  size: number;
-  thirdPartyDependencies: string[];
-  builtinDependencies: string[];
-};
-
-export type SkottNode<T = unknown> = VertexDefinition<SkottNodeBody & T>;
+import { makeTraversalApi, TraversalApi } from "./graph/traversal.js";
+import type { SkottNode } from "./graph/node.js";
 
 export interface SkottConfig<T> {
   entrypoint?: string;
@@ -87,6 +81,7 @@ export interface ImplicitUnusedDependenciesOptions {
 }
 
 export interface SkottInstance<T = unknown> {
+  useGraph: () => TraversalApi<T>;
   getStructure: () => SkottStructure<T>;
   getWorkspace: () => ManifestDependenciesByName;
   findLeaves: () => string[];
@@ -604,6 +599,7 @@ export class Skott<T> {
     }
 
     return {
+      useGraph: () => makeTraversalApi(this.#projectGraph),
       getStructure: this.makeProjectStructure.bind(this),
       getWorkspace: () => this.#workspaceConfiguration.manifests,
       findCircularDependencies: this.circularDependencies.bind(this),
