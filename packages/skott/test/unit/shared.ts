@@ -6,7 +6,8 @@ import { FakeLogger } from "../../src/logger.js";
 import { kExpectedModuleExtensions } from "../../src/modules/resolvers/base-resolver.js";
 import { EcmaScriptDependencyResolver } from "../../src/modules/resolvers/ecmascript/resolver.js";
 import { ModuleWalkerSelector } from "../../src/modules/walkers/common.js";
-import { Skott, SkottNode } from "../../src/skott";
+import { Skott } from "../../src/skott.js";
+import type { SkottNode } from "../../src/graph/node.js";
 
 interface UnwrappedSkottStructure {
   graph: Record<string, SkottNode>;
@@ -55,14 +56,15 @@ export async function buildSkottProjectUsingInMemoryFileExplorer({
     new FakeLogger()
   );
   const skottInstance = await skott.initialize();
+  const graph = skottInstance.useGraph();
   const structure = skottInstance.getStructure();
 
   return {
     graph: structure.graph,
     files: structure.files,
-    circularDependencies: skottInstance.findCircularDependencies(),
-    hasCircularDependencies: skottInstance.hasCircularDependencies(),
-    leaves: skottInstance.findLeaves()
+    circularDependencies: graph.findCircularDependencies(),
+    hasCircularDependencies: graph.hasCircularDependencies(),
+    leaves: graph.findLeaves()
   };
 }
 

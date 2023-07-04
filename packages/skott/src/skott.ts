@@ -84,13 +84,9 @@ export interface SkottInstance<T = unknown> {
   useGraph: () => TraversalApi<T>;
   getStructure: () => SkottStructure<T>;
   getWorkspace: () => ManifestDependenciesByName;
-  findLeaves: () => string[];
-  findCircularDependencies: () => string[][];
   findUnusedDependencies: (
     options?: ImplicitUnusedDependenciesOptions
   ) => Promise<UnusedDependencies>;
-  hasCircularDependencies: () => boolean;
-  findParentsOf: (node: string) => string[];
 }
 
 export const defaultConfig = {
@@ -405,32 +401,6 @@ export class Skott<T> {
     }
   }
 
-  private hasCircularDependencies(): boolean {
-    return this.#projectGraph.hasCycles({
-      maxDepth: this.config.circularMaxDepth ?? Number.POSITIVE_INFINITY
-    });
-  }
-
-  private circularDependencies(): string[][] {
-    return this.#projectGraph.findCycles({
-      maxDepth: this.config.circularMaxDepth ?? Number.POSITIVE_INFINITY
-    });
-  }
-
-  private findLeaves(): string[] {
-    return Object.entries(this.#projectGraph.toDict())
-      .filter(([_, node]) => node.adjacentTo.length === 0)
-      .map(([leafId]) => leafId);
-  }
-
-  private findParentsOf(node: string): string[] {
-    const uniqueSetOfParents = new Set<string>([
-      ...this.#projectGraph.getDeepParents(node)
-    ]);
-
-    return [...uniqueSetOfParents];
-  }
-
   private findThirdPartyDependenciesFromGraph(): string[] {
     const graphDependencies = new Set<string>();
 
@@ -599,13 +569,9 @@ export class Skott<T> {
     }
 
     return {
-      useGraph: () => makeTraversalApi(this.#projectGraph),
+      useGraph: () => makeTraversalApi(this.#projectGraph, this.config),
       getStructure: this.makeProjectStructure.bind(this),
       getWorkspace: () => this.#workspaceConfiguration.manifests,
-      findCircularDependencies: this.circularDependencies.bind(this),
-      hasCircularDependencies: this.hasCircularDependencies.bind(this),
-      findLeaves: this.findLeaves.bind(this),
-      findParentsOf: this.findParentsOf.bind(this),
       findUnusedDependencies: this.findUnusedDependencies.bind(this)
     };
   }

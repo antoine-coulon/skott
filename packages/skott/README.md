@@ -4,7 +4,7 @@
 
 ## How to use skott
 
-### Install
+## Install
 
 You can install skott either locally or globally
 ```bash
@@ -13,7 +13,7 @@ npm install skott
 npm install skott -g
 ```
 
-### **Embedded Web Application**
+## **Embedded Web Application**
 
 skott now embeds a new _display mode_ **"skott --displayMode=webapp"** allowing you to visualize more precisely dependencies and the links between them. Here is an overview of a subset from the graph generated for `fastify`:
 
@@ -26,12 +26,12 @@ When `Circular dependencies` are found in the graph, they can also be toggled vi
 <img alt="skott-webapp-with-cycles" src="https://user-images.githubusercontent.com/43391199/204466577-3b82bf6c-4ed4-436c-bd99-31aa9261fb61.png" />
 
 
-### **JavaScript API**
+## **JavaScript API**
 
 ```javascript
 import skott from "skott";
 
-const { getStructure, getWorkspace, findCircularDependencies, findParentsOf, findLeaves } = await skott({
+const { getStructure, getWorkspace, useGraph, findUnusedDependencies } = await skott({
   /**
    * (Optional) Entrypoint of the project. If not provided, `skott` will search for all
    * supported files starting from the current working directory.
@@ -44,7 +44,7 @@ const { getStructure, getWorkspace, findCircularDependencies, findParentsOf, fin
    * graph.
    * Defaults to `none`;
    */ 
-  ignorePattern: "src/examples/**/*"
+  ignorePattern: "src/examples/**/*",
   /**
    * (Optional) Whether to run Skott using the incremental pattern. By setting "true",
    * Skott will create a `.skott/cache.json` file to only detect and re-process what
@@ -89,7 +89,7 @@ const { getStructure, getWorkspace, findCircularDependencies, findParentsOf, fin
     thirdParty: true,
     builtin: true,
     typeOnly: true
-  };
+  },
   /**
    * (Optional) Provide a custom tsconfig file to help skott resolve path aliases.
    * When extending some other tsconfig files, skott will be able to parse
@@ -118,7 +118,7 @@ const { getStructure, getWorkspace, findCircularDependencies, findParentsOf, fin
 });
 ```
 
-### **Command line interface**
+## **Command line interface**
 
 skott exposes a CLI directly using features from the core library.
 
@@ -187,7 +187,7 @@ See all the options of the CLI running:
 $ skott --help
 ```
 
-## Examples
+## API Documentation
 
 To initialize the dependency graph, the default exported function must be used first.
 Once executed, the default function returns a set of functions to retrieve some
@@ -206,34 +206,68 @@ console.log(graph); // logs { "index.js": { id: "index.js", adjacentTo: [], bod
 console.log(files); // logs [ "index.js" ]
 ```
 
+### Graph API
+
+To easily consume the graph that was emitted while exploring the project, skott exposes a graph API including various methods to traverse all the nodes, collect parent and children dependencies, find circular dependencies, and more.
+
+```javascript
+import skott from "skott";
+
+const { useGraph } = await skott();
+
+const { 
+  getFileNode,
+  traverseFiles, 
+  collectFilesDependencies, 
+  collectFilesDependingOn, 
+  findLeaves, 
+  findCircularDependencies, 
+  hasCircularDependencies 
+} = useGraph();
+```
+
+### Graph walking
+
+```javascript
+const { useGraph } = await skott();
+const { traverseFiles } = useGraph();
+
+// Starting from any node, walking the whole graph
+for(const file of traverseFiles()) {
+  // SkottNode { }
+}
+
+// Starting from a specifc node, walking the graph from it
+for(const file of traverseFiles({ rootFile: "index.js" })) {
+  // SkottNode { }
+}
+
+// By default, skott will collect "shallow first" files in a Breadth-First fashion
+// meaning the iterator will first emit direct module imports for each visited node.
+// If the traversal needs to be "deep first" instead i.e. you first want to go deep
+// down through the graph until meeting a leaf you might want to use "deepFirst" option
+// to turn the traversal into Depth-First search.
+
+for(const file of traverseFiles({ rootFile: "index.js", traversal: "deepFirst" })) {
+  // SkottNode { }
+}
+```
+
 ### Search for circular dependencies
 
 ```javascript
 import skott from "skott";
 
-const { findCircularDependencies, hasCircularDependencies } = await skott({
+const { useGraph } = await skott({
   entrypoint: "index.js",
-  // ...rest of the config
 });
+const { findCircularDependencies, hasCircularDependencies} = useGraph();
 
 // Imagine that starting from "index.js" skott detects a circular dependency
 // between "core.js" and "utils.js" files
 
 console.log(findCircularDependencies()); // logs [ [ "core.js", "utils.js" ] ]
 console.log(hasCircularDependencies()); // logs "true"
-```
-
-### Search for unused dependencies using the graph generated
-```javascript
-import skott from "skott";
-
-const { findUnusedDependencies } = await skott({
-  entrypoint: "index.tsx",
-  // ...rest of the config
-});
-
-const { thirdParty } = await findUnusedDependencies();
-console.log(thirdParty); // logs [ "rxjs", "lodash.difference" ]
 ```
 
 ### Search for leaves (nodes with no children)
@@ -249,15 +283,15 @@ index.js
 ```javascript
 import skott from "skott";
 
-const { findLeaves } = await skott({
+const { useGraph } = await skott({
   entrypoint: "leaf.js",
-  // ...rest of the config
 });
+const { findLeaves } = useGraph();
 
 console.log(findLeaves()); // logs [ "leaf.js" ]
 ```
 
-### Deeply search for parent dependencies of a given node
+### Deeply or Shallowly search for parent or children dependencies of a given node
 
 children.js
 
@@ -277,13 +311,42 @@ index.js
 
 ```javascript
 import skott from "skott";
+import { CollectLevel } from "skott/graph/traversal";
 
-const { findParentsOf } = await skott({
+const { useGraph } = await skott({
   entrypoint: "parent.js",
-  // ...rest of the config
 });
+const { collectFilesDependingOn, collectFilesDependencies } = useGraph();
 
-console.log(findParentsOf("children.js")); // logs [ "parent.js" ]
+// CollectLevel.Deep or CollectLevel.Shallow. In that case just one level so we can use Shallow
+
+console.log(collectFilesDependingOn("children.js", CollectLevel.Shallow)); 
+// logs [ SkottNode { id: "parent.js" } ]
+
+console.log(collectFilesDependencies("parent.js", CollectLevel.Shallow)); 
+// logs [ SkottNode { id: "children.js" } ]
+```
+
+### Find unused dependencies
+
+skott provides a way to walk through dependencies listed in the current working directory manifest (package.json) and compare them to what it founds and marked as "used" during the analysis. The "use" marking will be done when a third-party module appears to be imported in the source code that was walked. All the third-party dependencies that are not used in the traversed files will be returned as "unused".
+
+Additionnally to the source code analysis, skott integrates with [depcheck](https://github.com/depcheck/depcheck) allowing it to take a peak at "implicit" dependencies and emit hypothesis about whether some `devDependencies` are unused or not, by walking through most common config files.
+
+Note: finding precisely implicit dependencies is hard so please double check dependencies part of the `devDependencies` that are marked as "unused" by the analysis. If some `dependencies` (production deps) appear to be unused but are indeed used somewhere in the codebase, it could mean two things:
+
+- the input files pattern you provided to skott don't cover the parts of the graph where the dependency is used
+- the dependency is used nowhere through the source code files walked, meaning that it should probably be moved to `devDependencies` or just get removed.
+
+In any case, `unused dependencies` just raise an alert so I would advise to double check before getting rid of a dependency. 
+
+```javascript
+import skott from "skott";
+
+const { findUnusedDependencies } = await skott();
+
+const { thirdParty } = await findUnusedDependencies();
+// [ lodash, rxjs, typescript ]
 ```
 
 ### Explore file node metadata 

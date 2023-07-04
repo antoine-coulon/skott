@@ -75,7 +75,7 @@ export function openWebApplication(
   console.log(`\n ${kleur.italic("Prefetching data...")} `);
 
   srv.get("/api/cycles", (_, response: ServerResponse) => {
-    const cycles = skottInstance.findCircularDependencies();
+    const cycles = skottInstance.useGraph().findCircularDependencies();
 
     response.setHeader("Content-Type", "application/json");
     response.end(JSON.stringify(cycles));
