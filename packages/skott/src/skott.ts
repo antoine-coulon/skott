@@ -107,6 +107,7 @@ export const defaultConfig = {
 
 export interface WorkspaceConfiguration {
   typescript: TSConfig;
+  pathAliases: Map<string, string>;
   manifests: ManifestDependenciesByName;
 }
 
@@ -117,6 +118,7 @@ export class Skott<T> {
   #baseDir = ".";
   #workspaceConfiguration: WorkspaceConfiguration = {
     typescript: {},
+    pathAliases: new Map(),
     manifests: {}
   };
 
@@ -286,6 +288,11 @@ export class Skott<T> {
       resolveImportedModulePath(path.join(baseDirectory, moduleDeclaration)),
       Effect.orElse(() =>
         resolveImportedModulePath(path.join(this.#baseDir, moduleDeclaration))
+      ),
+      Effect.orElse(() =>
+        resolveImportedModulePath(
+          path.join(this.fileReader.getCurrentWorkingDir(), moduleDeclaration)
+        )
       ),
       Effect.provideService(FileReaderTag, this.fileReader),
       Effect.provideService(LoggerTag, this.logger),
@@ -476,6 +483,7 @@ export class Skott<T> {
       const rootTSConfig = await buildPathAliases(
         this.fileReader,
         this.config.tsConfigPath,
+        this.#workspaceConfiguration.pathAliases,
         this.logger
       );
       this.#workspaceConfiguration.typescript = rootTSConfig;
@@ -495,6 +503,7 @@ export class Skott<T> {
     const rootTSConfig = await buildPathAliases(
       this.fileReader,
       this.config.tsConfigPath,
+      this.#workspaceConfiguration.pathAliases,
       this.logger
     );
     this.#workspaceConfiguration.typescript = rootTSConfig;
