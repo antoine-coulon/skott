@@ -186,10 +186,16 @@ export class EcmaScriptDependencyResolver implements DependencyResolver {
         body.builtinDependencies =
           body.builtinDependencies.concat(moduleDeclaration);
       });
-    } else if (isTypeScriptPathAlias(moduleDeclaration)) {
+    } else if (
+      isTypeScriptPathAlias(
+        moduleDeclaration,
+        workspaceConfiguration.pathAliases
+      )
+    ) {
       const resolvedModulePath = resolvePathAlias(
         moduleDeclaration,
-        path.dirname(config.tsConfigPath)
+        path.dirname(config.tsConfigPath),
+        workspaceConfiguration.pathAliases
       );
 
       if (resolvedModulePath) {

@@ -1,3 +1,4 @@
+import { createRequire } from "node:module";
 import path from "node:path";
 
 import JSON5 from "json5";
@@ -6,8 +7,6 @@ import type { CompilerOptions } from "typescript";
 import type { FileReader } from "../../../../filesystem/file-reader.js";
 import { Logger } from "../../../../logger.js";
 
-const aliasLinks = new Map<string, string>();
-
 export interface TSConfig {
   baseUrl?: string;
 }
@@ -15,61 +14,6 @@ export interface TSConfig {
 interface SupportedTSConfig {
   extends?: string;
   compilerOptions?: CompilerOptions;
-}
-
-export async function buildPathAliases(
-  fileReader: FileReader,
-  tsConfigPath: string,
-  logger: Logger
-): Promise<TSConfig> {
-  try {
-    logger.info(`Reading from tsconfig: ${tsConfigPath}`);
-
-    const baseTsConfig = await fileReader.read(
-      path.join(fileReader.getCurrentWorkingDir(), tsConfigPath)
-    );
-    const tsConfigJson = JSON5.parse<SupportedTSConfig>(baseTsConfig);
-    const baseUrl = tsConfigJson.compilerOptions?.baseUrl ?? ".";
-
-    const paths: Record<string, string[]> =
-      tsConfigJson.compilerOptions?.paths ?? {};
-
-    if (paths) {
-      logger.info(`Extracting path aliases from tsconfig: ${tsConfigPath}`);
-
-      for (const [alias, aliasedPath] of Object.entries(paths)) {
-        /**
-         * When the path alias is like "foo/*": ["foo/lib/*"], we must be sure
-         * to only use known segments of the glob so that we can map easily
-         * once glob segment "foo/baz/bar" to "foo/lib/baz/bar".
-         */
-        const aliasWithoutGlob = alias.split("/*")[0];
-        const realPathWithoutGlob = aliasedPath[0].split("/*")[0];
-
-        aliasLinks.set(
-          aliasWithoutGlob,
-          path.join(baseUrl, realPathWithoutGlob)
-        );
-      }
-    }
-
-    // If the config provided extends another one, we must keep looking for
-    // path aliases elsewhere.
-    const extendedTsConfigPath = tsConfigJson.extends;
-    if (extendedTsConfigPath) {
-      await buildPathAliases(fileReader, extendedTsConfigPath, logger);
-    }
-
-    return {
-      baseUrl: tsConfigJson.compilerOptions?.baseUrl
-    };
-  } catch (exception: any) {
-    logger.failure(
-      `An exception occured reading from tsconfig: ${tsConfigPath}. Reason ${exception.message}}`
-    );
-
-    return {};
-  }
 }
 
 function resolveAliasToRelativePath(
@@ -97,9 +41,118 @@ function isNotBasePathSegment(segment: string): boolean {
   return segment.includes(path.sep);
 }
 
+async function readTSConfig(
+  tsConfigPath: string,
+  logger: Logger,
+  fileReader: FileReader
+): Promise<SupportedTSConfig> {
+  let tsconfig = "";
+
+  try {
+    const localTSConfigPath = path.join(
+      fileReader.getCurrentWorkingDir(),
+      tsConfigPath
+    );
+    tsconfig = await fileReader.read(localTSConfigPath);
+    logger.success(`Successfully found tsconfig: ${localTSConfigPath}`);
+  } catch (exception: any) {
+    logger.failure(
+      `An exception occured reading from tsconfig: ${tsConfigPath}. Reason ${exception.message}}`
+    );
+
+    /**
+     * If the tsconfig could not be resolved using the provided path, it might
+     * mean that the path is actually a third party module. In this case, we
+     * try to resolve the path using the node module resolution algorithm.
+     */
+    try {
+      const moduleRequire = createRequire(import.meta.url);
+      const thirdPartyTSConfigPath = moduleRequire.resolve(tsConfigPath, {
+        paths: [fileReader.getCurrentWorkingDir()]
+      });
+      tsconfig = await fileReader.read(thirdPartyTSConfigPath);
+
+      logger.success(
+        `Successfully found tsconfig at: ${thirdPartyTSConfigPath}`
+      );
+    } catch (exception: any) {
+      logger.failure(
+        `An exception occured reading from tsconfig: ${tsConfigPath}. Reason ${exception.message}}`
+      );
+    }
+  }
+
+  return JSON5.parse<SupportedTSConfig>(tsconfig);
+}
+
+export async function buildPathAliases(
+  fileReader: FileReader,
+  tsConfigPath: string,
+  aliasLinks: Map<string, string>,
+  logger: Logger
+): Promise<TSConfig> {
+  try {
+    logger.info(`Reading from tsconfig: ${tsConfigPath}`);
+
+    const tsConfig = await readTSConfig(tsConfigPath, logger, fileReader);
+    const baseUrl = tsConfig.compilerOptions?.baseUrl ?? ".";
+
+    const paths: Record<string, string[]> =
+      tsConfig.compilerOptions?.paths ?? {};
+
+    if (paths) {
+      logger.info(`Extracting path aliases from tsconfig: ${tsConfigPath}`);
+
+      for (const [alias, aliasedPath] of Object.entries(paths)) {
+        /**
+         * When the path alias is like "foo/*": ["foo/lib/*"], we must be sure
+         * to only use known segments of the glob so that we can map easily
+         * once glob segment "foo/baz/bar" to "foo/lib/baz/bar".
+         */
+        const aliasWithoutGlob = alias.split("/*")[0];
+        const realPathWithoutGlob = aliasedPath[0].split("/*")[0];
+
+        aliasLinks.set(
+          aliasWithoutGlob,
+          path.join(baseUrl, realPathWithoutGlob)
+        );
+      }
+    }
+
+    // If the config provided extends another one, we must keep looking for
+    // path aliases elsewhere.
+    const extendedTsConfigPath = tsConfig.extends;
+    if (extendedTsConfigPath) {
+      logger.info(`Found tsconfig extension: ${extendedTsConfigPath}`);
+
+      await buildPathAliases(
+        fileReader,
+        extendedTsConfigPath,
+        aliasLinks,
+        logger
+      );
+
+      logger.success(
+        `Finished extracting path aliases from tsconfig. ${aliasLinks.size} aliases found.`
+      );
+    }
+
+    return {
+      baseUrl: tsConfig.compilerOptions?.baseUrl
+    };
+  } catch (exception: any) {
+    logger.failure(
+      `An exception occured reading from tsconfig: ${tsConfigPath}. Reason ${exception.message}}`
+    );
+
+    return {};
+  }
+}
+
 export function resolvePathAlias(
   moduleDeclaration: string,
-  baseDir: string
+  baseDir: string,
+  aliasLinks: Map<string, string>
 ): string | undefined {
   const aliasWithoutGlob = aliasLinks.get(moduleDeclaration);
 
@@ -157,7 +210,10 @@ export function isTypeScriptRelativePathWithNoLeadingIdentifier(
   );
 }
 
-export function isTypeScriptPathAlias(moduleDeclaration: string): boolean {
+export function isTypeScriptPathAlias(
+  moduleDeclaration: string,
+  aliasLinks: Map<string, string>
+): boolean {
   let pathSegmentToMatch = path.dirname(moduleDeclaration);
   let isPathAlias = aliasLinks.has(moduleDeclaration);
 

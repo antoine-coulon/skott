@@ -4,6 +4,9 @@ import path from "node:path";
 type AsyncCallback = () => Promise<void>;
 type FsDelimiter = `` | `/` | `./`;
 
+export const withRootDir = (rootDir: string) => (path: string) =>
+  `${rootDir}/${path}`;
+
 export function createRealFileSystem<
   RootDir extends string,
   File extends `${string}.${string}`
