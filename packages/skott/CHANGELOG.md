@@ -1,5 +1,15 @@
 # skott
 
+## 0.27.0
+
+### Minor Changes
+
+- c61f46f: Support third-party/remote tsconfig resolution when using `extends` parameter.
+
+### Patch Changes
+
+- skott-webapp@1.0.6
+
 ## 0.26.0
 
 ### Minor Changes
