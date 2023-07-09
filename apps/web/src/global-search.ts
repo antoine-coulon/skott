@@ -1,6 +1,6 @@
 import { Observable } from "rxjs";
-import { focusOnNetworkNode } from "./network";
-import { SkottStructureWithCycles } from "./skott";
+import { focusOnNetworkNode } from "./network.js";
+import { SkottStructureWithCycles } from "./skott.js";
 
 export function initializeGlobalSearch(
   dataStream$: Observable<SkottStructureWithCycles>

@@ -1,4 +1,4 @@
-import { SkottStructureWithCycles } from "./skott";
+import { SkottStructureWithCycles } from "./skott.js";
 
 export const graphDataWithCycles = {
   "src/server/errors.ts": {
