@@ -1,7 +1,7 @@
 import * as memfs from "memfs";
 import { describe, expect, it } from "vitest";
 
-import { FileReader } from "../../../src/filesystem/file-reader.js";
+import { FileReader } from "../../../src/filesystem/fake/file-reader.js";
 import { InMemoryFileWriter } from "../../../src/filesystem/file-writer.js";
 import { FakeLogger } from "../../../src/logger.js";
 import { EcmaScriptDependencyResolver } from "../../../src/modules/resolvers/ecmascript/resolver.js";

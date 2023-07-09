@@ -8,7 +8,7 @@ import {
   SkottCache,
   SkottCachedNode
 } from "../../../src/cache/handler.js";
-import { InMemoryFileReader } from "../../../src/filesystem/file-reader.js";
+import { InMemoryFileReader } from "../../../src/filesystem/fake/file-reader.js";
 import { InMemoryFileWriter } from "../../../src/filesystem/file-writer.js";
 import { FakeLogger } from "../../../src/logger.js";
 import {
