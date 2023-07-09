@@ -6,20 +6,12 @@
 
 - c61f46f: Support third-party/remote tsconfig resolution when using `extends` parameter.
 
-### Patch Changes
-
-- skott-webapp@1.0.6
-
 ## 0.26.0
 
 ### Minor Changes
 
 - 10fac91: Breaking Changes: move `findCircularDependencies`, `hasCircularDependencies`, `findLeaves` inside `useGraph` api encapsulation.
 - 3b0342e: Expose a graph API allowing top-to-bottom and bottom-to-top traversal through the `useGraph` method attached to skott instance.
-
-### Patch Changes
-
-- skott-webapp@1.0.6
 
 ## 0.25.1
 
@@ -52,7 +44,6 @@
 ### Patch Changes
 
 - da54fb9: Fix endless loop when resolving malformed TS path aliases.
-- skott-webapp@1.0.6
 
 ## 0.22.0
 
