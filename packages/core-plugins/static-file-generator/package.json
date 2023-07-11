@@ -1,5 +1,8 @@
 {
   "name": "@skottorg/static-file-plugin",
+  "publishConfig": {
+    "access": "public"
+  },
   "version": "0.0.1",
   "description": "Render skott graph to static files",
   "main": "index.js",
