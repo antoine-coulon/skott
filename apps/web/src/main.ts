@@ -19,8 +19,9 @@ import {
 } from "rxjs";
 import { EMPTY_OBSERVER } from "rxjs/internal/Subscriber";
 import { Edge, Node } from "vis-network";
-import { makeChunkStream } from "./chunk";
-import { initializeGlobalSearch } from "./global-search";
+
+import { makeChunkStream } from "./chunk.js";
+import { initializeGlobalSearch } from "./global-search.js";
 import {
   buildNetworkIncremental,
   edges,
@@ -32,9 +33,9 @@ import {
   network,
   nodes,
   toggleCircularDependencies,
-} from "./network";
-import { SkottStructureWithCycles } from "./skott";
-import { isJavaScriptModule, isTypeScriptModule } from "./util";
+} from "./network.js";
+import { SkottStructureWithCycles } from "./skott.js";
+import { isJavaScriptModule, isTypeScriptModule } from "./util.js";
 
 const domContentLoaded$ = fromEvent(document, "DOMContentLoaded");
 const networkLoadingState$ = new BehaviorSubject("loading");

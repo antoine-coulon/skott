@@ -58,12 +58,6 @@ const cli = sade("skott [entrypoint]", true)
   )
 
   .option(
-    "-f, --staticFile",
-    "Generate a static file from the graph. Can be 'none', 'svg', 'png', 'md'.",
-    "none"
-  )
-
-  .option(
     "-m, --displayMode",
     "Either display the result of the analysis as a 'graph', as a 'file-tree' or 'raw'",
     "webapp"

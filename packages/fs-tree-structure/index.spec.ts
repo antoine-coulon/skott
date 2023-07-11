@@ -1,6 +1,6 @@
 import { expect } from "chai";
 
-import { makeTreeStructure } from ".";
+import { makeTreeStructure } from "./index.js";
 
 describe("Filesystem tree structure maker", () => {
   describe("When dealing with absolute paths", () => {

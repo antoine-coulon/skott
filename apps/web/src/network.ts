@@ -1,9 +1,9 @@
 import { of } from "rxjs";
-import { SkottNode } from "skott";
+import { SkottNode } from "skott/graph/node";
 import { DataSet } from "vis-data";
 import { Edge, Network, Node } from "vis-network";
 
-import { SkottMetadata, SkottStructureWithCycles } from "./skott";
+import { SkottMetadata, SkottStructureWithCycles } from "./skott.js";
 
 export let network: Network | null = null;
 export let nodes: DataSet<Node, "id">;

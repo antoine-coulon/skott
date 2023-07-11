@@ -60,6 +60,34 @@ importers:
 
   packages/config: {}
 
+  packages/core-plugins/static-file-generator:
+    dependencies:
+      ligie:
+        specifier: ^0.0.6
+        version: 0.0.6
+    devDependencies:
+      '@nodesecure/eslint-config':
+        specifier: ^1.7.0
+        version: 1.7.0(typescript@4.9.5)
+      eslint:
+        specifier: ^8.43.0
+        version: 8.43.0
+      eslint-config-prettier:
+        specifier: ^8.8.0
+        version: 8.8.0(eslint@8.43.0)
+      eslint-import-resolver-typescript:
+        specifier: ^2.7.1
+        version: 2.7.1(eslint-plugin-import@2.27.5)(eslint@8.43.0)
+      eslint-plugin-import:
+        specifier: ^2.27.5
+        version: 2.27.5(@typescript-eslint/parser@5.60.0)(eslint-import-resolver-typescript@2.7.1)(eslint@8.43.0)
+      eslint-plugin-prettier:
+        specifier: ^4.2.1
+        version: 4.2.1(eslint-config-prettier@8.8.0)(eslint@8.43.0)(prettier@2.8.8)
+      prettier:
+        specifier: ^2.8.8
+        version: 2.8.8
+
   packages/fs-tree-structure:
     dependencies:
       lodash.set:
@@ -226,9 +254,6 @@ importers:
       kleur:
         specifier: ^4.1.5
         version: 4.1.5
-      ligie:
-        specifier: ^0.0.6
-        version: 0.0.6
       lodash.difference:
         specifier: ^4.5.0
         version: 4.5.0
@@ -1208,6 +1233,7 @@ packages:
 
   /@types/node@20.1.0:
     resolution: {integrity: sha512-O+z53uwx64xY7D6roOi4+jApDGFg0qn6WHcxe5QeqjMaTezBO/mxdfFXIVAVVyNWKx84OmPB3L8kbVYOTeN34A==}
+    dev: true
 
   /@types/normalize-package-data@2.4.1:
     resolution: {integrity: sha512-Gj7cI7z+98M282Tqmp2K5EIsoouUEzbBJhQQzDE3jSIRk6r9gsz0oUokqIUR4u1R3dMHo0pDHM7sNOHyhulypw==}
@@ -1274,7 +1300,7 @@ packages:
     resolution: {integrity: sha512-Cn6WYCm0tXv8p6k+A8PvbDG763EDpBoTzHdA+Q/MF6H3sapGjCm9NzoaJncJS9tUKSuCoDs9XHxYYsQDgxR6kw==}
     requiresBuild: true
     dependencies:
-      '@types/node': 20.1.0
+      '@types/node': 16.18.36
     dev: false
     optional: true
 
@@ -4270,6 +4296,7 @@ packages:
   /puppeteer@18.2.1:
     resolution: {integrity: sha512-7+UhmYa7wxPh2oMRwA++k8UGVDxh3YdWFB52r9C3tM81T6BU7cuusUSxImz0GEYSOYUKk/YzIhkQ6+vc0gHbxQ==}
     engines: {node: '>=14.1.0'}
+    deprecated: < 19.4.0 is no longer supported
     requiresBuild: true
     dependencies:
       https-proxy-agent: 5.0.1

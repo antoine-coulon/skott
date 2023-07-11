@@ -2,7 +2,7 @@ import { Readable } from "node:stream";
 
 import { expect } from "chai";
 
-import { npmFetcher } from "./npm";
+import { npmFetcher } from "./npm.js";
 
 describe("npm tarball fetcher", () => {
   describe("When fetching package information from the npm registry", () => {
