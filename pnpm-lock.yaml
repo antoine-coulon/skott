@@ -221,9 +221,6 @@ importers:
       '@effect/io':
         specifier: ^0.8.0
         version: 0.8.0
-      '@skottorg/static-file-plugin':
-        specifier: workspace:*
-        version: link:../core-plugins/static-file-generator
       '@typescript-eslint/typescript-estree':
         specifier: ^5.60.0
         version: 5.60.0(typescript@4.9.5)

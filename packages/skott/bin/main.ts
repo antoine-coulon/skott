@@ -4,7 +4,6 @@ import { performance } from "node:perf_hooks";
 
 import { makeTreeStructure } from "fs-tree-structure";
 import kleur from "kleur";
-import { generateMermaid } from "ligie";
 import ora from "ora";
 
 import skott from "../index.js";
@@ -26,42 +25,49 @@ import { openWebApplication } from "./ui/webapp.js";
 
 async function generateStaticFile(
   graph: Record<string, SkottNode>,
-  staticFile: string
+  staticFileType: string
 ): Promise<void> {
   console.log();
-  const rawGraph = Object.entries(graph).reduce((acc, [key, val]) => {
-    return {
-      ...acc,
-      [key]: val.adjacentTo
-    };
-  }, {});
-  const spinner = ora("Generating static file").start();
 
-  if (staticFile === "json") {
-    await writeFile(
-      path.join(process.cwd(), "skott.json"),
-      JSON.stringify(graph, null, 2),
-      "utf-8"
+  try {
+    const { generateStaticFile, supportedStaticFileTypes } = await import(
+      // @ts-ignore - dynamic import that might not be available
+      "@skottorg/static-file-plugin"
     );
-  }
 
-  const mermaid = generateMermaid(rawGraph, process.cwd(), {
-    orientation: "TB"
-  });
+    if (!supportedStaticFileTypes.includes(staticFileType)) {
+      console.error(
+        kleur.red(
+          ` Provided type: "${staticFileType}". Expected one of: ${supportedStaticFileTypes.join(
+            ", "
+          )}`
+        )
+      );
 
-  spinner.color = "magenta";
+      return;
+    }
 
-  if (staticFile === "svg") {
-    await mermaid.toSvg();
-  }
-  if (staticFile === "png") {
-    await mermaid.toPng();
-  }
-  if (staticFile === "md") {
-    await mermaid.toMarkdown();
-  }
+    try {
+      const spinner = ora("Generating static file").start();
+      // @ts-ignore - dynamic import that might not be available
+      generateStaticFile(graph, staticFileType);
+      spinner.stop();
 
-  spinner.stop();
+      console.log(kleur.green(` Static file generation successful.`));
+    } catch (error) {
+      console.error(
+        kleur.red(` Static file generation failed. Reason: ${error}`)
+      );
+      process.exitCode = 1;
+    }
+  } catch {
+    console.error(
+      kleur.red(
+        `Static file generation is not available. Please install the '@skottorg/static-file-plugin' package.`
+      )
+    );
+    process.exitCode = 1;
+  }
 }
 
 function makeCircularDependenciesUI(
@@ -123,7 +129,6 @@ type CliOptions = {
   manifest: string;
   showCircularDependencies: boolean;
   showUnusedDependencies: boolean;
-  staticFile: string;
   trackBuiltinDependencies: boolean;
   trackThirdPartyDependencies: boolean;
   trackTypeOnlyDependencies: boolean;
@@ -251,9 +256,7 @@ export async function displaySkott(
     const treeStructure = makeTreeStructure(flattenedFilesPaths);
     console.log();
     displayAsFileTree(treeStructure, filesInvolvedInCircularDependencies, 0);
-  }
-
-  if (options.displayMode === "graph") {
+  } else if (options.displayMode === "graph") {
     const nodesWithBodyBindings = new Map<string, SkottNodeBody>();
 
     for (const [nodeId, nodeValue] of Object.entries(graph)) {
@@ -265,9 +268,7 @@ export async function displaySkott(
       filesInvolvedInCircularDependencies,
       nodesWithBodyBindings
     );
-  }
-
-  if (options.displayMode === "webapp") {
+  } else if (options.displayMode === "webapp") {
     let baseEntrypointPath;
 
     if (options.includeBaseDir && entrypoint) {
@@ -284,6 +285,8 @@ export async function displaySkott(
     );
 
     return;
+  } else if (options.displayMode !== "raw") {
+    await generateStaticFile(graph, options.displayMode);
   }
 
   if (options.showUnusedDependencies && !options.trackThirdPartyDependencies) {
@@ -314,10 +317,6 @@ export async function displaySkott(
 
   if (options.trackBuiltinDependencies) {
     displayBuiltinDependencies(graph);
-  }
-
-  if (options.staticFile !== "none") {
-    await generateStaticFile(graph, options.staticFile);
   }
 }
 
