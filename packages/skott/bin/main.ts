@@ -1,4 +1,4 @@
-import { writeFile } from "node:fs/promises";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
 
@@ -30,9 +30,10 @@ async function generateStaticFile(
   console.log();
 
   try {
+    const require = createRequire(import.meta.url);
+    const pluginPath = require.resolve("@skottorg/static-file-plugin");
     const { generateStaticFile, supportedStaticFileTypes } = await import(
-      // @ts-ignore - dynamic import that might not be available
-      "@skottorg/static-file-plugin"
+      pluginPath
     );
 
     if (!supportedStaticFileTypes.includes(staticFileType)) {
