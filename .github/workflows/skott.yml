@@ -11,9 +11,6 @@ env:
 jobs:
   skott:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: packages/skott
     strategy:
       matrix:
         node-version: [16.x, 18.x, 20.x]
@@ -49,7 +46,7 @@ jobs:
         run: pnpm install         
 
       - name: Run tests
-        run: pnpm run test
+        run: pnpm -r test
 
       - name: Build project
-        run: pnpm run build
+        run: pnpm -r build
