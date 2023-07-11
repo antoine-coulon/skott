@@ -149,13 +149,15 @@ Using this command, skott will deeply search for all ".ts" and ".tsx" files star
 $ skott --fileExtensions=.ts,.tsx
 ```
 
-**Skott** can be used to generate static files from the project graph structure (.svg, .png, .md, .json)
+**skott** can be used to generate static files from the project graph structure (.svg, .png, .md, .json).
+
+**Note: this static file generator is provided via a skott plugin `@skottorg/static-file-plugin` that needs to be installed.**
 
 ```bash
-$ skott src/index.js --staticFile=svg
+$ skott src/index.js --displayMode=svg
 ```
 
-For **Skott** itself, the following _.svg_ file is generated:
+For **skott** itself, the following _.svg_ file is generated:
 
 <p>
     <img width="650" src="https://user-images.githubusercontent.com/43391199/194954752-ae888d9c-1c17-4be4-b04c-53771f840ea1.png">
