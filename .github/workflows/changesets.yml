@@ -31,6 +31,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install 
 
+      - name: Build monorepo
+        run: pnpm -r build
+
       - name: Update and publish versions
         uses: changesets/action@v1
         with:
