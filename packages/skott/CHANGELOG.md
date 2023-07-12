@@ -1,5 +1,15 @@
 # skott
 
+## 0.28.0
+
+### Minor Changes
+
+- 13e6c01: Breaking changes: Remove `--staticFile` CLI option. Merge `--staticFile` CLI option with `--displayMode`, all modes related to static files now require the installation of the `@skottorg/static-file-plugin` plugin.
+
+### Patch Changes
+
+- skott-webapp@1.0.6
+
 ## 0.27.0
 
 ### Minor Changes
