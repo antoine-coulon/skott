@@ -22,6 +22,12 @@ canvas {
   --circular-color: #ff5656;
 }
 
+#root,
+.root-container {
+  height: 100%;
+  width: 100%;
+}
+
 #skott-network {
   width: 100vw;
   height: 100vh;
@@ -60,8 +66,9 @@ canvas {
   box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.12), 0 2px 3px 0 rgba(0, 0, 0, 0.22);
 }
 
-.hidden-by-default {
-  display: none;
+.disabled-by-default {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .blur-loading {

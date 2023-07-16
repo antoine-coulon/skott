@@ -1,4 +1,4 @@
-import { SkottStructureWithCycles } from "./skott.js";
+import { SkottStructureWithMetadata } from "./skott.js";
 
 export const graphDataWithCycles = {
   "src/server/errors.ts": {
@@ -92,8 +92,7 @@ export const fakeCyclesData = [
   ],
 ];
 
-export const fakeSkottData: SkottStructureWithCycles = {
-  cycles: [],
+export const fakeSkottData: SkottStructureWithMetadata = {
   entrypoint: "src/lib/fastify/index.ts",
   files: Object.keys(graphDataWithCycles),
   graph: {

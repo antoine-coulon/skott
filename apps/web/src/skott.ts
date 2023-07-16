@@ -1,10 +1,18 @@
 import { SkottStructure } from "skott";
+import { SkottNode as _SkottNode } from "skott/graph/node";
 
-export type SkottStructureWithCycles = SkottStructure & {
+export type SkottStructureWithMetadata = SkottStructure & SkottMetadata;
+
+export interface SkottCycles {
   cycles: string[][];
-  entrypoint: string;
-};
+}
+
+export interface SkottStructureWithCycles
+  extends SkottStructureWithMetadata,
+    SkottCycles {}
 
 export interface SkottMetadata {
-  entrypoint: string;
+  entrypoint?: string;
 }
+
+export type SkottNode = _SkottNode;
