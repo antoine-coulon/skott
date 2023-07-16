@@ -1,11 +1,11 @@
 import React from "react";
 
 import Sidebar from "./Sidebar";
-import GraphNetwork from "./Network.tsx";
+import GraphNetwork from "./network/Network.tsx";
 import GlobalSearch from "./GlobalSearch.tsx";
 import { SkottCycles, SkottStructureWithMetadata } from "./skott";
 
-import { fakeCyclesData, fakeSkottData } from "./fake-data";
+import { fakeSkottData } from "./fake-data";
 import { ReplaySubject } from "rxjs";
 import { DataStore, UiEvents } from "./events";
 
@@ -30,10 +30,10 @@ function App() {
   React.useEffect(() => {
     Promise.all([fetchAnalysisReport(), fetchCyclesReport()])
       .then(([analysisReport, cyclesReport]) => {
-        dataStore$.next({ ...analysisReport, cycles: fakeCyclesData });
+        dataStore$.next({ ...analysisReport, cycles: cyclesReport.cycles });
       })
-      .catch(() => {
-        // displayError
+      .catch((exception) => {
+        console.error("Failed to fetch analysis report", exception);
       });
   }, []);
 
