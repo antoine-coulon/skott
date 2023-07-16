@@ -32,6 +32,9 @@ importers:
       '@mantine/hooks':
         specifier: ^6.0.16
         version: 6.0.16(react@18.2.0)
+      '@tabler/icons-react':
+        specifier: ^2.25.0
+        version: 2.25.0(react@18.2.0)
       animate.css:
         specifier: ^4.1.1
         version: 4.1.1
@@ -1611,6 +1614,20 @@ packages:
     dependencies:
       '@babel/runtime': 7.21.0
       react: 18.2.0
+    dev: false
+
+  /@tabler/icons-react@2.25.0(react@18.2.0):
+    resolution: {integrity: sha512-so/amZZcvuZBBTMinReI219ek1MwlZfccGfRu7IwXEhgHftFTfyBOvTK9Kgf4vM+9+i0CcuVRoxyfQiuUwYUWg==}
+    peerDependencies:
+      react: ^16.5.1 || ^17.0.0 || ^18.0.0
+    dependencies:
+      '@tabler/icons': 2.25.0
+      prop-types: 15.8.1
+      react: 18.2.0
+    dev: false
+
+  /@tabler/icons@2.25.0:
+    resolution: {integrity: sha512-Z+FtSZoG/CM1TMCgg7elUew2m0+qMdh5gutMhvxiIY77KIIsE6L/6fUBy+rPXWE9v7MV296fsnCvbpfgwpXupQ==}
     dev: false
 
   /@tsconfig/node10@1.0.9:
@@ -4737,6 +4754,11 @@ packages:
     resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
     engines: {node: '>=0.10.0'}
 
+  /object-assign@4.1.1:
+    resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
+    engines: {node: '>=0.10.0'}
+    dev: false
+
   /object-inspect@1.12.3:
     resolution: {integrity: sha512-geUvdk7c+eizMNUDkRpW1wJwgfOiOeHbxBR/hLXK1aT6zmVSO0jsQcs7fj6MGw89jC/cjGfLcNOrtMYtGqm81g==}
     dev: true
@@ -5013,6 +5035,14 @@ packages:
   /progress@2.0.3:
     resolution: {integrity: sha512-7PiHtLll5LdnKIMw100I+8xJXR5gW2QwWYkT6iJva0bXitZKa/XMrSbdmg3r2Xnaidz9Qumd0VPaMrZlF9V9sA==}
     engines: {node: '>=0.4.0'}
+    dev: false
+
+  /prop-types@15.8.1:
+    resolution: {integrity: sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==}
+    dependencies:
+      loose-envify: 1.4.0
+      object-assign: 4.1.1
+      react-is: 16.13.1
     dev: false
 
   /proxy-from-env@1.1.0:

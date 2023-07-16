@@ -3,7 +3,7 @@ import "ninja-keys";
 import { NinjaKeys } from "ninja-keys";
 import { Subject } from "rxjs";
 
-import { DataStore, UiEvents } from "./events.js";
+import { DataStore, UiEvents } from "../events.js";
 
 export default function GlobalSearch({
   dataStore$,

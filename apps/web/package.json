@@ -26,6 +26,7 @@
     "@emotion/react": "^11.11.1",
     "@mantine/core": "^6.0.16",
     "@mantine/hooks": "^6.0.16",
+    "@tabler/icons-react": "^2.25.0",
     "animate.css": "^4.1.1",
     "component-emitter": "^1.3.0",
     "fs-tree-structure": "workspace:*",

@@ -24,7 +24,7 @@ canvas {
 
 #root,
 .root-container {
-  height: 100%;
+  height: 100vh;
   width: 100%;
 }
 
@@ -32,11 +32,6 @@ canvas {
   width: 100vw;
   height: 100vh;
   z-index: 1;
-  /* background-image: radial-gradient(
-    circle farthest-corner at 10% 20%,
-    rgba(37, 145, 251, 0.98) 0.1%,
-    rgba(0, 7, 128, 1) 99.8%
-  ); */
   background-image: radial-gradient(
     circle farthest-corner at 1.3% 2.8%,
     rgb(241 244 244) 0%,
@@ -231,7 +226,7 @@ div.skott-logo {
 }
 
 #skott-logo {
-  width: 90%;
+  width: 60%;
   margin: 0 auto;
 }
 
