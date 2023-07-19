@@ -5,7 +5,7 @@ import App from "./App.tsx";
 
 function Root() {
   const [colorScheme, setColorScheme] = React.useState<"light" | "dark">(
-    "light"
+    "dark"
   );
   const toggleColorScheme = () =>
     setColorScheme((scheme) => (scheme === "dark" ? "light" : "dark"));

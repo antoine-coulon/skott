@@ -1,15 +1,12 @@
 import { useState } from "react";
 import {
   createStyles,
-  Container,
   Navbar,
   UnstyledButton,
   Tooltip,
-  Title,
   rem,
 } from "@mantine/core";
 import {
-  IconRecycle,
   IconFiles,
   IconDeviceDesktopAnalytics,
   IconClipboardData,
@@ -17,11 +14,13 @@ import {
   IconSettings,
   IconRefreshAlert,
 } from "@tabler/icons-react";
+
 import { Circular } from "./Circular";
 import { GraphConfiguration } from "./GraphConfiguration";
 import { Summary } from "./Summary";
 import { FileExplorer } from "./FileExplorer";
 import { InteractivePlayground } from "./InteractivePlayground";
+import { UserSettings } from "./UserSettings";
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -79,73 +78,6 @@ const useStyles = createStyles((theme) => ({
         .color,
     },
   },
-
-  title: {
-    boxSizing: "border-box",
-    fontFamily: `Greycliff CF, ${theme.fontFamily}`,
-    marginBottom: theme.spacing.xl,
-    backgroundColor:
-      theme.colorScheme === "dark" ? theme.colors.dark[7] : theme.white,
-    padding: theme.spacing.md,
-    paddingTop: rem(18),
-    height: rem(60),
-    borderBottom: `${rem(1)} solid ${
-      theme.colorScheme === "dark" ? theme.colors.dark[7] : theme.colors.gray[3]
-    }`,
-  },
-
-  logo: {
-    boxSizing: "border-box",
-    width: "100%",
-    display: "flex",
-    justifyContent: "center",
-    height: rem(60),
-    paddingTop: theme.spacing.md,
-    borderBottom: `${rem(1)} solid ${
-      theme.colorScheme === "dark" ? theme.colors.dark[7] : theme.colors.gray[3]
-    }`,
-    marginBottom: theme.spacing.xl,
-  },
-
-  link: {
-    boxSizing: "border-box",
-    display: "block",
-    textDecoration: "none",
-    borderTopRightRadius: theme.radius.md,
-    borderBottomRightRadius: theme.radius.md,
-    color:
-      theme.colorScheme === "dark"
-        ? theme.colors.dark[0]
-        : theme.colors.gray[7],
-    padding: `0 ${theme.spacing.md}`,
-    fontSize: theme.fontSizes.sm,
-    marginRight: theme.spacing.md,
-    fontWeight: 500,
-    height: rem(44),
-    lineHeight: rem(44),
-
-    "&:hover": {
-      backgroundColor:
-        theme.colorScheme === "dark"
-          ? theme.colors.dark[5]
-          : theme.colors.gray[1],
-      color: theme.colorScheme === "dark" ? theme.white : theme.black,
-    },
-  },
-
-  linkActive: {
-    "&, &:hover": {
-      borderLeftColor: theme.fn.variant({
-        variant: "filled",
-        color: theme.primaryColor,
-      }).background,
-      backgroundColor: theme.fn.variant({
-        variant: "filled",
-        color: theme.primaryColor,
-      }).background,
-      color: theme.white,
-    },
-  },
 }));
 
 const menus = [
@@ -180,12 +112,13 @@ export function DoubleNavbar() {
       key={link.key}
     >
       <UnstyledButton
+        variant="light"
         onClick={() => setActive(link.key)}
         className={cx(classes.mainLink, {
           [classes.mainLinkActive]: link.key === active,
         })}
       >
-        <link.icon size="1.4rem" stroke={1.5} />
+        <link.icon size="1.4rem" stroke={1.4} />
       </UnstyledButton>
     </Tooltip>
   ));
@@ -202,6 +135,8 @@ export function DoubleNavbar() {
         return <FileExplorer />;
       case "interactive_playground":
         return <InteractivePlayground />;
+      case "settings":
+        return <UserSettings />;
       default:
         return <Summary />;
     }
