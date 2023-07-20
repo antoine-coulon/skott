@@ -1,20 +1,19 @@
 import React from "react";
 import { AppShell } from "@mantine/core";
-import { ReplaySubject } from "rxjs";
 
 import { DoubleNavbar } from "./sidebar/Layout";
 import GraphNetwork from "./network/Network.tsx";
 import GlobalSearch from "./global-search/GlobalSearch.tsx";
 import { SkottCycles, SkottStructureWithMetadata } from "./skott";
 
-import { fakeSkottData } from "./fake-data";
-import { DataStore, UiEvents } from "./events";
+import { fakeSkottData3 } from "./fake-data";
 import Header from "./header/Header.tsx";
+import { useEventStore } from "./EventChannels.tsx";
 
 function fetchAnalysisReport(): Promise<SkottStructureWithMetadata> {
   return fetch("/api/analysis")
     .then((res) => res.json())
-    .catch(() => fakeSkottData);
+    .catch(() => fakeSkottData3);
 }
 
 function fetchCyclesReport(): Promise<SkottCycles> {
@@ -26,13 +25,17 @@ function fetchCyclesReport(): Promise<SkottCycles> {
 }
 
 function App() {
-  const dataStore$ = new ReplaySubject<DataStore>();
-  const uiEvents$ = new ReplaySubject<UiEvents>();
+  const store = useEventStore();
 
   React.useEffect(() => {
     Promise.all([fetchAnalysisReport(), fetchCyclesReport()])
       .then(([analysisReport, cyclesReport]) => {
-        dataStore$.next({ ...analysisReport, cycles: cyclesReport.cycles });
+        const nextValue = {
+          ...analysisReport,
+          cycles: cyclesReport.cycles,
+        };
+        store.setInitialStore(nextValue);
+        store.dataStore$.next(nextValue);
       })
       .catch((exception) => {
         console.error("Failed to fetch analysis report", exception);
@@ -41,10 +44,10 @@ function App() {
 
   return (
     <>
-      <GlobalSearch dataStore$={dataStore$} uiEvents$={uiEvents$} />
+      <GlobalSearch />
       <AppShell header={<Header />} navbar={<DoubleNavbar />}>
         <div className="root-container">
-          <GraphNetwork dataStore$={dataStore$} uiEvents$={uiEvents$} />
+          <GraphNetwork />
         </div>
       </AppShell>
     </>

@@ -2,6 +2,7 @@ import React from "react";
 import { ColorSchemeProvider, MantineProvider } from "@mantine/core";
 
 import App from "./App.tsx";
+import { DataStoreProvider, EventStoreInstance } from "./EventChannels.tsx";
 
 function Root() {
   const [colorScheme, setColorScheme] = React.useState<"light" | "dark">(
@@ -22,7 +23,9 @@ function Root() {
           colorScheme,
         }}
       >
-        <App />
+        <DataStoreProvider value={EventStoreInstance}>
+          <App />
+        </DataStoreProvider>
       </MantineProvider>
     </ColorSchemeProvider>
   );

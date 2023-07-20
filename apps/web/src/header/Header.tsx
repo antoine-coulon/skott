@@ -1,33 +1,27 @@
 import {
-  ActionIcon,
   Group,
   Header as MantineHeader,
   Image,
   useMantineColorScheme,
-  Flex,
-  Title,
   ThemeIcon,
-  Box,
   Text,
-  Badge,
-  UnstyledButton,
   Button,
   Switch,
   useMantineTheme,
-  Kbd,
   Code,
 } from "@mantine/core";
 import { IconBrandGithub, IconMoonStars, IconSun } from "@tabler/icons-react";
-
-const metadata = {
-  name: "skott",
-  version: "0.28.0",
-};
+import { useEventStore } from "../EventChannels";
 
 export default function Header() {
+  const eventStore = useEventStore();
   const theme = useMantineTheme();
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const isDarkMode = colorScheme === "dark";
+
+  function openGlobalSearch() {
+    eventStore.uiEvents$.next({ action: "open_search" });
+  }
 
   return (
     <MantineHeader height={60}>
@@ -37,7 +31,7 @@ export default function Header() {
         </Group>
 
         <Group position="apart">
-          <Button variant="subtle">
+          <Button variant="gradient" radius="lg" onClick={openGlobalSearch}>
             <Group position="apart">
               <Text>Browse files</Text>
               <Code>CMD + K</Code>

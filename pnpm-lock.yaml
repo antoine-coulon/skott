@@ -47,6 +47,9 @@ importers:
       keycharm:
         specifier: ^0.2.0
         version: 0.2.0
+      minimatch-browser-fork:
+        specifier: ^1.0.0
+        version: 1.0.0
       ninja-keys:
         specifier: ^1.2.2
         version: 1.2.2
@@ -4541,6 +4544,13 @@ packages:
     resolution: {integrity: sha512-I9jwMn07Sy/IwOj3zVkVik2JTvgpaykDZEigL6Rx6N9LbMywwUSMtxET+7lVoDLLd3O3IXwJwvuuns8UB/HeAg==}
     engines: {node: '>=4'}
     dev: true
+
+  /minimatch-browser-fork@1.0.0:
+    resolution: {integrity: sha512-mZslclV5P9aAUchLfPhkYkflzhhY7tw5UH9+P5k6SPNHt/+HMHMaWFkrgk7TxaXpROp0yD7nP69qJooZY0nrQQ==}
+    engines: {node: '>=16 || 14 >=14.17'}
+    dependencies:
+      brace-expansion: 2.0.1
+    dev: false
 
   /minimatch@3.1.2:
     resolution: {integrity: sha512-J7p63hRiAjw1NDEww1W7i37+ByIrOWO5XQQAzZ3VOcL0PNybwpfmV/N05zFAzwQ9USyEcX6t3UO+K5aqBQOIHw==}

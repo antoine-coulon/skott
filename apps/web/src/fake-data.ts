@@ -1,6 +1,15 @@
 import { SkottStructureWithMetadata } from "./skott.js";
 
 export const graphDataWithCycles = {
+  "src/server/main.js": {
+    id: "src/server/main.js",
+    adjacentTo: [],
+    body: {
+      size: 191,
+      thirdPartyDependencies: [],
+      builtinDependencies: [],
+    },
+  },
   "src/server/errors.ts": {
     id: "src/server/errors.ts",
     adjacentTo: ["src/server/settings.ts"],
@@ -107,15 +116,59 @@ export const graphDataWithCycles = {
   },
 };
 
-export const fakeCyclesData = [
-  [
-    "src/server/settings.ts",
-    "src/lib/fastify/index.ts",
-    "src/server/errors.ts",
-  ],
-];
+export const fakeCyclesData = [["a.js", "b.js", "c.js"]];
 
 export const fakeSkottData: SkottStructureWithMetadata = {
+  entrypoint: "src/lib/fastify/index.ts",
+  files: ["a.js", "b.js", "c.js", "d.js"],
+  graph: {
+    "a.js": {
+      id: "a.js",
+      adjacentTo: ["b.js"],
+      body: {
+        size: 191,
+        thirdPartyDependencies: [],
+        builtinDependencies: [],
+      },
+    },
+    "b.js": {
+      id: "b.js",
+      adjacentTo: ["c.js"],
+      body: {
+        size: 191,
+        thirdPartyDependencies: [],
+        builtinDependencies: [],
+      },
+    },
+    "c.js": {
+      id: "c.js",
+      adjacentTo: ["a.js"],
+      body: {
+        size: 191,
+        thirdPartyDependencies: [],
+        builtinDependencies: [],
+      },
+    },
+    "d.js": {
+      id: "d.js",
+      adjacentTo: ["a.js"],
+      body: {
+        size: 191,
+        thirdPartyDependencies: [],
+        builtinDependencies: [],
+      },
+    },
+  },
+};
+export const fakeSkottData3: SkottStructureWithMetadata = {
+  entrypoint: "src/lib/fastify/index.ts",
+  files: Object.keys(graphDataWithCycles),
+  graph: {
+    ...graphDataWithCycles,
+  },
+};
+
+export const fakeSkottData2: SkottStructureWithMetadata = {
   entrypoint: "src/lib/fastify/index.ts",
   files: Object.keys(graphDataWithCycles),
   graph: {

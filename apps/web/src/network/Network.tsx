@@ -24,18 +24,14 @@ import {
   computeBuiltinDependencies,
   computeThirdPartyDependencies,
 } from "./dependencies.js";
+import { useEventStore } from "../EventChannels.js";
 
 export function getMethodToApplyOnNetworkElement(enable: boolean) {
   return enable ? "update" : "remove";
 }
 
-export default function GraphNetwork({
-  dataStore$,
-  uiEvents$,
-}: {
-  dataStore$: Subject<DataStore>;
-  uiEvents$: Subject<UiEvents>;
-}) {
+export default function GraphNetwork() {
+  const eventStore = useEventStore();
   const networkContainerRef = React.useRef(null);
   const [network, setNetwork] = React.useState<Network>();
   const [nodeDataset, setNodeDataset] = React.useState(
@@ -130,6 +126,7 @@ export default function GraphNetwork({
     switch (uiEvents.action) {
       case "focus": {
         focusOnNetworkNode(uiEvents.payload.nodeId);
+        network?.stabilize();
         break;
       }
       case "toggle_circular": {
@@ -141,22 +138,24 @@ export default function GraphNetwork({
       }
       case "toggle_builtin": {
         toggleDependencies(dataStore, "builtin", uiEvents.payload.enabled);
+        network?.stabilize();
         break;
       }
       case "toggle_thirdparty": {
         toggleDependencies(dataStore, "third_party", uiEvents.payload.enabled);
+        network?.stabilize();
         break;
       }
     }
-
-    network?.stabilize();
   }
 
   React.useEffect(() => {
     let subscription: Subscription;
 
     if (networkContainerRef.current) {
-      subscription = dataStore$.subscribe((dataStore) => {
+      subscription = eventStore.dataStore$.subscribe((dataStore) => {
+        console.log("SUBSCRIBE");
+
         const { graphNodes, graphEdges } = makeNodesAndEdges(
           Object.values(dataStore.graph),
           { entrypoint: dataStore.entrypoint }
@@ -196,8 +195,8 @@ export default function GraphNetwork({
 
   React.useEffect(() => {
     const uiEventsSubscription = combineLatest([
-      dataStore$,
-      uiEvents$,
+      eventStore.dataStore$,
+      eventStore.uiEvents$,
     ]).subscribe(([dataStore, uiEvents]) =>
       networkReducer(dataStore, uiEvents)
     );

@@ -1,33 +1,27 @@
 import {
-  Navbar,
-  TextInput,
-  Code,
   Text,
-  createStyles,
-  rem,
   Accordion,
   Box,
   ActionIcon,
   Flex,
   Image,
   Menu,
-  ScrollArea,
 } from "@mantine/core";
 import {
-  IconFilterCog,
   IconDots,
   IconFilterPlus,
   IconFocusCentered,
   IconLoadBalancer,
   IconReportSearch,
+  IconFile,
 } from "@tabler/icons-react";
-
-import { fakeSkottData } from "../fake-data";
-import { isJavaScriptModule, isTypeScriptModule } from "../util.js";
+import { makeTreeStructure } from "fs-tree-structure";
 import React from "react";
-import { UiEvents } from "../events.js";
 
-const data = fakeSkottData;
+import { isJavaScriptModule, isTypeScriptModule } from "../../util.js";
+import { useEventStore } from "../../EventChannels.js";
+import { UiEvents } from "../../events.js";
+import { FileExplorerEvents } from "./events.js";
 
 const skottPathSeparator = "#sk#";
 
@@ -35,63 +29,20 @@ function parseFilePath(fileId: string): string {
   return fileId.split(skottPathSeparator).join("/");
 }
 
-type FileExplorerEvents = {
-  action: "filter_by_glob";
-  payload: {
-    glob: string;
-  };
+const languagesWithIcons = {
+  ts: <Image src={"./typescript.png"} width={15} fit="contain" />,
+  js: <Image src={"./javascript.png"} width={15} fit="contain" />,
 };
 
-const useStyles = createStyles((theme) => ({
-  searchCode: {
-    fontWeight: 700,
-    fontSize: rem(10),
-    backgroundColor:
-      theme.colorScheme === "dark"
-        ? theme.colors.dark[7]
-        : theme.colors.gray[0],
-    border: `${rem(1)} solid ${
-      theme.colorScheme === "dark" ? theme.colors.dark[7] : theme.colors.gray[2]
-    }`,
-  },
-}));
-
-const fileTree = {
-  lib: {
-    "index.js": {},
-    "some-dir": {
-      "index.js": {},
-      "some-folder": {
-        "index.js": {},
-        "deep-folder": {
-          "index.js": {},
-          "some-folder": {
-            "index.js": {},
-            "deep-folder": {
-              "index.js": {},
-              "some-folder": {
-                "index.js": {},
-                "deep-folder": {
-                  "index.js": {},
-                  "some-folder": {
-                    "index.js": {},
-                    "deep-folder": {
-                      "index.js": {},
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  },
-  app: {
-    "main.ts": {},
-  },
-  "index.js": {},
-};
+function getLanguageIcon(filename: string) {
+  if (isTypeScriptModule(filename)) {
+    return languagesWithIcons.ts;
+  } else if (isJavaScriptModule(filename)) {
+    return languagesWithIcons.js;
+  } else {
+    return <IconFile size={15} />;
+  }
+}
 
 function AccordionControl({
   children,
@@ -149,11 +100,12 @@ function File({
       align="center"
       justify="space-between"
       ml={15}
-      p={isRoot ? 10 : 0}
+      pl={isRoot ? 10 : 0}
       mb={5}
+      pr={0}
     >
       <Flex align="center">
-        <Image src={"./javascript.png"} width={15} fit="contain" />
+        {getLanguageIcon(name)}
         <Text truncate="end" ml={10}>
           {name}
         </Text>
@@ -294,12 +246,24 @@ function Folder({
   );
 }
 
-function FileExplorerAccordion({
+export function FileExplorerAccordion({
   actionDispatcher,
 }: {
   actionDispatcher: (action: UiEvents | FileExplorerEvents) => void;
 }) {
   const [openedFolders, setOpenedFolders] = React.useState(new Set<string>());
+  const [fileTree, setFileTree] = React.useState<Record<string, any>>({});
+  const { dataStore$ } = useEventStore();
+
+  React.useEffect(() => {
+    const s = dataStore$.subscribe((data) => {
+      setFileTree(makeTreeStructure(data.files));
+    });
+
+    return () => {
+      s.unsubscribe();
+    };
+  }, []);
 
   return (
     <>
@@ -332,51 +296,5 @@ function FileExplorerAccordion({
         });
       })}
     </>
-  );
-}
-
-export function FileExplorer() {
-  const { classes } = useStyles();
-
-  const typescriptFiles: string[] = [];
-  const javascriptFiles: string[] = [];
-
-  for (const file of data.files) {
-    if (isTypeScriptModule(file)) {
-      typescriptFiles.push(file);
-    }
-
-    if (isJavaScriptModule(file)) {
-      javascriptFiles.push(file);
-    }
-  }
-
-  function applyFilter(globPattern: string) {}
-
-  function dispatchAction(event: UiEvents | FileExplorerEvents) {
-    if (event.action === "filter_by_glob") {
-      applyFilter(event.payload.glob);
-    } else {
-    }
-  }
-
-  return (
-    <ScrollArea.Autosize mah="90vh" mx="auto">
-      <Navbar.Section>
-        <Box p="md">
-          <TextInput
-            placeholder="Example: src/**/*.ts"
-            size="xs"
-            icon={<IconFilterCog size="0.8rem" stroke={1.5} />}
-            rightSectionWidth={60}
-            rightSection={<Code className={classes.searchCode}>Filter</Code>}
-            styles={{ rightSection: { pointerEvents: "none" } }}
-            mb="sm"
-          />
-        </Box>
-
-        <FileExplorerAccordion actionDispatcher={dispatchAction} />
-      </Navbar.Section>
-    </ScrollArea.Autosize>
   );
 }
