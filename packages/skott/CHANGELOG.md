@@ -1,5 +1,12 @@
 # skott
 
+## 0.28.1
+
+### Patch Changes
+
+- 812d2a5: add error boundaries around opaque TypeScript path aliases resolution issues
+  - skott-webapp@1.0.6
+
 ## 0.28.0
 
 ### Minor Changes
