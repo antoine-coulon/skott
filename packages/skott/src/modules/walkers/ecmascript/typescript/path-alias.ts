@@ -4,6 +4,9 @@ import path from "node:path";
 import JSON5 from "json5";
 import type { CompilerOptions } from "typescript";
 
+import * as Option from "@effect/data/Option";
+import { pipe } from "@effect/data/Function";
+
 import type { FileReader } from "../../../../filesystem/file-reader.js";
 import { Logger } from "../../../../logger.js";
 
@@ -19,22 +22,41 @@ interface SupportedTSConfig {
 function resolveAliasToRelativePath(
   moduleDeclaration: string,
   baseAlias: string,
-  baseAliasDirname: string
-): string {
+  baseAliasDirname: string,
+  logger: Logger
+): Option.Option<string> {
   /**
    * When having a path alias like "foo/*": ["core/lib/*"], we want to map
    * any segment such as "foo/lib/baz" to "core/lib/baz".
    */
-  const modulePathWithoutAliasBaseDirname = moduleDeclaration.split(
-    path.join(baseAliasDirname, path.sep)
-  )[1];
+  try {
+    logger.info(
+      `Extracting "${moduleDeclaration}" base path using path alias base directory "${baseAliasDirname}"`
+    );
 
-  const realPathWithAlias = path.join(
-    baseAlias,
-    modulePathWithoutAliasBaseDirname
-  );
+    const modulePathWithoutAliasBaseDirname = moduleDeclaration.split(
+      path.join(baseAliasDirname, path.sep)
+    )[1];
 
-  return realPathWithAlias;
+    logger.info(
+      `Attempt to map alias path to real file-system path.` +
+        ` Join "${baseAlias}" -> "${modulePathWithoutAliasBaseDirname}"`
+    );
+
+    const realPathWithAlias = path.join(
+      baseAlias,
+      modulePathWithoutAliasBaseDirname
+    );
+
+    return Option.some(realPathWithAlias);
+  } catch {
+    logger.failure(
+      `Could not resolve ${moduleDeclaration} alias path to real file-system path` +
+        ` using ${baseAlias} and ${baseAliasDirname}.`
+    );
+
+    return Option.none();
+  }
 }
 
 function isNotBasePathSegment(segment: string): boolean {
@@ -104,17 +126,24 @@ export async function buildPathAliases(
       logger.info(`Extracting path aliases from tsconfig: ${tsConfigPath}`);
 
       for (const [alias, aliasedPath] of Object.entries(paths)) {
+        logger.info(`Found path alias "${alias}": ["${aliasedPath}"]`);
         /**
          * When the path alias is like "foo/*": ["foo/lib/*"], we must be sure
          * to only use known segments of the glob so that we can map easily
          * once glob segment "foo/baz/bar" to "foo/lib/baz/bar".
          */
-        const aliasWithoutGlob = alias.split("/*")[0];
-        const realPathWithoutGlob = aliasedPath[0].split("/*")[0];
+        const aliasWithoutWildcard = alias.split("/*")[0];
+        const realPathWithoutWildcard = aliasedPath[0].split("/*")[0];
 
-        aliasLinks.set(
-          aliasWithoutGlob,
-          path.join(baseUrl, realPathWithoutGlob)
+        const realPathAliasLocation = path.join(
+          baseUrl,
+          realPathWithoutWildcard
+        );
+
+        aliasLinks.set(aliasWithoutWildcard, realPathAliasLocation);
+
+        logger.info(
+          `Registering path alias without wildcards "${aliasWithoutWildcard}": ["${realPathAliasLocation}"]`
         );
       }
     }
@@ -152,21 +181,39 @@ export async function buildPathAliases(
 export function resolvePathAlias(
   moduleDeclaration: string,
   baseDir: string,
-  aliasLinks: Map<string, string>
-): string | undefined {
+  aliasLinks: Map<string, string>,
+  logger: Logger
+): Option.Option<string> {
   const aliasWithoutGlob = aliasLinks.get(moduleDeclaration);
 
   if (aliasWithoutGlob) {
-    return path.join(baseDir, aliasWithoutGlob);
+    return Option.some(path.join(baseDir, aliasWithoutGlob));
   }
 
   let baseAliasDirname = path.dirname(moduleDeclaration);
   let baseAlias = aliasLinks.get(baseAliasDirname);
 
   if (baseAlias) {
-    return path.join(
-      baseDir,
-      resolveAliasToRelativePath(moduleDeclaration, baseAlias, baseAliasDirname)
+    const aliasPath = resolveAliasToRelativePath(
+      moduleDeclaration,
+      baseAlias,
+      baseAliasDirname,
+      logger
+    );
+
+    if (Option.isNone(aliasPath)) {
+      logger.failure(
+        `${moduleDeclaration} path alias could not be resolved using base path ${baseAlias}`
+      );
+    }
+
+    return pipe(
+      aliasPath,
+      Option.map((resolvedPath) => path.join(baseDir, resolvedPath))
+    );
+  } else {
+    logger.failure(
+      `No match found for ${moduleDeclaration} using base ${baseAlias} path alias in the registered entries`
     );
   }
 
@@ -182,10 +229,13 @@ export function resolvePathAlias(
     const deepBaseAlias = aliasLinks.get(baseAliasDirname);
 
     if (deepBaseAlias) {
-      baseAlias = resolveAliasToRelativePath(
-        moduleDeclaration,
-        deepBaseAlias,
-        baseAliasDirname
+      baseAlias = Option.getOrUndefined(
+        resolveAliasToRelativePath(
+          moduleDeclaration,
+          deepBaseAlias,
+          baseAliasDirname,
+          logger
+        )
       );
       pathDepthAttempts = 0;
       break;
@@ -193,10 +243,14 @@ export function resolvePathAlias(
   }
 
   if (!baseAlias) {
-    return undefined;
+    logger.failure(
+      `No match found for ${moduleDeclaration} and corresponding segments of ${baseAlias}` +
+        ` path alias in the registered entries. Path depth attempts: ${pathDepthAttempts}`
+    );
+    return Option.none();
   }
 
-  return path.join(baseDir, baseAlias);
+  return Option.some(path.join(baseDir, baseAlias));
 }
 
 export function isTypeScriptRelativePathWithNoLeadingIdentifier(
