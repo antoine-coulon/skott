@@ -12,6 +12,18 @@ export type UiEvents =
   | { action: "toggle_thirdparty"; payload: { enabled: boolean } }
   | {
       action: "open_search";
+    }
+  | {
+      action: "focus_on_node";
+      payload: {
+        nodeId: string;
+      };
+    }
+  | {
+      action: "isolate_node";
+      payload: {
+        nodeId: string;
+      };
     };
 
 export type DataStore = SkottStructureWithCycles;

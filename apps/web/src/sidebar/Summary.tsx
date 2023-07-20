@@ -142,6 +142,7 @@ export function Summary() {
                 if (index % 2 === 0) {
                   return (
                     <List.Item
+                      key={dep}
                       icon={
                         <ThemeIcon color="indigo" size={25} p={5} radius="xl">
                           <Text>9+</Text>
@@ -155,6 +156,7 @@ export function Summary() {
 
                 return (
                   <List.Item
+                    key={dep}
                     icon={
                       <ThemeIcon color="orange" size={25} radius="xl">
                         <IconExclamationMark size="1rem" />
@@ -180,6 +182,7 @@ export function Summary() {
               {[...builtinRegistry].map((dep) => {
                 return (
                   <List.Item
+                    key={dep}
                     icon={
                       <ThemeIcon color="indigo" size={25} p={5} radius="xl">
                         <Text>5</Text>

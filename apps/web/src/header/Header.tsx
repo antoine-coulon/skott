@@ -8,7 +8,14 @@ import {
   Title,
   ThemeIcon,
   Box,
-  Paper,
+  Text,
+  Badge,
+  UnstyledButton,
+  Button,
+  Switch,
+  useMantineTheme,
+  Kbd,
+  Code,
 } from "@mantine/core";
 import { IconBrandGithub, IconMoonStars, IconSun } from "@tabler/icons-react";
 
@@ -18,7 +25,9 @@ const metadata = {
 };
 
 export default function Header() {
+  const theme = useMantineTheme();
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+  const isDarkMode = colorScheme === "dark";
 
   return (
     <MantineHeader height={60}>
@@ -27,41 +36,44 @@ export default function Header() {
           <Image src={"./skott.svg"} width={125} fit="contain" radius="md" />
         </Group>
 
-        <Paper withBorder p={5}>
-          <Flex justify="space-between" align="center" direction="row">
-            <Title size="sm" color="blue">
-              {metadata.name}
-            </Title>
-            <Title size="sm" color="dimmed">
-              @
-            </Title>
-            <Title size="sm" color="grape">
-              {metadata.version}
-            </Title>
-          </Flex>
-        </Paper>
-
         <Group position="apart">
-          <ActionIcon
-            variant="default"
-            onClick={() => toggleColorScheme()}
-            size={30}
+          <Button variant="subtle">
+            <Group position="apart">
+              <Text>Browse files</Text>
+              <Code>CMD + K</Code>
+            </Group>
+          </Button>
+
+          <Button
+            variant="subtle"
+            color={isDarkMode ? "blue" : "dark"}
+            onClick={() => {
+              window.open("https://github.com/antoine-coulon/skott", "_blank");
+            }}
           >
-            <ThemeIcon color="dark">
-              <IconBrandGithub />
-            </ThemeIcon>
-          </ActionIcon>
-          <ActionIcon
-            variant="default"
-            onClick={() => toggleColorScheme()}
-            size={30}
-          >
-            {colorScheme === "dark" ? (
-              <IconSun size={16} />
-            ) : (
-              <IconMoonStars size={16} />
-            )}
-          </ActionIcon>
+            <Group position="apart">
+              <Text>Source</Text>
+              <ThemeIcon radius="lg" color="dark">
+                <IconBrandGithub />
+              </ThemeIcon>
+            </Group>
+          </Button>
+
+          <Switch
+            checked={isDarkMode}
+            onChange={() => toggleColorScheme()}
+            size="lg"
+            onLabel={
+              <IconSun color={theme.white} size="1.25rem" stroke={1.5} />
+            }
+            offLabel={
+              <IconMoonStars
+                color={theme.colors.gray[6]}
+                size="1.25rem"
+                stroke={1.5}
+              />
+            }
+          />
         </Group>
       </Group>
     </MantineHeader>

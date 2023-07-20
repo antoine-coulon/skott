@@ -225,6 +225,19 @@ div.skott-logo {
   text-align: center;
 }
 
+.mantine-Accordion-chevron {
+  margin-right: 2px;
+}
+
+.mantine-Accordion-content {
+  padding-bottom: 0;
+  padding-right: 0;
+}
+
+.mantine-Accordion-label {
+  padding: 0;
+}
+
 #skott-logo {
   width: 60%;
   margin: 0 auto;

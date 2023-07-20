@@ -101,7 +101,7 @@ type MenuKeys = (typeof menus)[number]["key"];
 
 export function DoubleNavbar() {
   const { classes, cx } = useStyles();
-  const [active, setActive] = useState<MenuKeys>("summary");
+  const [active, setActive] = useState<MenuKeys>("file_explorer");
 
   const mainMenus = menus.map((link) => (
     <Tooltip
@@ -126,7 +126,7 @@ export function DoubleNavbar() {
   const selectComponent = (active: MenuKeys) => {
     switch (active) {
       case "circular":
-        return <Circular key="apanayo" />;
+        return <Circular />;
       case "graph_configuration":
         return <GraphConfiguration />;
       case "summary":
