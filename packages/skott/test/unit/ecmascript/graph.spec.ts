@@ -10,7 +10,7 @@ import { Skott, SkottStructure } from "../../../src/skott.js";
 import {
   buildSkottProjectUsingInMemoryFileExplorer,
   mountFakeFileSystem
-} from "../shared";
+} from "../shared.js";
 import { CollectLevel } from "../../../src/graph/traversal.js";
 import { SkottNode } from "../../../src/graph/node.js";
 

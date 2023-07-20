@@ -6,9 +6,9 @@ import {
   buildSkottProjectUsingInMemoryFileExplorer,
   fakeNodeBody,
   mountFakeFileSystem
-} from "../shared";
+} from "../shared.js";
 
-import { makeTestSuiteForJsxOrTsx as makeTestSuiteForJsx } from "./jsx-and-tsx";
+import { makeTestSuiteForJsxOrTsx as makeTestSuiteForJsx } from "./jsx-and-tsx.js";
 
 describe("When traversing a JavaScript/Node.js project", () => {
   describe("When the project uses ECMAScript modules", () => {

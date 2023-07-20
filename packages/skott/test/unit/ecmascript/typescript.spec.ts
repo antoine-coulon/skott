@@ -4,9 +4,9 @@ import {
   buildSkottProjectUsingInMemoryFileExplorer,
   fakeNodeBody,
   mountFakeFileSystem
-} from "../shared";
+} from "../shared.js";
 
-import { makeTestSuiteForJsxOrTsx as makeTestSuiteForTsx } from "./jsx-and-tsx";
+import { makeTestSuiteForJsxOrTsx as makeTestSuiteForTsx } from "./jsx-and-tsx.js";
 
 describe("When traversing a TypeScript project", () => {
   describe("When the file does not have any module declarations", () => {
@@ -428,8 +428,12 @@ describe("When traversing a TypeScript project", () => {
               "index.ts": `
                 import { script } from "@typescript-eslint/estree-parser";
                 import { foo } from "@lib";
+                import "@lib/should-not-be-resolved";
               `,
               "lib/index.ts": `
+                export function foo(): string {}
+              `,
+              "lib/should-not-be-resolved.ts": `
                 export function foo(): string {}
               `,
               "tsconfig.json": JSON.stringify(tsConfig)

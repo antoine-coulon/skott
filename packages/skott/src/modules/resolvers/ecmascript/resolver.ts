@@ -16,6 +16,8 @@ import {
   kExpectedModuleExtensions
 } from "../base-resolver.js";
 
+import * as Option from "@effect/data/Option";
+
 const NODE_PROTOCOL = "node:";
 
 export function isBuiltinModule(module: string): boolean {
@@ -195,16 +197,17 @@ export class EcmaScriptDependencyResolver implements DependencyResolver {
       const resolvedModulePath = resolvePathAlias(
         moduleDeclaration,
         path.dirname(config.tsConfigPath),
-        workspaceConfiguration.pathAliases
+        workspaceConfiguration.pathAliases,
+        logger
       );
 
-      if (resolvedModulePath) {
+      if (Option.isSome(resolvedModulePath)) {
         logger.success(
           highlightResolved(moduleDeclaration, "TypeScript path alias")
         );
 
         await followModuleDeclaration({
-          moduleDeclaration: resolvedModulePath,
+          moduleDeclaration: resolvedModulePath.value,
           rootPath: resolvedNodePath,
           isPathAliasDeclaration: true
         });
