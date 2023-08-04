@@ -99,6 +99,9 @@ const menus = [
 
 type MenuKeys = (typeof menus)[number]["key"];
 
+const isFeatureDisabled = (section: string) =>
+  section !== "file_explorer" && section !== "summary";
+
 export function DoubleNavbar() {
   const { classes, cx } = useStyles();
   const [active, setActive] = useState<MenuKeys>("file_explorer");
@@ -112,6 +115,8 @@ export function DoubleNavbar() {
       key={link.key}
     >
       <UnstyledButton
+        disabled={isFeatureDisabled(link.key)}
+        opacity={isFeatureDisabled(link.key) ? 0.5 : 1}
         variant="light"
         onClick={() => setActive(link.key)}
         className={cx(classes.mainLink, {

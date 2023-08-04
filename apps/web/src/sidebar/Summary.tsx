@@ -1,3 +1,4 @@
+import React from "react";
 import {
   Navbar,
   Box,
@@ -18,35 +19,60 @@ import {
   IconBrandNodejs,
 } from "@tabler/icons-react";
 
-import { fakeSkottData } from "../fake-data";
 import { isJavaScriptModule, isTypeScriptModule } from "../util.js";
-
-const data = fakeSkottData;
+import { useEventStore } from "../EventChannels.js";
 
 export function Summary() {
-  const builtinRegistry = new Set<string>();
-  const npmRegistry = new Set<string>();
-  const typescriptFiles: string[] = [];
-  const javascriptFiles: string[] = [];
+  const eventStore = useEventStore();
+  const [summary, setSummary] = React.useState({
+    numberOfFiles: 0,
+    cycles: new Array<string[]>(),
+    typescriptFiles: new Array<string>(),
+    javascriptFiles: new Array<string>(),
+    builtinRegistry: new Set<string>(),
+    npmRegistry: new Set<string>(),
+  });
 
-  for (const file of data.files) {
-    if (isTypeScriptModule(file)) {
-      typescriptFiles.push(file);
-    }
+  React.useEffect(() => {
+    const s = eventStore.dataStore$.subscribe((data) => {
+      const typescriptFiles: string[] = [];
+      const javascriptFiles: string[] = [];
+      const builtinRegistry = new Set<string>();
+      const npmRegistry = new Set<string>();
 
-    if (isJavaScriptModule(file)) {
-      javascriptFiles.push(file);
-    }
-  }
+      for (const file of data.files) {
+        if (isTypeScriptModule(file)) {
+          typescriptFiles.push(file);
+        }
 
-  for (const node of Object.values(data.graph)) {
-    node.body.thirdPartyDependencies.forEach((dep) => {
-      npmRegistry.add(dep);
+        if (isJavaScriptModule(file)) {
+          javascriptFiles.push(file);
+        }
+      }
+
+      for (const node of Object.values(data.graph)) {
+        node.body.thirdPartyDependencies.forEach((dep) => {
+          npmRegistry.add(dep);
+        });
+        node.body.builtinDependencies.forEach((dep) => {
+          builtinRegistry.add(dep);
+        });
+      }
+
+      setSummary({
+        numberOfFiles: data.files.length,
+        cycles: data.cycles,
+        typescriptFiles,
+        javascriptFiles,
+        builtinRegistry,
+        npmRegistry,
+      });
     });
-    node.body.builtinDependencies.forEach((dep) => {
-      builtinRegistry.add(dep);
-    });
-  }
+
+    return () => {
+      s.unsubscribe();
+    };
+  }, []);
 
   return (
     <ScrollArea.Autosize mah="90vh" mx="auto">
@@ -59,7 +85,7 @@ export function Summary() {
               gradient={{ from: "indigo", to: "blue" }}
               size="lg"
             >
-              {data.files.length} files
+              {summary.numberOfFiles} files
             </Badge>
           </Flex>
 
@@ -102,7 +128,7 @@ export function Summary() {
               gradient={{ from: "indigo", to: "blue" }}
               size="lg"
             >
-              282 files
+              {summary.typescriptFiles.length} files
             </Badge>
           </Flex>
 
@@ -113,7 +139,7 @@ export function Summary() {
               gradient={{ from: "indigo", to: "blue" }}
               size="lg"
             >
-              120 files
+              {summary.javascriptFiles.length} files
             </Badge>
           </Flex>
 
@@ -125,7 +151,7 @@ export function Summary() {
               size="lg"
               color="red"
             >
-              11 cycles
+              {summary.cycles.length} cycles
             </Badge>
           </Flex>
         </Paper>
@@ -133,12 +159,12 @@ export function Summary() {
         <Paper withBorder py={5} my={10}>
           <Group position="apart" px={10}>
             <Image src={"./npm.svg"} width={40} fit="contain" />
-            <Badge size="lg">{npmRegistry.size}</Badge>
+            <Badge size="lg">{summary.npmRegistry.size}</Badge>
           </Group>
 
           <Box p={10}>
             <List spacing="xs" size="sm" center>
-              {[...npmRegistry].map((dep, index) => {
+              {[...summary.npmRegistry].map((dep, index) => {
                 if (index % 2 === 0) {
                   return (
                     <List.Item
@@ -174,12 +200,12 @@ export function Summary() {
         <Paper withBorder py={5} my={10}>
           <Group position="apart" px={10}>
             <IconBrandNodejs size={25} color="green" />
-            <Badge size="lg">{builtinRegistry.size}</Badge>
+            <Badge size="lg">{summary.builtinRegistry.size}</Badge>
           </Group>
 
           <Box p={10}>
             <List spacing="xs" size="sm" center>
-              {[...builtinRegistry].map((dep) => {
+              {[...summary.builtinRegistry].map((dep) => {
                 return (
                   <List.Item
                     key={dep}

@@ -49,7 +49,7 @@ export function FileExplorer() {
     if (filter.length === 0) {
       return theme.colorScheme === "dark"
         ? theme.colors.dark[3]
-        : theme.colors.gray[0];
+        : theme.colors.gray[6];
     } else {
       return theme.colors.teal[7];
     }

@@ -120,48 +120,6 @@ export const fakeCyclesData = [["a.js", "b.js", "c.js"]];
 
 export const fakeSkottData: SkottStructureWithMetadata = {
   entrypoint: "src/lib/fastify/index.ts",
-  files: ["a.js", "b.js", "c.js", "d.js"],
-  graph: {
-    "a.js": {
-      id: "a.js",
-      adjacentTo: ["b.js"],
-      body: {
-        size: 191,
-        thirdPartyDependencies: [],
-        builtinDependencies: [],
-      },
-    },
-    "b.js": {
-      id: "b.js",
-      adjacentTo: ["c.js"],
-      body: {
-        size: 191,
-        thirdPartyDependencies: [],
-        builtinDependencies: [],
-      },
-    },
-    "c.js": {
-      id: "c.js",
-      adjacentTo: ["a.js"],
-      body: {
-        size: 191,
-        thirdPartyDependencies: [],
-        builtinDependencies: [],
-      },
-    },
-    "d.js": {
-      id: "d.js",
-      adjacentTo: ["a.js"],
-      body: {
-        size: 191,
-        thirdPartyDependencies: [],
-        builtinDependencies: [],
-      },
-    },
-  },
-};
-export const fakeSkottData3: SkottStructureWithMetadata = {
-  entrypoint: "src/lib/fastify/index.ts",
   files: Object.keys(graphDataWithCycles),
   graph: {
     ...graphDataWithCycles,

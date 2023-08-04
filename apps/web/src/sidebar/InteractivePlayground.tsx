@@ -1,3 +1,5 @@
+import { Box } from "@mantine/core";
+
 export function InteractivePlayground() {
-  return <div>interactive_playground</div>;
+  return <Box p={15}>WIP: interactive_playground</Box>;
 }
