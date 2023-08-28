@@ -153,7 +153,7 @@ function resolveToModuleIfExists(moduleName: string) {
   );
 }
 
-class ModuleNotFoundError {
+export class ModuleNotFoundError {
   readonly _tag = "ModuleNotFoundError";
   constructor(private readonly message: string) {}
 }

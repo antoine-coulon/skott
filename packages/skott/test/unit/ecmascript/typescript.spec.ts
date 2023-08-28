@@ -206,26 +206,74 @@ describe("When traversing a TypeScript project", () => {
       });
 
       describe("When files include relative imports with no leading '.' or './' identifier", () => {
-        describe("When providing an entrypoint", () => {
-          describe("When the baseUrl is the root mounting point", () => {
-            const baseUrls = ["./", "."];
+        describe("When the tsconfig is located in the current working dir", () => {
+          describe("When providing an entrypoint", () => {
+            describe("When the baseUrl is the root mounting point", () => {
+              const baseUrls = ["./", "."];
 
-            it.each(baseUrls)(
-              "should resolve imports relatively from the baseUrl to the location of the tsconfig",
-              async (baseUrl) => {
+              it.each(baseUrls)(
+                "should resolve imports relatively from the baseUrl to the location of the tsconfig",
+                async (baseUrl) => {
+                  const tsConfig = {
+                    compilerOptions: {
+                      baseUrl
+                    }
+                  };
+
+                  mountFakeFileSystem({
+                    "index.ts": `
+                  import { foo } from "lib/foo";
+                `,
+                    "lib/foo.ts": `
+                  export function foo(): string {}
+                `,
+                    "tsconfig.json": JSON.stringify(tsConfig)
+                  });
+
+                  const { graph } =
+                    await buildSkottProjectUsingInMemoryFileExplorer({
+                      entrypoint: "index.ts",
+                      includeBaseDir: false,
+                      trackThirdParty: true
+                    });
+
+                  expect(graph).to.be.deep.equal({
+                    "index.ts": {
+                      adjacentTo: ["lib/foo.ts"],
+                      id: "index.ts",
+                      body: {
+                        ...fakeNodeBody,
+                        thirdPartyDependencies: []
+                      }
+                    },
+                    "lib/foo.ts": {
+                      adjacentTo: [],
+                      id: "lib/foo.ts",
+                      body: fakeNodeBody
+                    }
+                  });
+                }
+              );
+            });
+
+            describe("When the baseUrl is a given directory", () => {
+              it("should resolve relative imports with no leading identifiers from the baseUrl to the location of the tsconfig", async () => {
                 const tsConfig = {
                   compilerOptions: {
-                    baseUrl
+                    baseUrl: "libs"
                   }
                 };
 
                 mountFakeFileSystem({
                   "index.ts": `
-                  import { foo } from "lib/foo";
+                  import { foo } from "foo";
+                  import * as Effect from "@effect/io";
+                  import * as smthing from "./something-else";
                 `,
-                  "lib/foo.ts": `
+                  "libs/foo.ts": `
                   export function foo(): string {}
                 `,
+                  "something-else.ts": ``,
                   "tsconfig.json": JSON.stringify(tsConfig)
                 });
 
@@ -238,95 +286,96 @@ describe("When traversing a TypeScript project", () => {
 
                 expect(graph).to.be.deep.equal({
                   "index.ts": {
-                    adjacentTo: ["lib/foo.ts"],
+                    adjacentTo: ["libs/foo.ts", "something-else.ts"],
                     id: "index.ts",
                     body: {
                       ...fakeNodeBody,
-                      thirdPartyDependencies: []
+                      thirdPartyDependencies: ["@effect/io"]
                     }
                   },
-                  "lib/foo.ts": {
+                  "libs/foo.ts": {
                     adjacentTo: [],
-                    id: "lib/foo.ts",
+                    id: "libs/foo.ts",
+                    body: fakeNodeBody
+                  },
+                  "something-else.ts": {
+                    adjacentTo: [],
+                    id: "something-else.ts",
                     body: fakeNodeBody
                   }
                 });
-              }
-            );
-          });
-
-          describe("When the baseUrl is a given directory", () => {
-            it("should resolve relative imports with no leading identifiers from the baseUrl to the location of the tsconfig", async () => {
-              const tsConfig = {
-                compilerOptions: {
-                  baseUrl: "libs"
-                }
-              };
-
-              mountFakeFileSystem({
-                "index.ts": `
-                  import { foo } from "foo";
-                  import * as Effect from "@effect/io";
-                  import * as smthing from "./something-else";
-                `,
-                "libs/foo.ts": `
-                  export function foo(): string {}
-                `,
-                "something-else.ts": ``,
-                "tsconfig.json": JSON.stringify(tsConfig)
-              });
-
-              const { graph } =
-                await buildSkottProjectUsingInMemoryFileExplorer({
-                  entrypoint: "index.ts",
-                  includeBaseDir: false,
-                  trackThirdParty: true
-                });
-
-              expect(graph).to.be.deep.equal({
-                "index.ts": {
-                  adjacentTo: ["libs/foo.ts", "something-else.ts"],
-                  id: "index.ts",
-                  body: {
-                    ...fakeNodeBody,
-                    thirdPartyDependencies: ["@effect/io"]
-                  }
-                },
-                "libs/foo.ts": {
-                  adjacentTo: [],
-                  id: "libs/foo.ts",
-                  body: fakeNodeBody
-                },
-                "something-else.ts": {
-                  adjacentTo: [],
-                  id: "something-else.ts",
-                  body: fakeNodeBody
-                }
               });
             });
           });
-        });
 
-        describe("When performing a bulk analysis", () => {
-          describe("When the baseUrl is the root mounting point", () => {
-            const baseUrls = ["./", "."];
+          describe("When performing a bulk analysis", () => {
+            describe("When the baseUrl is the root mounting point", () => {
+              const baseUrls = ["./", "."];
 
-            it.each(baseUrls)(
-              "should resolve imports relatively from the baseUrl to the location of the tsconfig",
-              async (baseUrl) => {
+              it.each(baseUrls)(
+                "should resolve imports relatively from the baseUrl to the location of the tsconfig",
+                async (baseUrl) => {
+                  const tsConfig = {
+                    compilerOptions: {
+                      baseUrl
+                    }
+                  };
+
+                  mountFakeFileSystem({
+                    "index.ts": `
+                    import { foo } from "lib/foo";
+                  `,
+                    "lib/foo.ts": `
+                    export function foo(): string {}
+                  `,
+                    "tsconfig.json": JSON.stringify(tsConfig)
+                  });
+
+                  const { graph } =
+                    await buildSkottProjectUsingInMemoryFileExplorer({
+                      includeBaseDir: false,
+                      trackThirdParty: true
+                    });
+
+                  expect(graph).to.be.deep.equal({
+                    "index.ts": {
+                      adjacentTo: ["lib/foo.ts"],
+                      id: "index.ts",
+                      body: {
+                        ...fakeNodeBody,
+                        thirdPartyDependencies: []
+                      }
+                    },
+                    "lib/foo.ts": {
+                      adjacentTo: [],
+                      id: "lib/foo.ts",
+                      body: fakeNodeBody
+                    }
+                  });
+                }
+              );
+            });
+
+            describe("When the baseUrl is a given directory", () => {
+              it("should resolve relative imports with no leading identifiers from the baseUrl to the location of the tsconfig", async () => {
                 const tsConfig = {
                   compilerOptions: {
-                    baseUrl
+                    baseUrl: "libs"
                   }
                 };
 
                 mountFakeFileSystem({
                   "index.ts": `
-                    import { foo } from "lib/foo";
-                  `,
-                  "lib/foo.ts": `
-                    export function foo(): string {}
-                  `,
+                  import { foo } from "foo";
+                  import * as Effect from "@effect/io";
+                  import * as smthing from "./something-else";
+                `,
+                  "libs/foo.ts": `
+                  export function foo(): string {}
+                `,
+                  "something-else.ts": `
+                  import { pipe } from "@effect/data/Function";
+                `,
                   "tsconfig.json": JSON.stringify(tsConfig)
                 });
 
@@ -338,75 +387,169 @@ describe("When traversing a TypeScript project", () => {
 
                 expect(graph).to.be.deep.equal({
                   "index.ts": {
-                    adjacentTo: ["lib/foo.ts"],
+                    adjacentTo: ["libs/foo.ts", "something-else.ts"],
                     id: "index.ts",
                     body: {
                       ...fakeNodeBody,
-                      thirdPartyDependencies: []
+                      thirdPartyDependencies: ["@effect/io"]
                     }
                   },
-                  "lib/foo.ts": {
+                  "libs/foo.ts": {
                     adjacentTo: [],
-                    id: "lib/foo.ts",
+                    id: "libs/foo.ts",
                     body: fakeNodeBody
+                  },
+                  "something-else.ts": {
+                    adjacentTo: [],
+                    id: "something-else.ts",
+                    body: {
+                      ...fakeNodeBody,
+                      thirdPartyDependencies: ["@effect/data"]
+                    }
                   }
                 });
+              });
+            });
+          });
+        });
+
+        describe("When paths needs to be resolved from a specific tsconfig location", () => {
+          it("should resolve modules starting from entrypoint using absolute identifiers with no base directory", async () => {
+            const tsConfig = {
+              compilerOptions: {
+                baseUrl: "src"
               }
-            );
+            };
+
+            mountFakeFileSystem({
+              "sub-folder/src/bar/baz.ts": `
+                export function baz(): void {}
+              `,
+              "sub-folder/src/foo/foop.ts": `
+                import { baz } from "bar/baz";
+                export function foo(): void {}
+              `,
+              "sub-folder/src/foo/index.ts": `
+                import { foo } from "foo/foop";
+                export function idx(): void {}
+              `,
+              "sub-folder/tsconfig.json": JSON.stringify(tsConfig)
+            });
+
+            const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+              entrypoint: "sub-folder/src/foo/index.ts",
+              includeBaseDir: false,
+              tsConfigPath: "sub-folder/tsconfig.json"
+            });
+
+            expect(graph).to.be.deep.equal({
+              "index.ts": {
+                adjacentTo: ["foop.ts"],
+                id: "index.ts",
+                body: fakeNodeBody
+              },
+              "foop.ts": {
+                adjacentTo: ["../bar/baz.ts"],
+                id: "foop.ts",
+                body: fakeNodeBody
+              },
+              "../bar/baz.ts": {
+                adjacentTo: [],
+                id: "../bar/baz.ts",
+                body: fakeNodeBody
+              }
+            });
           });
 
-          describe("When the baseUrl is a given directory", () => {
-            it("should resolve relative imports with no leading identifiers from the baseUrl to the location of the tsconfig", async () => {
-              const tsConfig = {
-                compilerOptions: {
-                  baseUrl: "libs"
-                }
-              };
+          it("should resolve modules starting from entrypoint using absolute identifiers with a base directory", async () => {
+            const tsConfig = {
+              compilerOptions: {
+                baseUrl: "src"
+              }
+            };
 
-              mountFakeFileSystem({
-                "index.ts": `
-                  import { foo } from "foo";
-                  import * as Effect from "@effect/io";
-                  import * as smthing from "./something-else";
-                `,
-                "libs/foo.ts": `
-                  export function foo(): string {}
-                `,
-                "something-else.ts": `
-                  import { pipe } from "@effect/data/Function";
-                `,
-                "tsconfig.json": JSON.stringify(tsConfig)
-              });
+            mountFakeFileSystem({
+              "sub-folder/src/bar/bar.ts": `
+                export function bar(): void {}
+              `,
+              "sub-folder/src/foo/foo.ts": `
+                import { bar } from "bar/bar";
+                export function foo(): void {}
+              `,
+              "sub-folder/src/foo/index.ts": `
+                import { foo } from "foo/foo";
+                export function idx(): void {}
+              `,
+              "sub-folder/tsconfig.json": JSON.stringify(tsConfig)
+            });
 
-              const { graph } =
-                await buildSkottProjectUsingInMemoryFileExplorer({
-                  includeBaseDir: false,
-                  trackThirdParty: true
-                });
+            const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+              entrypoint: "sub-folder/src/foo/index.ts",
+              includeBaseDir: true,
+              tsConfigPath: "sub-folder/tsconfig.json"
+            });
 
-              expect(graph).to.be.deep.equal({
-                "index.ts": {
-                  adjacentTo: ["libs/foo.ts", "something-else.ts"],
-                  id: "index.ts",
-                  body: {
-                    ...fakeNodeBody,
-                    thirdPartyDependencies: ["@effect/io"]
-                  }
-                },
-                "libs/foo.ts": {
-                  adjacentTo: [],
-                  id: "libs/foo.ts",
-                  body: fakeNodeBody
-                },
-                "something-else.ts": {
-                  adjacentTo: [],
-                  id: "something-else.ts",
-                  body: {
-                    ...fakeNodeBody,
-                    thirdPartyDependencies: ["@effect/data"]
-                  }
-                }
-              });
+            expect(graph).to.be.deep.equal({
+              "sub-folder/src/foo/index.ts": {
+                adjacentTo: ["sub-folder/src/foo/foo.ts"],
+                id: "sub-folder/src/foo/index.ts",
+                body: fakeNodeBody
+              },
+              "sub-folder/src/foo/foo.ts": {
+                adjacentTo: ["sub-folder/src/bar/bar.ts"],
+                id: "sub-folder/src/foo/foo.ts",
+                body: fakeNodeBody
+              },
+              "sub-folder/src/bar/bar.ts": {
+                adjacentTo: [],
+                id: "sub-folder/src/bar/bar.ts",
+                body: fakeNodeBody
+              }
+            });
+          });
+
+          it("should resolve modules from current working directory using absolute identifiers", async () => {
+            const tsConfig = {
+              compilerOptions: {
+                baseUrl: "src"
+              }
+            };
+
+            mountFakeFileSystem({
+              "sub-folder/src/bar/bar.ts": `
+                export function bar(): void {}
+              `,
+              "sub-folder/src/foo/foo.ts": `
+                import { bar } from "bar/bar";
+                export function foo(): void {}
+              `,
+              "sub-folder/src/foo/index.ts": `
+                import { foo } from "foo/foo";
+                export function idx(): void {}
+              `,
+              "sub-folder/tsconfig.json": JSON.stringify(tsConfig)
+            });
+
+            const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+              cwd: "sub-folder"
+            });
+
+            expect(graph).to.be.deep.equal({
+              "sub-folder/src/foo/index.ts": {
+                adjacentTo: ["sub-folder/src/foo/foo.ts"],
+                id: "sub-folder/src/foo/index.ts",
+                body: fakeNodeBody
+              },
+              "sub-folder/src/foo/foo.ts": {
+                adjacentTo: ["sub-folder/src/bar/bar.ts"],
+                id: "sub-folder/src/foo/foo.ts",
+                body: fakeNodeBody
+              },
+              "sub-folder/src/bar/bar.ts": {
+                adjacentTo: [],
+                id: "sub-folder/src/bar/bar.ts",
+                body: fakeNodeBody
+              }
             });
           });
         });

@@ -294,6 +294,18 @@ export class Skott<T> {
           path.join(this.fileReader.getCurrentWorkingDir(), moduleDeclaration)
         )
       ),
+      Effect.orElse(() => {
+        const cwd = this.fileReader.getCurrentWorkingDir();
+        const baseDirectory = cwd === process.cwd() ? "./" : cwd;
+        const aliasPathStartingFromTsConfig = path.join(
+          baseDirectory,
+          path.dirname(this.config.tsConfigPath),
+          pathAliasBaseUrl,
+          moduleDeclaration
+        );
+
+        return resolveImportedModulePath(aliasPathStartingFromTsConfig);
+      }),
       Effect.provideService(FileReaderTag, this.fileReader),
       Effect.provideService(LoggerTag, this.logger),
       Effect.runPromiseExit

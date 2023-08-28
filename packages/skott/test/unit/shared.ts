@@ -24,7 +24,8 @@ export async function buildSkottProjectUsingInMemoryFileExplorer({
   trackTypeOnly = true,
   fileExtensions = [...kExpectedModuleExtensions],
   tsConfigPath = "./tsconfig.json",
-  manifestPath = "./package.json"
+  manifestPath = "./package.json",
+  cwd = "./"
 }: {
   entrypoint?: string;
   includeBaseDir?: boolean;
@@ -33,6 +34,7 @@ export async function buildSkottProjectUsingInMemoryFileExplorer({
   fileExtensions?: string[];
   tsConfigPath?: string;
   manifestPath?: string;
+  cwd?: string;
 } = {}): Promise<UnwrappedSkottStructure> {
   const skott = new Skott(
     {
@@ -50,7 +52,7 @@ export async function buildSkottProjectUsingInMemoryFileExplorer({
       manifestPath,
       dependencyResolvers: [new EcmaScriptDependencyResolver()]
     },
-    new InMemoryFileReader(),
+    new InMemoryFileReader({ cwd, ignorePattern: "" }),
     new InMemoryFileWriter(),
     new ModuleWalkerSelector(),
     new FakeLogger()
