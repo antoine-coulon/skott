@@ -16,7 +16,7 @@
   ],
   "scripts": {
     "build": "vite build",
-    "dev": "vite",
+    "dev": "vite & node server.js",
     "prepublishOnly": "npm run build",
     "preview": "vite preview"
   },

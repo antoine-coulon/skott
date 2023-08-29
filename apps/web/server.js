@@ -1,6 +1,6 @@
-import { SkottStructureWithMetadata } from "./skott.js";
+import http from "node:http";
 
-export const graphDataWithCycles = {
+const graphDataWithCycles = {
   "src/server/main.js": {
     id: "src/server/main.js",
     adjacentTo: [],
@@ -116,9 +116,9 @@ export const graphDataWithCycles = {
   },
 };
 
-export const fakeCyclesData = [["a.js", "b.js", "c.js"]];
+const fakeCyclesData = [["a.js", "b.js", "c.js"]];
 
-export const fakeSkottData: SkottStructureWithMetadata = {
+const fakeSkottData = {
   entrypoint: "src/lib/fastify/index.ts",
   files: Object.keys(graphDataWithCycles),
   graph: {
@@ -126,10 +126,31 @@ export const fakeSkottData: SkottStructureWithMetadata = {
   },
 };
 
-export const fakeSkottData2: SkottStructureWithMetadata = {
-  entrypoint: "src/lib/fastify/index.ts",
-  files: Object.keys(graphDataWithCycles),
-  graph: {
-    ...graphDataWithCycles,
+const routes = {
+  "/cycles": {
+    data: {
+      cycles: fakeCyclesData,
+    },
+  },
+  "/analysis": {
+    data: fakeSkottData,
   },
 };
+
+const endpoints = Object.keys(routes);
+
+const server = http.createServer((req, res) => {
+  const pathWithoutPrefix = req.url.split("/api")[1];
+
+  if (endpoints.includes(pathWithoutPrefix)) {
+    res.write(JSON.stringify(routes[pathWithoutPrefix].data));
+  }
+
+  return res.end();
+});
+
+process.on("SIGINT", () => {
+  server.close();
+});
+
+server.listen(3000);

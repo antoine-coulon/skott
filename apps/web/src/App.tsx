@@ -5,15 +5,13 @@ import { DoubleNavbar } from "./sidebar/Layout";
 import GraphNetwork from "./network/Network.tsx";
 import GlobalSearch from "./global-search/GlobalSearch.tsx";
 import { SkottCycles, SkottStructureWithMetadata } from "./skott";
-
-import { fakeSkottData } from "./fake-data";
 import Header from "./header/Header.tsx";
 import { useEventStore } from "./EventChannels.tsx";
 
 function fetchAnalysisReport(): Promise<SkottStructureWithMetadata> {
   return fetch("/api/analysis")
     .then((res) => res.json())
-    .catch(() => fakeSkottData);
+    .catch(() => {});
 }
 
 function fetchCyclesReport(): Promise<SkottCycles> {
