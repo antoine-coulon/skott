@@ -1,7 +1,3 @@
-import React from "react";
-
-function CircularComp() {
-  return <div>circular </div>;
+export function Circular() {
+  return <div>Circular Section</div>;
 }
-
-export const Circular = React.memo(CircularComp);

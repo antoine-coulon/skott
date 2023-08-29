@@ -85,16 +85,24 @@ const menus = [
   { icon: IconFiles, label: "File Explorer", key: "file_explorer" },
   {
     icon: IconDeviceDesktopAnalytics,
-    label: "Interactive Playground",
+    label: "Interactive Playground (work in progress)",
     key: "interactive_playground",
   },
-  { icon: IconRefreshAlert, label: "Circular", key: "circular" },
+  {
+    icon: IconRefreshAlert,
+    label: "Circular dependencies (work in progress)",
+    key: "circular",
+  },
   {
     icon: IconVectorTriangle,
-    label: "Graph Configuration",
+    label: "Graph Configuration (work in progress)",
     key: "graph_configuration",
   },
-  { icon: IconSettings, label: "User Settings", key: "settings" },
+  {
+    icon: IconSettings,
+    label: "User Settings (work in progress)",
+    key: "settings",
+  },
 ] as const;
 
 type MenuKeys = (typeof menus)[number]["key"];
