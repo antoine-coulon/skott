@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { createRealFileSystem, withRootDir } from "../create-fs-sandbox";
-import { Skott, defaultConfig } from "../../../src/skott";
-import { FileSystemReader } from "../../../src/filesystem/file-reader";
-import { InMemoryFileWriter } from "../../../src/filesystem/file-writer";
-import { ModuleWalkerSelector } from "../../../src/modules/walkers/common";
-import { FakeLogger } from "../../../src/logger";
-import { fakeNodeBody } from "../../unit/shared";
+import { createRealFileSystem, withRootDir } from "../create-fs-sandbox.js";
+import { Skott, defaultConfig } from "../../../src/skott.js";
+import { FileSystemReader } from "../../../src/filesystem/file-reader.js";
+import { InMemoryFileWriter } from "../../../src/filesystem/file-writer.js";
+import { ModuleWalkerSelector } from "../../../src/modules/walkers/common.js";
+import { FakeLogger } from "../../../src/logger.js";
+import { fakeNodeBody } from "../../unit/shared.js";
 
 describe("When the extended config is coming from a third-party module", () => {
   it("should resolve the path alias using the third-party config", async () => {
@@ -64,6 +64,59 @@ describe("When the extended config is coming from a third-party module", () => {
           body: { ...fakeNodeBody, size: 50 }
         }
       });
+    });
+  });
+});
+
+describe("When resolving modules with path aliases", () => {
+  it("Should only include file paths starting from the project base directory", async () => {
+    const tsConfig = {
+      compilerOptions: {
+        baseUrl: "src"
+      }
+    };
+
+    const rootDir = "temp-fs-typescript-modules";
+    const makeFilePath = withRootDir(rootDir);
+
+    const runSandbox = createRealFileSystem(rootDir, {
+      [makeFilePath("subfolder/src/foo/index.ts")]: `
+          import { a } from "./foo";
+        `,
+      [makeFilePath("subfolder/src/foo/foo.ts")]: `
+          import { b } from "bar/bar";
+        `,
+      [makeFilePath("subfolder/src/bar/bar.ts")]: `
+          export const b = "b";
+        `,
+      [makeFilePath("subfolder/tsconfig.json")]: JSON.stringify(tsConfig)
+    });
+
+    const skott = new Skott(
+      {
+        ...defaultConfig,
+        entrypoint: "temp-fs-typescript-modules/subfolder/src/foo/index.ts",
+        includeBaseDir: true,
+        tsConfigPath: "temp-fs-typescript-modules/subfolder/tsconfig.json"
+      },
+      new FileSystemReader({
+        cwd: process.cwd(),
+        ignorePattern: ""
+      }),
+      new InMemoryFileWriter(),
+      new ModuleWalkerSelector(),
+      new FakeLogger()
+    );
+
+    await runSandbox(async () => {
+      const { getStructure } = await skott.initialize();
+      const { files } = await getStructure();
+
+      expect(files).toEqual([
+        makeFilePath("subfolder/src/foo/index.ts"),
+        makeFilePath("subfolder/src/foo/foo.ts"),
+        makeFilePath("subfolder/src/bar/bar.ts")
+      ]);
     });
   });
 });
