@@ -19,12 +19,15 @@ import {
   IconBrandNodejs,
 } from "@tabler/icons-react";
 
-import { isJavaScriptModule, isTypeScriptModule } from "../util.js";
-import { useEventStore } from "../EventChannels.js";
+import { isJavaScriptModule, isTypeScriptModule } from "../../util.js";
+import { useEventStore } from "../../EventChannels.js";
+import { SkottStructureWithCycles } from "../../skott.js";
+import { convertBytesToUserFriendlyUnit } from "./file-size.js";
 
 export function Summary() {
   const eventStore = useEventStore();
   const [summary, setSummary] = React.useState({
+    totalBytes: "0",
     numberOfFiles: 0,
     cycles: new Array<string[]>(),
     typescriptFiles: new Array<string>(),
@@ -33,44 +36,51 @@ export function Summary() {
     npmRegistry: new Set<string>(),
   });
 
-  React.useEffect(() => {
-    const s = eventStore.dataStore$.subscribe((data) => {
-      const typescriptFiles: string[] = [];
-      const javascriptFiles: string[] = [];
-      const builtinRegistry = new Set<string>();
-      const npmRegistry = new Set<string>();
+  function computeSummary(data: SkottStructureWithCycles) {
+    let bytesSize = 0;
+    const typescriptFiles: string[] = [];
+    const javascriptFiles: string[] = [];
+    const builtinRegistry = new Set<string>();
+    const npmRegistry = new Set<string>();
 
-      for (const file of data.files) {
-        if (isTypeScriptModule(file)) {
-          typescriptFiles.push(file);
-        }
-
-        if (isJavaScriptModule(file)) {
-          javascriptFiles.push(file);
-        }
+    for (const file of data.files) {
+      if (isTypeScriptModule(file)) {
+        typescriptFiles.push(file);
       }
 
-      for (const node of Object.values(data.graph)) {
-        node.body.thirdPartyDependencies.forEach((dep) => {
-          npmRegistry.add(dep);
-        });
-        node.body.builtinDependencies.forEach((dep) => {
-          builtinRegistry.add(dep);
-        });
+      if (isJavaScriptModule(file)) {
+        javascriptFiles.push(file);
       }
+    }
 
-      setSummary({
-        numberOfFiles: data.files.length,
-        cycles: data.cycles,
-        typescriptFiles,
-        javascriptFiles,
-        builtinRegistry,
-        npmRegistry,
+    for (const node of Object.values(data.graph)) {
+      node.body.thirdPartyDependencies.forEach((dep) => {
+        npmRegistry.add(dep);
       });
+      node.body.builtinDependencies.forEach((dep) => {
+        builtinRegistry.add(dep);
+      });
+      bytesSize += node.body.size;
+    }
+
+    console.log({ bytesSize });
+
+    setSummary({
+      numberOfFiles: data.files.length,
+      cycles: data.cycles,
+      typescriptFiles,
+      javascriptFiles,
+      builtinRegistry,
+      npmRegistry,
+      totalBytes: convertBytesToUserFriendlyUnit(bytesSize),
     });
+  }
+
+  React.useEffect(() => {
+    const subscription = eventStore.dataStore$.subscribe(computeSummary);
 
     return () => {
-      s.unsubscribe();
+      subscription.unsubscribe();
     };
   }, []);
 
@@ -117,7 +127,7 @@ export function Summary() {
               gradient={{ from: "indigo", to: "blue" }}
               size="lg"
             >
-              218 KB
+              {summary.totalBytes}
             </Badge>
           </Flex>
 

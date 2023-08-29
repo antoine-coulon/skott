@@ -17,7 +17,7 @@ import {
 
 import { Circular } from "./Circular";
 import { GraphConfiguration } from "./GraphConfiguration";
-import { Summary } from "./Summary";
+import { Summary } from "./summary/Summary";
 import { FileExplorer } from "./file-explorer/FileExplorer";
 import { InteractivePlayground } from "./InteractivePlayground";
 import { UserSettings } from "./UserSettings";
