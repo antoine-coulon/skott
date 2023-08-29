@@ -207,22 +207,46 @@ export async function displaySkott(
     typeOnly: options.trackTypeOnlyDependencies
   };
 
-  const skottInstance = await skott({
-    entrypoint: entrypoint ? entrypoint : undefined,
-    ignorePattern: options.ignorePattern,
-    incremental: options.incremental,
-    circularMaxDepth: options.circularMaxDepth ?? Number.POSITIVE_INFINITY,
-    includeBaseDir: options.includeBaseDir,
-    dependencyTracking,
-    fileExtensions: options.fileExtensions
-      .split(",")
-      .filter((ext) => kExpectedModuleExtensions.has(ext)),
-    tsConfigPath: options.tsconfig,
-    manifestPath: options.manifest,
-    dependencyResolvers: [new EcmaScriptDependencyResolver()],
-    cwd: options.cwd,
-    verbose: options.verbose
-  });
+  let skottInstance: SkottInstance;
+
+  try {
+    skottInstance = await skott({
+      entrypoint: entrypoint ? entrypoint : undefined,
+      ignorePattern: options.ignorePattern,
+      incremental: options.incremental,
+      circularMaxDepth: options.circularMaxDepth ?? Number.POSITIVE_INFINITY,
+      includeBaseDir: options.includeBaseDir,
+      dependencyTracking,
+      fileExtensions: options.fileExtensions
+        .split(",")
+        .filter((ext) => kExpectedModuleExtensions.has(ext)),
+      tsConfigPath: options.tsconfig,
+      manifestPath: options.manifest,
+      dependencyResolvers: [new EcmaScriptDependencyResolver()],
+      cwd: options.cwd,
+      verbose: options.verbose
+    });
+  } catch (error: any) {
+    if (spinner) {
+      spinner.stop();
+    }
+
+    if (error.message) {
+      console.log(`\n ${kleur.bold().red("Error: ".concat(error.message))}`);
+    } else {
+      console.log(
+        `\n ${kleur
+          .bold()
+          .red(
+            "Unexpected error. Please report an issue at https://github.com/antoine-coulon/skott/issues"
+          )}`
+      );
+    }
+
+    process.exitCode = 1;
+
+    return;
+  }
 
   const timeTook = `${(performance.now() - start).toFixed(3)}ms`;
 
