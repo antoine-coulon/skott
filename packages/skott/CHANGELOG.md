@@ -1,5 +1,15 @@
 # skott
 
+## 0.28.2
+
+### Patch Changes
+
+- 669c2ec: Allow TypeScript path aliases module resolution when only providing a tsconfig "baseUrl" option.
+
+  Avoid propagating full error stacks currently bubbling up when using the CLI.
+
+  - skott-webapp@1.0.6
+
 ## 0.28.1
 
 ### Patch Changes
