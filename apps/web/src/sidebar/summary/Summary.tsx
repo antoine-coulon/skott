@@ -1,28 +1,35 @@
 import React from "react";
 import {
   Navbar,
-  Box,
-  List,
-  Group,
-  ThemeIcon,
   Text,
   ScrollArea,
   Badge,
   Flex,
-  RingProgress,
   Image,
   Paper,
 } from "@mantine/core";
-import {
-  IconRefreshAlert,
-  IconExclamationMark,
-  IconBrandNodejs,
-} from "@tabler/icons-react";
+import { IconRefreshAlert } from "@tabler/icons-react";
 
 import { isJavaScriptModule, isTypeScriptModule } from "../../util.js";
 import { useEventStore } from "../../EventChannels.js";
 import { SkottStructureWithCycles } from "../../skott.js";
 import { convertBytesToUserFriendlyUnit } from "./file-size.js";
+import { LanguageRing } from "./LanguageRing.js";
+import { Dependencies } from "./Dependencies.js";
+
+function safeSet(m: Map<string, string[]>, key: string, value: string) {
+  if (m.has(key)) {
+    const v = m.get(key);
+    m.set(key, [...v!, value]);
+  } else {
+    m.set(key, [value]);
+  }
+}
+
+function formatForm(quantity: number, word: string) {
+  const base = `${quantity} ${word}`;
+  return quantity <= 1 ? base : `${base}s`;
+}
 
 export function Summary() {
   const eventStore = useEventStore();
@@ -30,50 +37,49 @@ export function Summary() {
     totalBytes: "0",
     numberOfFiles: 0,
     cycles: new Array<string[]>(),
-    typescriptFiles: new Array<string>(),
-    javascriptFiles: new Array<string>(),
-    builtinRegistry: new Set<string>(),
-    npmRegistry: new Set<string>(),
+    files: new Map<string, string[]>(),
+    builtinRegistry: new Map<string, number>(),
+    npmRegistry: new Map<string, number>(),
   });
 
   function computeSummary(data: SkottStructureWithCycles) {
     let bytesSize = 0;
-    const typescriptFiles: string[] = [];
-    const javascriptFiles: string[] = [];
-    const builtinRegistry = new Set<string>();
-    const npmRegistry = new Set<string>();
+    const filesMap = new Map();
+    const builtinRegistry = new Map<string, number>();
+    const npmRegistry = new Map<string, number>();
 
     for (const file of data.files) {
       if (isTypeScriptModule(file)) {
-        typescriptFiles.push(file);
+        safeSet(filesMap, "ts", file);
       }
 
       if (isJavaScriptModule(file)) {
-        javascriptFiles.push(file);
+        safeSet(filesMap, "js", file);
       }
     }
 
     for (const node of Object.values(data.graph)) {
       node.body.thirdPartyDependencies.forEach((dep) => {
-        npmRegistry.add(dep);
+        npmRegistry.set(dep, (npmRegistry.get(dep) || 0) + 1);
       });
       node.body.builtinDependencies.forEach((dep) => {
-        builtinRegistry.add(dep);
+        builtinRegistry.set(dep, (builtinRegistry.get(dep) || 0) + 1);
       });
       bytesSize += node.body.size;
     }
 
-    console.log({ bytesSize });
-
     setSummary({
       numberOfFiles: data.files.length,
       cycles: data.cycles,
-      typescriptFiles,
-      javascriptFiles,
+      files: filesMap,
       builtinRegistry,
       npmRegistry,
       totalBytes: convertBytesToUserFriendlyUnit(bytesSize),
     });
+  }
+
+  function getLanguageFilesStats(type: "js" | "ts") {
+    return summary.files.get(type)?.length || 0;
   }
 
   React.useEffect(() => {
@@ -95,30 +101,14 @@ export function Summary() {
               gradient={{ from: "indigo", to: "blue" }}
               size="lg"
             >
-              {summary.numberOfFiles} files
+              {formatForm(summary.numberOfFiles, "file")}
             </Badge>
           </Flex>
 
-          <Group position="center">
-            <RingProgress
-              size={100}
-              thickness={12}
-              label={
-                <Text
-                  size="xs"
-                  align="center"
-                  px="xs"
-                  sx={{ pointerEvents: "none" }}
-                >
-                  TS
-                </Text>
-              }
-              sections={[
-                { value: 60, color: "#2d79c8", tooltip: "TypeScript - 60%" },
-                { value: 40, color: "#f0dc4e", tooltip: "JavaScript - 40%" },
-              ]}
-            />
-          </Group>
+          <LanguageRing
+            files={summary.files}
+            numberOfFiles={summary.numberOfFiles}
+          />
 
           <Flex p="sm" justify="space-between" align="center" direction="row">
             <Text>Files size</Text>
@@ -138,7 +128,7 @@ export function Summary() {
               gradient={{ from: "indigo", to: "blue" }}
               size="lg"
             >
-              {summary.typescriptFiles.length} files
+              {formatForm(getLanguageFilesStats("ts"), "file")}
             </Badge>
           </Flex>
 
@@ -149,7 +139,7 @@ export function Summary() {
               gradient={{ from: "indigo", to: "blue" }}
               size="lg"
             >
-              {summary.javascriptFiles.length} files
+              {formatForm(getLanguageFilesStats("js"), "file")}
             </Badge>
           </Flex>
 
@@ -161,77 +151,17 @@ export function Summary() {
               size="lg"
               color="red"
             >
-              {summary.cycles.length} cycles
+              {formatForm(summary.cycles.length, "cycle")}
             </Badge>
           </Flex>
         </Paper>
 
-        <Paper withBorder py={5} my={10}>
-          <Group position="apart" px={10}>
-            <Image src={"./npm.svg"} width={40} fit="contain" />
-            <Badge size="lg">{summary.npmRegistry.size}</Badge>
-          </Group>
-
-          <Box p={10}>
-            <List spacing="xs" size="sm" center>
-              {[...summary.npmRegistry].map((dep, index) => {
-                if (index % 2 === 0) {
-                  return (
-                    <List.Item
-                      key={dep}
-                      icon={
-                        <ThemeIcon color="indigo" size={25} p={5} radius="xl">
-                          <Text>9+</Text>
-                        </ThemeIcon>
-                      }
-                    >
-                      {dep}
-                    </List.Item>
-                  );
-                }
-
-                return (
-                  <List.Item
-                    key={dep}
-                    icon={
-                      <ThemeIcon color="orange" size={25} radius="xl">
-                        <IconExclamationMark size="1rem" />
-                      </ThemeIcon>
-                    }
-                  >
-                    {dep}
-                  </List.Item>
-                );
-              })}
-            </List>
-          </Box>
-        </Paper>
-
-        <Paper withBorder py={5} my={10}>
-          <Group position="apart" px={10}>
-            <IconBrandNodejs size={25} color="green" />
-            <Badge size="lg">{summary.builtinRegistry.size}</Badge>
-          </Group>
-
-          <Box p={10}>
-            <List spacing="xs" size="sm" center>
-              {[...summary.builtinRegistry].map((dep) => {
-                return (
-                  <List.Item
-                    key={dep}
-                    icon={
-                      <ThemeIcon color="indigo" size={25} p={5} radius="xl">
-                        <Text>5</Text>
-                      </ThemeIcon>
-                    }
-                  >
-                    {dep}
-                  </List.Item>
-                );
-              })}
-            </List>
-          </Box>
-        </Paper>
+        <Dependencies
+          registries={{
+            npm: summary.npmRegistry,
+            builtin: summary.builtinRegistry,
+          }}
+        />
       </Navbar.Section>
     </ScrollArea.Autosize>
   );
