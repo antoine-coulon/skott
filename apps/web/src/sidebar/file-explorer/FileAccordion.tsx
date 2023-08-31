@@ -19,7 +19,7 @@ import { makeTreeStructure } from "fs-tree-structure";
 import React from "react";
 
 import { isJavaScriptModule, isTypeScriptModule } from "../../util.js";
-import { useEventStore } from "../../EventChannels.js";
+import { useDataStore } from "../../store/data-store.js";
 import { UiEvents } from "../../events.js";
 import { FileExplorerEvents } from "./events.js";
 
@@ -253,10 +253,10 @@ export function FileExplorerAccordion({
 }) {
   const [openedFolders, setOpenedFolders] = React.useState(new Set<string>());
   const [fileTree, setFileTree] = React.useState<Record<string, any>>({});
-  const { dataStore$ } = useEventStore();
+  const { store$ } = useDataStore();
 
   React.useEffect(() => {
-    const s = dataStore$.subscribe((data) => {
+    const s = store$.subscribe((data) => {
       setFileTree(makeTreeStructure(data.files));
     });
 

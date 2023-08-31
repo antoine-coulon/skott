@@ -2,11 +2,11 @@ import React from "react";
 import { AppShell } from "@mantine/core";
 
 import { DoubleNavbar } from "./sidebar/Layout";
-import GraphNetwork from "./network/Network.tsx";
-import GlobalSearch from "./global-search/GlobalSearch.tsx";
+import GraphNetwork from "./network/Network";
+import GlobalSearch from "./global-search/GlobalSearch";
 import { SkottCycles, SkottStructureWithMetadata } from "./skott";
-import Header from "./header/Header.tsx";
-import { useEventStore } from "./EventChannels.tsx";
+import Header from "./header/Header";
+import { useDataStore } from "./store/data-store";
 
 function fetchAnalysisReport(): Promise<SkottStructureWithMetadata> {
   return fetch("/api/analysis")
@@ -23,7 +23,7 @@ function fetchCyclesReport(): Promise<SkottCycles> {
 }
 
 function App() {
-  const store = useEventStore();
+  const dataStore = useDataStore();
 
   React.useEffect(() => {
     Promise.all([fetchAnalysisReport(), fetchCyclesReport()])
@@ -32,8 +32,8 @@ function App() {
           ...analysisReport,
           cycles: cyclesReport.cycles,
         };
-        store.setInitialStore(nextValue);
-        store.dataStore$.next(nextValue);
+        dataStore.setInitialStore(nextValue);
+        dataStore.store$.next(nextValue);
       })
       .catch((exception) => {
         console.error("Failed to fetch analysis report", exception);

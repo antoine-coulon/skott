@@ -11,16 +11,16 @@ import {
   Code,
 } from "@mantine/core";
 import { IconBrandGithub, IconMoonStars, IconSun } from "@tabler/icons-react";
-import { useEventStore } from "../EventChannels";
+import { useUiStore } from "../store/ui-store";
 
 export default function Header() {
-  const eventStore = useEventStore();
+  const { events$ } = useUiStore();
   const theme = useMantineTheme();
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const isDarkMode = colorScheme === "dark";
 
   function openGlobalSearch() {
-    eventStore.uiEvents$.next({ action: "open_search" });
+    events$.next({ action: "open_search" });
   }
 
   return (

@@ -1,5 +1,3 @@
-import { SkottStructureWithCycles } from "./skott";
-
 export type UiEvents =
   | {
       action: "focus";
@@ -25,5 +23,3 @@ export type UiEvents =
         nodeId: string;
       };
     };
-
-export type DataStore = SkottStructureWithCycles;

@@ -13,7 +13,7 @@ import { IconFilterCog } from "@tabler/icons-react";
 import React from "react";
 
 import { UiEvents } from "../../events.js";
-import { useEventStore } from "../../EventChannels.js";
+import { useDataStore } from "../../store/data-store.js";
 import { FileExplorerEvents } from "./events.js";
 import { FileExplorerAccordion } from "./FileAccordion.js";
 
@@ -41,7 +41,7 @@ function areKeptFiles(glob: string) {
 
 export function FileExplorer() {
   const { classes } = useStyles();
-  const eventStore = useEventStore();
+  const dataStore = useDataStore();
   const theme = useMantineTheme();
   const [filter, setFilter] = React.useState("");
 
@@ -59,7 +59,7 @@ export function FileExplorer() {
     setFilter(globPattern);
 
     const { graph, files, cycles, ...storeValues } =
-      eventStore.getInitialStore();
+      dataStore.getInitialStore();
     const filteredFiles = files.filter(filterByGlobMatch(globPattern));
     const filteredGraph = Object.fromEntries(
       Object.entries(graph).filter(([key]) => {
@@ -68,7 +68,7 @@ export function FileExplorer() {
     );
     const filteredCycles = cycles.filter(areKeptFiles(globPattern));
 
-    eventStore.dataStore$.next({
+    dataStore.store$.next({
       ...storeValues,
       files: filteredFiles,
       graph: filteredGraph,

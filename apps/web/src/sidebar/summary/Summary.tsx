@@ -11,7 +11,7 @@ import {
 import { IconRefreshAlert } from "@tabler/icons-react";
 
 import { isJavaScriptModule, isTypeScriptModule } from "../../util.js";
-import { useEventStore } from "../../EventChannels.js";
+import { useDataStore } from "../../store/data-store.js";
 import { SkottStructureWithCycles } from "../../skott.js";
 import { convertBytesToUserFriendlyUnit, formatForm } from "./formatters.js";
 import { LanguageRing } from "./LanguageRing.js";
@@ -27,7 +27,7 @@ function safeSet(m: Map<string, string[]>, key: string, value: string) {
 }
 
 export function Summary() {
-  const eventStore = useEventStore();
+  const dataStore = useDataStore();
   const [summary, setSummary] = React.useState({
     totalBytes: "0",
     numberOfFiles: 0,
@@ -78,7 +78,7 @@ export function Summary() {
   }
 
   React.useEffect(() => {
-    const subscription = eventStore.dataStore$.subscribe(computeSummary);
+    const subscription = dataStore.store$.subscribe(computeSummary);
 
     return () => {
       subscription.unsubscribe();

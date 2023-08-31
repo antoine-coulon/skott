@@ -1,5 +1,5 @@
 import React from "react";
-import { Subject, Subscription, combineLatest } from "rxjs";
+import { Subscription, combineLatest } from "rxjs";
 
 import { DataSet } from "vis-data";
 import { Edge, Network, Node } from "vis-network";
@@ -8,7 +8,7 @@ import {
   SkottStructureWithCycles,
   SkottStructureWithMetadata,
 } from "../skott.js";
-import { DataStore, UiEvents } from "../events.js";
+import { UiEvents } from "../events.js";
 import {
   defaultEdgeOptions,
   defaultNodeOptions,
@@ -24,14 +24,16 @@ import {
   computeBuiltinDependencies,
   computeThirdPartyDependencies,
 } from "./dependencies.js";
-import { useEventStore } from "../EventChannels.js";
+import { DataStorePayload, useDataStore } from "../store/data-store.js";
+import { useUiStore } from "../store/ui-store.js";
 
 export function getMethodToApplyOnNetworkElement(enable: boolean) {
   return enable ? "update" : "remove";
 }
 
 export default function GraphNetwork() {
-  const eventStore = useEventStore();
+  const dataStore = useDataStore();
+  const uiStore = useUiStore();
   const networkContainerRef = React.useRef(null);
   const [network, setNetwork] = React.useState<Network>();
   const [nodeDataset, setNodeDataset] = React.useState(
@@ -122,7 +124,7 @@ export default function GraphNetwork() {
     edgeDataset[getMethodToApplyOnNetworkElement(enabled)](linkedEdges);
   }
 
-  function networkReducer(dataStore: DataStore, uiEvents: UiEvents) {
+  function networkReducer(dataStore: DataStorePayload, uiEvents: UiEvents) {
     switch (uiEvents.action) {
       case "focus": {
         focusOnNetworkNode(uiEvents.payload.nodeId);
@@ -153,9 +155,7 @@ export default function GraphNetwork() {
     let subscription: Subscription;
 
     if (networkContainerRef.current) {
-      subscription = eventStore.dataStore$.subscribe((dataStore) => {
-        console.log("SUBSCRIBE");
-
+      subscription = dataStore.store$.subscribe((dataStore) => {
         const { graphNodes, graphEdges } = makeNodesAndEdges(
           Object.values(dataStore.graph),
           { entrypoint: dataStore.entrypoint }
@@ -195,8 +195,8 @@ export default function GraphNetwork() {
 
   React.useEffect(() => {
     const uiEventsSubscription = combineLatest([
-      eventStore.dataStore$,
-      eventStore.uiEvents$,
+      dataStore.store$,
+      uiStore.events$,
     ]).subscribe(([dataStore, uiEvents]) =>
       networkReducer(dataStore, uiEvents)
     );
