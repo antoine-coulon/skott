@@ -9,13 +9,7 @@ import {
   Paper,
 } from "@mantine/core";
 import { IconBrandNodejs, IconExclamationMark } from "@tabler/icons-react";
-
-function formatOccurrences(quantity: number): string {
-  if (quantity <= 9) {
-    return `${quantity}`;
-  }
-  return `9+`;
-}
+import { formatOccurrences } from "./formatters";
 
 /**
  * TODO: Dependencies should be sorted from the most used to the least used.

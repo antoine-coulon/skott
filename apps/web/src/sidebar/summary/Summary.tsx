@@ -13,7 +13,7 @@ import { IconRefreshAlert } from "@tabler/icons-react";
 import { isJavaScriptModule, isTypeScriptModule } from "../../util.js";
 import { useEventStore } from "../../EventChannels.js";
 import { SkottStructureWithCycles } from "../../skott.js";
-import { convertBytesToUserFriendlyUnit } from "./file-size.js";
+import { convertBytesToUserFriendlyUnit, formatForm } from "./formatters.js";
 import { LanguageRing } from "./LanguageRing.js";
 import { Dependencies } from "./Dependencies.js";
 
@@ -24,11 +24,6 @@ function safeSet(m: Map<string, string[]>, key: string, value: string) {
   } else {
     m.set(key, [value]);
   }
-}
-
-function formatForm(quantity: number, word: string) {
-  const base = `${quantity} ${word}`;
-  return quantity <= 1 ? base : `${base}s`;
 }
 
 export function Summary() {
