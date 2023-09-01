@@ -1,7 +1,7 @@
 import { Node } from "vis-network";
 
-import { SkottStructureWithMetadata } from "../skott.js";
-import { defaultNodeOptions } from "./configuration.js";
+import { SkottStructureWithMetadata } from "../skott";
+import { defaultNodeOptions } from "./configuration";
 
 export const circularNodeOptions = {
   color: {

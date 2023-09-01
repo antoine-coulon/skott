@@ -1,8 +1,9 @@
 import React from "react";
 import { ColorSchemeProvider, MantineProvider } from "@mantine/core";
 
-import App from "./App.tsx";
-import { AppStoreInstance, AppStoreProvider } from "./store/store.ts";
+import App from "./App";
+import { AppStoreProvider } from "./store/react-bindings";
+import { AppStoreInstance } from "./store/store";
 
 function Root() {
   const [colorScheme, setColorScheme] = React.useState<"light" | "dark">(

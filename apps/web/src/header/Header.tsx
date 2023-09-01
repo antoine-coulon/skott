@@ -11,7 +11,8 @@ import {
   Code,
 } from "@mantine/core";
 import { IconBrandGithub, IconMoonStars, IconSun } from "@tabler/icons-react";
-import { useAppStore } from "../store/store";
+
+import { useAppStore } from "../store/react-bindings";
 
 export default function Header() {
   const { events$ } = useAppStore();

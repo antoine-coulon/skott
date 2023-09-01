@@ -8,14 +8,15 @@ import {
   ScrollArea,
   useMantineTheme,
 } from "@mantine/core";
-import * as m from "minimatch-browser-fork";
 import { IconFilterCog } from "@tabler/icons-react";
 import React from "react";
 
-import { UiEvents } from "../../store/events.js";
-import { useAppStore } from "../../store/store.js";
-import { FileExplorerEvents } from "./events.js";
-import { FileExplorerAccordion } from "./FileAccordion.js";
+import { UiEvents } from "../../store/events";
+import { callUseCase } from "../../store/store";
+import { FileExplorerEvents } from "./events";
+import { FileExplorerAccordion } from "./FileAccordion";
+import { filterByGlob } from "./use-cases/filter-by-glob";
+import { useAppStore } from "../../store/react-bindings";
 
 const useStyles = createStyles((theme) => ({
   searchCode: {
@@ -26,18 +27,6 @@ const useStyles = createStyles((theme) => ({
     }`,
   },
 }));
-
-function filterByGlobMatch(glob: string) {
-  return function (filename: string) {
-    return !m.filter(glob, { matchBase: true })(filename);
-  };
-}
-
-function areKeptFiles(glob: string) {
-  return function (files: string[]) {
-    return !files.some((file) => m.minimatch(file, glob, { matchBase: true }));
-  };
-}
 
 export function FileExplorer() {
   const { classes } = useStyles();
@@ -56,26 +45,8 @@ export function FileExplorer() {
   }
 
   function applyFilter(globPattern: string) {
-    setFilter(globPattern);
-
-    const { data, ...storeValues } = appStore.getInitialState();
-
-    const filteredFiles = data.files.filter(filterByGlobMatch(globPattern));
-    const filteredGraph = Object.fromEntries(
-      Object.entries(data.graph).filter(([key]) => {
-        return filteredFiles.includes(key);
-      })
-    );
-    const filteredCycles = data.cycles.filter(areKeptFiles(globPattern));
-
-    appStore.store$.next({
-      ...storeValues,
-      data: {
-        files: filteredFiles,
-        graph: filteredGraph,
-        cycles: filteredCycles,
-      },
-    });
+    const invokeUseCase = callUseCase(filterByGlob);
+    invokeUseCase(globPattern);
   }
 
   function dispatchAction(event: UiEvents | FileExplorerEvents) {
@@ -84,6 +55,15 @@ export function FileExplorer() {
     } else {
     }
   }
+
+  React.useEffect(() => {
+    const unsubscribe = appStore.uiState$.subscribe(({ filters }) => {
+      setFilter(filters.glob);
+    });
+    return () => {
+      unsubscribe.unsubscribe();
+    };
+  });
 
   return (
     <ScrollArea.Autosize mah="90vh" mx="auto">

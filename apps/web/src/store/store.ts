@@ -1,4 +1,3 @@
-import React from "react";
 import {
   BehaviorSubject,
   ReplaySubject,
@@ -11,6 +10,7 @@ import { pipe } from "@effect/data/Function";
 import { AppEvents, UiEvents } from "./events";
 import { AppState, storeDefaultValue } from "./state";
 import { StoreReducer } from "./reducer";
+import reducers from "../sidebar/file-explorer/reducers";
 
 export class AppStore {
   constructor(
@@ -56,31 +56,34 @@ export class AppStore {
   }
 
   dispatch(action: AppEvents) {
-    this._reducers.forEach((reducer) => {
-      // no batching for now
-      const newState = reducer(action)(this._store$.getValue());
-      return pipe(
-        newState,
+    this._reducers.forEach((reducer) =>
+      pipe(
+        reducer(action)(this._store$.getValue()),
         Option.match(
           () => {},
-          (state) => this._store$.next(state)
+          (state) => {
+            return this._store$.next(state);
+          }
         )
-      );
-    });
+      )
+    );
   }
 }
+
+const listOfReducers = [...reducers];
 
 const instance = new AppStore(
   new BehaviorSubject(storeDefaultValue),
   new ReplaySubject(),
-  []
+  listOfReducers
 );
 
-export const dispatch = (event: UiEvents) => instance.events$.next(event);
+export const notify = (event: UiEvents) => instance.events$.next(event);
 
-const AppStoreContext = React.createContext<AppStore>(instance);
+export const callUseCase = <T>(
+  useCase: (appStore: AppStore) => (args: T) => void
+) => {
+  return (args: T) => useCase(instance)(args);
+};
 
-export const useAppStore = () => React.useContext(AppStoreContext);
-
-export const AppStoreProvider = AppStoreContext.Provider;
 export const AppStoreInstance = instance;

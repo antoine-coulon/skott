@@ -1,11 +1,20 @@
 import { AppStore } from "../../../store/store";
 
-export function filterByGlob(dependencies: { appStore: AppStore }) {
+export function filterByGlob(store: AppStore) {
   return function (glob: string) {
-    dependencies.appStore.dispatch({
-      action: "filter_by_glob",
+    if (glob !== "") {
+      return store.dispatch({
+        action: "filter_by_glob",
+        payload: {
+          glob,
+        },
+      });
+    }
+
+    store.dispatch({
+      action: "reset_glob_filter",
       payload: {
-        glob,
+        data: store.getInitialState().data,
       },
     });
   };

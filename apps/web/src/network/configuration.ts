@@ -1,6 +1,6 @@
 import { Edge, Node } from "vis-network";
 
-import { SkottMetadata, SkottNode } from "../skott.js";
+import { SkottMetadata, SkottNode } from "../skott";
 
 export const defaultNodeOptions = {
   shape: "box",

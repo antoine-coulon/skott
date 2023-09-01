@@ -1,5 +1,6 @@
 import { describe, test, expect } from "vitest";
 import { BehaviorSubject, Observable, ReplaySubject } from "rxjs";
+
 import { filterByGlob } from "./filter-by-glob";
 import reducers from "../reducers";
 import { AppStore } from "../../../store/store";
@@ -13,8 +14,8 @@ function toPromise<T>(observable: Observable<T>): Promise<T> {
   });
 }
 
-describe("Filter by glob", () => {
-  describe("When the store is empty", () => {
+describe("When filtering data by adding a glob", () => {
+  describe("When the data store is initially empty", () => {
     test("Should apply the filter in the ui store but should not change anything in the data store", async () => {
       const appStore = new AppStore(
         new BehaviorSubject<AppState>(storeDefaultValue),
@@ -22,7 +23,7 @@ describe("Filter by glob", () => {
         reducers
       );
 
-      const dispatchAction = filterByGlob({ appStore });
+      const dispatchAction = filterByGlob(appStore);
 
       dispatchAction("src/**/*.ts");
 
@@ -40,5 +41,153 @@ describe("Filter by glob", () => {
         },
       });
     });
+  });
+
+  describe("When the data store is filled", () => {
+    test("Should apply the filter on Files and Graph from the data store", async () => {
+      const appStore = new AppStore(
+        new BehaviorSubject<AppState>({
+          ...storeDefaultValue,
+          data: {
+            cycles: [["a.js", "b.js"]],
+            files: ["test.ts", "src/a.ts", "a.js", "b.js"],
+            graph: {
+              "a.js": {
+                id: "a.js",
+                adjacentTo: [],
+                body: {} as any,
+              },
+              "b.js": {
+                id: "b.js",
+                adjacentTo: [],
+                body: {} as any,
+              },
+              "test.ts": {
+                id: "test.ts",
+                adjacentTo: [],
+                body: {} as any,
+              },
+              "src/a.ts": {
+                id: "src/a.ts",
+                adjacentTo: [],
+                body: {} as any,
+              },
+            },
+          },
+        }),
+        new ReplaySubject(),
+        reducers
+      );
+
+      const dispatchAction = filterByGlob(appStore);
+
+      dispatchAction("*.ts");
+
+      const { data, ui } = await toPromise(appStore.store$);
+
+      expect(data).toEqual({
+        cycles: [["a.js", "b.js"]],
+        files: ["a.js", "b.js"],
+        graph: {
+          "a.js": {
+            id: "a.js",
+            adjacentTo: [],
+            body: {} as any,
+          },
+          "b.js": {
+            id: "b.js",
+            adjacentTo: [],
+            body: {} as any,
+          },
+        },
+      });
+
+      expect(ui).toEqual({
+        filters: {
+          glob: "*.ts",
+        },
+      });
+    });
+
+    test("Should apply the filter on Cycles from the data store", async () => {
+      const appStore = new AppStore(
+        new BehaviorSubject<AppState>({
+          ...storeDefaultValue,
+          data: {
+            cycles: [
+              ["a.js", "b.js"],
+              ["c.js", "d.js"],
+            ],
+            files: [],
+            graph: {},
+          },
+        }),
+        new ReplaySubject(),
+        reducers
+      );
+
+      const dispatchAction = filterByGlob(appStore);
+
+      dispatchAction("a.js");
+
+      const { data, ui } = await toPromise(appStore.store$);
+
+      expect(data).toEqual({
+        cycles: [["c.js", "d.js"]],
+        files: [],
+        graph: {},
+      });
+
+      expect(ui).toEqual({
+        filters: {
+          glob: "a.js",
+        },
+      });
+    });
+  });
+});
+
+describe("When removing an initially set glob", () => {
+  test("Should reset the store to the initially set value", async () => {
+    const initialAppState = {
+      data: {
+        cycles: [["a.js", "b.js"]],
+        files: ["a.js", "b.js"],
+        graph: {
+          "a.js": {
+            id: "a.js",
+            adjacentTo: [],
+            body: {} as any,
+          },
+          "b.js": {
+            id: "b.js",
+            adjacentTo: [],
+            body: {} as any,
+          },
+        },
+      },
+      ui: {
+        filters: {
+          glob: "",
+        },
+      },
+    };
+
+    const appStore = new AppStore(
+      new BehaviorSubject<AppState>(storeDefaultValue),
+      new ReplaySubject(),
+      reducers
+    );
+
+    appStore.setInitialState(initialAppState);
+
+    const dispatchAction = filterByGlob(appStore);
+
+    dispatchAction("*.js");
+    dispatchAction("");
+
+    const appState = await toPromise(appStore.store$);
+
+    expect(appState).toEqual(initialAppState);
   });
 });

@@ -1,3 +1,4 @@
+import React from "react";
 import {
   Text,
   Accordion,
@@ -16,12 +17,11 @@ import {
   IconFile,
 } from "@tabler/icons-react";
 import { makeTreeStructure } from "fs-tree-structure";
-import React from "react";
 
-import { isJavaScriptModule, isTypeScriptModule } from "../../util.js";
-import { UiEvents } from "../../store/events.js";
-import { FileExplorerEvents } from "./events.js";
-import { useAppStore } from "../../store/store.js";
+import { isJavaScriptModule, isTypeScriptModule } from "../../util";
+import { UiEvents } from "../../store/events";
+import { FileExplorerEvents } from "./events";
+import { useAppStore } from "../../store/react-bindings";
 
 const skottPathSeparator = "#sk#";
 

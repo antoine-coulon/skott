@@ -6,8 +6,8 @@ import GraphNetwork from "./network/Network";
 import GlobalSearch from "./global-search/GlobalSearch";
 import { SkottCycles, SkottStructureWithMetadata } from "./skott";
 import Header from "./header/Header";
-import { useAppStore } from "./store/store";
 import { storeDefaultValue } from "./store/state";
+import { useAppStore } from "./store/react-bindings";
 
 function fetchAnalysisReport(): Promise<SkottStructureWithMetadata> {
   return fetch("/api/analysis")

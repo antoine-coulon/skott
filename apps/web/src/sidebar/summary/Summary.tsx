@@ -10,12 +10,12 @@ import {
 } from "@mantine/core";
 import { IconRefreshAlert } from "@tabler/icons-react";
 
-import { isJavaScriptModule, isTypeScriptModule } from "../../util.js";
-import { SkottStructureWithCycles } from "../../skott.js";
-import { convertBytesToUserFriendlyUnit, formatForm } from "./formatters.js";
-import { LanguageRing } from "./LanguageRing.js";
-import { Dependencies } from "./Dependencies.js";
-import { useAppStore } from "../../store/store.js";
+import { isJavaScriptModule, isTypeScriptModule } from "../../util";
+import { SkottStructureWithCycles } from "../../skott";
+import { convertBytesToUserFriendlyUnit, formatForm } from "./formatters";
+import { LanguageRing } from "./LanguageRing";
+import { Dependencies } from "./Dependencies";
+import { useAppStore } from "../../store/react-bindings";
 
 function safeSet(m: Map<string, string[]>, key: string, value: string) {
   if (m.has(key)) {

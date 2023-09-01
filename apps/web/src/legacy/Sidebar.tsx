@@ -1,10 +1,10 @@
+import React from "react";
 import * as Option from "@effect/data/Option";
 import { Subject } from "rxjs";
 
-import { SkottStructureWithCycles } from "../skott.js";
-import { isJavaScriptModule, isTypeScriptModule } from "../util.js";
-import { UiEvents } from "../store/events.js";
-import React from "react";
+import { SkottStructureWithCycles } from "../skott";
+import { isJavaScriptModule, isTypeScriptModule } from "../util";
+import { UiEvents } from "../store/events";
 
 interface SkottData extends SkottStructureWithCycles {
   numberOfTypeScriptFiles: number;

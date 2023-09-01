@@ -9,6 +9,7 @@ import {
   Paper,
 } from "@mantine/core";
 import { IconBrandNodejs, IconExclamationMark } from "@tabler/icons-react";
+
 import { formatOccurrences } from "./formatters";
 
 /**
