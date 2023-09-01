@@ -1,12 +1,10 @@
 import React from "react";
 import "ninja-keys";
 import { NinjaKeys } from "ninja-keys";
-import { useUiStore, dispatch } from "../store/ui-store";
-import { useDataStore } from "../store/data-store";
+import { dispatch, useAppStore } from "../store/store";
 
 export default function GlobalSearch() {
-  const { events$ } = useUiStore();
-  const dataStore = useDataStore();
+  const appStore = useAppStore();
   const containerRef = React.useRef<NinjaKeys | null>(null);
 
   function focusOnNode(id: string) {
@@ -14,16 +12,16 @@ export default function GlobalSearch() {
   }
 
   React.useEffect(() => {
-    const uiEventsSubscription = events$.subscribe((event) => {
+    const uiEventsSubscription = appStore.events$.subscribe((event) => {
       if (event.action === "open_search") {
         containerRef.current?.open();
         containerRef.current?.focus();
       }
     });
 
-    const dataStoreSubscription = dataStore.store$.subscribe((dataStore) => {
+    const dataStoreSubscription = appStore.dataState$.subscribe((data) => {
       if (containerRef.current) {
-        containerRef.current.data = Object.values(dataStore.graph)
+        containerRef.current.data = Object.values(data.graph)
           .map((value) => ({
             id: value.id,
             title: value.id,

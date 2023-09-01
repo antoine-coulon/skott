@@ -11,10 +11,10 @@ import {
   Code,
 } from "@mantine/core";
 import { IconBrandGithub, IconMoonStars, IconSun } from "@tabler/icons-react";
-import { useUiStore } from "../store/ui-store";
+import { useAppStore } from "../store/store";
 
 export default function Header() {
-  const { events$ } = useUiStore();
+  const { events$ } = useAppStore();
   const theme = useMantineTheme();
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const isDarkMode = colorScheme === "dark";

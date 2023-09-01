@@ -11,11 +11,11 @@ import {
 import { IconRefreshAlert } from "@tabler/icons-react";
 
 import { isJavaScriptModule, isTypeScriptModule } from "../../util.js";
-import { useDataStore } from "../../store/data-store.js";
 import { SkottStructureWithCycles } from "../../skott.js";
 import { convertBytesToUserFriendlyUnit, formatForm } from "./formatters.js";
 import { LanguageRing } from "./LanguageRing.js";
 import { Dependencies } from "./Dependencies.js";
+import { useAppStore } from "../../store/store.js";
 
 function safeSet(m: Map<string, string[]>, key: string, value: string) {
   if (m.has(key)) {
@@ -27,7 +27,7 @@ function safeSet(m: Map<string, string[]>, key: string, value: string) {
 }
 
 export function Summary() {
-  const dataStore = useDataStore();
+  const appStore = useAppStore();
   const [summary, setSummary] = React.useState({
     totalBytes: "0",
     numberOfFiles: 0,
@@ -78,7 +78,7 @@ export function Summary() {
   }
 
   React.useEffect(() => {
-    const subscription = dataStore.store$.subscribe(computeSummary);
+    const subscription = appStore.dataState$.subscribe(computeSummary);
 
     return () => {
       subscription.unsubscribe();

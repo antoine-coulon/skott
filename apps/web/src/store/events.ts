@@ -1,3 +1,5 @@
+import { FileExplorerEvents } from "../sidebar/file-explorer/events";
+
 export type UiEvents =
   | {
       action: "focus";
@@ -22,4 +24,7 @@ export type UiEvents =
       payload: {
         nodeId: string;
       };
-    };
+    }
+  | FileExplorerEvents;
+
+export type AppEvents = UiEvents;

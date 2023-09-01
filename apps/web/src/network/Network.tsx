@@ -8,7 +8,7 @@ import {
   SkottStructureWithCycles,
   SkottStructureWithMetadata,
 } from "../skott.js";
-import { UiEvents } from "../events.js";
+import { UiEvents } from "../store/events.js";
 import {
   defaultEdgeOptions,
   defaultNodeOptions,
@@ -24,16 +24,15 @@ import {
   computeBuiltinDependencies,
   computeThirdPartyDependencies,
 } from "./dependencies.js";
-import { DataStorePayload, useDataStore } from "../store/data-store.js";
-import { useUiStore } from "../store/ui-store.js";
+import { useAppStore } from "../store/store.js";
+import { AppState } from "../store/state.js";
 
 export function getMethodToApplyOnNetworkElement(enable: boolean) {
   return enable ? "update" : "remove";
 }
 
 export default function GraphNetwork() {
-  const dataStore = useDataStore();
-  const uiStore = useUiStore();
+  const appStore = useAppStore();
   const networkContainerRef = React.useRef(null);
   const [network, setNetwork] = React.useState<Network>();
   const [nodeDataset, setNodeDataset] = React.useState(
@@ -124,7 +123,7 @@ export default function GraphNetwork() {
     edgeDataset[getMethodToApplyOnNetworkElement(enabled)](linkedEdges);
   }
 
-  function networkReducer(dataStore: DataStorePayload, uiEvents: UiEvents) {
+  function networkReducer(dataStore: AppState["data"], uiEvents: UiEvents) {
     switch (uiEvents.action) {
       case "focus": {
         focusOnNetworkNode(uiEvents.payload.nodeId);
@@ -155,10 +154,10 @@ export default function GraphNetwork() {
     let subscription: Subscription;
 
     if (networkContainerRef.current) {
-      subscription = dataStore.store$.subscribe((dataStore) => {
+      subscription = appStore.store$.subscribe(({ data }) => {
         const { graphNodes, graphEdges } = makeNodesAndEdges(
-          Object.values(dataStore.graph),
-          { entrypoint: dataStore.entrypoint }
+          Object.values(data.graph),
+          { entrypoint: data.entrypoint }
         );
 
         setNodeDataset(new DataSet(graphNodes));
@@ -195,11 +194,9 @@ export default function GraphNetwork() {
 
   React.useEffect(() => {
     const uiEventsSubscription = combineLatest([
-      dataStore.store$,
-      uiStore.events$,
-    ]).subscribe(([dataStore, uiEvents]) =>
-      networkReducer(dataStore, uiEvents)
-    );
+      appStore.store$,
+      appStore.events$,
+    ]).subscribe(([{ data }, uiEvents]) => networkReducer(data, uiEvents));
 
     return () => {
       uiEventsSubscription.unsubscribe();

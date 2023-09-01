@@ -12,8 +12,8 @@ import * as m from "minimatch-browser-fork";
 import { IconFilterCog } from "@tabler/icons-react";
 import React from "react";
 
-import { UiEvents } from "../../events.js";
-import { useDataStore } from "../../store/data-store.js";
+import { UiEvents } from "../../store/events.js";
+import { useAppStore } from "../../store/store.js";
 import { FileExplorerEvents } from "./events.js";
 import { FileExplorerAccordion } from "./FileAccordion.js";
 
@@ -41,7 +41,7 @@ function areKeptFiles(glob: string) {
 
 export function FileExplorer() {
   const { classes } = useStyles();
-  const dataStore = useDataStore();
+  const appStore = useAppStore();
   const theme = useMantineTheme();
   const [filter, setFilter] = React.useState("");
 
@@ -58,21 +58,23 @@ export function FileExplorer() {
   function applyFilter(globPattern: string) {
     setFilter(globPattern);
 
-    const { graph, files, cycles, ...storeValues } =
-      dataStore.getInitialStore();
-    const filteredFiles = files.filter(filterByGlobMatch(globPattern));
+    const { data, ...storeValues } = appStore.getInitialState();
+
+    const filteredFiles = data.files.filter(filterByGlobMatch(globPattern));
     const filteredGraph = Object.fromEntries(
-      Object.entries(graph).filter(([key]) => {
+      Object.entries(data.graph).filter(([key]) => {
         return filteredFiles.includes(key);
       })
     );
-    const filteredCycles = cycles.filter(areKeptFiles(globPattern));
+    const filteredCycles = data.cycles.filter(areKeptFiles(globPattern));
 
-    dataStore.store$.next({
+    appStore.store$.next({
       ...storeValues,
-      files: filteredFiles,
-      graph: filteredGraph,
-      cycles: filteredCycles,
+      data: {
+        files: filteredFiles,
+        graph: filteredGraph,
+        cycles: filteredCycles,
+      },
     });
   }
 

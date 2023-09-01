@@ -2,7 +2,7 @@ import React from "react";
 import { ColorSchemeProvider, MantineProvider } from "@mantine/core";
 
 import App from "./App.tsx";
-import { DataStoreProvider, DataStoreInstance } from "./store/data-store.ts";
+import { AppStoreInstance, AppStoreProvider } from "./store/store.ts";
 
 function Root() {
   const [colorScheme, setColorScheme] = React.useState<"light" | "dark">(
@@ -23,9 +23,9 @@ function Root() {
           colorScheme,
         }}
       >
-        <DataStoreProvider value={DataStoreInstance}>
+        <AppStoreProvider value={AppStoreInstance}>
           <App />
-        </DataStoreProvider>
+        </AppStoreProvider>
       </MantineProvider>
     </ColorSchemeProvider>
   );

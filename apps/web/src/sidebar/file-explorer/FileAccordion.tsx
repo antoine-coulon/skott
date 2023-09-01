@@ -19,9 +19,9 @@ import { makeTreeStructure } from "fs-tree-structure";
 import React from "react";
 
 import { isJavaScriptModule, isTypeScriptModule } from "../../util.js";
-import { useDataStore } from "../../store/data-store.js";
-import { UiEvents } from "../../events.js";
+import { UiEvents } from "../../store/events.js";
 import { FileExplorerEvents } from "./events.js";
+import { useAppStore } from "../../store/store.js";
 
 const skottPathSeparator = "#sk#";
 
@@ -253,10 +253,10 @@ export function FileExplorerAccordion({
 }) {
   const [openedFolders, setOpenedFolders] = React.useState(new Set<string>());
   const [fileTree, setFileTree] = React.useState<Record<string, any>>({});
-  const { store$ } = useDataStore();
+  const appStore = useAppStore();
 
   React.useEffect(() => {
-    const s = store$.subscribe((data) => {
+    const s = appStore.dataState$.subscribe((data) => {
       setFileTree(makeTreeStructure(data.files));
     });
 

@@ -6,7 +6,8 @@ import GraphNetwork from "./network/Network";
 import GlobalSearch from "./global-search/GlobalSearch";
 import { SkottCycles, SkottStructureWithMetadata } from "./skott";
 import Header from "./header/Header";
-import { useDataStore } from "./store/data-store";
+import { useAppStore } from "./store/store";
+import { storeDefaultValue } from "./store/state";
 
 function fetchAnalysisReport(): Promise<SkottStructureWithMetadata> {
   return fetch("/api/analysis")
@@ -23,7 +24,7 @@ function fetchCyclesReport(): Promise<SkottCycles> {
 }
 
 function App() {
-  const dataStore = useDataStore();
+  const dataStore = useAppStore();
 
   React.useEffect(() => {
     Promise.all([fetchAnalysisReport(), fetchCyclesReport()])
@@ -32,8 +33,9 @@ function App() {
           ...analysisReport,
           cycles: cyclesReport.cycles,
         };
-        dataStore.setInitialStore(nextValue);
-        dataStore.store$.next(nextValue);
+        const appStateValue = { ...storeDefaultValue, data: nextValue };
+        dataStore.setInitialState(appStateValue);
+        dataStore.store$.next(appStateValue);
       })
       .catch((exception) => {
         console.error("Failed to fetch analysis report", exception);
