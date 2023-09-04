@@ -1,10 +1,10 @@
 import { describe, test, expect } from "vitest";
 import { BehaviorSubject, Observable, ReplaySubject } from "rxjs";
 
+import { AppStore } from "@/store/store";
+import { AppState, storeDefaultValue } from "@/store/state";
 import { filterByGlob } from "./filter-by-glob";
-import reducers from "../reducers";
-import { AppStore } from "../../../store/store";
-import { AppState, storeDefaultValue } from "../../../store/state";
+import reducers from "./reducers";
 
 function toPromise<T>(observable: Observable<T>): Promise<T> {
   return new Promise((resolve) => {

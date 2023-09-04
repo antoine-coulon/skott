@@ -1,4 +1,4 @@
-import { AppStore } from "../../../store/store";
+import { AppStore } from "@/store/store";
 
 export function filterByGlob(store: AppStore) {
   return function (glob: string) {

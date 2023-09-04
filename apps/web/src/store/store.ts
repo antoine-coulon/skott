@@ -10,7 +10,7 @@ import { pipe } from "@effect/data/Function";
 import { AppEvents, UiEvents } from "./events";
 import { AppState, storeDefaultValue } from "./state";
 import { StoreReducer } from "./reducer";
-import reducers from "../sidebar/file-explorer/reducers";
+import reducers from "../core/file-system/reducers";
 
 export class AppStore {
   constructor(

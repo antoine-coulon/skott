@@ -4,7 +4,7 @@ import { Subject } from "rxjs";
 
 import { SkottStructureWithCycles } from "../skott";
 import { isJavaScriptModule, isTypeScriptModule } from "../util";
-import { UiEvents } from "../store/events";
+import { UiEvents } from "@/store/events";
 
 interface SkottData extends SkottStructureWithCycles {
   numberOfTypeScriptFiles: number;

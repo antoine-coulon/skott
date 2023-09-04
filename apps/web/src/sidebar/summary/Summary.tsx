@@ -15,7 +15,7 @@ import { SkottStructureWithCycles } from "../../skott";
 import { convertBytesToUserFriendlyUnit, formatForm } from "./formatters";
 import { LanguageRing } from "./LanguageRing";
 import { Dependencies } from "./Dependencies";
-import { useAppStore } from "../../store/react-bindings";
+import { useAppStore } from "@/store/react-bindings";
 
 function safeSet(m: Map<string, string[]>, key: string, value: string) {
   if (m.has(key)) {

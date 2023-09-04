@@ -19,11 +19,11 @@ import {
 import { makeTreeStructure } from "fs-tree-structure";
 
 import { isJavaScriptModule, isTypeScriptModule } from "../../util";
-import { UiEvents } from "../../store/events";
-import { FileExplorerEvents } from "./events";
-import { useAppStore } from "../../store/react-bindings";
-import { callUseCase } from "../../store/store";
-import { filterByGlob } from "./use-cases/filter-by-glob";
+import { UiEvents } from "@/store/events";
+import { FileExplorerEvents } from "@/core/file-system/events";
+import { useAppStore } from "@/store/react-bindings";
+import { callUseCase } from "@/store/store";
+import { filterByGlob } from "@/core/file-system/filter-by-glob";
 
 const skottPathSeparator = "#sk#";
 

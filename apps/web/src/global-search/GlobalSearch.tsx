@@ -2,8 +2,8 @@ import React from "react";
 import "ninja-keys";
 import { NinjaKeys } from "ninja-keys";
 
-import { useAppStore } from "../store/react-bindings";
-import { notify } from "../store/store";
+import { useAppStore } from "@/store/react-bindings";
+import { notify } from "@/store/store";
 
 export default function GlobalSearch() {
   const appStore = useAppStore();

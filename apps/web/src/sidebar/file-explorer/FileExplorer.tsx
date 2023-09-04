@@ -11,12 +11,13 @@ import {
 import { IconFilterCog } from "@tabler/icons-react";
 import React from "react";
 
-import { UiEvents } from "../../store/events";
-import { callUseCase } from "../../store/store";
-import { FileExplorerEvents } from "./events";
+import { UiEvents } from "@/store/events";
+import { callUseCase } from "@/store/store";
+import { useAppStore } from "@/store/react-bindings";
+import { FileExplorerEvents } from "@/core/file-system/events";
+import { filterByGlob } from "@/core/file-system/filter-by-glob";
+
 import { FileExplorerAccordion } from "./FileAccordion";
-import { filterByGlob } from "./use-cases/filter-by-glob";
-import { useAppStore } from "../../store/react-bindings";
 
 const useStyles = createStyles((theme) => ({
   searchCode: {

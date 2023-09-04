@@ -1,8 +1,8 @@
 import * as Option from "@effect/data/Option";
 import * as m from "minimatch-browser-fork";
 
-import { AppReducer } from "../../store/reducer";
-import { AppState } from "../../store/state";
+import { AppReducer } from "@/store/reducer";
+import { AppState } from "@/store/state";
 
 function filterByGlobMatch(glob: string) {
   return function (filename: string) {

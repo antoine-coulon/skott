@@ -5,7 +5,7 @@ import { DataSet } from "vis-data";
 import { Edge, Network, Node } from "vis-network";
 
 import { SkottStructureWithCycles, SkottStructureWithMetadata } from "../skott";
-import { UiEvents } from "../store/events";
+import { UiEvents } from "@/store/events";
 import {
   defaultEdgeOptions,
   defaultNodeOptions,
@@ -20,9 +20,9 @@ import {
   circularNodeOptions,
   computeBuiltinDependencies,
   computeThirdPartyDependencies,
-} from "./dependencies.js";
-import { AppState } from "../store/state.js";
-import { useAppStore } from "../store/react-bindings.js";
+} from "./dependencies";
+import { AppState } from "@/store/state";
+import { useAppStore } from "@/store/react-bindings";
 
 export function getMethodToApplyOnNetworkElement(enable: boolean) {
   return enable ? "update" : "remove";

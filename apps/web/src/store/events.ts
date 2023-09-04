@@ -1,4 +1,4 @@
-import { FileExplorerEvents } from "../sidebar/file-explorer/events";
+import { FileExplorerEvents } from "@/core/file-system/events";
 
 export type UiEvents =
   | {
