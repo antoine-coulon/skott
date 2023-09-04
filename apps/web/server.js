@@ -128,9 +128,7 @@ const fakeSkottData = {
 
 const routes = {
   "/cycles": {
-    data: {
-      cycles: fakeCyclesData,
-    },
+    data: fakeCyclesData,
   },
   "/analysis": {
     data: fakeSkottData,

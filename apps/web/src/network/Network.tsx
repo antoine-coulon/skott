@@ -1,8 +1,9 @@
 import React from "react";
-import { Subscription, combineLatest } from "rxjs";
+import { Subscription, combineLatest, distinctUntilChanged } from "rxjs";
 
 import { DataSet } from "vis-data";
 import { Edge, Network, Node } from "vis-network";
+import isEqual from "lodash.isequal";
 
 import { SkottStructureWithCycles, SkottStructureWithMetadata } from "../skott";
 import { UiEvents } from "@/store/events";
@@ -32,10 +33,10 @@ export default function GraphNetwork() {
   const appStore = useAppStore();
   const networkContainerRef = React.useRef(null);
   const [network, setNetwork] = React.useState<Network>();
-  const [nodeDataset, setNodeDataset] = React.useState(
+  const [nodesDataset, setNodesDataset] = React.useState(
     new DataSet<Node, "id">([])
   );
-  const [edgeDataset, setEdgeDataset] = React.useState(
+  const [edgesDataset, setEdgesDataset] = React.useState(
     new DataSet<Edge, "id">([])
   );
 
@@ -51,7 +52,7 @@ export default function GraphNetwork() {
   }
 
   function highlightEntrypoint(nodeId: string) {
-    nodeDataset.update([
+    nodesDataset.update([
       {
         id: nodeId,
         color: {
@@ -79,7 +80,7 @@ export default function GraphNetwork() {
         const node2 = cycle[index + 1] ? cycle[index + 1] : cycle[0];
 
         if (node1 && node2) {
-          nodeDataset.update([
+          nodesDataset.update([
             {
               id: node1,
               ...nodeOptions,
@@ -90,7 +91,7 @@ export default function GraphNetwork() {
             },
           ]);
 
-          edgeDataset.update([
+          edgesDataset.update([
             {
               id: `${node1}-${node2}`,
               from: node1,
@@ -116,8 +117,8 @@ export default function GraphNetwork() {
     const linkedNodes = dependencies.filter(isNetworkNode);
     const linkedEdges = dependencies.filter(isNetworkEdge);
 
-    nodeDataset[getMethodToApplyOnNetworkElement(enabled)](linkedNodes);
-    edgeDataset[getMethodToApplyOnNetworkElement(enabled)](linkedEdges);
+    nodesDataset[getMethodToApplyOnNetworkElement(enabled)](linkedNodes);
+    edgesDataset[getMethodToApplyOnNetworkElement(enabled)](linkedEdges);
   }
 
   function networkReducer(dataStore: AppState["data"], uiEvents: UiEvents) {
@@ -151,15 +152,17 @@ export default function GraphNetwork() {
     let subscription: Subscription;
 
     if (networkContainerRef.current) {
-      subscription = appStore.store$.subscribe(({ data }) => {
-        const { graphNodes, graphEdges } = makeNodesAndEdges(
-          Object.values(data.graph),
-          { entrypoint: data.entrypoint }
-        );
+      subscription = appStore.dataState$
+        .pipe(distinctUntilChanged(isEqual))
+        .subscribe((data) => {
+          const { graphNodes, graphEdges } = makeNodesAndEdges(
+            Object.values(data.graph),
+            { entrypoint: data.entrypoint }
+          );
 
-        setNodeDataset(new DataSet(graphNodes));
-        setEdgeDataset(new DataSet(graphEdges));
-      });
+          setNodesDataset(new DataSet(graphNodes));
+          setEdgesDataset(new DataSet(graphEdges));
+        });
     }
 
     return () => {
@@ -172,14 +175,19 @@ export default function GraphNetwork() {
       ...networkOptions,
       nodes: {
         ...networkOptions.nodes,
-        mass: getAppropriateMassGivenDataset(nodeDataset.length),
+        mass: getAppropriateMassGivenDataset(nodesDataset.length),
       },
     };
 
+    /**
+     * TODO: instead of destroying the whole network, we should have a more fine-grained
+     * control and update the nodes and edges invidually.
+     * The network has to be built only once.
+     */
     setNetwork(
       new Network(
         networkContainerRef.current!,
-        { nodes: nodeDataset, edges: edgeDataset },
+        { nodes: nodesDataset, edges: edgesDataset },
         networkOptionsWithMass
       )
     );
@@ -187,7 +195,7 @@ export default function GraphNetwork() {
     return () => {
       network?.destroy();
     };
-  }, [nodeDataset, edgeDataset]);
+  }, [nodesDataset, edgesDataset]);
 
   React.useEffect(() => {
     const uiEventsSubscription = combineLatest([
