@@ -4,7 +4,7 @@ import { AppShell } from "@mantine/core";
 import { DoubleNavbar } from "./sidebar/Layout";
 import GraphNetwork from "./network/Network";
 import GlobalSearch from "./global-search/GlobalSearch";
-import { SkottCycles, SkottStructureWithMetadata } from "./skott";
+import { SkottStructureWithMetadata } from "./skott";
 import Header from "./header/Header";
 import { storeDefaultValue } from "./store/state";
 import { useAppStore } from "./store/react-bindings";
@@ -15,7 +15,7 @@ function fetchAnalysisReport(): Promise<SkottStructureWithMetadata> {
     .catch(() => {});
 }
 
-function fetchCyclesReport(): Promise<SkottCycles> {
+function fetchCyclesReport(): Promise<string[][]> {
   return fetch("/api/cycles")
     .then((res) => res.json())
     .catch(() => ({
@@ -31,11 +31,10 @@ function App() {
       .then(([analysisReport, cyclesReport]) => {
         const nextValue = {
           ...analysisReport,
-          cycles: cyclesReport.cycles,
+          cycles: cyclesReport,
         };
         const appStateValue = { ...storeDefaultValue, data: nextValue };
         dataStore.setInitialState(appStateValue);
-        dataStore.store$.next(appStateValue);
       })
       .catch((exception) => {
         console.error("Failed to fetch analysis report", exception);
