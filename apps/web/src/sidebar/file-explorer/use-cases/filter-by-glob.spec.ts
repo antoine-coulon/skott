@@ -196,6 +196,7 @@ describe("When removing an initially set glob", () => {
   test("Should reset the store to the initially set value", async () => {
     const initialAppState = {
       data: {
+        entrypoint: "src/c.js",
         cycles: [],
         files: ["src/lib/a.js", "src/lib/b.js", "src/c.js"],
         graph: {
@@ -240,6 +241,7 @@ describe("When removing an initially set glob", () => {
 
     expect(appState).toEqual({
       data: {
+        entrypoint: "src/c.js",
         cycles: [],
         files: ["src/c.js"],
         graph: {

@@ -33,10 +33,13 @@ function applyGlob(glob: string, state: AppState["data"]): AppState["data"] {
 }
 
 function filterByGlob(): AppReducer {
-  return function (event) {
+  return function (event, state) {
     if (event.action === "filter_by_glob") {
       return Option.some({
-        data: applyGlob(event.payload.glob, event.payload.data),
+        data: {
+          ...state.data,
+          ...applyGlob(event.payload.glob, event.payload.data),
+        },
         ui: {
           filters: {
             glob: event.payload.glob,

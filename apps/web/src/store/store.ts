@@ -53,6 +53,7 @@ export class AppStore {
 
   setInitialState(dataStore: AppState) {
     this._initialState = dataStore;
+    this.store$.next(dataStore);
   }
 
   resetState() {
@@ -60,17 +61,17 @@ export class AppStore {
   }
 
   dispatch(action: AppEvents) {
-    this._reducers.forEach((reducer) =>
-      pipe(
-        reducer(action, this._store$.getValue()),
+    this._reducers.forEach((reducer) => {
+      return pipe(
+        reducer(action, this.getState()),
         Option.match(
           () => {},
           (state) => {
             return this._store$.next(state);
           }
         )
-      )
-    );
+      );
+    });
   }
 }
 
