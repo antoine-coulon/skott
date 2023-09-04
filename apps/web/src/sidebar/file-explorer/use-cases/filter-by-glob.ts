@@ -2,19 +2,32 @@ import { AppStore } from "../../../store/store";
 
 export function filterByGlob(store: AppStore) {
   return function (glob: string) {
-    if (glob !== "") {
+    const initialStoreData = store.getInitialState().data;
+
+    if (glob === "") {
       return store.dispatch({
-        action: "filter_by_glob",
+        action: "reset_glob_filter",
         payload: {
-          glob,
+          data: initialStoreData,
         },
       });
     }
 
-    store.dispatch({
-      action: "reset_glob_filter",
+    if (initialStoreData.files.length > 0) {
+      return store.dispatch({
+        action: "filter_by_glob",
+        payload: {
+          glob,
+          data: initialStoreData,
+        },
+      });
+    }
+
+    return store.dispatch({
+      action: "filter_by_glob",
       payload: {
-        data: store.getInitialState().data,
+        glob,
+        data: store.getState().data,
       },
     });
   };

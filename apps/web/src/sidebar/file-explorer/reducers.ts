@@ -35,32 +35,28 @@ function applyGlob(glob: string, state: AppState["data"]): AppState["data"] {
 function filterByGlob(): AppReducer {
   return function (event) {
     if (event.action === "filter_by_glob") {
-      return function (state) {
-        return Option.some({
-          data: applyGlob(event.payload.glob, state.data),
-          ui: {
-            filters: {
-              glob: event.payload.glob,
-            },
+      return Option.some({
+        data: applyGlob(event.payload.glob, event.payload.data),
+        ui: {
+          filters: {
+            glob: event.payload.glob,
           },
-        });
-      };
+        },
+      });
     }
 
     if (event.action === "reset_glob_filter") {
-      return function () {
-        return Option.some({
-          data: event.payload.data,
-          ui: {
-            filters: {
-              glob: "",
-            },
+      return Option.some({
+        data: event.payload.data,
+        ui: {
+          filters: {
+            glob: "",
           },
-        });
-      };
+        },
+      });
     }
 
-    return () => Option.none();
+    return Option.none();
   };
 }
 

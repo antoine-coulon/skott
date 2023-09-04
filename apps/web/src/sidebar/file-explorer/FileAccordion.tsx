@@ -22,6 +22,8 @@ import { isJavaScriptModule, isTypeScriptModule } from "../../util";
 import { UiEvents } from "../../store/events";
 import { FileExplorerEvents } from "./events";
 import { useAppStore } from "../../store/react-bindings";
+import { callUseCase } from "../../store/store";
+import { filterByGlob } from "./use-cases/filter-by-glob";
 
 const skottPathSeparator = "#sk#";
 
@@ -178,6 +180,11 @@ function Folder({
   onClose: (filename: string) => void;
   actionDispatcher: (action: UiEvents | FileExplorerEvents) => void;
 }) {
+  function applyFilter(globPattern: string) {
+    const invokeUseCase = callUseCase(filterByGlob);
+    invokeUseCase(globPattern);
+  }
+
   return (
     <Accordion
       key={name}
@@ -196,10 +203,7 @@ function Folder({
         <AccordionControl
           onAction={(event) => {
             if (event === "filter") {
-              actionDispatcher({
-                action: "filter_by_glob",
-                payload: { glob: `${parseFilePath(fileId)}/**/*` },
-              });
+              applyFilter(`${parseFilePath(fileId)}/**/*`);
             }
           }}
         >

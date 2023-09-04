@@ -147,7 +147,7 @@ describe("When filtering data by adding a glob", () => {
   });
 });
 
-describe("When removing an initially set glob", () => {
+describe("When resetting the glob to none", () => {
   test("Should reset the store to the initially set value", async () => {
     const initialAppState = {
       data: {
@@ -189,5 +189,72 @@ describe("When removing an initially set glob", () => {
     const appState = await toPromise(appStore.store$);
 
     expect(appState).toEqual(initialAppState);
+  });
+});
+
+describe("When removing an initially set glob", () => {
+  test("Should reset the store to the initially set value", async () => {
+    const initialAppState = {
+      data: {
+        cycles: [],
+        files: ["src/lib/a.js", "src/lib/b.js", "src/c.js"],
+        graph: {
+          "src/lib/a.js": {
+            id: "src/lib/a.js",
+            adjacentTo: [],
+            body: {} as any,
+          },
+          "src/lib/b.js": {
+            id: "src/lib/b.js",
+            adjacentTo: [],
+            body: {} as any,
+          },
+          "src/c.js": {
+            id: "src/c.js",
+            adjacentTo: [],
+            body: {} as any,
+          },
+        },
+      },
+      ui: {
+        filters: {
+          glob: "",
+        },
+      },
+    };
+
+    const appStore = new AppStore(
+      new BehaviorSubject<AppState>(storeDefaultValue),
+      new ReplaySubject(),
+      reducers
+    );
+
+    appStore.setInitialState(initialAppState);
+
+    const dispatchAction = filterByGlob(appStore);
+
+    dispatchAction("src/**/*");
+    dispatchAction("src/lib/**/*");
+
+    const appState = await toPromise(appStore.store$);
+
+    expect(appState).toEqual({
+      data: {
+        cycles: [],
+        files: ["src/c.js"],
+        graph: {
+          "src/c.js": {
+            id: "src/c.js",
+            adjacentTo: [],
+            body: {} as any,
+          },
+        },
+      },
+      ui: {
+        filters: {
+          glob: "src/lib/**/*",
+        },
+      },
+    });
   });
 });

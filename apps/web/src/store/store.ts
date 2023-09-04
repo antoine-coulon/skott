@@ -43,6 +43,10 @@ export class AppStore {
     return this._uiEvents$;
   }
 
+  getState() {
+    return this._store$.getValue();
+  }
+
   getInitialState() {
     return this._initialState;
   }
@@ -58,7 +62,7 @@ export class AppStore {
   dispatch(action: AppEvents) {
     this._reducers.forEach((reducer) =>
       pipe(
-        reducer(action)(this._store$.getValue()),
+        reducer(action, this._store$.getValue()),
         Option.match(
           () => {},
           (state) => {

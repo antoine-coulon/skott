@@ -49,11 +49,8 @@ export function FileExplorer() {
     invokeUseCase(globPattern);
   }
 
-  function dispatchAction(event: UiEvents | FileExplorerEvents) {
-    if (event.action === "filter_by_glob") {
-      applyFilter(event.payload.glob);
-    } else {
-    }
+  function dispatchAction(_event: UiEvents | FileExplorerEvents) {
+    // TODO
   }
 
   React.useEffect(() => {
