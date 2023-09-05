@@ -10,7 +10,7 @@ export default function GlobalSearch() {
   const containerRef = React.useRef<NinjaKeys | null>(null);
 
   function focusOnNode(id: string) {
-    notify({ action: "focus", payload: { nodeId: id } });
+    notify({ action: "focus_on_node", payload: { nodeId: id } });
   }
 
   React.useEffect(() => {

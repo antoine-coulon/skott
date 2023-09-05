@@ -11,10 +11,8 @@ import {
 import { IconFilterCog } from "@tabler/icons-react";
 import React from "react";
 
-import { UiEvents } from "@/store/events";
 import { callUseCase } from "@/store/store";
 import { useAppStore } from "@/store/react-bindings";
-import { FileExplorerEvents } from "@/core/file-system/events";
 import { filterByGlob } from "@/core/file-system/filter-by-glob";
 
 import { FileExplorerAccordion } from "./FileAccordion";
@@ -48,10 +46,6 @@ export function FileExplorer() {
   function applyFilter(globPattern: string) {
     const invokeUseCase = callUseCase(filterByGlob);
     invokeUseCase(globPattern);
-  }
-
-  function dispatchAction(_event: UiEvents | FileExplorerEvents) {
-    // TODO
   }
 
   React.useEffect(() => {
@@ -96,7 +90,7 @@ export function FileExplorer() {
           />
         </Box>
 
-        <FileExplorerAccordion actionDispatcher={dispatchAction} />
+        <FileExplorerAccordion />
       </Navbar.Section>
     </ScrollArea.Autosize>
   );

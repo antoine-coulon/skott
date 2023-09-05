@@ -123,9 +123,8 @@ export default function GraphNetwork() {
 
   function networkReducer(dataStore: AppState["data"], uiEvents: UiEvents) {
     switch (uiEvents.action) {
-      case "focus": {
+      case "focus_on_node": {
         focusOnNetworkNode(uiEvents.payload.nodeId);
-        network?.stabilize();
         break;
       }
       case "toggle_circular": {
@@ -199,9 +198,9 @@ export default function GraphNetwork() {
 
   React.useEffect(() => {
     const uiEventsSubscription = combineLatest([
-      appStore.store$,
       appStore.events$,
-    ]).subscribe(([{ data }, uiEvents]) => networkReducer(data, uiEvents));
+      appStore.dataState$,
+    ]).subscribe(([uiEvents, data]) => networkReducer(data, uiEvents));
 
     return () => {
       uiEventsSubscription.unsubscribe();

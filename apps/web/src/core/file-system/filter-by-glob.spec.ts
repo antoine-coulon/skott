@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { BehaviorSubject, Observable, ReplaySubject } from "rxjs";
+import { BehaviorSubject, Observable, ReplaySubject, Subject } from "rxjs";
 
 import { AppStore } from "@/store/store";
 import { AppState, storeDefaultValue } from "@/store/state";
@@ -19,7 +19,7 @@ describe("When filtering data by adding a glob", () => {
     test("Should apply the filter in the ui store but should not change anything in the data store", async () => {
       const appStore = new AppStore(
         new BehaviorSubject<AppState>(storeDefaultValue),
-        new ReplaySubject(),
+        new Subject(),
         reducers
       );
 
@@ -75,7 +75,7 @@ describe("When filtering data by adding a glob", () => {
             },
           },
         }),
-        new ReplaySubject(),
+        new Subject(),
         reducers
       );
 
@@ -122,7 +122,7 @@ describe("When filtering data by adding a glob", () => {
             graph: {},
           },
         }),
-        new ReplaySubject(),
+        new Subject(),
         reducers
       );
 
@@ -175,7 +175,7 @@ describe("When resetting the glob to none", () => {
 
     const appStore = new AppStore(
       new BehaviorSubject<AppState>(storeDefaultValue),
-      new ReplaySubject(),
+      new Subject(),
       reducers
     );
 
@@ -226,7 +226,7 @@ describe("When removing an initially set glob", () => {
 
     const appStore = new AppStore(
       new BehaviorSubject<AppState>(storeDefaultValue),
-      new ReplaySubject(),
+      new Subject(),
       reducers
     );
 

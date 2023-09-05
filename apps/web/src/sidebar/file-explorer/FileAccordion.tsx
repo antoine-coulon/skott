@@ -19,10 +19,8 @@ import {
 import { makeTreeStructure } from "fs-tree-structure";
 
 import { isJavaScriptModule, isTypeScriptModule } from "../../util";
-import { UiEvents } from "@/store/events";
-import { FileExplorerEvents } from "@/core/file-system/events";
 import { useAppStore } from "@/store/react-bindings";
-import { callUseCase } from "@/store/store";
+import { callUseCase, notify } from "@/store/store";
 import { filterByGlob } from "@/core/file-system/filter-by-glob";
 
 const skottPathSeparator = "#sk#";
@@ -90,12 +88,10 @@ function File({
   name,
   isRoot,
   fileId,
-  actionDispatcher,
 }: {
   name: string;
   isRoot: boolean;
   fileId: string;
-  actionDispatcher: (action: UiEvents) => void;
 }) {
   return (
     <Flex
@@ -125,7 +121,7 @@ function File({
         <Menu.Dropdown>
           <Menu.Item
             onClick={() =>
-              actionDispatcher({
+              notify({
                 action: "focus_on_node",
                 payload: { nodeId: parseFilePath(fileId) },
               })
@@ -137,8 +133,9 @@ function File({
             Focus
           </Menu.Item>
           <Menu.Item
+            disabled={true}
             onClick={() =>
-              actionDispatcher({
+              notify({
                 action: "isolate_node",
                 payload: { nodeId: parseFilePath(fileId) },
               })
@@ -147,15 +144,16 @@ function File({
               <IconLoadBalancer size="1.3rem" color="violet" stroke={1.5} />
             }
           >
-            Isolate
+            Isolate (wip)
           </Menu.Item>
           <Menu.Item
+            disabled={true}
             onClick={() => {}}
             icon={
               <IconReportSearch size="1.3rem" color="violet" stroke={1.5} />
             }
           >
-            Open details
+            Open details (wip)
           </Menu.Item>
         </Menu.Dropdown>
       </Menu>
@@ -170,7 +168,6 @@ function Folder({
   fileId,
   onOpen,
   onClose,
-  actionDispatcher,
 }: {
   name: string;
   children: Record<string, any>;
@@ -178,7 +175,6 @@ function Folder({
   openedFolders: Set<string>;
   onOpen: (filename: string) => void;
   onClose: (filename: string) => void;
-  actionDispatcher: (action: UiEvents | FileExplorerEvents) => void;
 }) {
   function applyFilter(globPattern: string) {
     const invokeUseCase = callUseCase(filterByGlob);
@@ -227,7 +223,6 @@ function Folder({
                   fileId={`${fileId}#sk#${name}`}
                   key={`file-${name}`}
                   name={name}
-                  actionDispatcher={actionDispatcher}
                 />
               );
             }
@@ -240,7 +235,6 @@ function Folder({
                 openedFolders={openedFolders}
                 onOpen={onOpen}
                 onClose={onClose}
-                actionDispatcher={actionDispatcher}
               />
             );
           })}
@@ -250,11 +244,7 @@ function Folder({
   );
 }
 
-export function FileExplorerAccordion({
-  actionDispatcher,
-}: {
-  actionDispatcher: (action: UiEvents | FileExplorerEvents) => void;
-}) {
+export function FileExplorerAccordion() {
   const [openedFolders, setOpenedFolders] = React.useState(new Set<string>());
   const [fileTree, setFileTree] = React.useState<Record<string, any>>({});
   const appStore = useAppStore();
@@ -274,13 +264,7 @@ export function FileExplorerAccordion({
       {Object.entries(fileTree).map(([leafName, value]) => {
         if (isTypeScriptModule(leafName) || isJavaScriptModule(leafName)) {
           return (
-            <File
-              isRoot
-              key={leafName}
-              fileId={leafName}
-              name={leafName}
-              actionDispatcher={actionDispatcher}
-            />
+            <File isRoot key={leafName} fileId={leafName} name={leafName} />
           );
         }
         return Folder({
@@ -296,7 +280,6 @@ export function FileExplorerAccordion({
             openedFolders.delete(fileId);
             setOpenedFolders(new Set(openedFolders));
           },
-          actionDispatcher,
         });
       })}
     </>

@@ -1,9 +1,4 @@
-import {
-  BehaviorSubject,
-  ReplaySubject,
-  distinctUntilChanged,
-  map,
-} from "rxjs";
+import { BehaviorSubject, Subject, distinctUntilChanged, map } from "rxjs";
 import * as Option from "@effect/data/Option";
 import { pipe } from "@effect/data/Function";
 
@@ -15,7 +10,7 @@ import reducers from "../core/file-system/reducers";
 export class AppStore {
   constructor(
     private readonly _store$: BehaviorSubject<AppState>,
-    private readonly _uiEvents$: ReplaySubject<UiEvents>,
+    private readonly _uiEvents$: Subject<UiEvents>,
     private readonly _reducers: StoreReducer<AppState, AppEvents>[]
   ) {}
 
@@ -79,7 +74,7 @@ const listOfReducers = [...reducers];
 
 const instance = new AppStore(
   new BehaviorSubject(storeDefaultValue),
-  new ReplaySubject(),
+  new Subject(),
   listOfReducers
 );
 
