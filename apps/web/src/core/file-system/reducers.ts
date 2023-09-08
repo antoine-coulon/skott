@@ -41,6 +41,7 @@ function filterByGlob(): AppReducer {
           ...applyGlob(event.payload.glob, event.payload.data),
         },
         ui: {
+          ...state.ui,
           filters: {
             glob: event.payload.glob,
           },
@@ -52,6 +53,7 @@ function filterByGlob(): AppReducer {
       return Option.some({
         data: event.payload.data,
         ui: {
+          ...state.ui,
           filters: {
             glob: "",
           },
@@ -63,4 +65,4 @@ function filterByGlob(): AppReducer {
   };
 }
 
-export default [filterByGlob()];
+export const fileSystemReducers = [filterByGlob()];

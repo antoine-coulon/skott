@@ -250,7 +250,7 @@ export function FileExplorerAccordion() {
   const appStore = useAppStore();
 
   React.useEffect(() => {
-    const s = appStore.dataState$.subscribe((data) => {
+    const s = appStore.store$.subscribe(({ data }) => {
       setFileTree(makeTreeStructure(data.files));
     });
 

@@ -4,6 +4,19 @@ export interface UiState {
   filters: {
     glob: string;
   };
+  network: {
+    dependencies: {
+      circular: {
+        active: boolean;
+      };
+      builtin: {
+        active: boolean;
+      };
+      thirdparty: {
+        active: boolean;
+      };
+    };
+  };
 }
 
 export interface DataState extends SkottStructureWithCycles {}
@@ -22,6 +35,19 @@ export const storeDefaultValue: AppState = {
   ui: {
     filters: {
       glob: "",
+    },
+    network: {
+      dependencies: {
+        circular: {
+          active: false,
+        },
+        thirdparty: {
+          active: false,
+        },
+        builtin: {
+          active: false,
+        },
+      },
     },
   },
 };

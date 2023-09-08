@@ -16,6 +16,7 @@ import { convertBytesToUserFriendlyUnit, formatForm } from "./formatters";
 import { LanguageRing } from "./LanguageRing";
 import { Dependencies } from "./Dependencies";
 import { useAppStore } from "@/store/react-bindings";
+import { map } from "rxjs";
 
 function safeSet(m: Map<string, string[]>, key: string, value: string) {
   if (m.has(key)) {
@@ -78,7 +79,9 @@ export function Summary() {
   }
 
   React.useEffect(() => {
-    const subscription = appStore.dataState$.subscribe(computeSummary);
+    const subscription = appStore.store$
+      .pipe(map(({ data }) => data))
+      .subscribe(computeSummary);
 
     return () => {
       subscription.unsubscribe();

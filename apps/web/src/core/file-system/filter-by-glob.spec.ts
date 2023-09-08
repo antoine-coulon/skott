@@ -1,26 +1,18 @@
 import { describe, test, expect } from "vitest";
-import { BehaviorSubject, Observable, ReplaySubject, Subject } from "rxjs";
+import { BehaviorSubject, Subject } from "rxjs";
 
 import { AppStore } from "@/store/store";
 import { AppState, storeDefaultValue } from "@/store/state";
 import { filterByGlob } from "./filter-by-glob";
-import reducers from "./reducers";
-
-function toPromise<T>(observable: Observable<T>): Promise<T> {
-  return new Promise((resolve) => {
-    observable.subscribe((data) => {
-      resolve(data);
-    });
-  });
-}
+import { fileSystemReducers } from "./reducers";
+import { toPromise } from "../utils";
 
 describe("When filtering data by adding a glob", () => {
   describe("When the data store is initially empty", () => {
     test("Should apply the filter in the ui store but should not change anything in the data store", async () => {
       const appStore = new AppStore(
         new BehaviorSubject<AppState>(storeDefaultValue),
-        new Subject(),
-        reducers
+        fileSystemReducers
       );
 
       const dispatchAction = filterByGlob(appStore);
@@ -36,6 +28,7 @@ describe("When filtering data by adding a glob", () => {
       });
 
       expect(ui).toEqual({
+        ...storeDefaultValue.ui,
         filters: {
           glob: "src/**/*.ts",
         },
@@ -75,8 +68,7 @@ describe("When filtering data by adding a glob", () => {
             },
           },
         }),
-        new Subject(),
-        reducers
+        fileSystemReducers
       );
 
       const dispatchAction = filterByGlob(appStore);
@@ -103,6 +95,7 @@ describe("When filtering data by adding a glob", () => {
       });
 
       expect(ui).toEqual({
+        ...storeDefaultValue.ui,
         filters: {
           glob: "*.ts",
         },
@@ -122,8 +115,7 @@ describe("When filtering data by adding a glob", () => {
             graph: {},
           },
         }),
-        new Subject(),
-        reducers
+        fileSystemReducers
       );
 
       const dispatchAction = filterByGlob(appStore);
@@ -139,6 +131,7 @@ describe("When filtering data by adding a glob", () => {
       });
 
       expect(ui).toEqual({
+        ...storeDefaultValue.ui,
         filters: {
           glob: "a.js",
         },
@@ -166,17 +159,12 @@ describe("When resetting the glob to none", () => {
           },
         },
       },
-      ui: {
-        filters: {
-          glob: "",
-        },
-      },
+      ui: storeDefaultValue.ui,
     };
 
     const appStore = new AppStore(
       new BehaviorSubject<AppState>(storeDefaultValue),
-      new Subject(),
-      reducers
+      fileSystemReducers
     );
 
     appStore.setInitialState(initialAppState);
@@ -217,17 +205,12 @@ describe("When removing an initially set glob", () => {
           },
         },
       },
-      ui: {
-        filters: {
-          glob: "",
-        },
-      },
+      ui: storeDefaultValue.ui,
     };
 
     const appStore = new AppStore(
       new BehaviorSubject<AppState>(storeDefaultValue),
-      new Subject(),
-      reducers
+      fileSystemReducers
     );
 
     appStore.setInitialState(initialAppState);
@@ -253,6 +236,7 @@ describe("When removing an initially set glob", () => {
         },
       },
       ui: {
+        ...storeDefaultValue.ui,
         filters: {
           glob: "src/lib/**/*",
         },

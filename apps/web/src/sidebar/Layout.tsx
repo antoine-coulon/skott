@@ -13,6 +13,7 @@ import {
   IconVectorTriangle,
   IconSettings,
   IconRefreshAlert,
+  IconAB2,
 } from "@tabler/icons-react";
 
 import { Circular } from "./Circular";
@@ -21,6 +22,7 @@ import { Summary } from "./summary/Summary";
 import { FileExplorer } from "./file-explorer/FileExplorer";
 import { InteractivePlayground } from "./InteractivePlayground";
 import { UserSettings } from "./UserSettings";
+import { Dependencies } from "./dependencies/Dependencies";
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -84,14 +86,19 @@ const menus = [
   { icon: IconClipboardData, label: "Summary", key: "summary" },
   { icon: IconFiles, label: "File Explorer", key: "file_explorer" },
   {
-    icon: IconDeviceDesktopAnalytics,
-    label: "Interactive Playground (work in progress)",
-    key: "interactive_playground",
-  },
-  {
     icon: IconRefreshAlert,
     label: "Circular dependencies (work in progress)",
     key: "circular",
+  },
+  {
+    icon: IconAB2,
+    label: "Dependencies configuration",
+    key: "dependencies",
+  },
+  {
+    icon: IconDeviceDesktopAnalytics,
+    label: "Interactive Playground (work in progress)",
+    key: "interactive_playground",
   },
   {
     icon: IconVectorTriangle,
@@ -108,11 +115,13 @@ const menus = [
 type MenuKeys = (typeof menus)[number]["key"];
 
 const isFeatureDisabled = (section: string) =>
-  section !== "file_explorer" && section !== "summary";
+  section !== "file_explorer" &&
+  section !== "summary" &&
+  section !== "dependencies";
 
 export function DoubleNavbar() {
   const { classes, cx } = useStyles();
-  const [active, setActive] = useState<MenuKeys>("file_explorer");
+  const [active, setActive] = useState<MenuKeys>("dependencies");
 
   const mainMenus = menus.map((link) => (
     <Tooltip
@@ -146,6 +155,8 @@ export function DoubleNavbar() {
         return <Summary />;
       case "file_explorer":
         return <FileExplorer />;
+      case "dependencies":
+        return <Dependencies />;
       case "interactive_playground":
         return <InteractivePlayground />;
       case "settings":

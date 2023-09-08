@@ -116,7 +116,7 @@ const graphDataWithCycles = {
   },
 };
 
-const fakeCyclesData = [["a.js", "b.js", "c.js"]];
+const fakeCyclesData = [["src/server/errors.ts", "src/lib/fastify/index.ts", "src/server/settings.ts"]];
 
 const fakeSkottData = {
   entrypoint: "src/lib/fastify/index.ts",

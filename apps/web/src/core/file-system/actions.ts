@@ -1,6 +1,6 @@
 import { AppState } from "../../store/state";
 
-export type FileExplorerEvents =
+export type FileExplorerActions =
   | {
       action: "filter_by_glob";
       payload: {

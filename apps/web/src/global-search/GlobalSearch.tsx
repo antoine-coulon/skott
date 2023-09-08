@@ -21,7 +21,7 @@ export default function GlobalSearch() {
       }
     });
 
-    const dataStoreSubscription = appStore.dataState$.subscribe((data) => {
+    const dataStoreSubscription = appStore.store$.subscribe(({ data }) => {
       if (containerRef.current) {
         containerRef.current.data = Object.values(data.graph)
           .map((value) => ({

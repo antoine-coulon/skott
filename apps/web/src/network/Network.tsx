@@ -1,12 +1,11 @@
 import React from "react";
-import { Subscription, combineLatest, distinctUntilChanged } from "rxjs";
+import { Subscription, combineLatest, distinctUntilChanged, map } from "rxjs";
 
 import { DataSet } from "vis-data";
 import { Edge, Network, Node } from "vis-network";
 import isEqual from "lodash.isequal";
 
 import { SkottStructureWithCycles, SkottStructureWithMetadata } from "../skott";
-import { UiEvents } from "@/store/events";
 import {
   defaultEdgeOptions,
   defaultNodeOptions,
@@ -24,6 +23,8 @@ import {
 } from "./dependencies";
 import { AppState } from "@/store/state";
 import { useAppStore } from "@/store/react-bindings";
+import { AppActions } from "@/store/actions";
+import { AppEvents } from "@/store/events";
 
 export function getMethodToApplyOnNetworkElement(enable: boolean) {
   return enable ? "update" : "remove";
@@ -121,26 +122,29 @@ export default function GraphNetwork() {
     edgesDataset[getMethodToApplyOnNetworkElement(enabled)](linkedEdges);
   }
 
-  function networkReducer(dataStore: AppState["data"], uiEvents: UiEvents) {
-    switch (uiEvents.action) {
+  function networkUIReducer(
+    dataStore: AppState["data"],
+    appEvents: AppActions | AppEvents
+  ) {
+    switch (appEvents.action) {
       case "focus_on_node": {
-        focusOnNetworkNode(uiEvents.payload.nodeId);
+        focusOnNetworkNode(appEvents.payload.nodeId);
         break;
       }
       case "toggle_circular": {
-        highlightCircularDependencies(dataStore, uiEvents.payload.enabled);
+        highlightCircularDependencies(dataStore, appEvents.payload.enabled);
         if (dataStore.entrypoint) {
           highlightEntrypoint(dataStore.entrypoint);
         }
         break;
       }
       case "toggle_builtin": {
-        toggleDependencies(dataStore, "builtin", uiEvents.payload.enabled);
+        toggleDependencies(dataStore, "builtin", appEvents.payload.enabled);
         network?.stabilize();
         break;
       }
       case "toggle_thirdparty": {
-        toggleDependencies(dataStore, "third_party", uiEvents.payload.enabled);
+        toggleDependencies(dataStore, "third_party", appEvents.payload.enabled);
         network?.stabilize();
         break;
       }
@@ -151,8 +155,11 @@ export default function GraphNetwork() {
     let subscription: Subscription;
 
     if (networkContainerRef.current) {
-      subscription = appStore.dataState$
-        .pipe(distinctUntilChanged(isEqual))
+      subscription = appStore.store$
+        .pipe(
+          map(({ data }) => data),
+          distinctUntilChanged(isEqual)
+        )
         .subscribe((data) => {
           const { graphNodes, graphEdges } = makeNodesAndEdges(
             Object.values(data.graph),
@@ -199,8 +206,8 @@ export default function GraphNetwork() {
   React.useEffect(() => {
     const uiEventsSubscription = combineLatest([
       appStore.events$,
-      appStore.dataState$,
-    ]).subscribe(([uiEvents, data]) => networkReducer(data, uiEvents));
+      appStore.store$,
+    ]).subscribe(([uiEvents, { data }]) => networkUIReducer(data, uiEvents));
 
     return () => {
       uiEventsSubscription.unsubscribe();

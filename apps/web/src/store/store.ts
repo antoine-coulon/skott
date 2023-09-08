@@ -1,41 +1,31 @@
-import { BehaviorSubject, Subject, distinctUntilChanged, map } from "rxjs";
+import { BehaviorSubject, Subject } from "rxjs";
 import * as Option from "@effect/data/Option";
 import { pipe } from "@effect/data/Function";
 
-import { AppEvents, UiEvents } from "./events";
+import { AppEvents } from "./events";
+import { AppActions } from "./actions";
 import { AppState, storeDefaultValue } from "./state";
 import { StoreReducer } from "./reducer";
-import reducers from "../core/file-system/reducers";
+import { fileSystemReducers } from "../core/file-system/reducers";
+import { networkReducers } from "@/core/network/reducers";
+
+export type AppEffects = AppEvents | AppActions;
 
 export class AppStore {
   constructor(
     private readonly _store$: BehaviorSubject<AppState>,
-    private readonly _uiEvents$: Subject<UiEvents>,
-    private readonly _reducers: StoreReducer<AppState, AppEvents>[]
+    private readonly _reducers: StoreReducer<AppState, AppEffects>[]
   ) {}
 
+  private _eventStream$ = new Subject<AppEffects>();
   private _initialState: AppState = storeDefaultValue;
 
   get store$() {
     return this._store$;
   }
 
-  get dataState$() {
-    return this._store$.pipe(
-      map((state) => state.data),
-      distinctUntilChanged()
-    );
-  }
-
-  get uiState$() {
-    return this._store$.pipe(
-      map((state) => state.ui),
-      distinctUntilChanged()
-    );
-  }
-
   get events$() {
-    return this._uiEvents$;
+    return this._eventStream$;
   }
 
   getState() {
@@ -55,9 +45,13 @@ export class AppStore {
     this._store$.next(this._initialState);
   }
 
-  dispatch(action: AppEvents) {
-    this._reducers.forEach((reducer) => {
-      return pipe(
+  notify(event: AppActions) {
+    this.events$.next(event);
+  }
+
+  dispatch(action: AppActions, dispatchOptions = { notify: false }) {
+    this._reducers.forEach((reducer) =>
+      pipe(
         reducer(action, this.getState()),
         Option.match(
           () => {},
@@ -65,20 +59,23 @@ export class AppStore {
             return this._store$.next(state);
           }
         )
-      );
-    });
+      )
+    );
+
+    if (dispatchOptions.notify) {
+      this.notify(action);
+    }
   }
 }
 
-const listOfReducers = [...reducers];
+const listOfReducers = [...fileSystemReducers, ...networkReducers];
 
 const instance = new AppStore(
   new BehaviorSubject(storeDefaultValue),
-  new Subject(),
   listOfReducers
 );
 
-export const notify = (event: UiEvents) => instance.events$.next(event);
+export const notify = (event: AppEvents) => instance.events$.next(event);
 
 export const callUseCase = <T>(
   useCase: (appStore: AppStore) => (args: T) => void

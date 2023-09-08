@@ -49,8 +49,8 @@ export function FileExplorer() {
   }
 
   React.useEffect(() => {
-    const unsubscribe = appStore.uiState$.subscribe(({ filters }) => {
-      setFilter(filters.glob);
+    const unsubscribe = appStore.store$.subscribe(({ ui }) => {
+      setFilter(ui.filters.glob);
     });
     return () => {
       unsubscribe.unsubscribe();
