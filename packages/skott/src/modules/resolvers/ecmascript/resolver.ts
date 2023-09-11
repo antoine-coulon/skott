@@ -15,8 +15,11 @@ import {
   DependencyResolverOptions,
   kExpectedModuleExtensions
 } from "../base-resolver.js";
+import { FileReaderTag } from "../../../filesystem/file-reader.js";
 
 import * as Option from "@effect/data/Option";
+import {pipe} from "@effect/data/Function";
+import * as Effect from "@effect/io/Effect";
 
 const NODE_PROTOCOL = "node:";
 
@@ -109,6 +112,16 @@ export function isJavaScriptModule(module: string): boolean {
     extension === ".jsx" ||
     extension === ".mjs" ||
     extension === ".cjs"
+  );
+}
+
+export function isTypeScriptProject(tsConfigPath: string) {
+  return pipe(
+      Effect.service(FileReaderTag),
+      Effect.flatMap(
+          (fileReader) => Effect.tryPromise(() => fileReader.stats(tsConfigPath))
+      ),
+      Effect.map((fileSize)=> fileSize > 0),
   );
 }
 
