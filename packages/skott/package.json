@@ -62,7 +62,7 @@
     "openurl": "^1.1.1",
     "ora": "^6.3.1",
     "polka": "^0.5.2",
-    "sade": "^1.8.1",
+    "commander": "^11.0.0",
     "sirv": "^2.0.3",
     "skott-webapp": "workspace:^",
     "typescript": "^4.9.5"
@@ -75,7 +75,6 @@
     "@types/lodash.difference": "^4.5.7",
     "@types/node": "^16.18.36",
     "@types/polka": "^0.5.4",
-    "@types/sade": "^1.7.4",
     "eslint": "^8.49.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-import-resolver-typescript": "^2.7.1",
