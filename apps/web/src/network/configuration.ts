@@ -83,6 +83,10 @@ function getRandomArbitrary(min: number, max: number) {
   return Math.random() * (max - min) + min;
 }
 
+export function createEdgeId(node1: string, node2: string) {
+  return [node1, node2].sort().join("-");
+}
+
 export function makeNodesAndEdges(
   data: SkottNode[],
   metadata: SkottMetadata
@@ -125,7 +129,7 @@ export function makeNodesAndEdges(
 
     node.adjacentTo.forEach((adjacentNodeId: string) => {
       graphEdges.push({
-        id: `${node.id}-${adjacentNodeId}`,
+        id: createEdgeId(node.id, adjacentNodeId),
         from: node.id,
         to: adjacentNodeId,
       });

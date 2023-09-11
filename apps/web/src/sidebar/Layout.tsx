@@ -86,14 +86,14 @@ const menus = [
   { icon: IconClipboardData, label: "Summary", key: "summary" },
   { icon: IconFiles, label: "File Explorer", key: "file_explorer" },
   {
+    icon: IconAB2,
+    label: "Dependencies configuration (work in progress)",
+    key: "dependencies",
+  },
+  {
     icon: IconRefreshAlert,
     label: "Circular dependencies (work in progress)",
     key: "circular",
-  },
-  {
-    icon: IconAB2,
-    label: "Dependencies configuration",
-    key: "dependencies",
   },
   {
     icon: IconDeviceDesktopAnalytics,

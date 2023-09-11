@@ -1,5 +1,5 @@
 import React from "react";
-import { Subscription, combineLatest, distinctUntilChanged, map } from "rxjs";
+import { Subscription, distinctUntilChanged, map, zip } from "rxjs";
 
 import { DataSet } from "vis-data";
 import { Edge, Network, Node } from "vis-network";
@@ -7,6 +7,7 @@ import isEqual from "lodash.isequal";
 
 import { SkottStructureWithCycles, SkottStructureWithMetadata } from "../skott";
 import {
+  createEdgeId,
   defaultEdgeOptions,
   defaultNodeOptions,
   getAppropriateMassGivenDataset,
@@ -53,27 +54,25 @@ export default function GraphNetwork() {
   }
 
   function highlightEntrypoint(nodeId: string) {
-    nodesDataset.update([
-      {
-        id: nodeId,
-        color: {
+    nodesDataset.update({
+      id: nodeId,
+      color: {
+        border: "#000000",
+        background: "#ebde02",
+        highlight: {
           border: "#000000",
           background: "#ebde02",
-          highlight: {
-            border: "#000000",
-            background: "#ebde02",
-          },
         },
       },
-    ]);
+    });
   }
 
   function highlightCircularDependencies(
     data: SkottStructureWithCycles,
     highlighted: boolean
   ) {
-    const nodeOptions = !highlighted ? circularNodeOptions : defaultNodeOptions;
-    const edgeOptions = !highlighted ? circularEdgeOptions : defaultEdgeOptions;
+    const nodeOptions = highlighted ? circularNodeOptions : defaultNodeOptions;
+    const edgeOptions = highlighted ? circularEdgeOptions : defaultEdgeOptions;
 
     for (const cycle of data.cycles) {
       for (let index = 0; index < cycle.length; index++) {
@@ -92,16 +91,18 @@ export default function GraphNetwork() {
             },
           ]);
 
-          edgesDataset.update([
-            {
-              id: `${node1}-${node2}`,
-              from: node1,
-              to: node2,
-              ...edgeOptions,
-            },
-          ]);
+          edgesDataset.update({
+            id: createEdgeId(node1, node2),
+            ...edgeOptions,
+            from: node1,
+            to: node2,
+          });
         }
       }
+    }
+
+    if (!highlighted && data.entrypoint) {
+      highlightEntrypoint(data.entrypoint);
     }
   }
 
@@ -133,9 +134,7 @@ export default function GraphNetwork() {
       }
       case "toggle_circular": {
         highlightCircularDependencies(dataStore, appEvents.payload.enabled);
-        if (dataStore.entrypoint) {
-          highlightEntrypoint(dataStore.entrypoint);
-        }
+
         break;
       }
       case "toggle_builtin": {
@@ -204,13 +203,12 @@ export default function GraphNetwork() {
   }, [nodesDataset, edgesDataset]);
 
   React.useEffect(() => {
-    const uiEventsSubscription = combineLatest([
-      appStore.events$,
-      appStore.store$,
-    ]).subscribe(([uiEvents, { data }]) => networkUIReducer(data, uiEvents));
+    const appEventsSubscription = appStore.events$.subscribe((appEvent) =>
+      networkUIReducer(appStore.getState().data, appEvent)
+    );
 
     return () => {
-      uiEventsSubscription.unsubscribe();
+      appEventsSubscription.unsubscribe();
     };
   }, [network]);
 
