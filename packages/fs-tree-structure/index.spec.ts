@@ -91,4 +91,48 @@ describe("Filesystem tree structure maker", () => {
       });
     });
   });
+
+  describe("When using the default sorting by files and folders", () => {
+    it("should sort folders before files", () => {
+      const filePaths = [
+        "./test/feature.js",
+        "./index.js",
+        "./root.js",
+        "./sub-module/file.js",
+        "./main.js"
+      ];
+
+      expect(
+        Object.keys(makeTreeStructure(filePaths, { sort: true }))
+      ).to.deep.equal(["sub-module", "test", "index.js", "main.js", "root.js"]);
+    });
+
+    it("should sort folders before files", () => {
+      const filePaths = [
+        "./test/feature.js",
+        "./feature/some-module/index.js",
+        "./feature/nested/index.js",
+        "./feature/main.js",
+        "./root.js",
+        "./sub-module/nested/feature/file.js",
+        "./main.js"
+      ];
+
+      const tree = makeTreeStructure(filePaths, { sort: true });
+
+      const firstLevelKeys = Object.keys(tree);
+
+      expect(firstLevelKeys).to.deep.equal([
+        "sub-module",
+        "feature",
+        "test",
+        "main.js",
+        "root.js"
+      ]);
+
+      const featureKeys = Object.keys(tree["feature"]);
+
+      expect(featureKeys).to.deep.equal(["nested", "some-module", "main.js"]);
+    });
+  });
 });
