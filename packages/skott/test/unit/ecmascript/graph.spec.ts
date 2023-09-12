@@ -1,7 +1,6 @@
 import * as memfs from "memfs";
 import { describe, expect, it } from "vitest";
 
-import { FileReader } from "../../../src/filesystem/fake/file-reader.js";
 import { InMemoryFileWriter } from "../../../src/filesystem/file-writer.js";
 import { FakeLogger } from "../../../src/logger.js";
 import { EcmaScriptDependencyResolver } from "../../../src/modules/resolvers/ecmascript/resolver.js";
@@ -13,6 +12,7 @@ import {
 } from "../shared.js";
 import { CollectLevel } from "../../../src/graph/traversal.js";
 import { SkottNode } from "../../../src/graph/node.js";
+import { FileReader } from "../../../src/filesystem/file-reader.js";
 
 class InMemoryFileReaderWithFakeStats implements FileReader {
   read(filename: string): Promise<string> {
@@ -45,6 +45,11 @@ class InMemoryFileReaderWithFakeStats implements FileReader {
       });
     });
   }
+
+  exists() {
+    return Promise.resolve(false);
+  }
+
   getCurrentWorkingDir(): string {
     return process.cwd();
   }
