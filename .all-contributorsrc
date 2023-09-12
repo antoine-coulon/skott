@@ -1,0 +1,16 @@
+{
+  "files": [
+    "README.md",
+    "packages/skott/README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [],
+  "contributorsPerLine": 7,
+  "projectName": "skott",
+  "projectOwner": "antoine-coulon",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true,
+  "commitConvention": "angular"
+}

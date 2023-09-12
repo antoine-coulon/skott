@@ -433,3 +433,14 @@ console.log(getWorkspace());
 ```
 
 This feature could help creating a dependency graph only using manifests instead of parsing and traversing the whole source code graph using static analysis.
+
+## Contributors
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
