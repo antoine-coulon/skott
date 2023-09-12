@@ -38,10 +38,84 @@
 
 ✅ Generate static files including raw JSON, [mermaid-js](https://github.com/mermaid-js/mermaid) diagrams (.svg, .png, .md) representing your project's graph directly generated from the CLI.
 
+`skott` can be used either via its CLI or JavaScript API. It can either build the project graph using an entrypoint file or build it starting from the current root directory and recursively traverse all directories/folders. Currently, supported files are **.js, .jsx, .cjs, .mjs, .ts, .tsx**. **skott does not rely on module systems for path resolution**, it will resolve `require/import` no matter the configuration.
 
-> **Note**
->
-> **skott** can either build the project graph using an entrypoint file or build it starting from the current root directory and recursively traverse all directories/folders. Currently, supported files are **.js, .jsx, .cjs, .mjs, .ts, .tsx**. In addition to `.gitignore`-d files, some directories will be ignored by default, please check [the code](https://github.com/antoine-coulon/skott/blob/56fd0b3347ba5113be8d70bc07d09a4065e0b124/packages/skott/src/modules/walkers/ecmascript/module-resolver.ts#L93) to see more about that. 
+## Getting started
+
+This is a quick start, **please check the [complete documentation at the skott package level](https://github.com/antoine-coulon/skott/tree/main/packages/skott#readme)** to see more.
+
+Install `skott` from npm using whatever package manager you like:
+
+```sh
+<insert-your-package-manager> install skott
+```
+
+Let's see examples of an analysis that will traverse all files (minus the ignored ones via the ignorePattern + .gitignore) starting from the current working directory.
+
+**Using the CLI**
+
+```sh
+skott --displayMode=webapp --trackThirdPartyDependencies --ignorePattern="test/**/*"
+```
+
+**Using the API**
+
+```js
+import skott from "skott";
+
+const { getStructure, getWorkspace, findUnusedDependencies, useGraph } = await skott({
+    ignorePattern: "test/**/*",
+    dependencyTracking: {
+        builtin: false,
+        thirdParty: true,
+        typeOnly: true
+    }
+});
+
+// Do whatever you want with the generated graph
+const { graph, files } = getStructure();
+const workspace = getWorkspace();
+const unusedDependencies = await findUnusedDependencies();
+const { findCircularDependencies, collectFilesDependencies, ...traversalApi } = useGraph();
+```
+
+**Note**: the API is currently published as ESM only.
+
+Because the graph can become heavy on large codebases, you also have the ability to reduce the scope of the analysis:
+
+**Specificying a sub-folder**
+
+```sh
+skott --cwd=packages/skott 
+```
+
+or 
+
+```js
+import skott from "skott";
+
+const api = await skott({
+    cwd: "packages/skott"
+});
+```
+
+**Specifying an entrypoint**
+
+This will strictly traverse the graph starting from the provided entrypoint, discarding all other files not part of that graph.
+
+```sh
+skott packages/skott/index.ts
+```
+
+or
+
+```js
+import skott from "skott";
+
+const api = await skott({
+    entrypoint: "packages/skott/index.ts"
+});
+```
 
 ## Why you should use skott or an equivalent project
 
@@ -83,9 +157,6 @@ However, tree shaking is not an easy task and can mostly work with module system
 
 If you're not using tools implementing tree shaking, you will be able soon to use **skott**, which will bring up soon unused imports/exports warnings 🚀  
 
-## Documentation
-
-Please refer to the [documentation at the skott package level](https://github.com/antoine-coulon/skott/tree/main/packages/skott#readme)
 
 ## Graph Management
 
