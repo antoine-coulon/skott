@@ -119,11 +119,10 @@ export function isTypeScriptProject(tsConfigPath: string) {
   return pipe(
       Effect.service(FileReaderTag),
       Effect.flatMap(
-          (fileReader) => Effect.tryPromise(() => fileReader.stats(
+          (fileReader) => Effect.tryPromise(() => fileReader.exists(
               path.join(fileReader.getCurrentWorkingDir(), tsConfigPath))
           )
       ),
-      Effect.map((fileSize)=> fileSize > 0),
   );
 }
 
