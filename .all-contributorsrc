@@ -5,12 +5,23 @@
   ],
   "imageSize": 100,
   "commit": false,
-  "contributors": [],
+  "contributors": [
+    {
+      "login": "antoine-coulon",
+      "name": "Antoine Coulon",
+      "avatar_url": "https://avatars.githubusercontent.com/u/43391199?v=4",
+      "profile": "https://dev.to/antoinecoulon",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
   "contributorsPerLine": 7,
   "projectName": "skott",
   "projectOwner": "antoine-coulon",
   "repoType": "github",
   "repoHost": "https://github.com",
   "skipCi": true,
-  "commitConvention": "angular"
+  "commitConvention": "angular",
+  "commitType": "docs"
 }
