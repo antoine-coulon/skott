@@ -1,7 +1,10 @@
 import * as memfs from "memfs";
 import { describe, expect, it } from "vitest";
 
+import { FileReader } from "../../../src/filesystem/file-reader.js";
 import { InMemoryFileWriter } from "../../../src/filesystem/file-writer.js";
+import { SkottNode } from "../../../src/graph/node.js";
+import { CollectLevel } from "../../../src/graph/traversal.js";
 import { FakeLogger } from "../../../src/logger.js";
 import { EcmaScriptDependencyResolver } from "../../../src/modules/resolvers/ecmascript/resolver.js";
 import { ModuleWalkerSelector } from "../../../src/modules/walkers/common.js";
@@ -10,9 +13,6 @@ import {
   buildSkottProjectUsingInMemoryFileExplorer,
   mountFakeFileSystem
 } from "../shared.js";
-import { CollectLevel } from "../../../src/graph/traversal.js";
-import { SkottNode } from "../../../src/graph/node.js";
-import { FileReader } from "../../../src/filesystem/file-reader.js";
 
 class InMemoryFileReaderWithFakeStats implements FileReader {
   read(filename: string): Promise<string> {

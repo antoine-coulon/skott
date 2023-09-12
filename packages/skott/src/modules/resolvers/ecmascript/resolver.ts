@@ -1,6 +1,8 @@
 import { builtinModules } from "node:module";
 import path from "node:path";
 
+import * as Option from "@effect/data/Option";
+
 import { highlight } from "../../../logger.js";
 import type { ManifestDependenciesByName } from "../../../workspace/index.js";
 import {
@@ -15,8 +17,6 @@ import {
   DependencyResolverOptions,
   kExpectedModuleExtensions
 } from "../base-resolver.js";
-
-import * as Option from "@effect/data/Option";
 
 const NODE_PROTOCOL = "node:";
 

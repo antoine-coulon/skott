@@ -59,6 +59,7 @@ export class FileSystemReader implements FileReader {
         `File ${filename} is ignored due to the ignore pattern ${this.config.ignorePattern}`
       );
     }
+
     return fs.readFile(filename, { encoding: "utf-8", flag: R_OK });
   }
 

@@ -1,6 +1,8 @@
 import type { DiGraph } from "digraph-js";
-import type { SkottNode } from "./node.js";
+
 import { SkottConfig } from "../skott.js";
+
+import type { SkottNode } from "./node.js";
 
 export const CollectLevel = {
   Deep: "deep",
@@ -63,7 +65,7 @@ export function makeTraversalApi<T>(
     },
 
     collectFilesDependencies: (rootFile, collectLevel) => {
-      if (collectLevel == CollectLevel.Shallow) {
+      if (collectLevel === CollectLevel.Shallow) {
         return graph.getChildren(rootFile);
       }
 
@@ -71,7 +73,7 @@ export function makeTraversalApi<T>(
     },
 
     collectFilesDependingOn: (rootFile, collectLevel) => {
-      if (collectLevel == CollectLevel.Shallow) {
+      if (collectLevel === CollectLevel.Shallow) {
         return graph.getParents(rootFile);
       }
 

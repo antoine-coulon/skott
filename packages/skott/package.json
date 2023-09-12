@@ -29,6 +29,7 @@
   "scripts": {
     "build": "rimraf ./dist && tsc --project tsconfig.build.json",
     "lint": "eslint .",
+    "lint:fix": "pnpm run lint --fix",
     "prepublishOnly": "pnpm run test && pnpm run build",
     "prestart": "pnpm run build",
     "start": "node dist/bin/cli.js",
@@ -42,6 +43,8 @@
   "dependencies": {
     "@effect/data": "^0.4.1",
     "@effect/io": "^0.8.0",
+    "@typescript-eslint/eslint-plugin": "^6.7.0",
+    "@typescript-eslint/parser": "^6.7.0",
     "@typescript-eslint/typescript-estree": "^5.60.0",
     "compression": "^1.7.4",
     "depcheck": "^1.4.3",
@@ -73,7 +76,7 @@
     "@types/node": "^16.18.36",
     "@types/polka": "^0.5.4",
     "@types/sade": "^1.7.4",
-    "eslint": "^8.43.0",
+    "eslint": "^8.49.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-import-resolver-typescript": "^2.7.1",
     "eslint-plugin-import": "^2.27.5",

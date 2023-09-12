@@ -1,11 +1,10 @@
 import { createRequire } from "node:module";
 import path from "node:path";
 
+import { pipe } from "@effect/data/Function";
+import * as Option from "@effect/data/Option";
 import JSON5 from "json5";
 import type { CompilerOptions } from "typescript";
-
-import * as Option from "@effect/data/Option";
-import { pipe } from "@effect/data/Function";
 
 import type { FileReader } from "../../../../filesystem/file-reader.js";
 import { Logger } from "../../../../logger.js";
@@ -211,11 +210,10 @@ export function resolvePathAlias(
       aliasPath,
       Option.map((resolvedPath) => path.join(baseDir, resolvedPath))
     );
-  } else {
-    logger.failure(
-      `No match found for ${moduleDeclaration} using base ${baseAlias} path alias in the registered entries`
-    );
   }
+  logger.failure(
+    `No match found for ${moduleDeclaration} using base ${baseAlias} path alias in the registered entries`
+  );
 
   /**
    * In some cases I'm not able to identify yet, the path alias is never resolved
@@ -247,6 +245,7 @@ export function resolvePathAlias(
       `No match found for ${moduleDeclaration} and corresponding segments of ${baseAlias}` +
         ` path alias in the registered entries. Path depth attempts: ${pathDepthAttempts}`
     );
+
     return Option.none();
   }
 

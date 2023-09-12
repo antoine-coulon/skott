@@ -7,10 +7,10 @@ import kleur from "kleur";
 import ora from "ora";
 
 import skott from "../index.js";
+import type { SkottNode, SkottNodeBody } from "../src/graph/node.js";
 import { kExpectedModuleExtensions } from "../src/modules/resolvers/base-resolver.js";
 import { EcmaScriptDependencyResolver } from "../src/modules/resolvers/ecmascript/resolver.js";
 import type { SkottInstance } from "../src/skott.js";
-import type { SkottNode, SkottNodeBody } from "../src/graph/node.js";
 
 import {
   displayAsFileTree,
