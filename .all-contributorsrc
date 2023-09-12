@@ -5,12 +5,23 @@
   ],
   "imageSize": 100,
   "commit": false,
-  "contributors": [],
+  "contributors": [
+    {
+      "login": "tarrsalah",
+      "name": "Salah Eddine Taouririt",
+      "avatar_url": "https://avatars.githubusercontent.com/u/909959?v=4",
+      "profile": "https://github.com/tarrsalah",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
   "contributorsPerLine": 7,
   "projectName": "skott",
   "projectOwner": "antoine-coulon",
   "repoType": "github",
   "repoHost": "https://github.com",
   "skipCi": true,
-  "commitConvention": "angular"
+  "commitConvention": "angular",
+  "commitType": "docs"
 }
