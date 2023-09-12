@@ -15,6 +15,7 @@ import {
 
 export interface FileReader {
   read: (filename: string) => Promise<string>;
+  exists: (filename: string) => Promise<boolean>;
   readSync: (filename: string) => string;
   readdir: (root: string, extensions: string[]) => AsyncGenerator<string>;
   stats: (filename: string) => Promise<number>;
@@ -59,6 +60,13 @@ export class FileSystemReader implements FileReader {
       );
     }
     return fs.readFile(filename, { encoding: "utf-8", flag: R_OK });
+  }
+
+  exists(filename: string) {
+    return fs
+      .access(filename, fs.constants.R_OK)
+      .then(() => true)
+      .catch(() => false);
   }
 
   readSync(filename: string): string {

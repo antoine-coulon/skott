@@ -1,6 +1,5 @@
 import path from "node:path";
 
-import * as Context from "@effect/data/Context";
 import * as memfs from "memfs";
 import { type MinimatchOptions, minimatch } from "minimatch";
 
@@ -9,16 +8,7 @@ import {
   isFileSupportedByDefault,
   isManifestFile
 } from "../../modules/resolvers/base-resolver.js";
-
-export interface FileReader {
-  read: (filename: string) => Promise<string>;
-  readSync: (filename: string) => string;
-  readdir: (root: string, extensions: string[]) => AsyncGenerator<string>;
-  stats: (filename: string) => Promise<number>;
-  getCurrentWorkingDir: () => string;
-}
-
-export const FileReaderTag = Context.Tag<FileReader>();
+import { FileReader } from "../file-reader.js";
 
 interface FileSystemConfig {
   cwd: string;
@@ -77,6 +67,10 @@ export class InMemoryFileReader implements FileReader {
         yield path.join(root, _dirent);
       }
     }
+  }
+
+  exists(_filename: string) {
+    return Promise.resolve(true);
   }
 
   stats(_filename: string): Promise<number> {
