@@ -11,9 +11,12 @@
       "name": "Antoine Coulon",
       "avatar_url": "https://avatars.githubusercontent.com/u/43391199?v=4",
       "profile": "https://dev.to/antoinecoulon",
-      "contributions": [
-        "code"
-      ]
+    },
+    {
+      "login": "tarrsalah",
+      "name": "Salah Eddine Taouririt",
+      "avatar_url": "https://avatars.githubusercontent.com/u/909959?v=4",
+      "profile": "https://github.com/tarrsalah",
     }
   ],
   "contributorsPerLine": 7,
