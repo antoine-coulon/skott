@@ -184,7 +184,6 @@ a specific TS parser will be used instead.
     </tr>
   </tbody>
 </table>
-
 <!-- markdownlint-restore -->
 <!-- prettier-ignore-end -->
 
