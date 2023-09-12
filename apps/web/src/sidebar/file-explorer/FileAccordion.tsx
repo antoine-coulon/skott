@@ -251,7 +251,7 @@ export function FileExplorerAccordion() {
 
   React.useEffect(() => {
     const s = appStore.store$.subscribe(({ data }) => {
-      setFileTree(makeTreeStructure(data.files));
+      setFileTree(makeTreeStructure(data.files, { sort: true }));
     });
 
     return () => {
