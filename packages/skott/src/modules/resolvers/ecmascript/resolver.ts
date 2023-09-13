@@ -5,6 +5,7 @@ import { pipe } from "@effect/data/Function";
 import * as Option from "@effect/data/Option";
 import * as Effect from "@effect/io/Effect";
 
+import { FileReaderTag } from "../../../filesystem/file-reader.js";
 import { highlight } from "../../../logger.js";
 import type { ManifestDependenciesByName } from "../../../workspace/index.js";
 import {
@@ -19,7 +20,6 @@ import {
   DependencyResolverOptions,
   kExpectedModuleExtensions
 } from "../base-resolver.js";
-import { FileReaderTag } from "../../../filesystem/file-reader.js";
 
 const NODE_PROTOCOL = "node:";
 
@@ -117,12 +117,14 @@ export function isJavaScriptModule(module: string): boolean {
 
 export function isTypeScriptProject(tsConfigPath: string) {
   return pipe(
-      Effect.service(FileReaderTag),
-      Effect.flatMap(
-          (fileReader) => Effect.tryPromise(() => fileReader.exists(
-              path.join(fileReader.getCurrentWorkingDir(), tsConfigPath))
-          )
-      ),
+    Effect.service(FileReaderTag),
+    Effect.flatMap((fileReader) =>
+      Effect.tryPromise(() =>
+        fileReader.exists(
+          path.join(fileReader.getCurrentWorkingDir(), tsConfigPath)
+        )
+      )
+    )
   );
 }
 
