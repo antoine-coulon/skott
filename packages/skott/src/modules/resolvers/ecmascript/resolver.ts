@@ -1,6 +1,10 @@
 import { builtinModules } from "node:module";
 import path from "node:path";
 
+import { pipe } from "@effect/data/Function";
+import * as Option from "@effect/data/Option";
+import * as Effect from "@effect/io/Effect";
+
 import { highlight } from "../../../logger.js";
 import type { ManifestDependenciesByName } from "../../../workspace/index.js";
 import {
@@ -16,10 +20,6 @@ import {
   kExpectedModuleExtensions
 } from "../base-resolver.js";
 import { FileReaderTag } from "../../../filesystem/file-reader.js";
-
-import * as Option from "@effect/data/Option";
-import {pipe} from "@effect/data/Function";
-import * as Effect from "@effect/io/Effect";
 
 const NODE_PROTOCOL = "node:";
 

@@ -14,6 +14,8 @@ import {
 } from "./cache/index.js";
 import { FileReader, FileReaderTag } from "./filesystem/file-reader.js";
 import { FileWriter } from "./filesystem/file-writer.js";
+import type { SkottNode } from "./graph/node.js";
+import { makeTraversalApi, TraversalApi } from "./graph/traversal.js";
 import {
   highlight,
   logFailureM,
@@ -46,8 +48,6 @@ import {
   findUnusedImplicitDependencies,
   type ManifestDependenciesByName
 } from "./workspace/index.js";
-import { makeTraversalApi, TraversalApi } from "./graph/traversal.js";
-import type { SkottNode } from "./graph/node.js";
 
 export interface SkottConfig<T> {
   entrypoint?: string;

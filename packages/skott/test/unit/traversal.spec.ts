@@ -1,13 +1,13 @@
 import { describe, expect, test } from "vitest";
 
-import { mountFakeFileSystem } from "./shared.js";
-
 import { InMemoryFileReader } from "../../src/filesystem/fake/file-reader.js";
 import { InMemoryFileWriter } from "../../src/filesystem/file-writer.js";
+import { CollectLevel } from "../../src/graph/traversal.js";
 import { FakeLogger } from "../../src/logger.js";
 import { ModuleWalkerSelector } from "../../src/modules/walkers/common.js";
 import { defaultConfig, Skott } from "../../src/skott.js";
-import { CollectLevel } from "../../src/graph/traversal.js";
+
+import { mountFakeFileSystem } from "./shared.js";
 
 describe("Skott API", () => {
   describe("When using graph API", () => {

@@ -34,6 +34,8 @@
     "no-empty-function": "off",
     "brace-style": "off",
     "id-length": "off",
+    "func-style": "off",
+    "prefer-promise-reject-errors": "off",
     "no-empty": ["error", { "allowEmptyCatch": true }],
     "import/order": [
       "error",

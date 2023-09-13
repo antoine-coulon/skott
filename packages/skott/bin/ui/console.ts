@@ -4,8 +4,8 @@ import { performance } from "node:perf_hooks";
 import { TreeStructure } from "fs-tree-structure";
 import kleur from "kleur";
 
-import type { SkottInstance } from "../../src/skott.js";
 import type { SkottNode, SkottNodeBody } from "../../src/graph/node.js";
+import type { SkottInstance } from "../../src/skott.js";
 
 const kLeftSeparator = "└──";
 

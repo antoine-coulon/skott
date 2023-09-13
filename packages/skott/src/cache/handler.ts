@@ -2,9 +2,9 @@ import path from "node:path";
 
 import type { FileReader } from "../filesystem/file-reader.js";
 import type { FileWriter } from "../filesystem/file-writer.js";
+import type { SkottNode } from "../graph/node.js";
 import type { Logger } from "../logger.js";
 import type { SkottConfig, SkottStructure } from "../skott.js";
-import type { SkottNode } from "../graph/node.js";
 
 import { createNodeHash, isConfigurationAffected } from "./affected.js";
 
