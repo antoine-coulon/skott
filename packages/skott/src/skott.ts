@@ -33,7 +33,7 @@ import {
 } from "./modules/resolvers/base-resolver.js";
 import {
   EcmaScriptDependencyResolver,
-  isTypeScriptModule
+  isTypeScriptProject,
 } from "./modules/resolvers/ecmascript/resolver.js";
 import { ModuleWalkerSelector } from "./modules/walkers/common.js";
 import {
@@ -491,7 +491,13 @@ export class Skott<T> {
       Effect.runPromise
     );
 
-    if (isTypeScriptModule(entrypointModulePath)) {
+    const doesTsConfigExist = await pipe(
+        isTypeScriptProject(this.config.tsConfigPath),
+        Effect.provideService(FileReaderTag, this.fileReader),
+        Effect.runPromise
+    );
+
+    if (doesTsConfigExist) {
       const rootTSConfig = await buildPathAliases(
         this.fileReader,
         this.config.tsConfigPath,
