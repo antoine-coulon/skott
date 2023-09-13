@@ -1,5 +1,12 @@
 # skott
 
+## 0.28.3
+
+### Patch Changes
+
+- 4e2222f: Skott now read Typescript aliases when the entrypoint is not a Typescript file.
+  - skott-webapp@1.0.6
+
 ## 0.28.2
 
 ### Patch Changes
