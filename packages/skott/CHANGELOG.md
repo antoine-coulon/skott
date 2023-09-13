@@ -1,5 +1,11 @@
 # skott
 
+## 0.28.3
+
+### Patch Changes
+
+- [#84](https://github.com/antoine-coulon/skott/pull/84) [4e2222f](https://github.com/antoine-coulon/skott/commit/4e2222f5fed686b3b38172a02fc1dd56e7da528b): Skott now read TypeScript aliases when there is a tsconfig (provided or found) even if the entrypoint itself is not a TypeScript file.
+
 ## 0.28.2
 
 ### Patch Changes
