@@ -1,5 +1,12 @@
 # skott
 
+## 0.28.4
+
+### Patch Changes
+
+- 04db823: fsPromises.constants is undefined for node < 18.4.0
+  - skott-webapp@1.0.6
+
 ## 0.28.3
 
 ### Patch Changes
