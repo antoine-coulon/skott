@@ -98,7 +98,7 @@ cli
   )
   .option(
     "-m, --displayMode <mode>",
-    "Either display the result of the analysis as a graph, as a file-tree or raw",
+    "Either display the result of the analysis as a 'graph', as a 'file-tree' or 'raw'",
     "webapp"
   )
   .option(
@@ -113,8 +113,8 @@ cli
   )
   .option(
     "-it, --trackTypeOnlyDependencies",
-    "Enable dependency tracking for Typescript import type statements",
-    false
+    "Enable dependency tracking for Typescript 'import type' statements",
+    true
   )
   .option(
     "-ig, --ignorePattern <pattern>",
