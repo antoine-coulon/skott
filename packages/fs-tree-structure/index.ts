@@ -15,15 +15,15 @@ function isFile(filePath: string): boolean {
   return fileExtensions.some((extension) => filePath.endsWith(extension));
 }
 
-function sortByResourceType(record: TreeStructure) {
+function sortByResourceType(record: TreeStructure): TreeStructure {
   const sortedTree: TreeStructure = {};
   const sortedKeys = Object.keys(record).sort((a, b) => {
     if (isFile(a)) {
       if (isFile(b)) {
         return a.localeCompare(b);
-      } else {
-        return 1;
       }
+
+      return 1;
     }
 
     return -1;
@@ -38,7 +38,7 @@ function sortByResourceType(record: TreeStructure) {
   return sortedTree;
 }
 
-function sortTree(root: TreeStructure) {
+function sortTree(root: TreeStructure): TreeStructure {
   const newTree: TreeStructure = {};
 
   for (const [key, value] of Object.entries(root)) {

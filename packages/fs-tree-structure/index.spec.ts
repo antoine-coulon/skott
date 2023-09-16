@@ -130,7 +130,7 @@ describe("Filesystem tree structure maker", () => {
         "root.js"
       ]);
 
-      const featureKeys = Object.keys(tree["feature"]);
+      const featureKeys = Object.keys(tree.feature);
 
       expect(featureKeys).to.deep.equal(["nested", "some-module", "main.js"]);
     });
