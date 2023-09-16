@@ -65,7 +65,7 @@ export class FileSystemReader implements FileReader {
 
   exists(filename: string) {
     return fs
-      .access(filename, fs.constants.R_OK)
+      .access(filename, R_OK)
       .then(() => true)
       .catch(() => false);
   }
