@@ -1,10 +1,16 @@
 # skott
 
+## 0.28.4
+
+### Patch Changes
+
+- [#96](https://github.com/antoine-coulon/skott/pull/96) [04db823](https://github.com/antoine-coulon/skott/commit/04db823c84d26259b34ef1d57c59ea0f76fbf9e8): fsPromises.constants is undefined for node < 18.4.0
+
 ## 0.28.3
 
 ### Patch Changes
 
-- [#84](https://github.com/antoine-coulon/skott/pull/84) [4e2222f](https://github.com/antoine-coulon/skott/commit/4e2222f5fed686b3b38172a02fc1dd56e7da528b): Skott now read TypeScript aliases when there is a tsconfig (provided or found) even if the entrypoint itself is not a TypeScript file.
+- [#89](https://github.com/antoine-coulon/skott/pull/89) [4e2222f](https://github.com/antoine-coulon/skott/commit/4e2222f5fed686b3b38172a02fc1dd56e7da528b): Skott now read TypeScript aliases when there is a tsconfig (provided or found) even if the entrypoint itself is not a TypeScript file.
 
 ## 0.28.2
 
