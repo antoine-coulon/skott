@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { Command } from 'commander';
+import { Command } from "commander";
 
 import { kExpectedModuleExtensions } from "../src/modules/resolvers/base-resolver.js";
 
@@ -38,8 +38,9 @@ function commanderParseInt(value: string): number {
   // parseInt takes a string and a radix
   const parsedValue = parseInt(value, 10);
   if (isNaN(parsedValue)) {
-    throw new Error('Not a number.');
+    throw new Error("Not a number.");
   }
+
   return parsedValue;
 }
 
@@ -58,44 +59,107 @@ function commanderParseInt(value: string): number {
  * while well formatted in the code
  * @param delimiter
  */
-export function trimMargin(delimiter = '|'): (str: string) => string {
-  const reg = new RegExp(`^\\s*\\${delimiter}`, 'g');
+export function trimMargin(delimiter = "|"): (str: string) => string {
+  const reg = new RegExp(`^\\s*\\${delimiter}`, "g");
+
   return (str: string): string =>
-      str
-          .split('\n')
-          .map((line) => line.replace(reg, ''))
-          .join('\n');
+    str
+      .split("\n")
+      .map((line) => line.replace(reg, ""))
+      .join("\n");
 }
 
 const cli = new Command();
 
 cli
-    .version(readManifestVersion())
-    .description('Start the Skott analysis to fully build the graph')
-    .option('-b, --includeBaseDir', 'Include the base directory name for each graph node. Relative to the entrypoint base directory or the current working directory.', false)
-    .option('-c, --exitCodeOnCircularDependencies <code>', 'Specify the exit code to use when circular dependencies are found', commanderParseInt, 1)
-    .option('-d, --circularMaxDepth <maxDepth>', 'Define the max depth of the nested circular dependencies search', commanderParseInt, Number.POSITIVE_INFINITY)
-    .option('-e, --fileExtensions <extensions>', 'File extensions to explore when building the graph, separated by a comma (ex: ".js,.ts)"', [...kExpectedModuleExtensions].join(","))
-    .option('-m, --displayMode <mode>', 'Either display the result of the analysis as a graph, as a file-tree or raw', 'webapp')
-    .option('-n, --trackBuiltinDependencies', 'Enable Node.js builtin dependency tracking', false)
-    .option('-i, --incremental', '(Experimental) Enable incremental mode. Only the files that changed since the last run will be analyzed.', false)
-    .option('-it, --trackTypeOnlyDependencies', 'Enable dependency tracking for Typescript import type statements', false)
-    .option('-ig, --ignorePattern <pattern>', 'Provide ignore pattern to exclude files from the analysis', '')
-    .option('-s, --showCircularDependencies', 'Show all circular dependencies in the graph', false)
-    .option('-ts, --tsconfig <path>', 'Provide a path to a tsconfig.json file to use for path aliases resolution', 'tsconfig.json')
-    .option('-mf, --manifest <path>', 'Provide a path to a manifest file used for dependencies resolution', 'package.json')
-    .option('-t, --trackThirdPartyDependencies', 'Enable npm third-party dependency tracking', false)
-    .option('-u, --showUnusedDependencies', 'Search for unused third-party dependencies in the graph', false)
-    .option('-vb, --verbose', 'Enable verbose mode. Display all the logs', false)
-    .option('-w, --cwd <path>', 'Define the base working directory to use for the analysis. Defaults to the current working directory.', process.cwd())
-    .argument('[entrypoint]', 'optional entrypoint file to use')
-    .usage(
-        trimMargin('|')(`
+  .version(readManifestVersion())
+  .description("Start the Skott analysis to fully build the graph")
+  .option(
+    "-b, --includeBaseDir",
+    "Include the base directory name for each graph node. Relative to the entrypoint base directory or the current working directory.",
+    false
+  )
+  .option(
+    "-c, --exitCodeOnCircularDependencies <code>",
+    "Specify the exit code to use when circular dependencies are found",
+    commanderParseInt,
+    1
+  )
+  .option(
+    "-d, --circularMaxDepth <maxDepth>",
+    "Define the max depth of the nested circular dependencies search",
+    commanderParseInt,
+    Number.POSITIVE_INFINITY
+  )
+  .option(
+    "-e, --fileExtensions <extensions>",
+    'File extensions to explore when building the graph, separated by a comma (ex: ".js,.ts)"',
+    [...kExpectedModuleExtensions].join(",")
+  )
+  .option(
+    "-m, --displayMode <mode>",
+    "Either display the result of the analysis as a graph, as a file-tree or raw",
+    "webapp"
+  )
+  .option(
+    "-n, --trackBuiltinDependencies",
+    "Enable Node.js builtin dependency tracking",
+    false
+  )
+  .option(
+    "-i, --incremental",
+    "(Experimental) Enable incremental mode. Only the files that changed since the last run will be analyzed.",
+    false
+  )
+  .option(
+    "-it, --trackTypeOnlyDependencies",
+    "Enable dependency tracking for Typescript import type statements",
+    false
+  )
+  .option(
+    "-ig, --ignorePattern <pattern>",
+    "Provide ignore pattern to exclude files from the analysis",
+    ""
+  )
+  .option(
+    "-s, --showCircularDependencies",
+    "Show all circular dependencies in the graph",
+    false
+  )
+  .option(
+    "-ts, --tsconfig <path>",
+    "Provide a path to a tsconfig.json file to use for path aliases resolution",
+    "tsconfig.json"
+  )
+  .option(
+    "-mf, --manifest <path>",
+    "Provide a path to a manifest file used for dependencies resolution",
+    "package.json"
+  )
+  .option(
+    "-t, --trackThirdPartyDependencies",
+    "Enable npm third-party dependency tracking",
+    false
+  )
+  .option(
+    "-u, --showUnusedDependencies",
+    "Search for unused third-party dependencies in the graph",
+    false
+  )
+  .option("-vb, --verbose", "Enable verbose mode. Display all the logs", false)
+  .option(
+    "-w, --cwd <path>",
+    "Define the base working directory to use for the analysis. Defaults to the current working directory.",
+    process.cwd()
+  )
+  .argument("[entrypoint]", "optional entrypoint file to use")
+  .usage(
+    trimMargin("|")(`
           | ./node_modules/.bin/skott src/index.js --displayMode=file-tree --staticFile=md\n
           | ./node_modules/.bin/skott  --fileExtensions=.ts,.tsx --tsconfig=tsconfig.base.json\n
           | ./node_modules/.bin/skott --showCircularDependencies --displayMode=raw\n
         `)
-    )
-    .action((name, commandAndOptions) => displaySkott(name, commandAndOptions));
+  )
+  .action((name, commandAndOptions) => displaySkott(name, commandAndOptions));
 
 cli.parse(process.argv);
