@@ -1,5 +1,5 @@
 import React from "react";
-import { Subscription, distinctUntilChanged, map, tap, zip } from "rxjs";
+import { Subscription, distinctUntilChanged, map } from "rxjs";
 
 import { DataSet } from "vis-data";
 import { Edge, Network, Node } from "vis-network";
@@ -10,7 +10,6 @@ import {
   createEdgeId,
   defaultEdgeOptions,
   defaultNodeOptions,
-  getAppropriateMassGivenDataset,
   isNetworkEdge,
   isNetworkNode,
   makeNodesAndEdges,
@@ -26,6 +25,13 @@ import { AppState } from "@/store/state";
 import { useAppStore } from "@/store/react-bindings";
 import { AppActions } from "@/store/actions";
 import { AppEvents } from "@/store/events";
+import { Button, Menu, rem } from "@mantine/core";
+import {
+  IconArrowsDiagonal2,
+  IconExternalLink,
+  IconRotate2,
+  IconSettingsAutomation,
+} from "@tabler/icons-react";
 
 export function getMethodToApplyOnNetworkElement(enable: boolean) {
   return enable ? "update" : "remove";
@@ -193,12 +199,11 @@ export default function GraphNetwork() {
     };
   }, []);
 
-  React.useEffect(() => {
+  function initNetwork() {
     const networkOptionsWithMass = {
       ...networkOptions,
       nodes: {
         ...networkOptions.nodes,
-        mass: getAppropriateMassGivenDataset(nodesDataset.length),
       },
     };
 
@@ -210,7 +215,10 @@ export default function GraphNetwork() {
 
     setNetwork(_network);
     reconciliateNetwork(_network);
+  }
 
+  React.useEffect(() => {
+    initNetwork();
     return () => {
       network?.destroy();
     };
@@ -227,11 +235,64 @@ export default function GraphNetwork() {
   }, [network]);
 
   return (
-    <div
-      style={{
-        height: "100%",
-      }}
-      ref={networkContainerRef}
-    />
+    <>
+      <div
+        style={{
+          position: "absolute",
+          zIndex: 1,
+        }}
+      >
+        <Menu trigger="hover" openDelay={100} closeDelay={400}>
+          <Menu.Target>
+            <Button leftIcon={<IconSettingsAutomation />}>Graph Actions</Button>
+          </Menu.Target>
+
+          <Menu.Dropdown>
+            <Menu.Label>Network</Menu.Label>
+            <Menu.Item
+              onClick={() => {
+                network?.destroy();
+                initNetwork();
+              }}
+              icon={<IconRotate2 style={{ width: rem(14), height: rem(14) }} />}
+            >
+              Redraw
+            </Menu.Item>
+            <Menu.Item
+              onClick={() => {
+                network?.stabilize();
+              }}
+              icon={
+                <IconArrowsDiagonal2
+                  style={{ width: rem(14), height: rem(14) }}
+                />
+              }
+            >
+              Stabilize
+            </Menu.Item>
+
+            <Menu.Divider />
+
+            <Menu.Label>Layout configuration</Menu.Label>
+            <Menu.Item
+              onClick={() => {
+                network?.stabilize();
+              }}
+              icon={
+                <IconExternalLink style={{ width: rem(14), height: rem(14) }} />
+              }
+            >
+              Open
+            </Menu.Item>
+          </Menu.Dropdown>
+        </Menu>
+      </div>
+      <div
+        style={{
+          height: "100%",
+        }}
+        ref={networkContainerRef}
+      />
+    </>
   );
 }

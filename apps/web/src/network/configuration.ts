@@ -52,36 +52,81 @@ export const networkOptions = {
     arrows: "to",
     ...defaultEdgeOptions,
   },
+  // layout: {
+  //   randomSeed: undefined,
+  //   improvedLayout: true,
+  //   clusterThreshold: 150,
+  //   hierarchical: {
+  //     enabled: false,
+  //     levelSeparation: 250,
+  //     nodeSpacing: 1000,
+  //     treeSpacing: 200,
+  //     blockShifting: true,
+  //     edgeMinimization: true,
+  //     parentCentralization: true,
+  //     direction: "RL", // UD, DU, LR, RL
+  //     sortMethod: "hubsize", // hubsize, directed
+  //     shakeTowards: "leaves", // roots, leaves
+  //   },
+  // },
+  // physics: {
+  //   enabled: true,
+  //   barnesHut: {
+  //     theta: 0.5,
+  //     gravitationalConstant: -2000,
+  //     centralGravity: 0.3,
+  //     springLength: 95,
+  //     springConstant: 0.04,
+  //     damping: 0.09,
+  //     avoidOverlap: 0,
+  //   },
+  //   forceAtlas2Based: {
+  //     theta: 0.5,
+  //     gravitationalConstant: -50,
+  //     centralGravity: 0.01,
+  //     springConstant: 0.08,
+  //     springLength: 100,
+  //     damping: 0.4,
+  //     avoidOverlap: 0,
+  //   },
+  //   repulsion: {
+  //     centralGravity: 0.2,
+  //     springLength: 200,
+  //     springConstant: 0.05,
+  //     nodeDistance: 100,
+  //     damping: 0.09,
+  //   },
+  //   hierarchicalRepulsion: {
+  //     centralGravity: 0.0,
+  //     springLength: 100,
+  //     springConstant: 0.01,
+  //     nodeDistance: 120,
+  //     damping: 0.09,
+  //     avoidOverlap: 0,
+  //   },
+  //   maxVelocity: 50,
+  //   minVelocity: 0.1,
+  //   solver: "forceAtlas2Based",
+  //   stabilization: {
+  //     enabled: true,
+  //     iterations: 1000,
+  //     updateInterval: 100,
+  //     onlyDynamicEdges: false,
+  //     fit: true,
+  //   },
+  //   timestep: 0.5,
+  //   adaptiveTimestep: true,
+  //   wind: { x: 0, y: 0 },
+  // },
   physics: {
-    enabled: false,
-    stabilization: false,
-    solver: "forceAtlas2Based",
-    forceAtlas2Based: {
-      gravitationalConstant: -200,
-      springLength: 250,
-      springConstant: 0.5,
-      avoidOverlap: 1,
+    enabled: true,
+    stabilization: true,
+    solver: "repulsion",
+    repulsion: {
+      nodeDistance: 300, // Put more distance between the nodes.
     },
   },
 };
-
-export function getAppropriateMassGivenDataset(datasetSize: number) {
-  if (datasetSize <= 10) {
-    return 1;
-  } else if (datasetSize <= 30) {
-    return 2;
-  } else if (datasetSize <= 40) {
-    return 3;
-  } else if (datasetSize <= 50) {
-    return 4;
-  } else {
-    return 5;
-  }
-}
-
-function getRandomArbitrary(min: number, max: number) {
-  return Math.random() * (max - min) + min;
-}
 
 export function createEdgeId(node1: string, node2: string) {
   return [node1, node2].sort().join("-");
@@ -103,14 +148,11 @@ export function makeNodesAndEdges(
 
   const graphNodes: Node[] = [];
   const graphEdges: Edge[] = [];
-  const dataSpacingFactor = data.length > 100 ? 2.5 : 1;
 
   data.forEach((node) => {
     const baseOptions = {
       id: node.id,
       label: node.id,
-      x: getRandomArbitrary(-15, 15) * 100 * dataSpacingFactor,
-      y: getRandomArbitrary(-15, 15) * 100 * dataSpacingFactor,
       ...defaultNodeOptions,
     };
 
