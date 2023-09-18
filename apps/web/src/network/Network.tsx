@@ -1,5 +1,5 @@
 import React from "react";
-import { Subscription, distinctUntilChanged, map, zip } from "rxjs";
+import { Subscription, distinctUntilChanged, map, tap, zip } from "rxjs";
 
 import { DataSet } from "vis-data";
 import { Edge, Network, Node } from "vis-network";
@@ -123,6 +123,24 @@ export default function GraphNetwork() {
     edgesDataset[getMethodToApplyOnNetworkElement(enabled)](linkedEdges);
   }
 
+  function reconciliateNetwork(network: Network) {
+    const { ui, data } = appStore.getState();
+
+    if (ui.network.dependencies.circular.active) {
+      highlightCircularDependencies(data, true);
+    }
+
+    if (ui.network.dependencies.builtin.active) {
+      toggleDependencies(data, "builtin", true);
+      network.stabilize();
+    }
+
+    if (ui.network.dependencies.thirdparty.active) {
+      toggleDependencies(data, "third_party", true);
+      network.stabilize();
+    }
+  }
+
   function networkUIReducer(
     dataStore: AppState["data"],
     appEvents: AppActions | AppEvents
@@ -184,18 +202,14 @@ export default function GraphNetwork() {
       },
     };
 
-    /**
-     * TODO: instead of destroying the whole network, we should have a more fine-grained
-     * control and update the nodes and edges invidually.
-     * The network has to be built only once.
-     */
-    setNetwork(
-      new Network(
-        networkContainerRef.current!,
-        { nodes: nodesDataset, edges: edgesDataset },
-        networkOptionsWithMass
-      )
+    const _network = new Network(
+      networkContainerRef.current!,
+      { nodes: nodesDataset, edges: edgesDataset },
+      networkOptionsWithMass
     );
+
+    setNetwork(_network);
+    reconciliateNetwork(_network);
 
     return () => {
       network?.destroy();
