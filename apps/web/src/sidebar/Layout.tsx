@@ -17,7 +17,7 @@ import {
 } from "@tabler/icons-react";
 
 import { Circular } from "./Circular";
-import { GraphConfiguration } from "./GraphConfiguration";
+import { GraphConfiguration } from "./graph-configuration/GraphConfiguration";
 import { Summary } from "./summary/Summary";
 import { FileExplorer } from "./file-explorer/FileExplorer";
 import { InteractivePlayground } from "./InteractivePlayground";
@@ -87,8 +87,13 @@ const menus = [
   { icon: IconFiles, label: "File Explorer", key: "file_explorer" },
   {
     icon: IconAB2,
-    label: "Dependencies configuration (work in progress)",
+    label: "Dependencies configuration",
     key: "dependencies",
+  },
+  {
+    icon: IconVectorTriangle,
+    label: "Graph Configuration",
+    key: "graph_configuration",
   },
   {
     icon: IconRefreshAlert,
@@ -99,11 +104,6 @@ const menus = [
     icon: IconDeviceDesktopAnalytics,
     label: "Interactive Playground (work in progress)",
     key: "interactive_playground",
-  },
-  {
-    icon: IconVectorTriangle,
-    label: "Graph Configuration (work in progress)",
-    key: "graph_configuration",
   },
   {
     icon: IconSettings,
@@ -117,11 +117,12 @@ type MenuKeys = (typeof menus)[number]["key"];
 const isFeatureDisabled = (section: string) =>
   section !== "file_explorer" &&
   section !== "summary" &&
-  section !== "dependencies";
+  section !== "dependencies" &&
+  section !== "graph_configuration";
 
 export function DoubleNavbar() {
   const { classes, cx } = useStyles();
-  const [active, setActive] = useState<MenuKeys>("dependencies");
+  const [active, setActive] = useState<MenuKeys>("graph_configuration");
 
   const mainMenus = menus.map((link) => (
     <Tooltip
