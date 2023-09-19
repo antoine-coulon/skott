@@ -52,6 +52,9 @@ export const networkOptions = {
     arrows: "to",
     ...defaultEdgeOptions,
   },
+  layout: {
+    randomSeed: 2,
+  },
   // layout: {
   //   randomSeed: undefined,
   //   improvedLayout: true,
@@ -120,10 +123,16 @@ export const networkOptions = {
   // },
   physics: {
     enabled: true,
-    stabilization: true,
+    stabilization: {
+      enabled: true,
+      iterations: 1000,
+      updateInterval: 50,
+      onlyDynamicEdges: false,
+      fit: true,
+    },
     solver: "repulsion",
     repulsion: {
-      nodeDistance: 300, // Put more distance between the nodes.
+      nodeDistance: 500, // Put more distance between the nodes.
     },
   },
 };
@@ -148,6 +157,7 @@ export function makeNodesAndEdges(
 
   const graphNodes: Node[] = [];
   const graphEdges: Edge[] = [];
+  const edgeIds = new Set();
 
   data.forEach((node) => {
     const baseOptions = {
@@ -170,11 +180,17 @@ export function makeNodesAndEdges(
     graphNodes.push(baseOptions);
 
     node.adjacentTo.forEach((adjacentNodeId: string) => {
-      graphEdges.push({
-        id: createEdgeId(node.id, adjacentNodeId),
-        from: node.id,
-        to: adjacentNodeId,
-      });
+      const edgeId = createEdgeId(node.id, adjacentNodeId);
+
+      if (!edgeIds.has(edgeId)) {
+        graphEdges.push({
+          id: edgeId,
+          from: node.id,
+          to: adjacentNodeId,
+        });
+
+        edgeIds.add(edgeId);
+      }
     });
   });
 

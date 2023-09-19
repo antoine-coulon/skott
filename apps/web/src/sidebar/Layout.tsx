@@ -16,6 +16,8 @@ import {
   IconAB2,
 } from "@tabler/icons-react";
 
+import { useAppEffects } from "@/store/react-bindings";
+
 import { Circular } from "./Circular";
 import { GraphConfiguration } from "./graph-configuration/GraphConfiguration";
 import { Summary } from "./summary/Summary";
@@ -112,6 +114,8 @@ const menus = [
   },
 ] as const;
 
+const menuKeys = menus.map((menu) => menu.key);
+
 type MenuKeys = (typeof menus)[number]["key"];
 
 const isFeatureDisabled = (section: string) =>
@@ -122,7 +126,17 @@ const isFeatureDisabled = (section: string) =>
 
 export function DoubleNavbar() {
   const { classes, cx } = useStyles();
+
   const [active, setActive] = useState<MenuKeys>("graph_configuration");
+
+  useAppEffects((action) => {
+    if (
+      action.action === "open_sidebar_menu" &&
+      menuKeys.includes(action.payload.menu as MenuKeys)
+    ) {
+      setActive(action.payload.menu as MenuKeys);
+    }
+  });
 
   const mainMenus = menus.map((link) => (
     <Tooltip

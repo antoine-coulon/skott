@@ -1,7 +1,7 @@
 import React from "react";
 import { map } from "rxjs";
 
-import { AppStore, AppStoreInstance } from "./store";
+import { AppEffects, AppStore, AppStoreInstance } from "./store";
 import { AppState } from "./state";
 
 const AppStoreContext = React.createContext<AppStore>(AppStoreInstance);
@@ -31,4 +31,16 @@ export const useStoreSelect = <
   });
 
   return state;
+};
+
+export const useAppEffects = <R>(callback: (events: AppEffects) => R) => {
+  const store = useAppStore();
+
+  React.useEffect(() => {
+    const subscription = store.events$.subscribe(callback);
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  });
 };

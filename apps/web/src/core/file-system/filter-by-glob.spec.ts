@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { BehaviorSubject, Subject } from "rxjs";
+import { BehaviorSubject } from "rxjs";
 
 import { AppStore } from "@/store/store";
 import { AppState, storeDefaultValue } from "@/store/state";

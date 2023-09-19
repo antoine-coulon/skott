@@ -31,6 +31,7 @@ describe("When interacting with network dependencies", () => {
       expect(uiState1).toEqual({
         ...storeDefaultValue.ui,
         network: {
+          ...storeDefaultValue.ui.network,
           dependencies: {
             ...storeDefaultValue.ui.network.dependencies,
             [target]: {
@@ -47,6 +48,7 @@ describe("When interacting with network dependencies", () => {
       expect(uiState2).toEqual({
         ...storeDefaultValue.ui,
         network: {
+          ...storeDefaultValue.ui.network,
           dependencies: {
             ...storeDefaultValue.ui.network.dependencies,
             [target]: {

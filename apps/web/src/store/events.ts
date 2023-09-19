@@ -13,4 +13,10 @@ export type AppEvents =
       payload: {
         nodeId: string;
       };
+    }
+  | {
+      action: "open_sidebar_menu";
+      payload: {
+        menu: string;
+      };
     };

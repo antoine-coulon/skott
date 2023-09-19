@@ -1,7 +1,4 @@
 import { FileExplorerActions } from "@/core/file-system/actions";
+import { NetworkActions } from "@/core/network/actions";
 
-export type AppActions =
-  | { action: "toggle_circular"; payload: { enabled: boolean } }
-  | { action: "toggle_builtin"; payload: { enabled: boolean } }
-  | { action: "toggle_thirdparty"; payload: { enabled: boolean } }
-  | FileExplorerActions;
+export type AppActions = NetworkActions | FileExplorerActions;

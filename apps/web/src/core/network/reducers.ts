@@ -15,12 +15,26 @@ function toggleDependencies(): AppReducer {
         ui: {
           ...state.ui,
           network: {
+            ...state.ui.network,
             dependencies: {
               ...state.ui.network.dependencies,
               [target]: {
                 active: event.payload.enabled,
               },
             },
+          },
+        },
+      });
+    }
+
+    if (event.action === "update_configuration") {
+      return Option.some({
+        data: state.data,
+        ui: {
+          ...state.ui,
+          network: {
+            ...state.ui.network,
+            layout: event.payload,
           },
         },
       });

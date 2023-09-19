@@ -1,5 +1,16 @@
 import { SkottStructureWithCycles } from "../skott";
 
+export type NetworkLayout =
+  | {
+      type: "hierarchical";
+      direction: "lr" | "td";
+    }
+  | {
+      type: "cluster";
+      spacing_algorithm: "repulsion" | "barnes_hut" | "force_atlas_2";
+      node_spacing: number;
+    };
+
 export interface UiState {
   filters: {
     glob: string;
@@ -16,6 +27,7 @@ export interface UiState {
         active: boolean;
       };
     };
+    layout: NetworkLayout;
   };
 }
 
@@ -47,6 +59,11 @@ export const storeDefaultValue: AppState = {
         builtin: {
           active: false,
         },
+      },
+      layout: {
+        type: "cluster",
+        spacing_algorithm: "repulsion",
+        node_spacing: 100,
       },
     },
   },
