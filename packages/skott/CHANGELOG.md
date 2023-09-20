@@ -1,5 +1,12 @@
 # skott
 
+## 0.29.1
+
+### Patch Changes
+
+- d50743f: cli: restore behavior for `--trackTypeOnlyDependencies` to allow falsy value via `--no-trackTypeOnlyDependencies` option.
+  - skott-webapp@1.0.6
+
 ## 0.29.0
 
 ### Minor Changes
