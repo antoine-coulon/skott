@@ -113,8 +113,12 @@ cli
   )
   .option(
     "-it, --trackTypeOnlyDependencies",
-    "Enable dependency tracking for Typescript 'import type' statements",
+    "Enable dependency tracking for TypeScript 'import type' statements",
     true
+  )
+  .option(
+    "-nit, --no-trackTypeOnlyDependencies",
+    "Disable dependency tracking for TypeScript 'import type' statements"
   )
   .option(
     "-ig, --ignorePattern <pattern>",
@@ -155,7 +159,7 @@ cli
   .argument("[entrypoint]", "optional entrypoint file to use")
   .usage(
     trimMargin("|")(`
-          | ./node_modules/.bin/skott src/index.js --displayMode=file-tree --staticFile=md\n
+          | ./node_modules/.bin/skott src/index.js --displayMode=file-tree --no-trackTypeOnlyDependencies"\n
           | ./node_modules/.bin/skott  --fileExtensions=.ts,.tsx --tsconfig=tsconfig.base.json\n
           | ./node_modules/.bin/skott --showCircularDependencies --displayMode=raw\n
         `)
