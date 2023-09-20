@@ -67,7 +67,6 @@ describe("When traversing a TypeScript project", () => {
 
       describe("When the file includes an import declaration refering implicitely to an index module", () => {
         it("skott should build the graph with two nodes and one link", async () => {
-          // Forcing files to add specific TS syntax
           mountFakeFileSystem({
             "index.ts": `
                 import { foo } from "./src/foo";
@@ -101,17 +100,22 @@ describe("When traversing a TypeScript project", () => {
 
       describe("When the file includes type imports", () => {
         describe("When type imports are taken into account", () => {
-          it("skott should build the graph with two nodes and one link", async () => {
-            // Forcing files to add specific TS syntax
+          it("should resolve and register nodes coming from type-level imports", async () => {
             mountFakeFileSystem({
               "index.ts": `
                   import type { Foo } from "./foo";
+                  import { type Bar } from "./bar";
     
                   const someTypeScriptSpecificStuff: number = 10;
                   console.log(foo.doSomething());
               `,
               "foo.ts": `
                   export type Foo = {
+                      doSomething: () => stng;
+                  }
+              `,
+              "bar.ts": `
+                  export interface Foo {
                       doSomething: () => stng;
                   }
               `
@@ -123,7 +127,7 @@ describe("When traversing a TypeScript project", () => {
 
             expect(graph).to.be.deep.equal({
               "index.ts": {
-                adjacentTo: ["foo.ts"],
+                adjacentTo: ["foo.ts", "bar.ts"],
                 id: "index.ts",
                 body: fakeNodeBody
               },
@@ -131,23 +135,33 @@ describe("When traversing a TypeScript project", () => {
                 adjacentTo: [],
                 id: "foo.ts",
                 body: fakeNodeBody
+              },
+              "bar.ts": {
+                adjacentTo: [],
+                id: "bar.ts",
+                body: fakeNodeBody
               }
             });
           });
         });
 
         describe("When type imports are ignored", () => {
-          it("skott should build the graph with only the root node", async () => {
-            // Forcing files to add specific TS syntax
+          it("should discard module imports that only have type-level specifiers", async () => {
             mountFakeFileSystem({
               "index.ts": `
                   import type { Foo } from "./foo";
-    
+                  import { type Bar } from "./bar";
+
                   const someTypeScriptSpecificStuff: number = 10;
                   console.log(foo.doSomething());
               `,
               "foo.ts": `
                   export type Foo = {
+                      doSomething: () => stng;
+                  }
+              `,
+              "bar.ts": `
+                  export interface Foo {
                       doSomething: () => stng;
                   }
               `
@@ -166,12 +180,42 @@ describe("When traversing a TypeScript project", () => {
               }
             });
           });
+
+          it("should track module imports mixin type-level imports and runtime imports", async () => {
+            mountFakeFileSystem({
+              "index.ts": `
+                  import { runtimeValue, type Bar } from "./bar";
+              `,
+              "bar.ts": `
+                  export interface Foo {
+                      doSomething: () => stng;
+                  }
+              `
+            });
+
+            const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+              entrypoint: "index.ts",
+              trackTypeOnly: false
+            });
+
+            expect(graph).to.be.deep.equal({
+              "index.ts": {
+                adjacentTo: ["bar.ts"],
+                id: "index.ts",
+                body: fakeNodeBody
+              },
+              "bar.ts": {
+                adjacentTo: [],
+                id: "bar.ts",
+                body: fakeNodeBody
+              }
+            });
+          });
         });
       });
 
       describe("When the file includes Node.js require imports", () => {
         it("skott should build the graph with two nodes and one link", async () => {
-          // Forcing files to add specific TS syntax
           mountFakeFileSystem({
             "index.ts": `
                 require("./side-effect");
