@@ -1,5 +1,15 @@
 # skott
 
+## 0.30.0
+
+### Minor Changes
+
+- 6ddda95: Add support for the TypeScript type-level import specifiers "import { type X }"
+
+### Patch Changes
+
+- skott-webapp@1.0.6
+
 ## 0.29.1
 
 ### Patch Changes
