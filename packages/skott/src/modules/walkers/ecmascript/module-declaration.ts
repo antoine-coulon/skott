@@ -37,6 +37,16 @@ function isEcmaScriptModuleDeclaration(estreeNode: any): boolean {
   );
 }
 
+function isTypeScriptImportType(node: any) {
+  const hasOnlyTypeSpecifiers =
+    node.specifiers &&
+    node.specifiers.every(
+      (_: { importKind: string }) => _.importKind === "type"
+    );
+
+  return node.importKind === "type" || hasOnlyTypeSpecifiers;
+}
+
 export function extractModuleDeclarations(
   node: any,
   moduleDeclarations: Set<string>,
@@ -55,7 +65,11 @@ export function extractModuleDeclarations(
   }
 
   if (isEcmaScriptModuleDeclaration(node)) {
-    if (node.importKind !== "type" || trackTypeOnlyDependencies) {
+    if (isTypeScriptImportType(node)) {
+      if (trackTypeOnlyDependencies) {
+        moduleDeclarations.add(node.source.value);
+      }
+    } else {
       moduleDeclarations.add(node.source.value);
     }
   }
