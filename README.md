@@ -9,7 +9,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 
-**skott** is a minimalist developer tool that can be used to efficiently generate directed graphs from your **JavaScript/TypeScript/Node.js** project. It can **automatically collect metadata** such as _file size_, _third-party_ or _builtin dependencies_, **detect circular dependencies** or help you **building tools relying on graph data structures** thanks to the exposed primitives. Many display modes exists (such as **embedded interactive web application** shown just below) but also other from the CLI **(.svg, .png, .md, .json)**.
+**skott** is a minimalist developer tool that can be used to efficiently generate directed graphs from your **JavaScript/TypeScript/Node.js** project. It can **automatically collect metadata** such as _file size_, _third-party_ or _builtin dependencies_, **detect circular dependencies**, **finding unused npm dependencies**, help you **building tools relying on graph data structures** thanks to the exposed primitives. Many display modes exists (such as **embedded interactive web application** shown just below) but also other from the CLI **(.svg, .png, .md, .json)**.
 
 <p align="center">
 	<img alt="skott" src="https://user-images.githubusercontent.com/43391199/204465791-99ae71bb-67e9-4c84-8734-c9cad0b5c24d.png">
@@ -19,13 +19,13 @@
 
 ✅ Works for modern **JavaScript/TypeScript** projects (TSX/JSX, ECMAScript and CommonJS modules all supported). **TypeScript**'s path aliases are also supported.
 
-✅ Works with any custom **dependency resolver** (useful for specific monorepos integration)
+✅ Deeply detects **circular dependencies** in an efficient way, with the ability to provide a max depth for the search
 
 ✅ File tree traversal supports **ignore pattern** and **Git ignored files** (via `.gitignore` files)
 
 ✅ Runs **incrementally** (experimental), meaning that Skott will _only analyze_ files that were modified/added since the last run, offering performance boosts.
 
-✅ Deeply detects **circular dependencies** in an efficient way, with the ability to provide a max depth for the search
+✅ Works with any custom **dependency resolver** (useful for specific monorepos integration)
 
 ✅ Detect **unused npm third-party dependencies**. Note that all unused `devDependencies` are not guaranteed to be detected as `depcheck` [only provides analysis for set of supported libraries](https://github.com/depcheck/depcheck) (eslint, karma, mocha, etc).
 
@@ -35,15 +35,13 @@
 
 ✅ Metadata collection for each traversed node (file size, view dependencies towards Node.js builtin modules and npm third-party libraries)
 
-✅ Node.js binary and JSON modules are excluded by default
-
 ✅ Generate static files including raw JSON, [mermaid-js](https://github.com/mermaid-js/mermaid) diagrams (.svg, .png, .md) representing your project's graph directly generated from the CLI.
 
 `skott` can be used either via its CLI or JavaScript API. It can either build the project graph using an entrypoint file or build it starting from the current root directory and recursively traverse all directories/folders. Currently, supported files are **.js, .jsx, .cjs, .mjs, .ts, .tsx**. **skott does not rely on module systems for path resolution**, it will resolve `require/import` no matter the configuration.
 
 ## Getting started
 
-This is a quick start, **please check the [complete documentation at the skott package level](https://github.com/antoine-coulon/skott/tree/main/packages/skott#readme)** to see more.
+This is a quick start, **please check the [complete documentation at the skott package level](https://github.com/antoine-coulon/skott/tree/main/packages/skott#readme)** to see more. There are also some **[examples available there](https://github.com/antoine-coulon/skott/blob/main/packages/skott/examples/api.ts)**.
 
 Install `skott` from npm using whatever package manager you like:
 

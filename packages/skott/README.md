@@ -13,19 +13,6 @@ npm install skott
 npm install skott -g
 ```
 
-## **Embedded Web Application**
-
-skott now embeds a new _display mode_ **"skott --displayMode=webapp"** allowing you to visualize more precisely dependencies and the links between them. Here is an overview of a subset from the graph generated for `fastify`:
-
-<img alt="skott-webapp-fastify" src="https://user-images.githubusercontent.com/43391199/204465791-99ae71bb-67e9-4c84-8734-c9cad0b5c24d.png" />
-
-As shown above **Third-party** and **Built-in dependencies** can be toggled when they are tracked (by providing `--trackThirdPartyDependencies` and `--trackBuiltinDependencies` to the CLI).
-
-When `Circular dependencies` are found in the graph, they can also be toggled via the _Node visualization options_ as shown below:
-
-<img alt="skott-webapp-with-cycles" src="https://user-images.githubusercontent.com/43391199/204466577-3b82bf6c-4ed4-436c-bd99-31aa9261fb61.png" />
-
-
 ## **JavaScript API**
 
 ```javascript
@@ -82,7 +69,7 @@ const { getStructure, getWorkspace, useGraph, findUnusedDependencies } = await s
   includeBaseDir: false,
   /**
    * (Optional) Whether third-party dependencies (npm) and/or builtin (Node.js core modules)
-   * should be added in the graph and/or Typescript type-only import should be followed. 
+   * should be added in the graph and/or TypeScript type-only import should be followed. 
    * Defaults to `thirdParty=false`, `builtin=false`, and `typeOnly=true`.
    */
   dependencyTracking: {
@@ -109,7 +96,7 @@ const { getStructure, getWorkspace, useGraph, findUnusedDependencies } = await s
    * Defaults to `EcmaScriptModuleResolver` which is used a standard dependency
    * resolver for ECMAScript projects.
    */
-  dependencyResolvers: [new TurborepoResolver()],
+  dependencyResolvers: [new RushResolver()],
   /**
    * (Optional) Enable verbose internal logging.
    * Defaults to `false`
@@ -118,9 +105,11 @@ const { getStructure, getWorkspace, useGraph, findUnusedDependencies } = await s
 });
 ```
 
+More API **[examples can be found there](https://github.com/antoine-coulon/skott/blob/main/packages/skott/examples/api.ts)**.
+
 ## **Command line interface**
 
-skott exposes a CLI directly using features from the core library.
+skott exposes a CLI directly using features from the core library. All the options shown from the API can be used from the CLI, please use `skott --help` to see how to express them via the command line.
 
 When the library installed locally you can run:
 
@@ -149,11 +138,26 @@ Using this command, skott will deeply search for all ".ts" and ".tsx" files star
 $ skott --fileExtensions=.ts,.tsx
 ```
 
-**skott** can be used to generate static files from the project graph structure (.svg, .png, .md, .json).
+**skott** offers many ways to visualize the generated graph.
 
-**Note: this static file generator is provided via a skott plugin `@skottorg/static-file-plugin` that needs to be installed.**
+**Embedded Web Application**
+
+skott embeds a _display mode_ **"skott --displayMode=webapp"** allowing you to visualize more precisely dependencies and the links between them. Here is an overview of a subset from the graph generated for `fastify`:
+
+<img alt="skott-webapp-fastify" src="https://user-images.githubusercontent.com/43391199/204465791-99ae71bb-67e9-4c84-8734-c9cad0b5c24d.png" />
+
+As shown above **Third-party** and **Built-in dependencies** can be toggled when they are tracked (by providing `--trackThirdPartyDependencies` and `--trackBuiltinDependencies` to the CLI).
+
+When `Circular dependencies` are found in the graph, they can also be toggled via the _Node visualization options_ as shown below:
+
+<img alt="skott-webapp-with-cycles" src="https://user-images.githubusercontent.com/43391199/204466577-3b82bf6c-4ed4-436c-bd99-31aa9261fb61.png" />
+
+**skott** also offers other visualization modes, for instance static files (.svg, .png, .md, .json).
+
+**Note: this static file generator is provided via a skott plugin `@skottorg/static-file-plugin` that needs to be installed.** So before using `svg/png/md/json` be sure to install the appropriate `@skottorg/static-file-plugin` plugin. Using the Node resolution algorithm, skott will be able to find the plugin on its own, no need to define it anywhere.
 
 ```bash
+$ npm install @skottorg/static-file-plugin
 $ skott src/index.js --displayMode=svg
 ```
 
@@ -189,10 +193,11 @@ See all the options of the CLI running:
 $ skott --help
 ```
 
-## API Documentation
+## More about the JavaScript API
 
 To initialize the dependency graph, the default exported function must be used first.
-Once executed, the default function returns a set of functions to retrieve some
+
+Once executed, the default function returns a set of functions to retrieve some 
 information about the graph just built.
 
 ```javascript
