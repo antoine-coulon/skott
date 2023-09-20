@@ -4,17 +4,25 @@
 
 ### Minor Changes
 
-- 6ddda95: Add support for the TypeScript type-level import specifiers "import { type X }"
+- [#105](https://github.com/antoine-coulon/skott/pull/105) [6ddda95](https://github.com/antoine-coulon/skott/commit/d50743f020af761f39b550d27bc169acd2541ef0): Improve TypeScript type-level import specifiers `import { type X }`
 
-### Patch Changes
+Before, only `import type { X }` was discarded when not tracking type-level imports. Now, both are supported and considered as type-level imports.
 
-- skott-webapp@1.0.6
+```ts
+import { type A } from "a"; 
+import type { B } from "b";
+```
 
 ## 0.29.1
 
 ### Patch Changes
 
 - [#103](https://github.com/antoine-coulon/skott/pull/103) [d50743f](https://github.com/antoine-coulon/skott/commit/d50743f020af761f39b550d27bc169acd2541ef0): cli: restore behavior for `--trackTypeOnlyDependencies` to allow falsy value via `--no-trackTypeOnlyDependencies` option.
+
+```sh
+skott --no-trackTypeOnlyDependencies # works
+skott --trackTypeOnlyDependencies # works
+```
 
 ## 0.29.0
 
