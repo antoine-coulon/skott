@@ -11,8 +11,10 @@ import {
   Text,
 } from "@mantine/core";
 import { createFormContext } from "@mantine/form";
+
 import { callUseCase } from "@/store/store";
 import { updateConfiguration } from "@/core/network/update-configuration";
+import { useStoreSelect } from "@/store/react-bindings";
 
 const availableLayouts = ["cluster", "hierarchical"] as const;
 type AvailableLayouts = (typeof availableLayouts)[number];
@@ -29,6 +31,19 @@ interface FormValues {
     };
   };
 }
+
+const initialValue: FormValues = {
+  layout: {
+    selected: "cluster",
+    cluster: {
+      spacing_algorithm: "repulsion",
+      node_spacing: 500,
+    },
+    hierarchical: {
+      direction: "lr",
+    },
+  },
+};
 
 const [FormProvider, useFormContext, useForm] = createFormContext<FormValues>();
 
@@ -49,11 +64,14 @@ function ClusterOptions() {
         placeholder="Spacing algorithm"
         {...form.getInputProps("layout.cluster.spacing_algorithm")}
       />
+
       <Text size="sm" mt="xl" mb="md">
         Node Spacing
       </Text>
       <Slider
-        defaultValue={40}
+        step={100}
+        min={100}
+        max={1000}
         showLabelOnHover
         {...form.getInputProps("layout.cluster.node_spacing")}
       />
@@ -94,23 +112,50 @@ function GraphOptions({ layout }: { layout: AvailableLayouts }) {
 }
 
 export function GraphConfiguration() {
-  const [selectedLayout, setSelectedLayout] =
-    React.useState<AvailableLayouts>("cluster");
+  const network = useStoreSelect("ui", "network");
+
+  const [selectedLayout, setSelectedLayout] = React.useState<
+    AvailableLayouts | undefined
+  >(undefined);
 
   const form = useForm({
-    initialValues: {
-      layout: {
-        selected: "cluster",
-        cluster: {
-          spacing_algorithm: "repulsion",
-          node_spacing: 40,
-        },
-        hierarchical: {
-          direction: "lr",
-        },
-      },
-    },
+    initialValues: initialValue,
   });
+
+  React.useEffect(() => {
+    if (!network) {
+      return;
+    }
+
+    const layout = network.layout;
+
+    if (layout.type === "cluster") {
+      form.setValues({
+        layout: {
+          selected: layout.type,
+          cluster: {
+            spacing_algorithm: layout.spacing_algorithm,
+            node_spacing: layout.node_spacing,
+          },
+          hierarchical: initialValue.layout.hierarchical,
+        },
+      });
+    } else {
+      form.setValues({
+        layout: {
+          selected: layout.type,
+          cluster: initialValue.layout.cluster,
+          hierarchical: {
+            direction: layout.direction,
+          },
+        },
+      });
+    }
+
+    if (!selectedLayout) {
+      setSelectedLayout(layout.type);
+    }
+  }, [network]);
 
   function dispatchConfiguration(value: FormValues) {
     const invokeUseCase = callUseCase(updateConfiguration);
@@ -141,7 +186,6 @@ export function GraphConfiguration() {
 
               <SegmentedControl
                 mt="md"
-                defaultValue={selectedLayout}
                 {...form.getInputProps("layout.selected")}
                 onChange={(value) => {
                   setSelectedLayout(value as AvailableLayouts);
@@ -156,7 +200,7 @@ export function GraphConfiguration() {
               />
             </Box>
 
-            <GraphOptions layout={selectedLayout} />
+            {selectedLayout ? <GraphOptions layout={selectedLayout} /> : null}
 
             <Group mt="xl" position="center">
               <Button type="submit" variant="gradient" radius="xs">

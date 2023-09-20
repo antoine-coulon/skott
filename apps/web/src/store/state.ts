@@ -63,7 +63,7 @@ export const storeDefaultValue: AppState = {
       layout: {
         type: "cluster",
         spacing_algorithm: "repulsion",
-        node_spacing: 100,
+        node_spacing: 500,
       },
     },
   },

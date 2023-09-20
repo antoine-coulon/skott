@@ -27,6 +27,7 @@ import {
   computeBuiltinDependencies,
   computeThirdPartyDependencies,
 } from "./dependencies";
+import { set } from "node_modules/@effect/data/HashMap";
 
 export function getMethodToApplyOnNetworkElement(enable: boolean) {
   return enable ? "update" : "remove";
@@ -42,6 +43,9 @@ export default function GraphNetwork() {
   const [edgesDataset, setEdgesDataset] = React.useState(
     new DataSet<Edge, "id">([])
   );
+  const [graphConfig, setGraphConfig] = React.useState<
+    AppState["ui"]["network"]["layout"]
+  >(appStore.getState().ui.network.layout);
 
   function focusOnNetworkNode(nodeId: string) {
     network?.selectNodes([nodeId], true);
@@ -169,18 +173,44 @@ export default function GraphNetwork() {
     }
   }
 
-  function initNetwork() {
-    const networkOptionsWithMass = {
+  const toVisJSSolvers = {
+    repulsion: "repulsion",
+    barnes_hut: "barnesHut",
+    force_atlas_2: "forceAtlas2Based",
+  } as const;
+
+  function initNetwork(
+    graphConfiguration: AppState["ui"]["network"]["layout"]
+  ) {
+    const baseNetworkOptions = {
       ...networkOptions,
       nodes: {
         ...networkOptions.nodes,
       },
     };
 
+    if (graphConfiguration.type === "cluster") {
+      const resolverAlgorithm =
+        toVisJSSolvers[graphConfiguration.spacing_algorithm];
+
+      baseNetworkOptions.physics.solver = resolverAlgorithm;
+
+      if (resolverAlgorithm === "repulsion") {
+        baseNetworkOptions.physics.repulsion = {
+          ...baseNetworkOptions.physics.repulsion,
+          nodeDistance: graphConfiguration.node_spacing,
+        };
+      } else {
+        const nodeSpacingToOverlap = graphConfiguration.node_spacing / 1000;
+        baseNetworkOptions.physics[resolverAlgorithm].avoidOverlap =
+          nodeSpacingToOverlap;
+      }
+    }
+
     const _network = new Network(
       networkContainerRef.current!,
       { nodes: nodesDataset, edges: edgesDataset },
-      networkOptionsWithMass
+      baseNetworkOptions
     );
 
     setNetwork(_network);
@@ -213,11 +243,25 @@ export default function GraphNetwork() {
   }, []);
 
   React.useEffect(() => {
-    initNetwork();
+    const graphConfigSubscription = appStore.store$
+      .pipe(
+        map(({ ui }) => ui.network.layout),
+        distinctUntilChanged(isEqual),
+        delay(150)
+      )
+      .subscribe(setGraphConfig);
+
+    return () => {
+      graphConfigSubscription.unsubscribe();
+    };
+  });
+
+  React.useEffect(() => {
+    initNetwork(graphConfig);
     return () => {
       network?.destroy();
     };
-  }, [nodesDataset, edgesDataset]);
+  }, [nodesDataset, edgesDataset, graphConfig]);
 
   React.useEffect(() => {
     const appEventsSubscription = appStore.events$
@@ -233,7 +277,10 @@ export default function GraphNetwork() {
 
   return (
     <>
-      <ActionMenu network={network} initNetwork={initNetwork} />
+      <ActionMenu
+        network={network}
+        initNetwork={() => initNetwork(graphConfig)}
+      />
       <div
         style={{
           height: "100%",

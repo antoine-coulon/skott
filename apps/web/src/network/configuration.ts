@@ -39,6 +39,56 @@ export const defaultEdgeOptions = {
   },
 };
 
+const layoutConfigs = {
+  cluster: {
+    physics: {
+      // shared
+      enabled: true,
+      stabilization: {
+        enabled: true,
+        iterations: 1000,
+        updateInterval: 50,
+        onlyDynamicEdges: false,
+        fit: true,
+      },
+      maxVelocity: 50,
+      minVelocity: 0.1,
+      timestep: 0.5,
+      adaptiveTimestep: true,
+      wind: { x: 0, y: 0 },
+      // algo selector
+      solver: "repulsion",
+      // algorithms
+      repulsion: {
+        centralGravity: 0.2,
+        springLength: 200,
+        springConstant: 0.05,
+        nodeDistance: 500,
+        damping: 0.09,
+        // nodeDistance: 500, // Put more distance between the nodes.
+      },
+      forceAtlas2Based: {
+        theta: 0.5,
+        gravitationalConstant: -50,
+        centralGravity: 0.01,
+        springConstant: 0.08,
+        springLength: 100,
+        damping: 0.4,
+        avoidOverlap: 0,
+      },
+      barnesHut: {
+        theta: 0.5,
+        gravitationalConstant: -2000,
+        centralGravity: 0.3,
+        springLength: 95,
+        springConstant: 0.04,
+        damping: 0.09,
+        avoidOverlap: 0,
+      },
+    },
+  },
+};
+
 export const networkOptions = {
   nodes: {
     margin: {
@@ -52,90 +102,8 @@ export const networkOptions = {
     arrows: "to",
     ...defaultEdgeOptions,
   },
-  layout: {
-    randomSeed: 2,
-  },
-  // layout: {
-  //   randomSeed: undefined,
-  //   improvedLayout: true,
-  //   clusterThreshold: 150,
-  //   hierarchical: {
-  //     enabled: false,
-  //     levelSeparation: 250,
-  //     nodeSpacing: 1000,
-  //     treeSpacing: 200,
-  //     blockShifting: true,
-  //     edgeMinimization: true,
-  //     parentCentralization: true,
-  //     direction: "RL", // UD, DU, LR, RL
-  //     sortMethod: "hubsize", // hubsize, directed
-  //     shakeTowards: "leaves", // roots, leaves
-  //   },
-  // },
-  // physics: {
-  //   enabled: true,
-  //   barnesHut: {
-  //     theta: 0.5,
-  //     gravitationalConstant: -2000,
-  //     centralGravity: 0.3,
-  //     springLength: 95,
-  //     springConstant: 0.04,
-  //     damping: 0.09,
-  //     avoidOverlap: 0,
-  //   },
-  //   forceAtlas2Based: {
-  //     theta: 0.5,
-  //     gravitationalConstant: -50,
-  //     centralGravity: 0.01,
-  //     springConstant: 0.08,
-  //     springLength: 100,
-  //     damping: 0.4,
-  //     avoidOverlap: 0,
-  //   },
-  //   repulsion: {
-  //     centralGravity: 0.2,
-  //     springLength: 200,
-  //     springConstant: 0.05,
-  //     nodeDistance: 100,
-  //     damping: 0.09,
-  //   },
-  //   hierarchicalRepulsion: {
-  //     centralGravity: 0.0,
-  //     springLength: 100,
-  //     springConstant: 0.01,
-  //     nodeDistance: 120,
-  //     damping: 0.09,
-  //     avoidOverlap: 0,
-  //   },
-  //   maxVelocity: 50,
-  //   minVelocity: 0.1,
-  //   solver: "forceAtlas2Based",
-  //   stabilization: {
-  //     enabled: true,
-  //     iterations: 1000,
-  //     updateInterval: 100,
-  //     onlyDynamicEdges: false,
-  //     fit: true,
-  //   },
-  //   timestep: 0.5,
-  //   adaptiveTimestep: true,
-  //   wind: { x: 0, y: 0 },
-  // },
-  physics: {
-    enabled: true,
-    stabilization: {
-      enabled: true,
-      iterations: 1000,
-      updateInterval: 50,
-      onlyDynamicEdges: false,
-      fit: true,
-    },
-    solver: "repulsion",
-    repulsion: {
-      nodeDistance: 500, // Put more distance between the nodes.
-    },
-  },
-};
+  ...layoutConfigs.cluster,
+} as const;
 
 export function createEdgeId(node1: string, node2: string) {
   return [node1, node2].sort().join("-");
