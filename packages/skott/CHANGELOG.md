@@ -1,11 +1,16 @@
 # skott
 
+## 0.29.1
+
+### Patch Changes
+
+- [#103](https://github.com/antoine-coulon/skott/pull/103) [d50743f](https://github.com/antoine-coulon/skott/commit/d50743f020af761f39b550d27bc169acd2541ef0): cli: restore behavior for `--trackTypeOnlyDependencies` to allow falsy value via `--no-trackTypeOnlyDependencies` option.
+
 ## 0.29.0
 
 ### Minor Changes
 
-- 4564e9b: Skott cli now use [commanderjs](https://github.com/tj/commander.js) instead of sade.
-  Which might be a breaking change for you if you were using short aliases options since there were not all correctly applied
+- [#98](https://github.com/antoine-coulon/skott/pull/98) [4564e9b](https://github.com/antoine-coulon/skott/commit/4564e9b8c10b55b62361ed2b0321fb5bf11dcea5): Skott cli now use [commanderjs](https://github.com/tj/commander.js) instead of sade. Which might be a breaking change for you if you were using short aliases options since there were not all correctly applied
 
 ## 0.28.4
 
