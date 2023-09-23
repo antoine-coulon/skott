@@ -6,9 +6,6 @@
 
 - [#108](https://github.com/antoine-coulon/skott/pull/108) [`5f1d31b`](https://github.com/antoine-coulon/skott/commit/5f1d31ba427d338bb9fee599ee2902e9f4e7cd96) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - Allow web application to be automatically opened on WSL via wslview. Better error handling when the application can't be automatically opened.
 
-- Updated dependencies []:
-  - skott-webapp@1.0.6
-
 ## 0.30.0
 
 ### Minor Changes
