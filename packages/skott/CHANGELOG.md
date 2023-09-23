@@ -1,5 +1,11 @@
 # skott
 
+## 0.30.1
+
+### Patch Changes
+
+- [#108](https://github.com/antoine-coulon/skott/pull/108) [`5f1d31b`](https://github.com/antoine-coulon/skott/commit/5f1d31ba427d338bb9fee599ee2902e9f4e7cd96) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - Allow web application to be automatically opened on WSL via wslview. Better error handling when the application can't be automatically opened.
+
 ## 0.30.0
 
 ### Minor Changes
@@ -9,7 +15,7 @@
 Before, only `import type { X }` was discarded when not tracking type-level imports. Now, both are supported and considered as type-level imports.
 
 ```ts
-import { type A } from "a"; 
+import { type A } from "a";
 import type { B } from "b";
 ```
 
