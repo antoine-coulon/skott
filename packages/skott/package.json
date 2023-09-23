@@ -59,7 +59,6 @@
     "lodash.difference": "^4.5.0",
     "meriyah": "^4.3.7",
     "minimatch": "^9.0.2",
-    "openurl": "^1.1.1",
     "ora": "^6.3.1",
     "polka": "^0.5.2",
     "commander": "^11.0.0",

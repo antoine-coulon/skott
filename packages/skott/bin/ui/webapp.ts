@@ -2,12 +2,13 @@ import { ServerResponse } from "node:http";
 
 import compression from "compression";
 import kleur from "kleur";
-import { open } from "openurl";
 import polka from "polka";
 import sirv from "sirv";
 import resolveWebAppStaticPath from "skott-webapp";
 
 import { SkottInstance, SkottStructure } from "../../src/skott.js";
+
+import { open } from "./open-url.js";
 
 function findSkottWebAppDirectory(): string {
   const skottWebAppDirectory = resolveWebAppStaticPath();
@@ -99,14 +100,20 @@ export function openWebApplication(
 
   console.log(
     `\n ${kleur.bold(
-      `💻 Opened ${kleur.bold().green("skott webapp")} on`
+      `💻 Opening ${kleur.bold().green("skott webapp")} on`
     )} ${kleur.bold().underline().magenta(`${bindedAddress}`)}`
   );
 
   open(bindedAddress, (error) => {
     if (error) {
       console.log(
-        `\n ${kleur.red().bold(`Could not open webapp on ${bindedAddress}`)}`
+        `\n ${kleur
+          .red()
+          .bold(
+            `Could not open webapp on ${bindedAddress}. Reason: ${
+              error.message ?? "unknown"
+            }})`
+          )}`
       );
     }
   });

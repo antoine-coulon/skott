@@ -1,5 +1,9 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 importers:
 
   .:
@@ -268,9 +272,6 @@ importers:
       minimatch:
         specifier: ^9.0.2
         version: 9.0.2
-      openurl:
-        specifier: ^1.1.1
-        version: 1.1.1
       ora:
         specifier: ^6.3.1
         version: 6.3.1
@@ -4332,10 +4333,6 @@ packages:
     engines: {node: '>=6'}
     dependencies:
       mimic-fn: 2.1.0
-    dev: false
-
-  /openurl@1.1.1:
-    resolution: {integrity: sha512-d/gTkTb1i1GKz5k3XE3XFV/PxQ1k45zDqGP2OA7YhgsaLoqm6qRvARAZOFer1fcXritWlGBRCu/UgeS4HAnXAA==}
     dev: false
 
   /optionator@0.9.1:
