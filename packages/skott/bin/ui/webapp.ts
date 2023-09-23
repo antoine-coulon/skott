@@ -111,10 +111,12 @@ export function openWebApplication(
         `\n ${kleur
           .red()
           .bold(
-            `Could not automatically open the application on ${bindedAddress}. Reason: ${
+            `Could not automatically open the application on ${bindedAddress}. Reason: "${
               error.message ?? "unknown"
-            }})`
-          )}`
+            }"`
+          )}
+          \n ${kleur.yellow().bold("Application remains accessible manually")}
+        `
       );
     }
   });
