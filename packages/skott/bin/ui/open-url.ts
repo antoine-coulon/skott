@@ -1,7 +1,17 @@
 import { spawn } from "node:child_process";
 import { platform } from "node:process";
 
+import isWsl from "is-wsl";
+
 const supportedPlatforms = ["darwin", "win32", "linux"] as const;
+
+function selectLinuxBinary(): string {
+  if (isWsl) {
+    return "wslview";
+  }
+
+  return "xdg-open";
+}
 
 function selectPlatformBinary() {
   let binary: string | undefined;
@@ -14,7 +24,7 @@ function selectPlatformBinary() {
       binary = "explorer.exe";
       break;
     case "linux":
-      binary = "xdg-open";
+      binary = selectLinuxBinary();
       break;
     default:
       throw new Error(

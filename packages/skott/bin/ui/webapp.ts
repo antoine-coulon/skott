@@ -99,9 +99,10 @@ export function openWebApplication(
   const bindedAddress = `http://127.0.0.1:${srv.server?.address()?.port}`;
 
   console.log(
-    `\n ${kleur.bold(
-      `💻 Opening ${kleur.bold().green("skott webapp")} on`
-    )} ${kleur.bold().underline().magenta(`${bindedAddress}`)}`
+    `\n ${kleur.bold(`💻 Web application is ready:`)} ${kleur
+      .bold()
+      .underline()
+      .magenta(`${bindedAddress}`)}`
   );
 
   open(bindedAddress, (error) => {
@@ -110,7 +111,7 @@ export function openWebApplication(
         `\n ${kleur
           .red()
           .bold(
-            `Could not open webapp on ${bindedAddress}. Reason: ${
+            `Could not automatically open the application on ${bindedAddress}. Reason: ${
               error.message ?? "unknown"
             }})`
           )}`
