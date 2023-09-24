@@ -4,6 +4,7 @@ export type NetworkLayout = (
   | {
       type: "hierarchical";
       direction: "UD" | "DU" | "LR" | "RL";
+      spacing_algorithm: "hubsize" | "directed";
     }
   | {
       type: "cluster";

@@ -191,7 +191,7 @@ export default function GraphNetwork() {
       const resolverAlgorithm =
         toVisJSSolvers[graphConfiguration.spacing_algorithm];
 
-      baseNetworkOptions.hierarchical.enabled = false;
+      baseNetworkOptions.layout.hierarchical.enabled = false;
       baseNetworkOptions.physics.enabled = true;
       baseNetworkOptions.physics.solver = resolverAlgorithm;
 
@@ -207,9 +207,12 @@ export default function GraphNetwork() {
       }
     } else {
       baseNetworkOptions.physics.enabled = false;
-      baseNetworkOptions.hierarchical.enabled = true;
-      baseNetworkOptions.hierarchical.direction = graphConfiguration.direction;
-      baseNetworkOptions.hierarchical.nodeSpacing =
+      baseNetworkOptions.layout.hierarchical.enabled = true;
+      baseNetworkOptions.layout.hierarchical.direction =
+        graphConfiguration.direction;
+      baseNetworkOptions.layout.hierarchical.sortMethod =
+        graphConfiguration.spacing_algorithm;
+      baseNetworkOptions.layout.hierarchical.nodeSpacing =
         graphConfiguration.node_spacing;
     }
 

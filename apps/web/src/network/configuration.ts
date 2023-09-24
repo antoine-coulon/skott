@@ -89,17 +89,19 @@ const layoutConfigs = {
       avoidOverlap: 0,
     },
   },
-  hierarchical: {
-    enabled: false,
-    levelSeparation: 150,
-    nodeSpacing: defaultConfigurableNetworkOptions.nodeSpacing,
-    treeSpacing: 200,
-    blockShifting: true,
-    edgeMinimization: true,
-    parentCentralization: true,
-    direction: "UD",
-    sortMethod: "hubsize",
-    shakeTowards: "leaves",
+  layout: {
+    hierarchical: {
+      enabled: false,
+      levelSeparation: 150,
+      nodeSpacing: defaultConfigurableNetworkOptions.nodeSpacing,
+      treeSpacing: 200,
+      blockShifting: true,
+      edgeMinimization: true,
+      parentCentralization: true,
+      direction: "UD",
+      sortMethod: "hubsize",
+      shakeTowards: "leaves",
+    },
   },
 };
 

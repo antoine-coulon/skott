@@ -32,6 +32,7 @@ describe("Graph dynamic configuration", () => {
       type: "hierarchical",
       direction: "LR",
       node_spacing: 300,
+      spacing_algorithm: "directed",
     });
 
     const { ui: updatedUi } = await toPromise(appStore.store$);
@@ -43,6 +44,7 @@ describe("Graph dynamic configuration", () => {
           type: "hierarchical",
           direction: "LR",
           node_spacing: 300,
+          spacing_algorithm: "directed",
         },
       },
     });

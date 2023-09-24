@@ -29,6 +29,7 @@ interface FormValues {
     };
     hierarchical: {
       direction: (typeof hierarchicalDirections)[number];
+      spacing_algorithm: "directed" | "hubsize";
     };
     node_spacing: number;
   };
@@ -42,6 +43,7 @@ const initialValue: FormValues = {
     },
     hierarchical: {
       direction: "UD",
+      spacing_algorithm: "hubsize",
     },
     node_spacing: 500,
   },
@@ -74,7 +76,22 @@ function HierarchicalOptions() {
   const form = useFormContext();
   return (
     <Box m="md">
-      <Text size="sm">Direction</Text>
+      <Text size="sm" mt="xl" mb="md">
+        Spacing algorithm
+      </Text>
+
+      <Select
+        data={[
+          { label: "Hubsize", value: "hubsize" },
+          { label: "Directed", value: "directed" },
+        ]}
+        placeholder="Spacing algorithm"
+        {...form.getInputProps("layout.hierarchical.spacing_algorithm")}
+      />
+
+      <Text size="sm" mt="md">
+        Direction
+      </Text>
 
       <SegmentedControl
         mt="md"
@@ -139,6 +156,7 @@ export function GraphConfiguration() {
           cluster: initialValue.layout.cluster,
           hierarchical: {
             direction: layout.direction,
+            spacing_algorithm: layout.spacing_algorithm,
           },
           node_spacing: layout.node_spacing,
         },
@@ -164,6 +182,7 @@ export function GraphConfiguration() {
         type: value.layout.selected,
         direction: value.layout.hierarchical.direction,
         node_spacing: value.layout.node_spacing,
+        spacing_algorithm: value.layout.hierarchical.spacing_algorithm,
       });
     }
   }
