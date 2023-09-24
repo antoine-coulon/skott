@@ -1,6 +1,7 @@
 import { Edge, Node } from "vis-network";
 
 import { SkottMetadata, SkottNode } from "../skott";
+import { storeDefaultValue } from "@/store/state";
 
 export const defaultNodeOptions = {
   shape: "box",
@@ -39,53 +40,66 @@ export const defaultEdgeOptions = {
   },
 };
 
+const defaultConfigurableNetworkOptions = {
+  nodeSpacing: storeDefaultValue.ui.network.layout.node_spacing,
+  solver: storeDefaultValue.ui.network.layout.spacing_algorithm,
+};
+
 const layoutConfigs = {
-  cluster: {
-    physics: {
-      // shared
+  physics: {
+    // shared
+    enabled: true,
+    stabilization: {
       enabled: true,
-      stabilization: {
-        enabled: true,
-        iterations: 1000,
-        updateInterval: 50,
-        onlyDynamicEdges: false,
-        fit: true,
-      },
-      maxVelocity: 50,
-      minVelocity: 0.1,
-      timestep: 0.5,
-      adaptiveTimestep: true,
-      wind: { x: 0, y: 0 },
-      // algo selector
-      solver: "repulsion",
-      // algorithms
-      repulsion: {
-        centralGravity: 0.2,
-        springLength: 200,
-        springConstant: 0.05,
-        nodeDistance: 500,
-        damping: 0.09,
-        // nodeDistance: 500, // Put more distance between the nodes.
-      },
-      forceAtlas2Based: {
-        theta: 0.5,
-        gravitationalConstant: -50,
-        centralGravity: 0.01,
-        springConstant: 0.08,
-        springLength: 100,
-        damping: 0.4,
-        avoidOverlap: 0,
-      },
-      barnesHut: {
-        theta: 0.5,
-        gravitationalConstant: -2000,
-        centralGravity: 0.3,
-        springLength: 95,
-        springConstant: 0.04,
-        damping: 0.09,
-        avoidOverlap: 0,
-      },
+      iterations: 1000,
+      updateInterval: 50,
+      onlyDynamicEdges: false,
+      fit: true,
     },
+    maxVelocity: 50,
+    minVelocity: 0.1,
+    timestep: 0.5,
+    adaptiveTimestep: true,
+    wind: { x: 0, y: 0 },
+    solver: defaultConfigurableNetworkOptions.solver as string,
+    // algorithms
+    repulsion: {
+      centralGravity: 0.2,
+      springLength: 200,
+      springConstant: 0.05,
+      nodeDistance: defaultConfigurableNetworkOptions.nodeSpacing,
+      damping: 0.09,
+    },
+    forceAtlas2Based: {
+      theta: 0.5,
+      gravitationalConstant: -50,
+      centralGravity: 0.01,
+      springConstant: 0.08,
+      springLength: 100,
+      damping: 0.4,
+      avoidOverlap: 0,
+    },
+    barnesHut: {
+      theta: 0.5,
+      gravitationalConstant: -2000,
+      centralGravity: 0.3,
+      springLength: 95,
+      springConstant: 0.04,
+      damping: 0.09,
+      avoidOverlap: 0,
+    },
+  },
+  hierarchical: {
+    enabled: false,
+    levelSeparation: 150,
+    nodeSpacing: defaultConfigurableNetworkOptions.nodeSpacing,
+    treeSpacing: 200,
+    blockShifting: true,
+    edgeMinimization: true,
+    parentCentralization: true,
+    direction: "UD",
+    sortMethod: "hubsize",
+    shakeTowards: "leaves",
   },
 };
 
@@ -102,7 +116,7 @@ export const networkOptions = {
     arrows: "to",
     ...defaultEdgeOptions,
   },
-  ...layoutConfigs.cluster,
+  ...layoutConfigs,
 } as const;
 
 export function createEdgeId(node1: string, node2: string) {

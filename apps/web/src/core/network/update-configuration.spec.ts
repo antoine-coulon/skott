@@ -21,7 +21,7 @@ describe("Graph dynamic configuration", () => {
         layout: {
           type: "cluster",
           spacing_algorithm: "repulsion",
-          node_spacing: 100,
+          node_spacing: 500,
         },
       },
     });
@@ -30,7 +30,8 @@ describe("Graph dynamic configuration", () => {
 
     dispatchAction({
       type: "hierarchical",
-      direction: "lr",
+      direction: "LR",
+      node_spacing: 300,
     });
 
     const { ui: updatedUi } = await toPromise(appStore.store$);
@@ -40,7 +41,8 @@ describe("Graph dynamic configuration", () => {
         ...storeDefaultValue.ui.network,
         layout: {
           type: "hierarchical",
-          direction: "lr",
+          direction: "LR",
+          node_spacing: 300,
         },
       },
     });

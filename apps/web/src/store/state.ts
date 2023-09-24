@@ -1,15 +1,15 @@
 import { SkottStructureWithCycles } from "../skott";
 
-export type NetworkLayout =
+export type NetworkLayout = (
   | {
       type: "hierarchical";
-      direction: "lr" | "td";
+      direction: "UD" | "DU" | "LR" | "RL";
     }
   | {
       type: "cluster";
       spacing_algorithm: "repulsion" | "barnes_hut" | "force_atlas_2";
-      node_spacing: number;
-    };
+    }
+) & { node_spacing: number };
 
 export interface UiState {
   filters: {
@@ -38,7 +38,7 @@ export interface AppState {
   ui: UiState;
 }
 
-export const storeDefaultValue: AppState = {
+export const storeDefaultValue = {
   data: {
     cycles: [],
     files: [],
@@ -67,4 +67,4 @@ export const storeDefaultValue: AppState = {
       },
     },
   },
-};
+} satisfies AppState;

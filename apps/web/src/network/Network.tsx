@@ -5,7 +5,7 @@ import { DataSet } from "vis-data";
 import { Edge, Network, Node } from "vis-network";
 import isEqual from "lodash.isequal";
 
-import { AppState } from "@/store/state";
+import { AppState, NetworkLayout } from "@/store/state";
 import { useAppStore } from "@/store/react-bindings";
 import { AppActions } from "@/store/actions";
 import { AppEvents } from "@/store/events";
@@ -43,9 +43,9 @@ export default function GraphNetwork() {
   const [edgesDataset, setEdgesDataset] = React.useState(
     new DataSet<Edge, "id">([])
   );
-  const [graphConfig, setGraphConfig] = React.useState<
-    AppState["ui"]["network"]["layout"]
-  >(appStore.getState().ui.network.layout);
+  const [graphConfig, setGraphConfig] = React.useState<NetworkLayout>(
+    appStore.getState().ui.network.layout
+  );
 
   function focusOnNetworkNode(nodeId: string) {
     network?.selectNodes([nodeId], true);
@@ -179,9 +179,7 @@ export default function GraphNetwork() {
     force_atlas_2: "forceAtlas2Based",
   } as const;
 
-  function initNetwork(
-    graphConfiguration: AppState["ui"]["network"]["layout"]
-  ) {
+  function initNetwork(graphConfiguration: NetworkLayout) {
     const baseNetworkOptions = {
       ...networkOptions,
       nodes: {
@@ -193,6 +191,8 @@ export default function GraphNetwork() {
       const resolverAlgorithm =
         toVisJSSolvers[graphConfiguration.spacing_algorithm];
 
+      baseNetworkOptions.hierarchical.enabled = false;
+      baseNetworkOptions.physics.enabled = true;
       baseNetworkOptions.physics.solver = resolverAlgorithm;
 
       if (resolverAlgorithm === "repulsion") {
@@ -205,6 +205,12 @@ export default function GraphNetwork() {
         baseNetworkOptions.physics[resolverAlgorithm].avoidOverlap =
           nodeSpacingToOverlap;
       }
+    } else {
+      baseNetworkOptions.physics.enabled = false;
+      baseNetworkOptions.hierarchical.enabled = true;
+      baseNetworkOptions.hierarchical.direction = graphConfiguration.direction;
+      baseNetworkOptions.hierarchical.nodeSpacing =
+        graphConfiguration.node_spacing;
     }
 
     const _network = new Network(

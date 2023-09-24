@@ -19,16 +19,18 @@ import { useStoreSelect } from "@/store/react-bindings";
 const availableLayouts = ["cluster", "hierarchical"] as const;
 type AvailableLayouts = (typeof availableLayouts)[number];
 
+const hierarchicalDirections = ["UD", "DU", "LR", "RL"] as const;
+
 interface FormValues {
   layout: {
     selected: "cluster" | "hierarchical";
     cluster: {
       spacing_algorithm: "barnes_hut" | "force_atlas_2" | "repulsion";
-      node_spacing: number;
     };
     hierarchical: {
-      direction: "lr" | "td";
+      direction: (typeof hierarchicalDirections)[number];
     };
+    node_spacing: number;
   };
 }
 
@@ -37,11 +39,11 @@ const initialValue: FormValues = {
     selected: "cluster",
     cluster: {
       spacing_algorithm: "repulsion",
-      node_spacing: 500,
     },
     hierarchical: {
-      direction: "lr",
+      direction: "UD",
     },
+    node_spacing: 500,
   },
 };
 
@@ -64,17 +66,6 @@ function ClusterOptions() {
         placeholder="Spacing algorithm"
         {...form.getInputProps("layout.cluster.spacing_algorithm")}
       />
-
-      <Text size="sm" mt="xl" mb="md">
-        Node Spacing
-      </Text>
-      <Slider
-        step={100}
-        min={100}
-        max={1000}
-        showLabelOnHover
-        {...form.getInputProps("layout.cluster.node_spacing")}
-      />
     </Box>
   );
 }
@@ -87,11 +78,11 @@ function HierarchicalOptions() {
 
       <SegmentedControl
         mt="md"
-        defaultValue={"lr"}
-        data={[
-          { value: "lr", label: "LR" },
-          { value: "td", label: "TD" },
-        ]}
+        defaultValue={"UD"}
+        data={hierarchicalDirections.map((direction) => ({
+          value: direction,
+          label: direction,
+        }))}
         {...form.getInputProps("layout.hierarchical.direction")}
       />
     </Box>
@@ -112,6 +103,7 @@ function GraphOptions({ layout }: { layout: AvailableLayouts }) {
 }
 
 export function GraphConfiguration() {
+  const cycles = useStoreSelect("data", "cycles");
   const network = useStoreSelect("ui", "network");
 
   const [selectedLayout, setSelectedLayout] = React.useState<
@@ -135,9 +127,9 @@ export function GraphConfiguration() {
           selected: layout.type,
           cluster: {
             spacing_algorithm: layout.spacing_algorithm,
-            node_spacing: layout.node_spacing,
           },
           hierarchical: initialValue.layout.hierarchical,
+          node_spacing: layout.node_spacing,
         },
       });
     } else {
@@ -148,6 +140,7 @@ export function GraphConfiguration() {
           hierarchical: {
             direction: layout.direction,
           },
+          node_spacing: layout.node_spacing,
         },
       });
     }
@@ -163,13 +156,14 @@ export function GraphConfiguration() {
     if (value.layout.selected === "cluster") {
       invokeUseCase({
         type: value.layout.selected,
-        node_spacing: value.layout.cluster.node_spacing,
+        node_spacing: value.layout.node_spacing,
         spacing_algorithm: value.layout.cluster.spacing_algorithm,
       });
     } else {
       invokeUseCase({
         type: value.layout.selected,
         direction: value.layout.hierarchical.direction,
+        node_spacing: value.layout.node_spacing,
       });
     }
   }
@@ -201,6 +195,34 @@ export function GraphConfiguration() {
             </Box>
 
             {selectedLayout ? <GraphOptions layout={selectedLayout} /> : null}
+
+            <Box m="md">
+              <Text size="sm" mt="xl" mb="md">
+                Node Spacing
+              </Text>
+              <Slider
+                step={100}
+                min={100}
+                max={1000}
+                showLabelOnHover
+                {...form.getInputProps("layout.node_spacing")}
+              />
+            </Box>
+
+            {selectedLayout === "hierarchical" && cycles.length > 0 ? (
+              <Box m="md">
+                <Text size="sm" mt="xl" mb="md">
+                  Hierarchical layout is discouraged when the{" "}
+                  <Text span c="orange" inherit>
+                    graph is not acyclic.
+                  </Text>{" "}
+                  Current cycles:{" "}
+                  <Text span c="red" inherit>
+                    {cycles.length}
+                  </Text>
+                </Text>
+              </Box>
+            ) : null}
 
             <Group mt="xl" position="center">
               <Button type="submit" variant="gradient" radius="xs">
