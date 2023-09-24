@@ -16,10 +16,11 @@ import {
   createEdgeId,
   defaultEdgeOptions,
   defaultNodeOptions,
+  getMethodToApplyOnNetworkElement,
   isNetworkEdge,
   isNetworkNode,
+  makeNetworkConfiguration,
   makeNodesAndEdges,
-  networkOptions,
 } from "./configuration";
 import {
   circularEdgeOptions,
@@ -27,11 +28,6 @@ import {
   computeBuiltinDependencies,
   computeThirdPartyDependencies,
 } from "./dependencies";
-import { set } from "node_modules/@effect/data/HashMap";
-
-export function getMethodToApplyOnNetworkElement(enable: boolean) {
-  return enable ? "update" : "remove";
-}
 
 export default function GraphNetwork() {
   const appStore = useAppStore();
@@ -173,53 +169,13 @@ export default function GraphNetwork() {
     }
   }
 
-  const toVisJSSolvers = {
-    repulsion: "repulsion",
-    barnes_hut: "barnesHut",
-    force_atlas_2: "forceAtlas2Based",
-  } as const;
-
   function initNetwork(graphConfiguration: NetworkLayout) {
-    const baseNetworkOptions = {
-      ...networkOptions,
-      nodes: {
-        ...networkOptions.nodes,
-      },
-    };
-
-    if (graphConfiguration.type === "cluster") {
-      const resolverAlgorithm =
-        toVisJSSolvers[graphConfiguration.spacing_algorithm];
-
-      baseNetworkOptions.layout.hierarchical.enabled = false;
-      baseNetworkOptions.physics.enabled = true;
-      baseNetworkOptions.physics.solver = resolverAlgorithm;
-
-      if (resolverAlgorithm === "repulsion") {
-        baseNetworkOptions.physics.repulsion = {
-          ...baseNetworkOptions.physics.repulsion,
-          nodeDistance: graphConfiguration.node_spacing,
-        };
-      } else {
-        const nodeSpacingToOverlap = graphConfiguration.node_spacing / 1000;
-        baseNetworkOptions.physics[resolverAlgorithm].avoidOverlap =
-          nodeSpacingToOverlap;
-      }
-    } else {
-      baseNetworkOptions.physics.enabled = false;
-      baseNetworkOptions.layout.hierarchical.enabled = true;
-      baseNetworkOptions.layout.hierarchical.direction =
-        graphConfiguration.direction;
-      baseNetworkOptions.layout.hierarchical.sortMethod =
-        graphConfiguration.spacing_algorithm;
-      baseNetworkOptions.layout.hierarchical.nodeSpacing =
-        graphConfiguration.node_spacing;
-    }
+    const networkConfiguration = makeNetworkConfiguration(graphConfiguration);
 
     const _network = new Network(
       networkContainerRef.current!,
       { nodes: nodesDataset, edges: edgesDataset },
-      baseNetworkOptions
+      networkConfiguration
     );
 
     setNetwork(_network);
@@ -267,6 +223,7 @@ export default function GraphNetwork() {
 
   React.useEffect(() => {
     initNetwork(graphConfig);
+
     return () => {
       network?.destroy();
     };

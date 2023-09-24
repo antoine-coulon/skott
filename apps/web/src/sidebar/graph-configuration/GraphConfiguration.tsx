@@ -15,15 +15,16 @@ import { createFormContext } from "@mantine/form";
 import { callUseCase } from "@/store/store";
 import { updateConfiguration } from "@/core/network/update-configuration";
 import { useStoreSelect } from "@/store/react-bindings";
+import { NetworkLayout, storeDefaultValue } from "@/store/state";
 
 const availableLayouts = ["cluster", "hierarchical"] as const;
-type AvailableLayouts = (typeof availableLayouts)[number];
-
 const hierarchicalDirections = ["UD", "DU", "LR", "RL"] as const;
+
+type AvailableLayouts = (typeof availableLayouts)[number];
 
 interface FormValues {
   layout: {
-    selected: "cluster" | "hierarchical";
+    selected: NetworkLayout["type"];
     cluster: {
       spacing_algorithm: "barnes_hut" | "force_atlas_2" | "repulsion";
     };
@@ -31,21 +32,21 @@ interface FormValues {
       direction: (typeof hierarchicalDirections)[number];
       spacing_algorithm: "directed" | "hubsize";
     };
-    node_spacing: number;
+    node_spacing: NetworkLayout["node_spacing"];
   };
 }
 
 const initialValue: FormValues = {
   layout: {
-    selected: "cluster",
+    selected: storeDefaultValue.ui.network.layout.type,
     cluster: {
-      spacing_algorithm: "repulsion",
+      spacing_algorithm: storeDefaultValue.ui.network.layout.spacing_algorithm,
     },
     hierarchical: {
       direction: "UD",
       spacing_algorithm: "hubsize",
     },
-    node_spacing: 500,
+    node_spacing: storeDefaultValue.ui.network.layout.node_spacing,
   },
 };
 

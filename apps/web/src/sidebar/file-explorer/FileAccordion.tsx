@@ -12,8 +12,6 @@ import {
   IconDots,
   IconFilterPlus,
   IconFocusCentered,
-  IconLoadBalancer,
-  IconReportSearch,
   IconFile,
 } from "@tabler/icons-react";
 import { makeTreeStructure } from "fs-tree-structure";
@@ -131,29 +129,6 @@ function File({
             }
           >
             Focus
-          </Menu.Item>
-          <Menu.Item
-            disabled={true}
-            onClick={() =>
-              notify({
-                action: "isolate_node",
-                payload: { nodeId: parseFilePath(fileId) },
-              })
-            }
-            icon={
-              <IconLoadBalancer size="1.3rem" color="violet" stroke={1.5} />
-            }
-          >
-            Isolate (wip)
-          </Menu.Item>
-          <Menu.Item
-            disabled={true}
-            onClick={() => {}}
-            icon={
-              <IconReportSearch size="1.3rem" color="violet" stroke={1.5} />
-            }
-          >
-            Open details (wip)
           </Menu.Item>
         </Menu.Dropdown>
       </Menu>

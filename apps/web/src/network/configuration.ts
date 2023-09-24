@@ -1,7 +1,7 @@
 import { Edge, Node } from "vis-network";
 
 import { SkottMetadata, SkottNode } from "../skott";
-import { storeDefaultValue } from "@/store/state";
+import { NetworkLayout, storeDefaultValue } from "@/store/state";
 
 export const defaultNodeOptions = {
   shape: "box",
@@ -39,6 +39,12 @@ export const defaultEdgeOptions = {
     inherit: false,
   },
 };
+
+export const toVisSolvers = {
+  repulsion: "repulsion",
+  barnes_hut: "barnesHut",
+  force_atlas_2: "forceAtlas2Based",
+} as const;
 
 const defaultConfigurableNetworkOptions = {
   nodeSpacing: storeDefaultValue.ui.network.layout.node_spacing,
@@ -121,6 +127,42 @@ export const networkOptions = {
   ...layoutConfigs,
 } as const;
 
+export function makeNetworkConfiguration(graphConfiguration: NetworkLayout) {
+  const baseNetworkOptions = { ...networkOptions };
+
+  if (graphConfiguration.type === "cluster") {
+    const resolverAlgorithm =
+      toVisSolvers[graphConfiguration.spacing_algorithm];
+
+    baseNetworkOptions.layout.hierarchical.enabled = false;
+    baseNetworkOptions.physics.enabled = true;
+    baseNetworkOptions.physics.solver = resolverAlgorithm;
+
+    if (resolverAlgorithm === "repulsion") {
+      baseNetworkOptions.physics.repulsion = {
+        ...baseNetworkOptions.physics.repulsion,
+        nodeDistance: graphConfiguration.node_spacing,
+      };
+    } else {
+      // Converting 100 to 1000 node spacing to overlap ratio between 0 and 1
+      const nodeSpacingToOverlap = graphConfiguration.node_spacing / 1000;
+      baseNetworkOptions.physics[resolverAlgorithm].avoidOverlap =
+        nodeSpacingToOverlap;
+    }
+  } else {
+    baseNetworkOptions.physics.enabled = false;
+    baseNetworkOptions.layout.hierarchical.enabled = true;
+    baseNetworkOptions.layout.hierarchical.direction =
+      graphConfiguration.direction;
+    baseNetworkOptions.layout.hierarchical.sortMethod =
+      graphConfiguration.spacing_algorithm;
+    baseNetworkOptions.layout.hierarchical.nodeSpacing =
+      graphConfiguration.node_spacing;
+  }
+
+  return baseNetworkOptions;
+}
+
 export function createEdgeId(node1: string, node2: string) {
   return [node1, node2].sort().join("-");
 }
@@ -194,4 +236,8 @@ export function isNetworkEdge(
   networkElement: Node | Edge
 ): networkElement is Edge {
   return !isNetworkNode(networkElement);
+}
+
+export function getMethodToApplyOnNetworkElement(enable: boolean) {
+  return enable ? "update" : "remove";
 }
