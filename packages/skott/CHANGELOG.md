@@ -1,5 +1,11 @@
 # skott
 
+## 0.30.3
+
+### Patch Changes
+
+- [#112](https://github.com/antoine-coulon/skott/pull/112) [`f41de8b`](https://github.com/antoine-coulon/skott/commit/f41de8b4b137084b59621fd446eed23921a38f3e) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - Use localhost instead of 127.0.0.1 to ensure a better cross platform compatibility when auto opening the web application. Thanks @HassanMojab for the hint!
+
 ## 0.30.2
 
 ### Patch Changes
