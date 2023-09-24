@@ -1,17 +1,9 @@
-import { spawn } from "node:child_process";
+import { ChildProcess, spawn } from "node:child_process";
 import { platform } from "node:process";
 
 import isWsl from "is-wsl";
 
 const supportedPlatforms = ["darwin", "win32", "linux"] as const;
-
-function selectLinuxBinary(): string {
-  if (isWsl) {
-    return "wslview";
-  }
-
-  return "xdg-open";
-}
 
 function selectPlatformBinary() {
   let binary: string | undefined;
@@ -24,7 +16,7 @@ function selectPlatformBinary() {
       binary = "explorer.exe";
       break;
     case "linux":
-      binary = selectLinuxBinary();
+      binary = "xdg-open";
       break;
     default:
       throw new Error(
@@ -39,8 +31,14 @@ function selectPlatformBinary() {
 
 export function open(url: string, callback: (error: Error) => void): void {
   try {
-    const binary = selectPlatformBinary();
-    const child = spawn(binary, [url]);
+    let child: ChildProcess;
+
+    if (isWsl) {
+      child = spawn("cmd.exe", ["/c", "start", url]);
+    } else {
+      const binary = selectPlatformBinary();
+      child = spawn(binary, [url]);
+    }
 
     child.on("error", callback);
   } catch (error) {
