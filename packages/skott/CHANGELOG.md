@@ -6,9 +6,6 @@
 
 - [#110](https://github.com/antoine-coulon/skott/pull/110) [`ad5e4be`](https://github.com/antoine-coulon/skott/commit/ad5e4be737f7d48ba32835be73ed81bfba333e14) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - Use cmd.exe (natively installed on WSL) instead of wslview to auto open browser when using webapp display mode
 
-- Updated dependencies []:
-  - skott-webapp@1.0.6
-
 ## 0.30.1
 
 ### Patch Changes
