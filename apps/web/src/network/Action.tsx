@@ -39,6 +39,7 @@ export function ActionMenu({
             onClick={() => {
               network?.destroy();
               initNetwork();
+              setSimulation(true);
             }}
             icon={<IconRotate2 style={{ width: rem(14), height: rem(14) }} />}
           >

@@ -9,6 +9,7 @@ import {
   Switch,
   useMantineTheme,
   Code,
+  Box,
 } from "@mantine/core";
 import { IconBrandGithub, IconMoonStars, IconSun } from "@tabler/icons-react";
 import GitHubButton from "react-github-btn";
@@ -29,25 +30,22 @@ export default function Header() {
       <Group sx={{ height: "100%" }} px={20} position="apart">
         <Group sx={{ height: "100%", marginTop: "5px" }}>
           <Image
-            src={"./skott.svg"}
-            width={125}
-            style={{ marginBottom: "5px" }}
+            src={"./skott-logo-circle.png"}
+            ml={-12}
+            width={50}
+            style={{ marginBottom: "8px" }}
             fit="contain"
             radius="md"
           />
-          <GitHubButton
-            href="https://github.com/antoine-coulon/skott"
-            data-icon="octicon-star"
-            data-size="large"
-            data-show-count="true"
-            aria-label="Star antoine-coulon/skott on GitHub"
-          >
-            Star
-          </GitHubButton>
         </Group>
 
         <Group position="apart">
-          <Button variant="gradient" radius="lg" onClick={openGlobalSearch}>
+          <Button
+            variant="gradient"
+            ml={25}
+            radius="lg"
+            onClick={openGlobalSearch}
+          >
             <Group position="apart">
               <Text>Browse files</Text>
               <Code>CMD + K</Code>
@@ -71,6 +69,18 @@ export default function Header() {
               </ThemeIcon>
             </Group>
           </Button>
+
+          <Box mt={5} mr={10}>
+            <GitHubButton
+              href="https://github.com/antoine-coulon/skott"
+              data-icon="octicon-star"
+              data-size="large"
+              data-show-count="true"
+              aria-label="Star antoine-coulon/skott on GitHub"
+            >
+              Star
+            </GitHubButton>
+          </Box>
 
           <Switch
             checked={isDarkMode}

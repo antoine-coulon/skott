@@ -1,5 +1,5 @@
 <p align="center">
-	<img alt="skott" src="https://user-images.githubusercontent.com/43391199/188307540-00740a8b-ad19-401b-b767-6211bfb0d26b.png" width="350">
+	<img alt="skott" src="https://github.com/antoine-coulon/skott/assets/43391199/4f1dfaa7-af3b-43cb-9f5c-a2ca0f960265" width="350">
 </p>
 
 ## How to use skott
