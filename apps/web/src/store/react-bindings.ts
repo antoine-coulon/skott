@@ -1,5 +1,5 @@
 import React from "react";
-import { map, tap } from "rxjs";
+import { map } from "rxjs";
 
 import { AppEffects, AppStore, AppStoreInstance } from "./store";
 import { AppState } from "./state";

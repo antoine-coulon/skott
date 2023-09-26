@@ -1,10 +1,19 @@
 import { toggleDependencies } from "@/core/network/toggle-dependencies";
-import { useStoreSelect } from "@/store/react-bindings";
+import { useAppStore, useStoreSelect } from "@/store/react-bindings";
 import { callUseCase } from "@/store/store";
 import { Box, Checkbox, Navbar, ScrollArea } from "@mantine/core";
 
 export function Dependencies() {
   const network = useStoreSelect("ui", "network");
+  const state = useAppStore().getState();
+  const { hasThirdParty, hasBuiltin } = {
+    hasThirdParty: Object.values(state.data.graph).some(
+      (node) => node.body.thirdPartyDependencies.length > 0
+    ),
+    hasBuiltin: Object.values(state.data.graph).some(
+      (node) => node.body.builtinDependencies.length > 0
+    ),
+  };
 
   function toggleDepsVisualizationOption(
     option: "circular" | "thirdparty" | "builtin"
@@ -21,6 +30,7 @@ export function Dependencies() {
         <Box p="md">
           <Checkbox
             label="Circular dependencies"
+            disabled={state.data.cycles.length === 0}
             radius="md"
             color="red"
             checked={network?.dependencies.circular.active ?? false}
@@ -34,6 +44,7 @@ export function Dependencies() {
             label="Third-party dependencies"
             radius="md"
             color="grape"
+            disabled={!hasThirdParty}
             checked={network?.dependencies.thirdparty.active ?? false}
             onChange={() => {
               toggleDepsVisualizationOption("thirdparty");
@@ -45,6 +56,7 @@ export function Dependencies() {
             label="Built-in dependencies"
             radius="md"
             color="lime"
+            disabled={!hasBuiltin}
             checked={network?.dependencies.builtin.active ?? false}
             onChange={() => {
               toggleDepsVisualizationOption("builtin");
