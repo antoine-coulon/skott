@@ -20,6 +20,10 @@ export class AppStore {
   private _eventStream$ = new Subject<AppEffects>();
   private _initialState: AppState = storeDefaultValue;
 
+  private notify(event: AppActions) {
+    this.events$.next(event);
+  }
+
   get store$() {
     return this._store$;
   }
@@ -45,10 +49,6 @@ export class AppStore {
     this._store$.next(this._initialState);
   }
 
-  notify(event: AppActions) {
-    this.events$.next(event);
-  }
-
   dispatch(action: AppActions, dispatchOptions = { notify: false }) {
     this._reducers.forEach((reducer) =>
       pipe(
@@ -71,7 +71,7 @@ export class AppStore {
 const listOfReducers = [...fileSystemReducers, ...networkReducers];
 
 const instance = new AppStore(
-  new BehaviorSubject(storeDefaultValue),
+  new BehaviorSubject<AppState>(storeDefaultValue),
   listOfReducers
 );
 

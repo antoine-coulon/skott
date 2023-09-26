@@ -28,6 +28,8 @@ import {
   computeBuiltinDependencies,
   computeThirdPartyDependencies,
 } from "./dependencies";
+import { ProgressLoader } from "@/network/ProgressLoader";
+import { notify } from "@/store/store";
 
 export default function GraphNetwork() {
   const appStore = useAppStore();
@@ -102,7 +104,7 @@ export default function GraphNetwork() {
       }
     }
 
-    if (!highlighted && data.entrypoint) {
+    if (!highlighted && data.entrypoint !== "none") {
       highlightEntrypoint(data.entrypoint);
     }
   }
@@ -178,6 +180,26 @@ export default function GraphNetwork() {
       networkConfiguration
     );
 
+    _network.on("stabilizationProgress", (params) => {
+      notify({
+        action: "network_loading",
+        payload: {
+          progress: (params.iterations / params.total) * 100,
+        },
+      });
+    });
+
+    _network.on("stabilizationIterationsDone", () => {
+      notify({
+        action: "network_loading",
+        payload: {
+          progress: 100,
+        },
+      });
+
+      _network.stopSimulation();
+    });
+
     setNetwork(_network);
     reconciliateNetwork(_network);
   }
@@ -242,17 +264,18 @@ export default function GraphNetwork() {
   }, [network]);
 
   return (
-    <>
+    <div style={{ position: "relative", width: "100%", height: "100%" }}>
       <ActionMenu
         network={network}
         initNetwork={() => initNetwork(graphConfig)}
       />
+      <ProgressLoader />
       <div
         style={{
           height: "100%",
         }}
         ref={networkContainerRef}
       />
-    </>
+    </div>
   );
 }

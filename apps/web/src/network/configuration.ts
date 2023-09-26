@@ -96,6 +96,7 @@ const layoutConfigs = {
     },
   },
   layout: {
+    improvedLayout: false,
     hierarchical: {
       enabled: false,
       levelSeparation: 150,

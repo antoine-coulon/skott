@@ -12,7 +12,7 @@ export interface SkottStructureWithCycles
     SkottCycles {}
 
 export interface SkottMetadata {
-  entrypoint?: string;
+  entrypoint: string;
 }
 
 export type SkottNode = _SkottNode;

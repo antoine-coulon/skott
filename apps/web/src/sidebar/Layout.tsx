@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useDisclosure } from "@mantine/hooks";
+import { LoadingOverlay, Button, Group, Box } from "@mantine/core";
 import {
   createStyles,
   Navbar,
@@ -127,7 +129,7 @@ const isFeatureDisabled = (section: string) =>
 export function DoubleNavbar() {
   const { classes, cx } = useStyles();
 
-  const [active, setActive] = useState<MenuKeys>("graph_configuration");
+  const [active, setActive] = useState<MenuKeys>("summary");
 
   useAppEffects((action) => {
     if (

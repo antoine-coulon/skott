@@ -102,7 +102,7 @@ function File({
     >
       <Flex align="center">
         {getLanguageIcon(name)}
-        <Text truncate="end" ml={10}>
+        <Text truncate="end" maw={150} ml={10}>
           {name}
         </Text>
       </Flex>

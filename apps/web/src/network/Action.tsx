@@ -17,7 +17,7 @@ export function ActionMenu({
   network: Network | undefined;
   initNetwork: () => void;
 }) {
-  const [simulation, setSimulation] = React.useState(true);
+  const [simulation, setSimulation] = React.useState(false);
 
   return (
     <div
@@ -71,7 +71,6 @@ export function ActionMenu({
           <Menu.Label>Layout configuration</Menu.Label>
           <Menu.Item
             onClick={() => {
-              console.log("click");
               notify({
                 action: "open_sidebar_menu",
                 payload: { menu: "graph_configuration" },

@@ -19,4 +19,10 @@ export type AppEvents =
       payload: {
         menu: string;
       };
+    }
+  | {
+      action: "network_loading";
+      payload: {
+        progress: number;
+      };
     };

@@ -41,6 +41,7 @@ export interface AppState {
 
 export const storeDefaultValue = {
   data: {
+    entrypoint: "none",
     cycles: [],
     files: [],
     graph: {},
