@@ -58,9 +58,8 @@ export function ProgressLoader() {
         <Box>
           {appStore.getState().data.files.length > 100 ? (
             <Text m="md">
-              {" "}
-              If building the network takes too much time, consider checking
-              "Help" section accessible from Graph Configuration menu.
+              Check the documentation from Graph Configuration menu to customize
+              the visualization.
             </Text>
           ) : null}
 

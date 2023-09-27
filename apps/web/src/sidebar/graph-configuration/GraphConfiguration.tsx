@@ -18,6 +18,7 @@ import { callUseCase, notify } from "@/store/store";
 import { updateConfiguration } from "@/core/network/update-configuration";
 import { useStoreSelect } from "@/store/react-bindings";
 import { NetworkLayout, storeDefaultValue } from "@/store/state";
+import { Documentation } from "@/sidebar/graph-configuration/Documentation";
 
 const availableLayouts = ["cluster", "hierarchical"] as const;
 const hierarchicalDirections = ["UD", "DU", "LR", "RL"] as const;
@@ -82,19 +83,6 @@ function HierarchicalOptions() {
   const form = useFormContext();
   return (
     <Box m="md">
-      <Text size="sm" mb="md">
-        Spacing algorithm
-      </Text>
-
-      <Select
-        data={[
-          { label: "Hubsize", value: "hubsize" },
-          { label: "Directed", value: "directed" },
-        ]}
-        placeholder="Spacing algorithm"
-        {...form.getInputProps("layout.hierarchical.spacing_algorithm")}
-      />
-
       <Text size="sm" mt="md">
         Direction
       </Text>
@@ -108,6 +96,20 @@ function HierarchicalOptions() {
         }))}
         {...form.getInputProps("layout.hierarchical.direction")}
       />
+
+      <Text size="sm" mt="md" mb="md">
+        Spacing algorithm
+      </Text>
+
+      <Select
+        data={[
+          { label: "Hubsize", value: "hubsize" },
+          { label: "Directed", value: "directed" },
+        ]}
+        placeholder="Spacing algorithm"
+        {...form.getInputProps("layout.hierarchical.spacing_algorithm")}
+      />
+
       <Divider mt="lg" />
     </Box>
   );
@@ -202,7 +204,10 @@ export function GraphConfiguration() {
   return (
     <ScrollArea.Autosize mah="90vh" mx="auto">
       <Navbar.Section>
-        <Box p="md">Graph configuration</Box>
+        <Group position="apart" p="md">
+          <Text>Graph configuration</Text>
+          <Documentation />
+        </Group>
 
         <FormProvider form={form}>
           <form onSubmit={form.onSubmit(dispatchConfiguration)}>
@@ -225,20 +230,21 @@ export function GraphConfiguration() {
               />
 
               <Divider mt="lg" />
+            </Box>
 
+            {selectedLayout ? <GraphOptions layout={selectedLayout} /> : null}
+
+            <Box m="md">
               <Switch
                 mt="md"
                 w="100%"
                 checked={form.values.layout.smooth_edges}
                 labelPosition="left"
-                label="Smooth edges"
+                label="Improve Spacing"
                 {...form.getInputProps("layout.smooth_edges")}
               />
-
               <Divider mt="lg" />
             </Box>
-
-            {selectedLayout ? <GraphOptions layout={selectedLayout} /> : null}
 
             <Box m="md">
               <Text size="sm" mt="lg" mb="xl">

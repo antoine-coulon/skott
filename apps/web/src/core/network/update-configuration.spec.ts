@@ -20,6 +20,7 @@ describe("Graph dynamic configuration", () => {
         ...storeDefaultValue.ui.network,
         layout: {
           type: "cluster",
+          smooth_edges: false,
           spacing_algorithm: "repulsion",
           node_spacing: 500,
         },
@@ -31,6 +32,7 @@ describe("Graph dynamic configuration", () => {
     dispatchAction({
       type: "hierarchical",
       direction: "LR",
+      smooth_edges: true,
       node_spacing: 300,
       spacing_algorithm: "directed",
     });
@@ -43,6 +45,7 @@ describe("Graph dynamic configuration", () => {
         layout: {
           type: "hierarchical",
           direction: "LR",
+          smooth_edges: true,
           node_spacing: 300,
           spacing_algorithm: "directed",
         },
