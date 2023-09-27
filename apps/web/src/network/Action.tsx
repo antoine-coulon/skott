@@ -68,7 +68,7 @@ export function ActionMenu({
 
           <Menu.Divider />
 
-          <Menu.Label>Layout configuration</Menu.Label>
+          <Menu.Label>Graph configuration</Menu.Label>
           <Menu.Item
             onClick={() => {
               notify({

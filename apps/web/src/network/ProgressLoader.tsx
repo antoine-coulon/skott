@@ -10,6 +10,11 @@ export function ProgressLoader() {
   const [progress, setProgress] = React.useState(0);
 
   useAppEffects((store) => {
+    if (store.action === "network_refresh") {
+      setShowProgress(true);
+      setProgress(0);
+    }
+
     if (store.action === "network_loading") {
       setShowProgress(true);
       setProgress(store.payload.progress);
@@ -54,9 +59,8 @@ export function ProgressLoader() {
           {appStore.getState().data.files.length > 100 ? (
             <Text m="md">
               {" "}
-              If building the network takes too much time, consider filtering
-              the graph or running skott into sub-folders to reduce the amount
-              of nodes. Or just a grab coffee.
+              If building the network takes too much time, consider checking
+              "Help" section accessible from Graph Configuration menu.
             </Text>
           ) : null}
 

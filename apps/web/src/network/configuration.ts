@@ -13,6 +13,10 @@ export const defaultNodeOptions = {
       background: "#F5F5F5",
     },
   },
+  scaling: {
+    min: 10,
+    max: 30,
+  },
   font: {
     color: "#121212",
     size: 18,
@@ -23,11 +27,7 @@ export const defaultNodeOptions = {
     align: "center",
   },
   shadow: {
-    enabled: true,
-    color: "rgba(0,0,0,0.5)",
-    size: 10,
-    x: 5,
-    y: 5,
+    enabled: false,
   },
 };
 
@@ -35,8 +35,16 @@ export const defaultEdgeOptions = {
   color: {
     color: "#7E7E7E",
     highlight: "#007BEB",
-    hover: "#007BEB ",
+    hover: "#007BEB",
     inherit: false,
+  },
+  smooth: {
+    // enabled when graph is small
+    enabled: true,
+    forceDirection: false,
+    roundness: 0.5,
+    // dynamic when graph is small
+    type: "continuous",
   },
 };
 
@@ -110,6 +118,9 @@ const layoutConfigs = {
       shakeTowards: "leaves",
     },
   },
+  interaction: {
+    hideEdgesOnDrag: true,
+  },
 };
 
 export const networkOptions = {
@@ -130,6 +141,9 @@ export const networkOptions = {
 
 export function makeNetworkConfiguration(graphConfiguration: NetworkLayout) {
   const baseNetworkOptions = { ...networkOptions };
+  baseNetworkOptions.edges.smooth.type = graphConfiguration.smooth_edges
+    ? "dynamic"
+    : "continuous";
 
   if (graphConfiguration.type === "cluster") {
     const resolverAlgorithm =
@@ -138,6 +152,7 @@ export function makeNetworkConfiguration(graphConfiguration: NetworkLayout) {
     baseNetworkOptions.layout.hierarchical.enabled = false;
     baseNetworkOptions.physics.enabled = true;
     baseNetworkOptions.physics.solver = resolverAlgorithm;
+    baseNetworkOptions.edges.smooth.enabled = graphConfiguration.smooth_edges;
 
     if (resolverAlgorithm === "repulsion") {
       baseNetworkOptions.physics.repulsion = {

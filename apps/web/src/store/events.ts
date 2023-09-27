@@ -25,4 +25,7 @@ export type AppEvents =
       payload: {
         progress: number;
       };
+    }
+  | {
+      action: "network_refresh";
     };

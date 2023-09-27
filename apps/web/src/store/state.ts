@@ -10,7 +10,7 @@ export type NetworkLayout = (
       type: "cluster";
       spacing_algorithm: "repulsion" | "barnes_hut" | "force_atlas_2";
     }
-) & { node_spacing: number };
+) & { node_spacing: number; smooth_edges: boolean };
 
 export interface UiState {
   filters: {
@@ -64,6 +64,7 @@ export const storeDefaultValue = {
       },
       layout: {
         type: "cluster",
+        smooth_edges: false,
         spacing_algorithm: "repulsion",
         node_spacing: 500,
       },

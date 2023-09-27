@@ -244,7 +244,7 @@ export default function GraphNetwork() {
   });
 
   React.useEffect(() => {
-    initNetwork(graphConfig);
+    setTimeout(() => initNetwork(graphConfig), 200);
 
     return () => {
       network?.destroy();

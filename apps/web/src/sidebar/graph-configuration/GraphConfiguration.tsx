@@ -2,17 +2,19 @@ import React from "react";
 import {
   Box,
   Button,
+  Divider,
   Group,
   Navbar,
   ScrollArea,
   SegmentedControl,
   Select,
   Slider,
+  Switch,
   Text,
 } from "@mantine/core";
 import { createFormContext } from "@mantine/form";
 
-import { callUseCase } from "@/store/store";
+import { callUseCase, notify } from "@/store/store";
 import { updateConfiguration } from "@/core/network/update-configuration";
 import { useStoreSelect } from "@/store/react-bindings";
 import { NetworkLayout, storeDefaultValue } from "@/store/state";
@@ -25,6 +27,7 @@ type AvailableLayouts = (typeof availableLayouts)[number];
 interface FormValues {
   layout: {
     selected: NetworkLayout["type"];
+    smooth_edges: NetworkLayout["smooth_edges"];
     cluster: {
       spacing_algorithm: "barnes_hut" | "force_atlas_2" | "repulsion";
     };
@@ -39,6 +42,7 @@ interface FormValues {
 const initialValue: FormValues = {
   layout: {
     selected: storeDefaultValue.ui.network.layout.type,
+    smooth_edges: storeDefaultValue.ui.network.layout.smooth_edges,
     cluster: {
       spacing_algorithm: storeDefaultValue.ui.network.layout.spacing_algorithm,
     },
@@ -57,7 +61,7 @@ function ClusterOptions() {
 
   return (
     <Box m="md">
-      <Text size="sm" mt="xl" mb="md">
+      <Text size="sm" mb="md">
         Spacing algorithm
       </Text>
       <Select
@@ -69,6 +73,7 @@ function ClusterOptions() {
         placeholder="Spacing algorithm"
         {...form.getInputProps("layout.cluster.spacing_algorithm")}
       />
+      <Divider mt="lg" />
     </Box>
   );
 }
@@ -77,7 +82,7 @@ function HierarchicalOptions() {
   const form = useFormContext();
   return (
     <Box m="md">
-      <Text size="sm" mt="xl" mb="md">
+      <Text size="sm" mb="md">
         Spacing algorithm
       </Text>
 
@@ -103,6 +108,7 @@ function HierarchicalOptions() {
         }))}
         {...form.getInputProps("layout.hierarchical.direction")}
       />
+      <Divider mt="lg" />
     </Box>
   );
 }
@@ -143,6 +149,7 @@ export function GraphConfiguration() {
       form.setValues({
         layout: {
           selected: layout.type,
+          smooth_edges: layout.smooth_edges,
           cluster: {
             spacing_algorithm: layout.spacing_algorithm,
           },
@@ -154,6 +161,7 @@ export function GraphConfiguration() {
       form.setValues({
         layout: {
           selected: layout.type,
+          smooth_edges: layout.smooth_edges,
           cluster: initialValue.layout.cluster,
           hierarchical: {
             direction: layout.direction,
@@ -170,17 +178,20 @@ export function GraphConfiguration() {
   }, [network]);
 
   function dispatchConfiguration(value: FormValues) {
+    notify({ action: "network_refresh" });
     const invokeUseCase = callUseCase(updateConfiguration);
 
     if (value.layout.selected === "cluster") {
       invokeUseCase({
         type: value.layout.selected,
+        smooth_edges: value.layout.smooth_edges,
         node_spacing: value.layout.node_spacing,
         spacing_algorithm: value.layout.cluster.spacing_algorithm,
       });
     } else {
       invokeUseCase({
         type: value.layout.selected,
+        smooth_edges: value.layout.smooth_edges,
         direction: value.layout.hierarchical.direction,
         node_spacing: value.layout.node_spacing,
         spacing_algorithm: value.layout.hierarchical.spacing_algorithm,
@@ -212,12 +223,25 @@ export function GraphConfiguration() {
                     layout.slice(1).toLowerCase(),
                 }))}
               />
+
+              <Divider mt="lg" />
+
+              <Switch
+                mt="md"
+                w="100%"
+                checked={form.values.layout.smooth_edges}
+                labelPosition="left"
+                label="Smooth edges"
+                {...form.getInputProps("layout.smooth_edges")}
+              />
+
+              <Divider mt="lg" />
             </Box>
 
             {selectedLayout ? <GraphOptions layout={selectedLayout} /> : null}
 
             <Box m="md">
-              <Text size="sm" mt="xl" mb="md">
+              <Text size="sm" mt="lg" mb="xl">
                 Node Spacing
               </Text>
               <Slider
