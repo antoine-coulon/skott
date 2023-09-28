@@ -96,7 +96,7 @@ function File({
       align="center"
       justify="space-between"
       ml={15}
-      pl={isRoot ? 10 : 0}
+      pl={isRoot ? 10 : "0.9rem"}
       mb={5}
       pr={0}
     >
@@ -140,6 +140,7 @@ function Folder({
   name,
   children,
   openedFolders,
+  shouldOpenChildren,
   fileId,
   onOpen,
   onClose,
@@ -148,6 +149,7 @@ function Folder({
   children: Record<string, any>;
   fileId: string;
   openedFolders: Set<string>;
+  shouldOpenChildren: boolean;
   onOpen: (filename: string) => void;
   onClose: (filename: string) => void;
 }) {
@@ -189,30 +191,33 @@ function Folder({
             </Text>
           </Flex>
         </AccordionControl>
-        <Accordion.Panel>
-          {Object.entries(children).map(([name, value]) => {
-            if (isTypeScriptModule(name) || isJavaScriptModule(name)) {
-              return (
-                <File
-                  isRoot={false}
-                  fileId={`${fileId}#sk#${name}`}
-                  key={`file-${name}`}
-                  name={name}
-                />
-              );
-            }
-            return (
-              <Folder
-                key={`folder-${name}`}
-                name={name}
-                fileId={`${fileId}#sk#${name}`}
-                children={value}
-                openedFolders={openedFolders}
-                onOpen={onOpen}
-                onClose={onClose}
-              />
-            );
-          })}
+        <Accordion.Panel pl={0}>
+          {shouldOpenChildren
+            ? Object.entries(children).map(([name, value]) => {
+                if (isTypeScriptModule(name) || isJavaScriptModule(name)) {
+                  return (
+                    <File
+                      isRoot={false}
+                      fileId={`${fileId}#sk#${name}`}
+                      key={`file-${name}`}
+                      name={name}
+                    />
+                  );
+                }
+                return (
+                  <Folder
+                    key={`folder-${name}`}
+                    name={name}
+                    fileId={`${fileId}#sk#${name}`}
+                    children={value}
+                    shouldOpenChildren={openedFolders.has(fileId)}
+                    openedFolders={openedFolders}
+                    onOpen={onOpen}
+                    onClose={onClose}
+                  />
+                );
+              })
+            : null}
         </Accordion.Panel>
       </Accordion.Item>
     </Accordion>
@@ -247,6 +252,7 @@ export function FileExplorerAccordion() {
           children: value,
           fileId: leafName,
           openedFolders,
+          shouldOpenChildren: openedFolders.has(leafName),
           onOpen: (fileId) => {
             openedFolders.add(fileId);
             setOpenedFolders(new Set(openedFolders));
