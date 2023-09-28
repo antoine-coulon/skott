@@ -1,12 +1,11 @@
 import { Box, Progress, useMantineColorScheme, Text } from "@mantine/core";
 import React from "react";
 
-import { useAppEffects, useAppStore } from "@/store/react-bindings";
+import { useAppEffects } from "@/store/react-bindings";
 
 export function ProgressLoader() {
-  const appStore = useAppStore();
   const { colorScheme } = useMantineColorScheme();
-  const [showProgress, setShowProgress] = React.useState(true);
+  const [showProgress, setShowProgress] = React.useState(false);
   const [progress, setProgress] = React.useState(0);
 
   useAppEffects((store) => {
