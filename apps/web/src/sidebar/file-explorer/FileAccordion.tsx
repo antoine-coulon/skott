@@ -140,7 +140,6 @@ function Folder({
   name,
   children,
   openedFolders,
-  shouldOpenChildren,
   fileId,
   onOpen,
   onClose,
@@ -149,7 +148,6 @@ function Folder({
   children: Record<string, any>;
   fileId: string;
   openedFolders: Set<string>;
-  shouldOpenChildren: boolean;
   onOpen: (filename: string) => void;
   onClose: (filename: string) => void;
 }) {
@@ -164,6 +162,7 @@ function Folder({
       variant="filled"
       chevronPosition="left"
       multiple
+      defaultValue={openedFolders.has(fileId) ? [name] : []}
       onChange={(values) => {
         if (values.length > 0) {
           onOpen(fileId);
@@ -191,8 +190,8 @@ function Folder({
             </Text>
           </Flex>
         </AccordionControl>
-        <Accordion.Panel pl={0}>
-          {shouldOpenChildren
+        <Accordion.Panel>
+          {openedFolders.has(fileId)
             ? Object.entries(children).map(([name, value]) => {
                 if (isTypeScriptModule(name) || isJavaScriptModule(name)) {
                   return (
@@ -210,7 +209,6 @@ function Folder({
                     name={name}
                     fileId={`${fileId}#sk#${name}`}
                     children={value}
-                    shouldOpenChildren={openedFolders.has(fileId)}
                     openedFolders={openedFolders}
                     onOpen={onOpen}
                     onClose={onClose}
@@ -252,7 +250,7 @@ export function FileExplorerAccordion() {
           children: value,
           fileId: leafName,
           openedFolders,
-          shouldOpenChildren: openedFolders.has(leafName),
+          // shouldOpenChildren: openedFolders.has(leafName),
           onOpen: (fileId) => {
             openedFolders.add(fileId);
             setOpenedFolders(new Set(openedFolders));
