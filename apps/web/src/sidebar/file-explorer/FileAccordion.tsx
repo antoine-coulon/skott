@@ -13,6 +13,9 @@ import {
   IconFilterPlus,
   IconFocusCentered,
   IconFile,
+  IconFoldersOff,
+  IconFolderPlus,
+  IconFolderOff,
 } from "@tabler/icons-react";
 import { makeTreeStructure } from "fs-tree-structure";
 
@@ -47,7 +50,7 @@ function AccordionControl({
   onAction,
 }: {
   children: React.ReactNode;
-  onAction: (action: "filter") => void;
+  onAction: (action: "filter" | "keep-only") => void;
 }) {
   return (
     <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -72,9 +75,15 @@ function AccordionControl({
         <Menu.Dropdown>
           <Menu.Item
             onClick={() => onAction("filter")}
-            icon={<IconFilterPlus size="1.3rem" color="violet" stroke={1.5} />}
+            icon={<IconFolderOff size="1.3rem" color="violet" stroke={1.5} />}
           >
-            Add to filter pattern
+            Ignore folder
+          </Menu.Item>
+          <Menu.Item
+            onClick={() => onAction("keep-only")}
+            icon={<IconFolderPlus size="1.3rem" color="violet" stroke={1.5} />}
+          >
+            Keep only folder
           </Menu.Item>
         </Menu.Dropdown>
       </Menu>
@@ -174,8 +183,11 @@ function Folder({
       <Accordion.Item value={name}>
         <AccordionControl
           onAction={(event) => {
+            const pattern = `${parseFilePath(fileId)}/**/*`;
             if (event === "filter") {
-              applyFilter(`${parseFilePath(fileId)}/**/*`);
+              applyFilter(pattern);
+            } else if (event === "keep-only") {
+              applyFilter(`!${pattern}`);
             }
           }}
         >
@@ -250,7 +262,6 @@ export function FileExplorerAccordion() {
           children: value,
           fileId: leafName,
           openedFolders,
-          // shouldOpenChildren: openedFolders.has(leafName),
           onOpen: (fileId) => {
             openedFolders.add(fileId);
             setOpenedFolders(new Set(openedFolders));
