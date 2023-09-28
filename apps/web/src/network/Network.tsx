@@ -29,7 +29,9 @@ import {
   computeThirdPartyDependencies,
 } from "./dependencies";
 import { ProgressLoader } from "@/network/ProgressLoader";
-import { notify } from "@/store/store";
+import { callUseCase, notify } from "@/store/store";
+import { updateConfiguration } from "@/core/network/update-configuration";
+import { storeDefaultValue } from "@/store/state";
 
 export default function GraphNetwork() {
   const appStore = useAppStore();
@@ -172,7 +174,25 @@ export default function GraphNetwork() {
   }
 
   function initNetwork(graphConfiguration: NetworkLayout) {
-    const networkConfiguration = makeNetworkConfiguration(graphConfiguration);
+    let patchedGraphConfiguration = { ...graphConfiguration };
+
+    if (!network) {
+      if (nodesDataset.length > 0 && nodesDataset.length < 250) {
+        patchedGraphConfiguration.smooth_edges = true;
+
+        const invokeUseCase = callUseCase(updateConfiguration);
+
+        // `initNetwork` will be rerun as the configuration changes will be dispatched
+        return invokeUseCase({
+          ...storeDefaultValue.ui.network.layout,
+          smooth_edges: true,
+        });
+      }
+    }
+
+    const networkConfiguration = makeNetworkConfiguration(
+      patchedGraphConfiguration
+    );
 
     const _network = new Network(
       networkContainerRef.current!,

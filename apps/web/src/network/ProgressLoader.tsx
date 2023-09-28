@@ -56,12 +56,10 @@ export function ProgressLoader() {
         }}
       >
         <Box>
-          {appStore.getState().data.files.length > 100 ? (
-            <Text m="md">
-              Check the documentation from Graph Configuration menu to customize
-              the visualization.
-            </Text>
-          ) : null}
+          <Text m="md">
+            Check the documentation from Graph Configuration menu to customize
+            the visualization.
+          </Text>
 
           <Progress
             color="blue"
