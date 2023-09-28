@@ -232,6 +232,8 @@ export function makeNodesAndEdges(
         });
 
         edgeIds.add(edgeId);
+      } else {
+        graphEdges.find((edge) => edge.id === edgeId)!.arrows = "to, from";
       }
     });
   });
