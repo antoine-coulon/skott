@@ -27,6 +27,13 @@ function safeSet(m: Map<string, string[]>, key: string, value: string) {
   }
 }
 
+function harmonizeBuiltinDependencyProtocol(dep: string) {
+  if (!dep.startsWith("node:")) {
+    return `node:${dep}`;
+  }
+  return dep;
+}
+
 export function Summary() {
   const appStore = useAppStore();
   const [summary, setSummary] = React.useState({
@@ -58,9 +65,11 @@ export function Summary() {
       node.body.thirdPartyDependencies.forEach((dep) => {
         npmRegistry.set(dep, (npmRegistry.get(dep) || 0) + 1);
       });
-      node.body.builtinDependencies.forEach((dep) => {
-        builtinRegistry.set(dep, (builtinRegistry.get(dep) || 0) + 1);
-      });
+      node.body.builtinDependencies
+        .map(harmonizeBuiltinDependencyProtocol)
+        .forEach((dep) => {
+          builtinRegistry.set(dep, (builtinRegistry.get(dep) || 0) + 1);
+        });
       bytesSize += node.body.size;
     }
 
