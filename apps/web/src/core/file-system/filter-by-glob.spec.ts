@@ -22,6 +22,7 @@ describe("When filtering data by adding a glob", () => {
       const { data, ui } = await toPromise(appStore.store$);
 
       expect(data).toEqual({
+        entrypoint: "none",
         cycles: [],
         files: [],
         graph: {},
@@ -42,6 +43,7 @@ describe("When filtering data by adding a glob", () => {
         new BehaviorSubject<AppState>({
           ...storeDefaultValue,
           data: {
+            entrypoint: "none",
             cycles: [["a.js", "b.js"]],
             files: ["test.ts", "src/a.ts", "a.js", "b.js"],
             graph: {
@@ -78,6 +80,7 @@ describe("When filtering data by adding a glob", () => {
       const { data, ui } = await toPromise(appStore.store$);
 
       expect(data).toEqual({
+        entrypoint: "none",
         cycles: [["a.js", "b.js"]],
         files: ["a.js", "b.js"],
         graph: {
@@ -107,6 +110,7 @@ describe("When filtering data by adding a glob", () => {
         new BehaviorSubject<AppState>({
           ...storeDefaultValue,
           data: {
+            entrypoint: "none",
             cycles: [
               ["a.js", "b.js"],
               ["c.js", "d.js"],
@@ -125,6 +129,7 @@ describe("When filtering data by adding a glob", () => {
       const { data, ui } = await toPromise(appStore.store$);
 
       expect(data).toEqual({
+        entrypoint: "none",
         cycles: [["c.js", "d.js"]],
         files: [],
         graph: {},
@@ -144,6 +149,7 @@ describe("When resetting the glob to none", () => {
   test("Should reset the store to the initially set value", async () => {
     const initialAppState = {
       data: {
+        entrypoint: "none",
         cycles: [["a.js", "b.js"]],
         files: ["a.js", "b.js"],
         graph: {
