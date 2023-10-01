@@ -1,5 +1,5 @@
 <p align="center">
-	<img alt="skott" src="https://user-images.githubusercontent.com/43391199/188307540-00740a8b-ad19-401b-b767-6211bfb0d26b.png" width="350">
+	<img alt="skott" src="https://github.com/antoine-coulon/skott/assets/43391199/4f1dfaa7-af3b-43cb-9f5c-a2ca0f960265" width="350">
 </p>
 
 ## How to use skott
@@ -142,15 +142,15 @@ $ skott --fileExtensions=.ts,.tsx
 
 **Embedded Web Application**
 
-skott embeds a _display mode_ **"skott --displayMode=webapp"** allowing you to visualize more precisely dependencies and the links between them. Here is an overview of a subset from the graph generated for `fastify`:
+skott embeds a _display mode_ **"skott --displayMode=webapp"** allowing you to visualize more precisely dependencies and the links between them. Here is an overview of what you can do:
 
-<img alt="skott-webapp-fastify" src="https://user-images.githubusercontent.com/43391199/204465791-99ae71bb-67e9-4c84-8734-c9cad0b5c24d.png" />
+<img alt="skott-webapp" src="https://github.com/antoine-coulon/skott/assets/43391199/90456c53-d554-43cc-b493-004849bb501a" />
 
 As shown above **Third-party** and **Built-in dependencies** can be toggled when they are tracked (by providing `--trackThirdPartyDependencies` and `--trackBuiltinDependencies` to the CLI).
 
 When `Circular dependencies` are found in the graph, they can also be toggled via the _Node visualization options_ as shown below:
 
-<img alt="skott-webapp-with-cycles" src="https://user-images.githubusercontent.com/43391199/204466577-3b82bf6c-4ed4-436c-bd99-31aa9261fb61.png" />
+<img alt="skott-webapp-with-cycles" src="https://github-production-user-asset-6210df.s3.amazonaws.com/43391199/271436945-0d32c83f-0ad6-471c-9172-95cc8df0c3c0.png" />
 
 **skott** also offers other visualization modes, for instance static files (.svg, .png, .md, .json).
 
