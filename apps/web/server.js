@@ -859,7 +859,7 @@ const skottGraphData = {
 };
 
 const fakeSkottData = {
-  entrypoint: "src/index.ts",
+  entrypoint: "index.ts",
   files: Object.keys(skottGraphData),
   graph: {
     ...skottGraphData,

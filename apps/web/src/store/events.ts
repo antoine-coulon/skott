@@ -28,4 +28,7 @@ export type AppEvents =
     }
   | {
       action: "network_refresh";
+    }
+  | {
+      action: "network_cancel";
     };

@@ -1,5 +1,5 @@
 import React from "react";
-import { Subscription, delay, distinctUntilChanged, map } from "rxjs";
+import { Subscription, delay, distinctUntilChanged, map, tap } from "rxjs";
 
 import { DataSet } from "vis-data";
 import { Edge, Network, Node } from "vis-network";
@@ -29,7 +29,7 @@ import {
   computeThirdPartyDependencies,
 } from "./dependencies";
 import { ProgressLoader } from "@/network/ProgressLoader";
-import { callUseCase, notify } from "@/store/store";
+import { AppEffects, callUseCase, notify } from "@/store/store";
 import { updateConfiguration } from "@/core/network/update-configuration";
 import { storeDefaultValue } from "@/store/state";
 
@@ -173,11 +173,17 @@ export default function GraphNetwork() {
     }
   }
 
+  function destroyOnCancel(appEffect: AppEffects) {
+    if (appEffect.action === "network_cancel") {
+      network?.destroy();
+    }
+  }
+
   function initNetwork(graphConfiguration: NetworkLayout) {
     let patchedGraphConfiguration = { ...graphConfiguration };
 
     if (!network) {
-      if (nodesDataset.length > 0 && nodesDataset.length < 250) {
+      if (nodesDataset.length > 0 && nodesDataset.length < 300) {
         patchedGraphConfiguration.smooth_edges = true;
 
         const invokeUseCase = callUseCase(updateConfiguration);
@@ -264,6 +270,8 @@ export default function GraphNetwork() {
   });
 
   React.useEffect(() => {
+    network?.destroy();
+
     setTimeout(() => initNetwork(graphConfig), 200);
 
     return () => {
@@ -273,7 +281,7 @@ export default function GraphNetwork() {
 
   React.useEffect(() => {
     const appEventsSubscription = appStore.events$
-      .pipe(delay(150))
+      .pipe(tap(destroyOnCancel), delay(150))
       .subscribe((appEvent) =>
         networkUIReducer(appStore.getState().data, appEvent)
       );

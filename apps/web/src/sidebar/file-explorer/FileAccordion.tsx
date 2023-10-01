@@ -10,10 +10,8 @@ import {
 } from "@mantine/core";
 import {
   IconDots,
-  IconFilterPlus,
   IconFocusCentered,
   IconFile,
-  IconFoldersOff,
   IconFolderPlus,
   IconFolderOff,
 } from "@tabler/icons-react";
