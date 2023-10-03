@@ -43,7 +43,7 @@
   "dependencies": {
     "@effect/data": "^0.4.1",
     "@effect/io": "^0.8.0",
-    "@typescript-eslint/typescript-estree": "^5.60.0",
+    "@typescript-eslint/typescript-estree": "^6.7.4",
     "commander": "^11.0.0",
     "compression": "^1.7.4",
     "depcheck": "^1.4.3",
@@ -63,7 +63,7 @@
     "polka": "^0.5.2",
     "sirv": "^2.0.3",
     "skott-webapp": "workspace:^",
-    "typescript": "^4.9.5"
+    "typescript": "^5.2.2"
   },
   "devDependencies": {
     "@nodesecure/eslint-config": "^1.7.0",
