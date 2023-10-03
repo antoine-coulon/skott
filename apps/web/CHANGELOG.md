@@ -1,5 +1,11 @@
 # skott-webapp
 
+## 2.0.1
+
+### Patch Changes
+
+- [#116](https://github.com/antoine-coulon/skott/pull/116) [`2e80022`](https://github.com/antoine-coulon/skott/commit/2e80022ee988ba9997089369d4b3f30a14f3acb0) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - Reduce package size by getting rid of unused prod deps as the project is shipped bundled
+
 ## 2.0.0
 
 ### Major Changes
