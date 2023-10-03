@@ -8,7 +8,6 @@
 
 - Updated dependencies [[`9dcb23f`](https://github.com/antoine-coulon/skott/commit/9dcb23ff8f5176128d0c88495bbfea37020dbdf7)]:
   - fs-tree-structure@0.0.3
-  - skott-webapp@2.0.1
 
 ## 0.31.1
 
