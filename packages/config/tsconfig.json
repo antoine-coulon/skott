@@ -8,7 +8,8 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "verbatimModuleSyntax": true
   },
   "include": ["src", "bin", "lib", "index.ts"],
   "exclude": ["node_modules", "dist"]
