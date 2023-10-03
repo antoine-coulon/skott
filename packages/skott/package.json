@@ -43,9 +43,7 @@
   "dependencies": {
     "@effect/data": "^0.4.1",
     "@effect/io": "^0.8.0",
-    "@typescript-eslint/eslint-plugin": "^6.7.0",
-    "@typescript-eslint/parser": "^6.7.0",
-    "@typescript-eslint/typescript-estree": "^5.60.0",
+    "@typescript-eslint/typescript-estree": "^6.7.4",
     "commander": "^11.0.0",
     "compression": "^1.7.4",
     "depcheck": "^1.4.3",
@@ -60,12 +58,12 @@
     "kleur": "^4.1.5",
     "lodash.difference": "^4.5.0",
     "meriyah": "^4.3.7",
-    "minimatch": "^9.0.2",
+    "minimatch": "^9.0.3",
     "ora": "^6.3.1",
     "polka": "^0.5.2",
     "sirv": "^2.0.3",
     "skott-webapp": "workspace:^",
-    "typescript": "^4.9.5"
+    "typescript": "^5.2.2"
   },
   "devDependencies": {
     "@nodesecure/eslint-config": "^1.7.0",
@@ -73,17 +71,19 @@
     "@types/compression": "^1.7.2",
     "@types/ignore-walk": "^4.0.0",
     "@types/lodash.difference": "^4.5.7",
-    "@types/node": "^16.18.36",
+    "@types/node": "^20.8.2",
     "@types/polka": "^0.5.4",
-    "eslint": "^8.49.0",
+    "@typescript-eslint/eslint-plugin": "^6.7.4",
+    "@typescript-eslint/parser": "^6.7.4",
     "eslint-config-prettier": "^8.8.0",
     "eslint-import-resolver-typescript": "^2.7.1",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-prettier": "^4.2.1",
+    "eslint": "^8.49.0",
     "memfs": "^3.5.3",
-    "prettier": "^2.8.8",
-    "rimraf": "^3.0.2",
-    "vitest": "^0.28.5"
+    "prettier": "^3.0.3",
+    "rimraf": "^5.0.5",
+    "vitest": "^0.34.6"
   },
   "files": [
     "dist",

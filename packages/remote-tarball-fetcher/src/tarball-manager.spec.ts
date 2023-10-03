@@ -4,7 +4,7 @@ import * as path from "node:path";
 
 import { expect } from "chai";
 
-import { Fetcher, PackageInformation } from "./fetcher/index.js";
+import type { Fetcher, PackageInformation } from "./fetcher/index.js";
 import { TarballManager } from "./tarball-manager.js";
 
 const kTemporaryDirFixture = path.join(process.cwd(), "fixture");

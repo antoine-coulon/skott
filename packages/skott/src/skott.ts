@@ -9,24 +9,24 @@ import difference from "lodash.difference";
 
 import {
   isFileAffected,
-  SkottCache,
+  type SkottCache,
   SkottCacheHandler
 } from "./cache/index.js";
-import { FileReader, FileReaderTag } from "./filesystem/file-reader.js";
-import { FileWriter } from "./filesystem/file-writer.js";
+import { type FileReader, FileReaderTag } from "./filesystem/file-reader.js";
+import type { FileWriter } from "./filesystem/file-writer.js";
 import type { SkottNode } from "./graph/node.js";
-import { makeTraversalApi, TraversalApi } from "./graph/traversal.js";
+import { type TraversalApi, makeTraversalApi } from "./graph/traversal.js";
 import {
   highlight,
   logFailureM,
   LoggerTag,
   logSuccessM,
   lowlight,
-  SkottLogger
+  type SkottLogger
 } from "./logger.js";
 import {
-  DependencyResolver,
-  FollowModuleDeclarationOptions,
+  type DependencyResolver,
+  type FollowModuleDeclarationOptions,
   isManifestFile,
   kExpectedModuleExtensions,
   resolveImportedModulePath
@@ -38,7 +38,7 @@ import {
 import { ModuleWalkerSelector } from "./modules/walkers/common.js";
 import {
   buildPathAliases,
-  TSConfig
+  type TSConfig
 } from "./modules/walkers/ecmascript/typescript/path-alias.js";
 import {
   extractInformationFromManifest,

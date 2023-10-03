@@ -5,8 +5,8 @@ import { pipe } from "@effect/data/Function";
 import * as Effect from "@effect/io/Effect";
 import depcheck from "depcheck";
 
-import { FileReader, FileReaderTag } from "../filesystem/file-reader.js";
-import { SkottLogger } from "../logger.js";
+import { type FileReader, FileReaderTag } from "../filesystem/file-reader.js";
+import type { SkottLogger } from "../logger.js";
 
 export async function findWorkspaceEntrypointModule(): Promise<string> {
   // look for package.json

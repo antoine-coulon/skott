@@ -19,7 +19,8 @@
     "dev": "vite & node server.js",
     "prepublishOnly": "npm run build",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@effect/data": "^0.4.1",

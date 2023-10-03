@@ -1,4 +1,4 @@
-import { VertexDefinition } from "digraph-js";
+import type { VertexDefinition } from "digraph-js";
 
 export type SkottNodeBody = {
   size: number;

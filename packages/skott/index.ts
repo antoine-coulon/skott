@@ -5,7 +5,8 @@ import { FileSystemReader } from "./src/filesystem/file-reader.js";
 import { FileSystemWriter } from "./src/filesystem/file-writer.js";
 import { FakeLogger, Logger } from "./src/logger.js";
 import { ModuleWalkerSelector } from "./src/modules/walkers/common.js";
-import { Skott, SkottConfig, SkottInstance } from "./src/skott.js";
+import { Skott } from "./src/skott.js";
+import type { SkottConfig, SkottInstance } from "./src/skott.js";
 
 interface InputConfig<T> extends Partial<SkottConfig<T>> {
   cwd?: string;

@@ -4,7 +4,7 @@ import * as E from "fp-ts/lib/Either.js";
 import * as D from "io-ts/lib/Decoder.js";
 
 import { dependencyResolverDecoder } from "./modules/resolvers/base-resolver.js";
-import { defaultConfig, SkottConfig } from "./skott.js";
+import { defaultConfig, type SkottConfig } from "./skott.js";
 
 function withDefaultValue<T>(defaultValue: T) {
   return (decoder: D.Decoder<unknown, T>): D.Decoder<unknown, T> => {

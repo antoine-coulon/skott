@@ -1,6 +1,6 @@
 import type { DiGraph } from "digraph-js";
 
-import { SkottConfig } from "../skott.js";
+import type { SkottConfig } from "../skott.js";
 
 import type { SkottNode } from "./node.js";
 

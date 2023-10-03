@@ -1,7 +1,7 @@
 import path from "node:path";
 import { performance } from "node:perf_hooks";
 
-import { TreeStructure } from "fs-tree-structure";
+import type { TreeStructure } from "fs-tree-structure";
 import kleur from "kleur";
 
 import type { SkottNode, SkottNodeBody } from "../../src/graph/node.js";

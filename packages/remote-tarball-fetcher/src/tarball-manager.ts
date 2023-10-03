@@ -6,7 +6,7 @@ import { pipeline } from "node:stream/promises";
 import semver from "semver";
 import tar from "tar";
 
-import { Fetcher } from "./fetcher/index.js";
+import type { Fetcher } from "./fetcher/index.js";
 
 const kSkottStore = "skott_store";
 

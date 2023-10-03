@@ -6,7 +6,7 @@ import polka from "polka";
 import sirv from "sirv";
 import resolveWebAppStaticPath from "skott-webapp";
 
-import { SkottInstance, SkottStructure } from "../../src/skott.js";
+import type { SkottInstance, SkottStructure } from "../../src/skott.js";
 
 import { open } from "./open-url.js";
 
