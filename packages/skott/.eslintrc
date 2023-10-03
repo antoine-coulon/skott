@@ -32,6 +32,7 @@
     "max-classes-per-file": "off",
     "no-useless-constructor": "off",
     "no-empty-function": "off",
+    "no-duplicate-imports": "off",
     "brace-style": "off",
     "id-length": "off",
     "func-style": "off",

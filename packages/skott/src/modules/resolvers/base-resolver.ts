@@ -6,7 +6,10 @@ import * as Effect from "@effect/io/Effect";
 import { DiGraph } from "digraph-js";
 import * as D from "io-ts/lib/Decoder.js";
 
-import { FileReader, FileReaderTag } from "../../filesystem/file-reader.js";
+import {
+  FileReaderTag,
+  type FileReader
+} from "../../filesystem/file-reader.js";
 import type { SkottNode } from "../../graph/node.js";
 import { Logger, LoggerTag, highlight } from "../../logger.js";
 import type { SkottConfig, WorkspaceConfiguration } from "../../skott.js";

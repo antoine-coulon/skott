@@ -8,7 +8,7 @@ import {
   isFileSupportedByDefault,
   isManifestFile
 } from "../../modules/resolvers/base-resolver.js";
-import { FileReader } from "../file-reader.js";
+import type { FileReader } from "../file-reader.js";
 
 interface FileSystemConfig {
   cwd: string;

@@ -15,10 +15,10 @@ import {
 } from "../../walkers/ecmascript/typescript/path-alias.js";
 import {
   continueResolution,
-  DependencyResolver,
-  DependencyResolverControlFlow,
-  DependencyResolverOptions,
-  kExpectedModuleExtensions
+  kExpectedModuleExtensions,
+  type DependencyResolver,
+  type DependencyResolverControlFlow,
+  type DependencyResolverOptions
 } from "../base-resolver.js";
 
 const NODE_PROTOCOL = "node:";

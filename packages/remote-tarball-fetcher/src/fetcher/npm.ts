@@ -3,7 +3,7 @@ import { Readable } from "node:stream";
 import fetch from "node-fetch";
 import semver from "semver";
 
-import { Fetcher } from "./common.js";
+import type { Fetcher } from "./common.js";
 
 function isSemverValid(version: string): boolean {
   return semver.valid(version) !== null;
