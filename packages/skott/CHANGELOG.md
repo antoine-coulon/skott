@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- [#118](https://github.com/antoine-coulon/skott/pull/118) [`9dcb23f`](https://github.com/antoine-coulon/skott/commit/9dcb23ff8f5176128d0c88495bbfea37020dbdf7) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - Bump most dependencies to their latest available version. Notably bumps `TypeScript` to v5 and `@typescript-eslint/typescript-estree` to v6. This version also lightens `skott` node_modules size from ~144MB to ~120MB.
+- [#118](https://github.com/antoine-coulon/skott/pull/118) [`9dcb23f`](https://github.com/antoine-coulon/skott/commit/9dcb23ff8f5176128d0c88495bbfea37020dbdf7) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - Bump most dependencies to their latest available version. Notably bumps `TypeScript` to v5 and `@typescript-eslint/typescript-estree` to v6. This version also lightens `skott` node_modules size from ~144MB to ~94MB (-50MB).
 
 - Updated dependencies [[`9dcb23f`](https://github.com/antoine-coulon/skott/commit/9dcb23ff8f5176128d0c88495bbfea37020dbdf7)]:
   - fs-tree-structure@0.0.3
