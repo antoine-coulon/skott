@@ -206,6 +206,11 @@ export function resolveImportedModulePath(
          */
         JSX_MODULE: module.concat(".jsx"),
         /**
+         * or a JSX module targetted through a directory 
+         * import e.g: require("./lib") which will eventually resolve to "lib/index.jsx".
+        */
+        JSX_INDEX_MODULE: path.join(module, "index.jsx"),
+        /**
          * In case of TypeScript modules, the module can be targetted through a directory
          * import e.g: import "./lib" which will eventually resolve to "lib/index.ts".
          */
@@ -219,6 +224,11 @@ export function resolveImportedModulePath(
          * Example: `require("./component")` will resolve to `./component.tsx`.
          */
         TSX_MODULE: module.concat(".tsx"),
+        /**
+         * or a TSX module targetted through a directory 
+         * import e.g: require("./lib") which will eventually resolve to "lib/index.tsx".
+        */
+        TSX_INDEX_MODULE: path.join(module, "index.tsx"),
         /**
          * In case of TypeScript modules but when targetting ECMAScript modules,
          * modules are suffixed with ".js" but should resolve to their corresponding
@@ -249,7 +259,13 @@ export function resolveImportedModulePath(
           resolveToModuleIfExists(ecmaScriptModuleCombinations.TSX_MODULE)
         ),
         Effect.orElse(() =>
+          resolveToModuleIfExists(ecmaScriptModuleCombinations.TSX_INDEX_MODULE)
+        ),
+        Effect.orElse(() =>
           resolveToModuleIfExists(ecmaScriptModuleCombinations.JSX_MODULE)
+        ),
+        Effect.orElse(() =>
+          resolveToModuleIfExists(ecmaScriptModuleCombinations.JSX_INDEX_MODULE)
         ),
         Effect.orElse(() =>
           resolveToModuleIfExists(ecmaScriptModuleCombinations.JS_INDEX_MODULE)
