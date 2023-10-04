@@ -1,3 +1,12 @@
+---
+name: Bug report
+about: Create a report to help us fix and improve skott
+title: ''
+labels: bug
+assignees: ''
+
+---
+
 <!--------------------------------------------------------------------------
 👉 STEP 1: Write a concise but specific issue title in the box above.
 --------------------------------------------------------------------------->
@@ -12,17 +21,15 @@
      What went wrong?
 --------------------------------------------------------------------------->
 
-## Repro steps
+## Reproduction steps
 
 <!--------------------------------------------------------------------------
-👉 STEP 3: If your issue is a feature request and not a bug, delete this
-     "Repro steps" section and skip to STEP 6.
 
-👉 STEP 4: In many cases we can investigate bugs much faster if you include:
+👉 STEP 3: In many cases we can investigate bugs much faster if you include:
      The URL for a simplified Git branch that reproduces the problem.
      Use StackBlitz or CodeSandbox with setups reproducing the problem.
 
-👉 STEP 5: It's also helpful to include an "expected" and "actual" result.
+👉 STEP 4: It's also helpful to include an "expected" and "actual" result.
      But if that's not relevant, feel free to delete those fields.
 --------------------------------------------------------------------------->
 
@@ -33,7 +40,7 @@
 ## Details
 
 <!--------------------------------------------------------------------------
-👉 STEP 6: Provide any additional information you think might be helpful:
+👉 STEP 5: Provide any additional information you think might be helpful:
 
      What do you think is the cause of this problem?
      How do you think we should fix this?
