@@ -207,6 +207,103 @@ export function makeTestSuiteForJsxOrTsx(rawLanguage: "ts" | "js"): void {
       });
     });
   });
+
+  describe(`When ${jsxOrTsx} index module is imported via "./" or "." module declaration`, () => {
+    describe(`When there is only a ${jsxOrTsx} index module`, () => {
+      it(`it should resolve to index.${jsxOrTsx}`, async () => {
+        mountFakeFileSystem({
+          [`index.${rawLanguage}`]: `
+            import "./component_1";
+            import "./component_2";
+            `,
+          [`component_1/index.${jsxOrTsx}`]: `
+            export default function Component() {
+              return <div>Hello World</div>;
+            }
+          `,
+          [`component_2/index.${jsxOrTsx}`]: `
+            export default function Component() {
+              return <div>Hello World</div>;
+            }
+          `
+        });
+
+        const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+          entrypoint: `index.${rawLanguage}`
+        });
+
+        expect(graph).to.be.deep.equal({
+          [`index.${rawLanguage}`]: {
+            adjacentTo: [`component_1/index.${jsxOrTsx}`, `component_2/index.${jsxOrTsx}`],
+            id: `index.${rawLanguage}`,
+            body: fakeNodeBody
+          },
+          [`component_1/index.${jsxOrTsx}`]: {
+            adjacentTo: [],
+            id: `component_1/index.${jsxOrTsx}`,
+            body: fakeNodeBody
+          },
+          [`component_2/index.${jsxOrTsx}`]: {
+            adjacentTo: [],
+            id: `component_2/index.${jsxOrTsx}`,
+            body: fakeNodeBody
+          }
+        });
+      });
+    });
+    describe(`When there is both ${jsxOrTsx} and ${rawLanguage} index modules`, () => {
+      it(`it should resolve to index.${rawLanguage} in priority over index.${jsxOrTsx}`, async () => {
+        mountFakeFileSystem({
+          [`index.${rawLanguage}`]: `
+            import "./component_1";
+            import "./component_2";
+            `,
+          [`component_1/index.${rawLanguage}`]: `
+            export default function Component() {
+              return <div>Hello World</div>;
+            }
+          `,
+          [`component_1/index.${jsxOrTsx}`]: `
+            export default function Component() {
+              return <div>Hello World</div>;
+            }
+          `,
+          [`component_2/index.${rawLanguage}`]: `
+            export default function Component() {
+              return <div>Hello World</div>;
+            }
+          `,
+          [`component_2/index.${jsxOrTsx}`]: `
+            export default function Component() {
+              return <div>Hello World</div>;
+            }
+          `
+        });
+
+        const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+          entrypoint: `index.${rawLanguage}`
+        });
+
+        expect(graph).to.be.deep.equal({
+          [`index.${rawLanguage}`]: {
+            adjacentTo: [`component_1/index.${rawLanguage}`, `component_2/index.${rawLanguage}`],
+            id: `index.${rawLanguage}`,
+            body: fakeNodeBody
+          },
+          [`component_1/index.${rawLanguage}`]: {
+            adjacentTo: [],
+            id: `component_1/index.${rawLanguage}`,
+            body: fakeNodeBody
+          },
+          [`component_2/index.${rawLanguage}`]: {
+            adjacentTo: [],
+            id: `component_2/index.${rawLanguage}`,
+            body: fakeNodeBody
+          }
+        });
+      });
+    });
+  });
 }
 
 describe("When some TypeScript code is not TSX compliant", () => {
