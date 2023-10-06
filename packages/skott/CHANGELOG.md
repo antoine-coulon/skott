@@ -1,5 +1,11 @@
 # skott
 
+## 0.31.3
+
+### Patch Changes
+
+- [#121](https://github.com/antoine-coulon/skott/pull/121) [`06674a0`](https://github.com/antoine-coulon/skott/commit/06674a06ad67850537d763b377c62f376dd99d4b) Thanks [@robertoyoc](https://github.com/robertoyoc)! - Resolve `index.jsx` and `index.tsx` when they are being imported from `.` and `./` declarations.
+  
 ## 0.31.2
 
 ### Patch Changes
