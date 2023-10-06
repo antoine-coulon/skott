@@ -1,5 +1,14 @@
 # skott
 
+## 0.31.3
+
+### Patch Changes
+
+- [#121](https://github.com/antoine-coulon/skott/pull/121) [`06674a0`](https://github.com/antoine-coulon/skott/commit/06674a06ad67850537d763b377c62f376dd99d4b) Thanks [@robertoyoc](https://github.com/robertoyoc)! - Add support for tsx/jsx index modules.
+  index.tsx or index.jsx file resolution for modules
+- Updated dependencies []:
+  - skott-webapp@2.0.1
+
 ## 0.31.2
 
 ### Patch Changes
