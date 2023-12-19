@@ -48,6 +48,7 @@ import {
   findUnusedImplicitDependencies,
   type ManifestDependenciesByName
 } from "./workspace/index.js";
+import { toUnixPathLike } from "./filesystem/path.js";
 
 export interface SkottConfig<T> {
   entrypoint?: string;
@@ -153,7 +154,7 @@ export class Skott<T> {
       fileIsAlreadyRelativelyResolved ||
       fileHasNoBaseDir
     ) {
-      return nodePath;
+      return toUnixPathLike(nodePath);
     }
 
     /**
@@ -180,7 +181,7 @@ export class Skott<T> {
     )[1];
 
     if (nodePathWithoutBaseDir) {
-      return nodePathWithoutBaseDir;
+      return toUnixPathLike(nodePathWithoutBaseDir);
     }
 
     /**
@@ -198,7 +199,7 @@ export class Skott<T> {
      * lib/feature (base directory name). Consequently, the node path must
      * be resolved relatively from the base directory name.
      */
-    return path.relative(this.#baseDir, nodePath);
+    return toUnixPathLike(path.relative(this.#baseDir, nodePath));
   }
 
   private async addNode(node: string): Promise<void> {
@@ -321,9 +322,8 @@ export class Skott<T> {
           moduleDeclaration,
           this.#baseDir
         );
-        const nextFileContentToExplore = await this.fileReader.read(
-          restoredPath
-        );
+        const nextFileContentToExplore =
+          await this.fileReader.read(restoredPath);
 
         await this.addNode(restoredPath);
         await this.linkNodes({
