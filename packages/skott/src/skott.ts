@@ -146,6 +146,7 @@ export class Skott<T> {
     nodePath: string,
     fallbackToRelativeResolution = true
   ): string {
+    const normalizedNodePath = toUnixPathLike(nodePath);
     const fileHasNoBaseDir = path.dirname(nodePath) === ".";
     const fileIsAlreadyRelativelyResolved = nodePath.includes("..");
     /**
@@ -157,7 +158,7 @@ export class Skott<T> {
       fileIsAlreadyRelativelyResolved ||
       fileHasNoBaseDir
     ) {
-      return toUnixPathLike(nodePath);
+      return normalizedNodePath;
     }
 
     /**
@@ -178,13 +179,13 @@ export class Skott<T> {
      * because everything needs to be relative to the entrypoint when not including
      * base directory name.
      */
-    const baseDirWithFileSystemSeparator = this.#baseDir.concat(path.sep);
-    const nodePathWithoutBaseDir = nodePath.split(
+    const baseDirWithFileSystemSeparator = this.#baseDir.concat("/");
+    const nodePathWithoutBaseDir = normalizedNodePath.split(
       baseDirWithFileSystemSeparator
     )[1];
 
     if (nodePathWithoutBaseDir) {
-      return toUnixPathLike(nodePathWithoutBaseDir);
+      return nodePathWithoutBaseDir;
     }
 
     /**
@@ -206,7 +207,7 @@ export class Skott<T> {
       return toUnixPathLike(path.relative(this.#baseDir, nodePath));
     }
 
-    return nodePath;
+    return normalizedNodePath;
   }
 
   private async addNode(node: string): Promise<void> {
