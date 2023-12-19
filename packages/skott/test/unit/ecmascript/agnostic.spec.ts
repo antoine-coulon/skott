@@ -7,6 +7,14 @@ import {
   mountFakeFileSystem
 } from "../shared.js";
 
+function expectStrictArrayContaining<T>(
+  provided: Array<T>,
+  expected: Array<T>
+) {
+  expect(provided).to.have.length(expected.length);
+  expect(provided).to.include.members(expected);
+}
+
 describe("When dealing with ECMAScript standards agnostic of TypeScript and JavaScript", () => {
   describe("When specifying a dirname while providing the entrypoint", () => {
     describe("When the full dirname must be ignored from node paths", () => {
@@ -198,7 +206,8 @@ describe("When dealing with ECMAScript standards agnostic of TypeScript and Java
           body: fakeNodeBody
         }
       });
-      expect(files).to.be.deep.equal(["index.js", "foo.js", "baz.js"]);
+
+      expectStrictArrayContaining(files, ["index.js", "foo.js", "baz.js"]);
     });
   });
 
@@ -424,7 +433,7 @@ describe("When extracting CommonJS dynamic import declarations using variables",
       includeBaseDir: false
     });
 
-    expect(files).to.be.deep.equal(["index.js", "index.ts"]);
+    expectStrictArrayContaining(files, ["index.js", "index.ts"]);
   });
 });
 
@@ -437,7 +446,7 @@ describe("When a global analysis without any entrypoint is requested", () => {
 
     const { files } = await buildSkottProjectUsingInMemoryFileExplorer();
 
-    expect(files).to.deep.equal(["bar.js", "foo.js"]);
+    expectStrictArrayContaining(files, ["bar.js", "foo.js"]);
   });
 
   it("should deeply collect all files starting from the root directory level", async () => {
@@ -449,7 +458,11 @@ describe("When a global analysis without any entrypoint is requested", () => {
 
     const { files } = await buildSkottProjectUsingInMemoryFileExplorer();
 
-    expect(files).to.deep.equal(["bar/buzz/boo.ts", "buzz/bizz.ts", "foo.ts"]);
+    expectStrictArrayContaining(files, [
+      "bar/buzz/boo.ts",
+      "buzz/bizz.ts",
+      "foo.ts"
+    ]);
   });
 
   it("should assemble parts of the graph starting from independent nodes at root level", async () => {
@@ -517,7 +530,7 @@ describe("When a global analysis without any entrypoint is requested", () => {
       fileExtensions: [...kExpectedModuleExtensions]
     });
 
-    expect(files).to.deep.equal([
+    expectStrictArrayContaining(files, [
       "__tests__/foo.js",
       "bar.js",
       "baz.ts",
@@ -553,7 +566,7 @@ describe("When a global analysis without any entrypoint is requested", () => {
       fileExtensions: [".ts", ".mjs"]
     });
 
-    expect(files).to.deep.equal([
+    expectStrictArrayContaining(files, [
       "__tests__/foo.ts",
       "baz.ts",
       "dir/foo.ts",
