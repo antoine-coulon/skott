@@ -142,7 +142,10 @@ export class Skott<T> {
     return this.#cacheHandler.store;
   }
 
-  private resolveNodePath(nodePath: string): string {
+  private resolveNodePath(
+    nodePath: string,
+    fallbackToRelativeResolution = true
+  ): string {
     const fileHasNoBaseDir = path.dirname(nodePath) === ".";
     const fileIsAlreadyRelativelyResolved = nodePath.includes("..");
     /**
@@ -199,7 +202,11 @@ export class Skott<T> {
      * lib/feature (base directory name). Consequently, the node path must
      * be resolved relatively from the base directory name.
      */
-    return toUnixPathLike(path.relative(this.#baseDir, nodePath));
+    if (fallbackToRelativeResolution) {
+      return toUnixPathLike(path.relative(this.#baseDir, nodePath));
+    }
+
+    return nodePath;
   }
 
   private async addNode(node: string): Promise<void> {
@@ -217,14 +224,16 @@ export class Skott<T> {
 
   private async linkNodes({
     from,
-    to
+    to,
+    useRelativeResolution = false
   }: {
     from: string;
     to: string;
+    useRelativeResolution?: boolean;
   }): Promise<void> {
     await this.addNode(to);
     this.#projectGraph.addEdge({
-      from: this.resolveNodePath(from),
+      from: this.resolveNodePath(from, useRelativeResolution ? false : true),
       to: this.resolveNodePath(to)
     });
   }
@@ -347,10 +356,19 @@ export class Skott<T> {
         fullFilePathFromBaseDirectory
       );
 
-      await this.addNode(fullFilePathFromBaseDirectory);
       await this.linkNodes({
         from: rootPath,
-        to: fullFilePathFromBaseDirectory
+        to: fullFilePathFromBaseDirectory,
+        /**
+         * Resolving the source node ("from" in that case) can be done using
+         * multiple base directory strategies. When resolving a path alias, the
+         * base directory is the path alias base directory. When resolving a
+         * relative path, the base directory is the base directory of the project.
+         * Consequently when having a path alias, the "from" node path must
+         * not be resolved relatively to the base directory of the project but
+         * relatively to the path alias base directory.
+         */
+        useRelativeResolution: isPathAliasDeclaration
       });
 
       await this.collectModuleDeclarations(
