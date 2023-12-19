@@ -34,7 +34,7 @@ function resolveAliasToRelativePath(
     );
 
     const modulePathWithoutAliasBaseDirname = moduleDeclaration.split(
-      path.join(baseAliasDirname, path.sep)
+      baseAliasDirname.concat("/")
     )[1];
 
     logger.info(
@@ -58,8 +58,8 @@ function resolveAliasToRelativePath(
   }
 }
 
-function isNotBasePathSegment(segment: string): boolean {
-  return segment.includes(path.sep);
+function isRootAliasSymbol(segment: string): boolean {
+  return !segment.includes("/");
 }
 
 async function readTSConfig(
@@ -221,7 +221,7 @@ export function resolvePathAlias(
    * providing enough information to fix the root cause.
    */
   let pathDepthAttempts = 0;
-  while (isNotBasePathSegment(baseAliasDirname) && pathDepthAttempts < 10) {
+  while (!isRootAliasSymbol(baseAliasDirname) && pathDepthAttempts < 10) {
     pathDepthAttempts += 1;
     baseAliasDirname = path.dirname(baseAliasDirname);
     const deepBaseAlias = aliasLinks.get(baseAliasDirname);
@@ -280,7 +280,7 @@ export function isTypeScriptPathAlias(
    * providing enough information to fix the root cause.
    */
   let pathDepthAttempts = 0;
-  while (isNotBasePathSegment(pathSegmentToMatch) && pathDepthAttempts < 10) {
+  while (!isRootAliasSymbol(pathSegmentToMatch) && pathDepthAttempts < 10) {
     pathDepthAttempts += 1;
     pathSegmentToMatch = path.dirname(pathSegmentToMatch);
 
