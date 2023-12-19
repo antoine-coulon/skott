@@ -1,15 +1,9 @@
-import path from "node:path";
-
 import set from "lodash.set";
 
 export type TreeStructure = { [key: string]: TreeStructure };
 
 // @TODO: should be mutualized with the one in skott
 const fileExtensions = [".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"];
-
-function isNodeJSRuntime(): boolean {
-  return typeof process !== "undefined";
-}
 
 function isFile(filePath: string): boolean {
   return fileExtensions.some((extension) => filePath.endsWith(extension));
@@ -57,9 +51,7 @@ export function makeTreeStructure(
   const fileTree = filePaths.reduce((tree, filePath) => {
     set(
       tree,
-      filePath
-        .split(isNodeJSRuntime() ? path.sep : "/")
-        .filter((pathSegment) => pathSegment !== "."),
+      filePath.split("/").filter((pathSegment) => pathSegment !== "."),
       {}
     );
 
