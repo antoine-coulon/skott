@@ -14,6 +14,7 @@ import {
 } from "./cache/index.js";
 import { type FileReader, FileReaderTag } from "./filesystem/file-reader.js";
 import type { FileWriter } from "./filesystem/file-writer.js";
+import { toUnixPathLike } from "./filesystem/path.js";
 import type { SkottNode } from "./graph/node.js";
 import { type TraversalApi, makeTraversalApi } from "./graph/traversal.js";
 import {
@@ -48,7 +49,6 @@ import {
   findUnusedImplicitDependencies,
   type ManifestDependenciesByName
 } from "./workspace/index.js";
-import { toUnixPathLike } from "./filesystem/path.js";
 
 export interface SkottConfig<T> {
   entrypoint?: string;
@@ -234,7 +234,7 @@ export class Skott<T> {
   }): Promise<void> {
     await this.addNode(to);
     this.#projectGraph.addEdge({
-      from: this.resolveNodePath(from, useRelativeResolution ? false : true),
+      from: this.resolveNodePath(from, !useRelativeResolution),
       to: this.resolveNodePath(to)
     });
   }

@@ -234,7 +234,10 @@ export function makeTestSuiteForJsxOrTsx(rawLanguage: "ts" | "js"): void {
 
         expect(graph).to.be.deep.equal({
           [`index.${rawLanguage}`]: {
-            adjacentTo: [`component_1/index.${jsxOrTsx}`, `component_2/index.${jsxOrTsx}`],
+            adjacentTo: [
+              `component_1/index.${jsxOrTsx}`,
+              `component_2/index.${jsxOrTsx}`
+            ],
             id: `index.${rawLanguage}`,
             body: fakeNodeBody
           },
@@ -286,7 +289,10 @@ export function makeTestSuiteForJsxOrTsx(rawLanguage: "ts" | "js"): void {
 
         expect(graph).to.be.deep.equal({
           [`index.${rawLanguage}`]: {
-            adjacentTo: [`component_1/index.${rawLanguage}`, `component_2/index.${rawLanguage}`],
+            adjacentTo: [
+              `component_1/index.${rawLanguage}`,
+              `component_2/index.${rawLanguage}`
+            ],
             id: `index.${rawLanguage}`,
             body: fakeNodeBody
           },

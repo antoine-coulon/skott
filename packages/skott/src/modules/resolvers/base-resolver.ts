@@ -206,9 +206,9 @@ export function resolveImportedModulePath(
          */
         JSX_MODULE: module.concat(".jsx"),
         /**
-         * or a JSX module targetted through a directory 
+         * or a JSX module targetted through a directory
          * import e.g: require("./lib") which will eventually resolve to "lib/index.jsx".
-        */
+         */
         JSX_INDEX_MODULE: path.join(module, "index.jsx"),
         /**
          * In case of TypeScript modules, the module can be targetted through a directory
@@ -225,9 +225,9 @@ export function resolveImportedModulePath(
          */
         TSX_MODULE: module.concat(".tsx"),
         /**
-         * or a TSX module targetted through a directory 
+         * or a TSX module targetted through a directory
          * import e.g: require("./lib") which will eventually resolve to "lib/index.tsx".
-        */
+         */
         TSX_INDEX_MODULE: path.join(module, "index.tsx"),
         /**
          * In case of TypeScript modules but when targetting ECMAScript modules,
