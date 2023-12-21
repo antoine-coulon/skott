@@ -7,6 +7,9 @@
   "exports": {
     ".": "./dist/index.js"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "types": "./dist/index.d.ts",
   "author": "Antoine Coulon",
   "license": "MIT",
