@@ -1,11 +1,21 @@
 # skott
 
+## 0.31.4
+
+### Patch Changes
+
+- [#128](https://github.com/antoine-coulon/skott/pull/128) [`8c76a8c`](https://github.com/antoine-coulon/skott/commit/8c76a8c6592216245f96efed36765c1d62d06cc2) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - Fix Windows compatibility for TypeScript path alias resolution
+
+- Updated dependencies [[`8c76a8c`](https://github.com/antoine-coulon/skott/commit/8c76a8c6592216245f96efed36765c1d62d06cc2)]:
+  - fs-tree-structure@0.0.4
+  - skott-webapp@2.0.1
+
 ## 0.31.3
 
 ### Patch Changes
 
 - [#121](https://github.com/antoine-coulon/skott/pull/121) [`06674a0`](https://github.com/antoine-coulon/skott/commit/06674a06ad67850537d763b377c62f376dd99d4b) Thanks [@robertoyoc](https://github.com/robertoyoc)! - Resolve `index.jsx` and `index.tsx` when they are being imported from `.` and `./` declarations.
-  
+
 ## 0.31.2
 
 ### Patch Changes
