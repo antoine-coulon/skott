@@ -14,6 +14,7 @@ import {
 } from "./cache/index.js";
 import { type FileReader, FileReaderTag } from "./filesystem/file-reader.js";
 import type { FileWriter } from "./filesystem/file-writer.js";
+import { toUnixPathLike } from "./filesystem/path.js";
 import type { SkottNode } from "./graph/node.js";
 import { type TraversalApi, makeTraversalApi } from "./graph/traversal.js";
 import {
@@ -141,7 +142,11 @@ export class Skott<T> {
     return this.#cacheHandler.store;
   }
 
-  private resolveNodePath(nodePath: string): string {
+  private resolveNodePath(
+    nodePath: string,
+    fallbackToRelativeResolution = true
+  ): string {
+    const normalizedNodePath = toUnixPathLike(nodePath);
     const fileHasNoBaseDir = path.dirname(nodePath) === ".";
     const fileIsAlreadyRelativelyResolved = nodePath.includes("..");
     /**
@@ -153,7 +158,7 @@ export class Skott<T> {
       fileIsAlreadyRelativelyResolved ||
       fileHasNoBaseDir
     ) {
-      return nodePath;
+      return normalizedNodePath;
     }
 
     /**
@@ -174,8 +179,8 @@ export class Skott<T> {
      * because everything needs to be relative to the entrypoint when not including
      * base directory name.
      */
-    const baseDirWithFileSystemSeparator = this.#baseDir.concat(path.sep);
-    const nodePathWithoutBaseDir = nodePath.split(
+    const baseDirWithFileSystemSeparator = this.#baseDir.concat("/");
+    const nodePathWithoutBaseDir = normalizedNodePath.split(
       baseDirWithFileSystemSeparator
     )[1];
 
@@ -198,7 +203,11 @@ export class Skott<T> {
      * lib/feature (base directory name). Consequently, the node path must
      * be resolved relatively from the base directory name.
      */
-    return path.relative(this.#baseDir, nodePath);
+    if (fallbackToRelativeResolution) {
+      return toUnixPathLike(path.relative(this.#baseDir, nodePath));
+    }
+
+    return normalizedNodePath;
   }
 
   private async addNode(node: string): Promise<void> {
@@ -216,14 +225,16 @@ export class Skott<T> {
 
   private async linkNodes({
     from,
-    to
+    to,
+    useRelativeResolution = false
   }: {
     from: string;
     to: string;
+    useRelativeResolution?: boolean;
   }): Promise<void> {
     await this.addNode(to);
     this.#projectGraph.addEdge({
-      from: this.resolveNodePath(from),
+      from: this.resolveNodePath(from, !useRelativeResolution),
       to: this.resolveNodePath(to)
     });
   }
@@ -321,9 +332,8 @@ export class Skott<T> {
           moduleDeclaration,
           this.#baseDir
         );
-        const nextFileContentToExplore = await this.fileReader.read(
-          restoredPath
-        );
+        const nextFileContentToExplore =
+          await this.fileReader.read(restoredPath);
 
         await this.addNode(restoredPath);
         await this.linkNodes({
@@ -347,10 +357,19 @@ export class Skott<T> {
         fullFilePathFromBaseDirectory
       );
 
-      await this.addNode(fullFilePathFromBaseDirectory);
       await this.linkNodes({
         from: rootPath,
-        to: fullFilePathFromBaseDirectory
+        to: fullFilePathFromBaseDirectory,
+        /**
+         * Resolving the source node ("from" in that case) can be done using
+         * multiple base directory strategies. When resolving a path alias, the
+         * base directory is the path alias base directory. When resolving a
+         * relative path, the base directory is the base directory of the project.
+         * Consequently when having a path alias, the "from" node path must
+         * not be resolved relatively to the base directory of the project but
+         * relatively to the path alias base directory.
+         */
+        useRelativeResolution: isPathAliasDeclaration
       });
 
       await this.collectModuleDeclarations(

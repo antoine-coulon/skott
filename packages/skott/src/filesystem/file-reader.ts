@@ -13,6 +13,8 @@ import {
   isManifestFile
 } from "../modules/resolvers/base-resolver.js";
 
+import { toUnixPathLike } from "./path.js";
+
 export interface FileReader {
   read: (filename: string) => Promise<string>;
   exists: (filename: string) => Promise<boolean>;
@@ -37,6 +39,15 @@ function matchWith(filename: string, options = minimatchDefaultOptions) {
   return (pattern: string) => minimatch(filename, pattern, options);
 }
 
+/**
+ * minimatch only supports forward slashes as described there
+ * https://github.com/isaacs/minimatch. Consequently, we must map all Windows paths
+ * to Unix-like paths for the glob comparison to be effective.
+ */
+function toForwardSlashesOnly(filename: string) {
+  return toUnixPathLike(filename);
+}
+
 export class FileSystemReader implements FileReader {
   constructor(private readonly config: FileSystemConfig) {}
 
@@ -48,8 +59,11 @@ export class FileSystemReader implements FileReader {
     const match = matchWith(filename);
 
     return (
-      match(path.join(this.config.cwd, path.sep, this.config.ignorePattern)) ||
-      match(this.config.ignorePattern)
+      match(
+        toForwardSlashesOnly(
+          path.join(this.config.cwd, path.sep, this.config.ignorePattern)
+        )
+      ) || match(this.config.ignorePattern)
     );
   }
 

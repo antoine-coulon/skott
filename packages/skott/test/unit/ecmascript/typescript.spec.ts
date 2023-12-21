@@ -649,6 +649,53 @@ describe("When traversing a TypeScript project", () => {
             });
           });
 
+          it("should resolve paths aliases relatively to a baseUrl directory according to the tsconfig", async () => {
+            const tsConfig = {
+              compilerOptions: {
+                baseUrl: "./packages",
+                paths: {
+                  "@virtual-folder/*": ["real-folder/*"]
+                }
+              }
+            };
+
+            mountFakeFileSystem({
+              "packages/index.ts": `
+                import Component from "@virtual-folder/components/Component";
+              `,
+              "packages/real-folder/components/Component.ts": `
+                import Handler from "@virtual-folder/handlers/Handler"; 
+              `,
+              "packages/real-folder/handlers/Handler.ts": `
+                export function foo() {}
+              `,
+              "tsconfig.json": JSON.stringify(tsConfig)
+            });
+
+            const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+              entrypoint: "packages/index.ts",
+              tsConfigPath: "tsconfig.json"
+            });
+
+            expect(graph).to.be.deep.equal({
+              "index.ts": {
+                adjacentTo: ["real-folder/components/Component.ts"],
+                id: "index.ts",
+                body: fakeNodeBody
+              },
+              "real-folder/components/Component.ts": {
+                adjacentTo: ["real-folder/handlers/Handler.ts"],
+                id: "real-folder/components/Component.ts",
+                body: fakeNodeBody
+              },
+              "real-folder/handlers/Handler.ts": {
+                adjacentTo: [],
+                id: "real-folder/handlers/Handler.ts",
+                body: fakeNodeBody
+              }
+            });
+          });
+
           it("should resolve paths aliases relatively to a entrypoint at a lower file level than the tsconfig", async () => {
             const tsConfig = {
               compilerOptions: {
