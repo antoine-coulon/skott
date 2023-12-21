@@ -1,6 +1,6 @@
 {
   "name": "fs-tree-structure",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Build filesystem tree structure from flat paths",
   "main": "dist/index.js",
   "type": "module",
