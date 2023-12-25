@@ -143,7 +143,7 @@ export async function displaySkott(
 ): Promise<void> {
   if (entrypoint) {
     console.log(
-      `\n Running ${kleur.blue().bold("Skott")} from entrypoint: ${kleur
+      `\n Running ${kleur.blue().bold("skott")} from entrypoint: ${kleur
         .yellow()
         .underline()
         .bold(`${entrypoint}`)}`
@@ -176,7 +176,7 @@ export async function displaySkott(
     }
 
     console.log(
-      `\n Running ${kleur.blue().bold("Skott")} from current directory: ${kleur
+      `\n Running ${kleur.blue().bold("skott")} from current directory: ${kleur
         .yellow()
         .underline()
         .bold(`${path.basename(options.cwd)}`)}`
@@ -196,7 +196,7 @@ export async function displaySkott(
   let spinner;
 
   if (!options.verbose) {
-    spinner = ora(`Initializing ${kleur.blue().bold("Skott")}`).start();
+    spinner = ora(`Initializing ${kleur.blue().bold("skott")}`).start();
   }
 
   const start = performance.now();
@@ -347,7 +347,7 @@ export async function displaySkott(
 
 process.on("exit", (code) => {
   console.log(
-    `\n ${kleur.bold().blue("Skott")} exited with code ${kleur
+    `\n ${kleur.bold().blue("skott")} exited with code ${kleur
       .bold()
       .yellow(code)}`
   );
