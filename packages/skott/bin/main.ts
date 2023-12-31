@@ -22,6 +22,7 @@ import {
   displayWarningOnHighCircularDepth
 } from "./ui/console.js";
 import { openWebApplication } from "./ui/webapp.js";
+import { registerWatchMode } from "./watch-mode.js";
 
 async function generateStaticFile(
   graph: Record<string, SkottNode>,
@@ -135,6 +136,7 @@ type CliOptions = {
   trackTypeOnlyDependencies: boolean;
   tsconfig: string;
   verbose: true;
+  watch: true;
 };
 
 export async function displaySkott(
@@ -342,6 +344,10 @@ export async function displaySkott(
 
   if (options.trackBuiltinDependencies) {
     displayBuiltinDependencies(graph);
+  }
+
+  if (options.watch) {
+    registerWatchMode(options.cwd, options.fileExtensions.split(","));
   }
 }
 

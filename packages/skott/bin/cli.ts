@@ -73,10 +73,10 @@ const cli = new Command();
 
 cli
   .version(readManifestVersion())
-  .description("Start the Skott analysis to fully build the graph")
+  .description("Start the skott analysis to fully build the graph")
   .option(
     "-b, --includeBaseDir",
-    "Include the base directory name for each graph node. Relative to the entrypoint base directory or the current working directory.",
+    "Include the base directory name for each graph node. Relative to the entrypoint base directory or the current working directory",
     false
   )
   .option(
@@ -93,7 +93,7 @@ cli
   )
   .option(
     "-e, --fileExtensions <extensions>",
-    'File extensions to explore when building the graph, separated by a comma (ex: ".js,.ts)"',
+    'File extensions to explore when building the graph, separated by a comma (ex: ".js,.ts)".',
     [...kExpectedModuleExtensions].join(",")
   )
   .option(
@@ -108,7 +108,7 @@ cli
   )
   .option(
     "-i, --incremental",
-    "(Experimental) Enable incremental mode. Only the files that changed since the last run will be analyzed.",
+    "(Experimental) Enable incremental mode. Only the files that changed since the last run will be analyzed",
     false
   )
   .option(
@@ -153,7 +153,12 @@ cli
   .option("-vb, --verbose", "Enable verbose mode. Display all the logs", false)
   .option(
     "-w, --cwd <path>",
-    "Define the base working directory to use for the analysis. Defaults to the current working directory.",
+    "Define the base working directory to use for the analysis. Defaults to the current working directory",
+    process.cwd()
+  )
+  .option(
+    "-fw, --watch",
+    "Watch for changes depending on the provided '--cwd' or defaults to process.cwd() and re-run the analysis when a supported file is added/deleted/modified",
     process.cwd()
   )
   .argument("[entrypoint]", "optional entrypoint file to use")
@@ -161,7 +166,7 @@ cli
     trimMargin("|")(`
           | ./node_modules/.bin/skott src/index.js --displayMode=file-tree --no-trackTypeOnlyDependencies"\n
           | ./node_modules/.bin/skott  --fileExtensions=.ts,.tsx --tsconfig=tsconfig.base.json\n
-          | ./node_modules/.bin/skott --showCircularDependencies --displayMode=raw\n
+          | ./node_modules/.bin/skott --showCircularDependencies --displayMode=raw --watch\n
         `)
   )
   .action((name, commandAndOptions) => displaySkott(name, commandAndOptions));
