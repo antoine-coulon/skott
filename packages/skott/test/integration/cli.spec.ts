@@ -75,6 +75,12 @@ function transpileCliExecutable() {
   return execP("npm run build", { cwd: process.cwd() }).catch(console.error);
 }
 
+function runFinalizer(entryPath: string) {
+  return (done: () => void) => {
+    fs.rm(entryPath, { recursive: true, force: true }, done);
+  };
+}
+
 describe("When running skott cli", () => {
   beforeAll(async () => {
     await transpileCliExecutable();
@@ -139,6 +145,10 @@ describe("When running skott cli", () => {
               "some-dir",
               "some-other-dir"
             );
+            const finalizeTest = runFinalizer(
+              path.join(fixturesPath, "some-dir")
+            );
+
             const fixtureFilePath = path.join(fixtureFolderPath, "index.js");
             fs.mkdirSync(fixtureFolderPath, { recursive: true });
             fs.writeFileSync(fixtureFilePath, "console.log(1);");
@@ -161,16 +171,22 @@ describe("When running skott cli", () => {
               }
 
               if (cliOutput.includes("Changes detected")) {
-                doneSuccess(undefined);
-                childProcess.kill();
+                finalizeTest(() => {
+                  doneSuccess(undefined);
+                  childProcess.kill();
+                });
               }
             });
 
-            childProcess.on("error", doneFailure);
+            childProcess.on("error", (e) => {
+              finalizeTest(() => doneFailure(e));
+            });
 
             childProcess.on("exit", (code) => {
               if (code !== 0) {
-                doneFailure(new Error(`Process exited with code ${code}`));
+                finalizeTest(() =>
+                  doneFailure(new Error(`Process exited with code ${code}`))
+                );
               }
             });
           }));
@@ -289,6 +305,10 @@ describe("When running skott cli", () => {
                   "@skott"
                 );
 
+                const finalizeTest = runFinalizer(
+                  path.join(fixturesPath, "node_modules")
+                );
+
                 const fixtureFilePath = path.join(nodeModulesPath, "index.js");
                 fs.mkdirSync(nodeModulesPath, { recursive: true });
                 fs.writeFileSync(fixtureFilePath, "function main() {}");
@@ -313,25 +333,29 @@ describe("When running skott cli", () => {
                   }
 
                   if (cliOutput.includes("Changes detected")) {
-                    doneFailure(
-                      new Error("A change was caught when it should not")
-                    );
-                    childProcess.kill();
+                    finalizeTest(() => {
+                      doneFailure(
+                        new Error("A change was caught when it should not")
+                      );
+                      childProcess.kill();
+                    });
                   }
                 });
 
                 childProcess.on("error", (e) => {
                   // @ts-expect-error
                   if (e.code.includes("ABORT_ERR")) {
-                    doneSuccess(undefined);
+                    finalizeTest(() => doneSuccess(undefined));
                   } else {
-                    doneFailure(e);
+                    finalizeTest(() => doneFailure(e));
                   }
                 });
 
                 childProcess.on("exit", (code) => {
                   if (code !== 0) {
-                    doneFailure(new Error(`Process exited with code ${code}`));
+                    finalizeTest(() =>
+                      doneFailure(new Error(`Process exited with code ${code}`))
+                    );
                   }
                 });
               }));
@@ -344,6 +368,8 @@ describe("When running skott cli", () => {
                   fixturesPath,
                   "voluntarily-ignored"
                 );
+
+                const finalizeTest = runFinalizer(ignorePatternPath);
 
                 const fixtureFilePath = path.join(
                   ignorePatternPath,
@@ -372,25 +398,29 @@ describe("When running skott cli", () => {
                   }
 
                   if (cliOutput.includes("Changes detected")) {
-                    doneFailure(
-                      new Error("A change was caught when it should not")
-                    );
-                    childProcess.kill();
+                    finalizeTest(() => {
+                      doneFailure(
+                        new Error("A change was caught when it should not")
+                      );
+                      childProcess.kill();
+                    });
                   }
                 });
 
                 childProcess.on("error", (e) => {
                   // @ts-expect-error
                   if (e.code.includes("ABORT_ERR")) {
-                    doneSuccess(undefined);
+                    finalizeTest(() => doneSuccess(undefined));
                   } else {
-                    doneFailure(e);
+                    finalizeTest(() => doneFailure(e));
                   }
                 });
 
                 childProcess.on("exit", (code) => {
                   if (code !== 0) {
-                    doneFailure(new Error(`Process exited with code ${code}`));
+                    finalizeTest(() =>
+                      doneFailure(new Error(`Process exited with code ${code}`))
+                    );
                   }
                 });
               }));
