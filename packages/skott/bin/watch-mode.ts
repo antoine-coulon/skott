@@ -7,6 +7,12 @@ function toDotlessExtension(fileExtension: string) {
   return fileExtension.replace(".", "");
 }
 
+export const watchModeStatus = {
+  watching_for_changes:
+    "Watching for graph changes in current working directory...",
+  changes_detected: "Changes detected"
+};
+
 export function registerWatchMode({
   cwd,
   ignorePattern,
@@ -17,9 +23,7 @@ export function registerWatchMode({
   fileExtensions: string[];
 }) {
   console.log(
-    `\n ${kleur
-      .bold()
-      .yellow("Watching for graph changes in current working directory...")}`
+    `\n ${kleur.bold().yellow(watchModeStatus.watching_for_changes)}`
   );
 
   const listOfWatchableFileExtensions = fileExtensions
@@ -38,7 +42,9 @@ export function registerWatchMode({
   return watcher.subscribe(
     cwd,
     (_err, _events) => {
-      console.log(`\n ${kleur.bold().yellow("Changes detected")}`);
+      console.log(
+        `\n ${kleur.bold().yellow(watchModeStatus.changes_detected)}`
+      );
     },
     {
       ignore: ignoreList

@@ -1,0 +1,9 @@
+/*
+
+!.gitignore
+
+# These are voluntarily kept. If some persistent fixtures need to be preserved,
+# add them here.
+!main.ts
+!some-module.ts
+!sub_directory
