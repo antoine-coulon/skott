@@ -347,7 +347,11 @@ export async function displaySkott(
   }
 
   if (options.watch) {
-    registerWatchMode(options.cwd, options.fileExtensions.split(","));
+    registerWatchMode({
+      cwd: options.cwd,
+      ignorePattern: options.ignorePattern,
+      fileExtensions: options.fileExtensions.split(",")
+    });
   }
 }
 

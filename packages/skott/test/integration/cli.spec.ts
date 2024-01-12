@@ -1,9 +1,10 @@
 import child_process from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { promisify } from "node:util";
 
 import * as Either from "@effect/data/Either";
-import { expect, test, describe } from "vitest";
+import { expect, test, describe, beforeAll } from "vitest";
 
 const skottBinaryPath = path.join(process.cwd(), "dist", "bin", "cli.js");
 const fixturesPath = path.join(
@@ -68,7 +69,17 @@ function runKeepAliveSkottCli(
   });
 }
 
+function transpileCliExecutable() {
+  const execP = promisify(child_process.exec);
+
+  return execP("npm run build", { cwd: process.cwd() }).catch(console.error);
+}
+
 describe("When running skott cli", () => {
+  beforeAll(async () => {
+    await transpileCliExecutable();
+  });
+
   test("Should display help", async () => {
     const result = await runOneShotSkottCli(["--help"], useTimeout(2000));
 
@@ -79,102 +90,13 @@ describe("When running skott cli", () => {
     expect(right.includes("Usage: cli")).toBeTruthy();
   });
 
-  describe("When watching for changes", () => {
-    describe("When a matching file under the provided cwd is added/removed/updated", () => {
-      test("Should re-run analysis", () =>
-        new Promise((doneSuccess, doneFailure) => {
-          const fixtureFilePath = path.join(fixturesPath, "index.js");
-          fs.writeFileSync(fixtureFilePath, "console.log(1);");
-
-          const childProcess = runKeepAliveSkottCli(
-            [
-              "--watch",
-              "--displayMode=raw",
-              "--exitCodeOnCircularDependencies=0",
-              `--cwd=${fixturesPath}`
-            ],
-            useTimeout(2_500)
-          );
-
-          childProcess.stdout?.on("data", (cliBuffer) => {
-            const cliOutput = cliBuffer.toString();
-            if (cliOutput.includes("Watching for graph changes")) {
-              // trigger action when watch mode is active
-              fs.unlinkSync(fixtureFilePath);
-            }
-
-            if (cliOutput.includes("Changes detected")) {
-              doneSuccess(undefined);
-              childProcess.kill();
-            }
-          });
-
-          childProcess.on("error", doneFailure);
-
-          childProcess.on("exit", (code) => {
-            if (code !== 0) {
-              doneFailure(new Error(`Process exited with code ${code}`));
-            }
-          });
-        }));
-    });
-
-    describe("When a matching file outside of the provided cwd is added/removed/updated", () => {
-      test("Should not re-run analysis", () =>
-        new Promise((doneSuccess, doneFailure) => {
-          const fixtureSubDirectoryPath = path.join(
-            fixturesPath,
-            "sub_directory"
-          );
-          const fixtureFilePath = path.join(fixturesPath, "index.js");
-          fs.writeFileSync(fixtureFilePath, "console.log(1);");
-
-          const childProcess = runKeepAliveSkottCli(
-            [
-              "--watch",
-              "--displayMode=raw",
-              "--exitCodeOnCircularDependencies=0",
-              `--cwd=${fixtureSubDirectoryPath}`
-            ],
-            useTimeout(1_000)
-          );
-
-          childProcess.stdout?.on("data", (cliBuffer) => {
-            const cliOutput = cliBuffer.toString();
-            if (cliOutput.includes("Watching for graph changes")) {
-              // trigger action when watch mode is active
-              fs.unlinkSync(fixtureFilePath);
-            }
-
-            if (cliOutput.includes("Changes detected")) {
-              doneFailure(new Error("A change was caught when it should not"));
-              childProcess.kill();
-            }
-          });
-
-          childProcess.on("error", (e) => {
-            // @ts-expect-error
-            if (e.code.includes("ABORT_ERR")) {
-              doneSuccess(undefined);
-            } else {
-              doneFailure(e);
-            }
-          });
-
-          childProcess.on("exit", (code) => {
-            if (code !== 0) {
-              doneFailure(new Error(`Process exited with code ${code}`));
-            }
-          });
-        }));
-    });
-
-    describe("When dealing with ignored entries", () => {
-      describe("When an ignored file is added/removed/updated in the watched scope", () => {
-        test("Should not re-run analysis", () =>
+  describe("When using watch mode", () => {
+    describe("When expecting changes to be detected", () => {
+      describe("When a matching file under the provided cwd is added/removed/updated", () => {
+        test("Should re-run analysis", () =>
           new Promise((doneSuccess, doneFailure) => {
-            const fixtureFilePath = path.join(fixturesPath, "index.rs");
-            fs.writeFileSync(fixtureFilePath, "fn main() {}");
+            const fixtureFilePath = path.join(fixturesPath, "index.js");
+            fs.writeFileSync(fixtureFilePath, "console.log(1);");
 
             const childProcess = runKeepAliveSkottCli(
               [
@@ -184,6 +106,96 @@ describe("When running skott cli", () => {
                 `--cwd=${fixturesPath}`
               ],
               useTimeout(2_500)
+            );
+
+            childProcess.stdout?.on("data", (cliBuffer) => {
+              const cliOutput = cliBuffer.toString();
+              if (cliOutput.includes("Watching for graph changes")) {
+                // trigger action when watch mode is active
+                fs.unlinkSync(fixtureFilePath);
+              }
+
+              if (cliOutput.includes("Changes detected")) {
+                doneSuccess(undefined);
+                childProcess.kill();
+              }
+            });
+
+            childProcess.on("error", doneFailure);
+
+            childProcess.on("exit", (code) => {
+              if (code !== 0) {
+                doneFailure(new Error(`Process exited with code ${code}`));
+              }
+            });
+          }));
+      });
+
+      describe("When a matching file nested under the provided cwd is added/removed/updated", () => {
+        test("Should re-run analysis", () =>
+          new Promise((doneSuccess, doneFailure) => {
+            const fixtureFolderPath = path.join(
+              fixturesPath,
+              "some-dir",
+              "some-other-dir"
+            );
+            const fixtureFilePath = path.join(fixtureFolderPath, "index.js");
+            fs.mkdirSync(fixtureFolderPath, { recursive: true });
+            fs.writeFileSync(fixtureFilePath, "console.log(1);");
+
+            const childProcess = runKeepAliveSkottCli(
+              [
+                "--watch",
+                "--displayMode=raw",
+                "--exitCodeOnCircularDependencies=0",
+                `--cwd=${fixturesPath}`
+              ],
+              useTimeout(2_500)
+            );
+
+            childProcess.stdout?.on("data", (cliBuffer) => {
+              const cliOutput = cliBuffer.toString();
+              if (cliOutput.includes("Watching for graph changes")) {
+                // trigger action when watch mode is active
+                fs.unlinkSync(fixtureFilePath);
+              }
+
+              if (cliOutput.includes("Changes detected")) {
+                doneSuccess(undefined);
+                childProcess.kill();
+              }
+            });
+
+            childProcess.on("error", doneFailure);
+
+            childProcess.on("exit", (code) => {
+              if (code !== 0) {
+                doneFailure(new Error(`Process exited with code ${code}`));
+              }
+            });
+          }));
+      });
+    });
+
+    describe("When expecting changes not to be tracked", () => {
+      describe("When a matching file outside of the provided cwd is added/removed/updated", () => {
+        test("Should not re-run analysis", () =>
+          new Promise((doneSuccess, doneFailure) => {
+            const fixtureSubDirectoryPath = path.join(
+              fixturesPath,
+              "sub_directory"
+            );
+            const fixtureFilePath = path.join(fixturesPath, "index.js");
+            fs.writeFileSync(fixtureFilePath, "console.log(1);");
+
+            const childProcess = runKeepAliveSkottCli(
+              [
+                "--watch",
+                "--displayMode=raw",
+                "--exitCodeOnCircularDependencies=0",
+                `--cwd=${fixtureSubDirectoryPath}`
+              ],
+              useTimeout(1_000)
             );
 
             childProcess.stdout?.on("data", (cliBuffer) => {
@@ -218,15 +230,172 @@ describe("When running skott cli", () => {
           }));
       });
 
-      // TODO
-      describe.skip("When an entry from an ignored directory is updated in the watched scope", () => {
-        test("Should not re-run analysis", () =>
-          new Promise((doneSuccess) => {
-            const fixtureFilePath = path.join(fixturesPath, "index.rs");
-            fs.writeFileSync(fixtureFilePath, "fn main() {}");
+      describe("When dealing with ignored entries", () => {
+        describe("When an ignored file is added/removed/updated within the watched scope", () => {
+          test("Should not re-run analysis", () =>
+            new Promise((doneSuccess, doneFailure) => {
+              const fixtureFilePath = path.join(fixturesPath, "index.rs");
+              fs.writeFileSync(fixtureFilePath, "fn main() {}");
 
-            doneSuccess(undefined);
-          }));
+              const childProcess = runKeepAliveSkottCli(
+                [
+                  "--watch",
+                  "--displayMode=raw",
+                  "--exitCodeOnCircularDependencies=0",
+                  `--cwd=${fixturesPath}`
+                ],
+                useTimeout(2_500)
+              );
+
+              childProcess.stdout?.on("data", (cliBuffer) => {
+                const cliOutput = cliBuffer.toString();
+                if (cliOutput.includes("Watching for graph changes")) {
+                  // trigger action when watch mode is active
+                  fs.unlinkSync(fixtureFilePath);
+                }
+
+                if (cliOutput.includes("Changes detected")) {
+                  doneFailure(
+                    new Error("A change was caught when it should not")
+                  );
+                  childProcess.kill();
+                }
+              });
+
+              childProcess.on("error", (e) => {
+                // @ts-expect-error
+                if (e.code.includes("ABORT_ERR")) {
+                  doneSuccess(undefined);
+                } else {
+                  doneFailure(e);
+                }
+              });
+
+              childProcess.on("exit", (code) => {
+                if (code !== 0) {
+                  doneFailure(new Error(`Process exited with code ${code}`));
+                }
+              });
+            }));
+        });
+
+        describe("When an entry from an ignored directory is updated within the watched scope", () => {
+          describe("When the directory is part of the ones ignored by default", () => {
+            test("Should not re-run analysis", () =>
+              new Promise((doneSuccess, doneFailure) => {
+                const nodeModulesPath = path.join(
+                  fixturesPath,
+                  "node_modules",
+                  "@skott"
+                );
+
+                const fixtureFilePath = path.join(nodeModulesPath, "index.js");
+                fs.mkdirSync(nodeModulesPath, { recursive: true });
+                fs.writeFileSync(fixtureFilePath, "function main() {}");
+
+                const childProcess = runKeepAliveSkottCli(
+                  [
+                    "--watch",
+                    "--displayMode=raw",
+                    "--exitCodeOnCircularDependencies=0",
+                    `--cwd=${fixturesPath}`
+                  ],
+                  useTimeout(2_500)
+                );
+
+                childProcess.stdout?.on("data", (cliBuffer) => {
+                  const cliOutput = cliBuffer.toString();
+
+                  if (cliOutput.includes("Watching for graph changes")) {
+                    console.log("fire action");
+                    // trigger action when watch mode is active
+                    fs.unlinkSync(fixtureFilePath);
+                  }
+
+                  if (cliOutput.includes("Changes detected")) {
+                    doneFailure(
+                      new Error("A change was caught when it should not")
+                    );
+                    childProcess.kill();
+                  }
+                });
+
+                childProcess.on("error", (e) => {
+                  // @ts-expect-error
+                  if (e.code.includes("ABORT_ERR")) {
+                    doneSuccess(undefined);
+                  } else {
+                    doneFailure(e);
+                  }
+                });
+
+                childProcess.on("exit", (code) => {
+                  if (code !== 0) {
+                    doneFailure(new Error(`Process exited with code ${code}`));
+                  }
+                });
+              }));
+          });
+
+          describe("When the entry is part of the ones ignored by the ignorePattern provided", () => {
+            test("Should not re-run analysis", () =>
+              new Promise((doneSuccess, doneFailure) => {
+                const ignorePatternPath = path.join(
+                  fixturesPath,
+                  "voluntarily-ignored"
+                );
+
+                const fixtureFilePath = path.join(
+                  ignorePatternPath,
+                  "index.js"
+                );
+                fs.mkdirSync(ignorePatternPath, { recursive: true });
+                fs.writeFileSync(fixtureFilePath, "function main() {}");
+
+                const childProcess = runKeepAliveSkottCli(
+                  [
+                    "--watch",
+                    "--displayMode=raw",
+                    "--exitCodeOnCircularDependencies=0",
+                    `--cwd=${fixturesPath}`,
+                    "--ignorePattern=voluntarily-ignored/**/*"
+                  ],
+                  useTimeout(2_500)
+                );
+
+                childProcess.stdout?.on("data", (cliBuffer) => {
+                  const cliOutput = cliBuffer.toString();
+
+                  if (cliOutput.includes("Watching for graph changes")) {
+                    // trigger action when watch mode is active
+                    fs.unlinkSync(fixtureFilePath);
+                  }
+
+                  if (cliOutput.includes("Changes detected")) {
+                    doneFailure(
+                      new Error("A change was caught when it should not")
+                    );
+                    childProcess.kill();
+                  }
+                });
+
+                childProcess.on("error", (e) => {
+                  // @ts-expect-error
+                  if (e.code.includes("ABORT_ERR")) {
+                    doneSuccess(undefined);
+                  } else {
+                    doneFailure(e);
+                  }
+                });
+
+                childProcess.on("exit", (code) => {
+                  if (code !== 0) {
+                    doneFailure(new Error(`Process exited with code ${code}`));
+                  }
+                });
+              }));
+          });
+        });
       });
     });
   });
