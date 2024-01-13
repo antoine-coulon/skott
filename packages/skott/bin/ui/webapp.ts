@@ -50,20 +50,22 @@ function displaySelectedTracking(
   }
 }
 
-// eslint-disable-next-line max-params
-export function openWebApplication(
-  skottInstance: SkottInstance,
-  skottStructure: SkottStructure,
-  entrypoint: string | undefined,
-  options: {
+export function openWebApplication(config: {
+  skottInstance: SkottInstance;
+  skottStructure: SkottStructure;
+  entrypoint: string | undefined;
+  dependencyTracking: {
     thirdParty: boolean;
     builtin: boolean;
     typeOnly: boolean;
-  }
-): void {
+  };
+}): void {
+  const { skottInstance, skottStructure, entrypoint, dependencyTracking } =
+    config;
+
   const skottWebAppPath = findSkottWebAppDirectory();
 
-  for (const [key, value] of Object.entries(options)) {
+  for (const [key, value] of Object.entries(dependencyTracking)) {
     displaySelectedTracking(key as keyof typeof trackingWithCommands, value);
   }
 

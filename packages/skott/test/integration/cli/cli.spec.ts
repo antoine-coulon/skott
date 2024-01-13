@@ -13,7 +13,7 @@ import {
 import {
   expectChangesNotToBeDetected,
   expectChangesToBeDetected,
-  runFinalizer
+  prepareFinalizer
 } from "./watch-expect.js";
 
 const useTimeout = (time_ms: number) => AbortSignal.timeout(time_ms);
@@ -40,6 +40,7 @@ describe("When running skott cli", () => {
           new Promise((doneSuccess, doneFailure) => {
             const fixtureFilePath = path.join(fixturesPath, "index.js");
             fs.writeFileSync(fixtureFilePath, "console.log(1);");
+            const cleanUpTest = prepareFinalizer(fixtureFilePath);
 
             expectChangesToBeDetected({
               skottCliProcess: runKeepAliveSkottCli(
@@ -55,7 +56,8 @@ describe("When running skott cli", () => {
               doneFailure,
               actionThatShouldTriggerChanges: () => {
                 fs.unlinkSync(fixtureFilePath);
-              }
+              },
+              finalizer: cleanUpTest
             });
           }));
       });
@@ -70,7 +72,7 @@ describe("When running skott cli", () => {
             );
             const fixtureFilePath = path.join(fixtureFolderPath, "index.js");
 
-            const cleanupTest = runFinalizer(
+            const cleanupTest = prepareFinalizer(
               path.join(fixturesPath, "some-dir")
             );
 
@@ -107,6 +109,8 @@ describe("When running skott cli", () => {
               "sub_directory"
             );
             const fixtureFilePath = path.join(fixturesPath, "index.js");
+
+            const cleanupTest = prepareFinalizer(fixtureFilePath);
             fs.writeFileSync(fixtureFilePath, "console.log(1);");
 
             expectChangesNotToBeDetected({
@@ -123,7 +127,8 @@ describe("When running skott cli", () => {
               doneFailure,
               actionThatShouldTriggerChanges: () => {
                 fs.unlinkSync(fixtureFilePath);
-              }
+              },
+              finalizer: cleanupTest
             });
           }));
       });
@@ -164,7 +169,7 @@ describe("When running skott cli", () => {
                   "@skott"
                 );
 
-                const finalizeTest = runFinalizer(
+                const finalizeTest = prepareFinalizer(
                   path.join(fixturesPath, "node_modules")
                 );
 
@@ -202,7 +207,7 @@ describe("When running skott cli", () => {
                 );
                 const fixtureFilePath = path.join(gitIgnoreSandbox, "index.js");
 
-                const finalizeTest = runFinalizer(gitIgnoreSandbox);
+                const finalizeTest = prepareFinalizer(gitIgnoreSandbox);
 
                 fs.mkdirSync(gitIgnoreSandbox, {
                   recursive: true
@@ -236,7 +241,7 @@ describe("When running skott cli", () => {
                   "voluntarily-ignored"
                 );
 
-                const finalizeTest = runFinalizer(ignorePatternPath);
+                const finalizeTest = prepareFinalizer(ignorePatternPath);
 
                 const fixtureFilePath = path.join(
                   ignorePatternPath,

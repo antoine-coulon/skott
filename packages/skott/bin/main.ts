@@ -297,7 +297,7 @@ export async function displaySkott(
       nodesWithBodyBindings
     );
   } else if (options.displayMode === "webapp") {
-    let baseEntrypointPath;
+    let baseEntrypointPath: string | undefined;
 
     if (options.includeBaseDir && entrypoint) {
       baseEntrypointPath = path.join(path.dirname(entrypoint), entrypoint);
@@ -305,12 +305,12 @@ export async function displaySkott(
       baseEntrypointPath = path.basename(entrypoint);
     }
 
-    openWebApplication(
+    openWebApplication({
       skottInstance,
       skottStructure,
-      baseEntrypointPath,
+      entrypoint: baseEntrypointPath,
       dependencyTracking
-    );
+    });
 
     return;
   } else if (options.displayMode !== "raw") {

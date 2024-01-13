@@ -3,7 +3,7 @@ import fs from "node:fs";
 
 import { watchModeStatus } from "../../../bin/watch-mode.js";
 
-export function runFinalizer(entryPath: string) {
+export function prepareFinalizer(entryPath: string) {
   return (done: () => void) => {
     fs.rm(entryPath, { recursive: true, force: true }, done);
   };
@@ -26,6 +26,7 @@ function trackWatchModeChanges({
 }) {
   skottCliProcess.stdout?.on("data", (cliBuffer) => {
     const cliOutput = cliBuffer.toString();
+
     if (cliOutput.includes(watchModeStatus.watching_for_changes)) {
       // trigger action when watch mode is active
       actionToTriggerChanges();

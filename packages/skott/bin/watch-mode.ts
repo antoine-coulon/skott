@@ -87,11 +87,30 @@ export async function registerWatchMode({
     `\n ${kleur.bold().yellow(watchModeStatus.watching_for_changes)}`
   );
 
+  let changesCount = 0;
+
+  function printChangeCount() {
+    return kleur.bold().green(`x${changesCount}`);
+  }
+
   return watcher.subscribe(
     cwd,
     (_err, _events) => {
-      console.log(
-        `\n ${kleur.bold().yellow(watchModeStatus.changes_detected)}`
+      changesCount++;
+
+      if (changesCount === 1) {
+        process.stdout.write("\n");
+      }
+
+      if (changesCount > 1) {
+        process.stdout.clearLine(0);
+        process.stdout.cursorTo(0);
+      }
+
+      process.stdout.write(
+        ` ${kleur
+          .bold()
+          .yellow(watchModeStatus.changes_detected)} ${printChangeCount()}`
       );
     },
     {
