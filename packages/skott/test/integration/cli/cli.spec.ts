@@ -49,7 +49,7 @@ describe("When running skott cli", () => {
                   "--exitCodeOnCircularDependencies=0",
                   `--cwd=${fixturesPath}`
                 ],
-                useTimeout(2_500)
+                useTimeout(2_000)
               ),
               doneSuccess,
               doneFailure,
@@ -85,7 +85,7 @@ describe("When running skott cli", () => {
                   "--exitCodeOnCircularDependencies=0",
                   `--cwd=${fixturesPath}`
                 ],
-                useTimeout(2_500)
+                useTimeout(2_000)
               ),
               doneSuccess,
               doneFailure,
@@ -143,7 +143,7 @@ describe("When running skott cli", () => {
                     "--exitCodeOnCircularDependencies=0",
                     `--cwd=${fixturesPath}`
                   ],
-                  useTimeout(2_500)
+                  useTimeout(2_000)
                 ),
                 doneSuccess,
                 doneFailure,
@@ -180,12 +180,48 @@ describe("When running skott cli", () => {
                       "--exitCodeOnCircularDependencies=0",
                       `--cwd=${fixturesPath}`
                     ],
-                    useTimeout(2_500)
+                    useTimeout(2_000)
                   ),
                   doneSuccess,
                   doneFailure,
                   actionThatShouldTriggerChanges: () => {
                     fs.unlinkSync(fixtureFilePath);
+                  },
+                  finalizer: finalizeTest
+                });
+              }));
+          });
+
+          describe("When the entry is git-ignored", () => {
+            test("Should not re-run analysis", () =>
+              new Promise((doneSuccess, doneFailure) => {
+                const gitIgnoreSandbox = path.join(
+                  fixturesPath,
+                  "git-ignore-sandbox",
+                  "with-gitignore"
+                );
+                const fixtureFilePath = path.join(gitIgnoreSandbox, "index.js");
+
+                const finalizeTest = runFinalizer(gitIgnoreSandbox);
+
+                fs.mkdirSync(gitIgnoreSandbox, {
+                  recursive: true
+                });
+
+                expectChangesNotToBeDetected({
+                  skottCliProcess: runKeepAliveSkottCli(
+                    [
+                      "--watch",
+                      "--displayMode=raw",
+                      "--exitCodeOnCircularDependencies=0",
+                      `--cwd=${path.join(fixturesPath, "git-ignore-sandbox")}`
+                    ],
+                    useTimeout(2_000)
+                  ),
+                  doneSuccess,
+                  doneFailure,
+                  actionThatShouldTriggerChanges: () => {
+                    fs.writeFileSync(fixtureFilePath, "function main() {}");
                   },
                   finalizer: finalizeTest
                 });
@@ -218,7 +254,7 @@ describe("When running skott cli", () => {
                       `--cwd=${fixturesPath}`,
                       "--ignorePattern=voluntarily-ignored/**/*"
                     ],
-                    useTimeout(2_500)
+                    useTimeout(2_000)
                   ),
                   doneSuccess,
                   doneFailure,

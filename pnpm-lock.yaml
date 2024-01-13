@@ -109,7 +109,7 @@ importers:
         version: 5.0.3(@egjs/hammerjs@2.0.17)(component-emitter@1.3.0)
       vite:
         specifier: ^4.4.0
-        version: 4.4.4(@types/node@16.18.36)
+        version: 4.4.4(@types/node@20.8.2)
       vite-tsconfig-paths:
         specifier: ^4.2.2
         version: 4.2.2(typescript@5.0.2)(vite@4.4.4)
@@ -334,6 +334,9 @@ importers:
       ora:
         specifier: ^6.3.1
         version: 6.3.1
+      parse-gitignore:
+        specifier: ^2.0.0
+        version: 2.0.0
       polka:
         specifier: ^0.5.2
         version: 0.5.2
@@ -1567,7 +1570,7 @@ packages:
       '@babel/core': 7.22.5
       '@babel/eslint-parser': 7.22.5(@babel/core@7.22.5)(eslint@8.44.0)
       '@typescript-eslint/eslint-plugin': 5.61.0(@typescript-eslint/parser@5.61.0)(eslint@8.44.0)(typescript@5.2.2)
-      '@typescript-eslint/parser': 5.61.0(eslint@8.44.0)(typescript@5.2.2)
+      '@typescript-eslint/parser': 5.61.0(eslint@8.43.0)(typescript@5.2.2)
       eslint: 8.44.0
     transitivePeerDependencies:
       - supports-color
@@ -2097,7 +2100,7 @@ packages:
         optional: true
     dependencies:
       '@eslint-community/regexpp': 4.5.1
-      '@typescript-eslint/parser': 5.61.0(eslint@8.44.0)(typescript@5.2.2)
+      '@typescript-eslint/parser': 5.61.0(eslint@8.43.0)(typescript@5.2.2)
       '@typescript-eslint/scope-manager': 5.61.0
       '@typescript-eslint/type-utils': 5.61.0(eslint@8.44.0)(typescript@5.2.2)
       '@typescript-eslint/utils': 5.61.0(eslint@8.44.0)(typescript@5.2.2)
@@ -2185,26 +2188,6 @@ packages:
       '@typescript-eslint/typescript-estree': 5.61.0(typescript@5.2.2)
       debug: 4.3.4
       eslint: 8.43.0
-      typescript: 5.2.2
-    transitivePeerDependencies:
-      - supports-color
-    dev: true
-
-  /@typescript-eslint/parser@5.61.0(eslint@8.44.0)(typescript@5.2.2):
-    resolution: {integrity: sha512-yGr4Sgyh8uO6fSi9hw3jAFXNBHbCtKKFMdX2IkT3ZqpKmtAq3lHS4ixB/COFuAIJpwl9/AqF7j72ZDWYKmIfvg==}
-    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
-    peerDependencies:
-      eslint: ^6.0.0 || ^7.0.0 || ^8.0.0
-      typescript: '*'
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-    dependencies:
-      '@typescript-eslint/scope-manager': 5.61.0
-      '@typescript-eslint/types': 5.61.0
-      '@typescript-eslint/typescript-estree': 5.61.0(typescript@5.2.2)
-      debug: 4.3.4
-      eslint: 8.44.0
       typescript: 5.2.2
     transitivePeerDependencies:
       - supports-color
@@ -5657,6 +5640,11 @@ packages:
     engines: {node: '>=6'}
     dependencies:
       callsites: 3.1.0
+
+  /parse-gitignore@2.0.0:
+    resolution: {integrity: sha512-RmVuCHWsfu0QPNW+mraxh/xjQVw/lhUCUru8Zni3Ctq3AoMhpDTq0OVdKS6iesd6Kqb7viCV3isAL43dciOSog==}
+    engines: {node: '>=14'}
+    dev: false
 
   /parse-json@5.2.0:
     resolution: {integrity: sha512-ayCKvm/phCGxOkYRSCM82iDwct8/EonSEgCSxWxD7ve6jHggsFl4fZVQBPRNgQoKiuV/odhFrGzQXZwbifC8Rg==}

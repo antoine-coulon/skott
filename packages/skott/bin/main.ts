@@ -240,7 +240,8 @@ export async function displaySkott(
         `\n ${kleur
           .bold()
           .red(
-            "Unexpected error. Please report an issue at https://github.com/antoine-coulon/skott/issues"
+            "Unexpected error. Please use `--verbose` flag and report" +
+              " an issue at https://github.com/antoine-coulon/skott/issues"
           )}`
       );
     }
