@@ -1,133 +1,49 @@
 import EventEmitter from "node:events";
-import { createRequire } from "node:module";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
 
 import kleur from "kleur";
-import ora from "ora";
 
-import type { SkottNode } from "../src/graph/node.js";
-import type { SkottInstance } from "../src/skott.js";
+import type { SkottStructure } from "../index.js";
 
-import { ensureValidConfiguration, type CliOptions } from "./cli-config.js";
-import { makeSkottRunner } from "./runner.js";
 import {
-  displayBuiltinDependencies,
-  displayCircularDependenciesPaths,
-  displayNoCircularDependenciesFound,
-  displayThirdPartyDependencies,
-  displayWarningOnHighCircularDepth
+  ensureValidConfiguration,
+  type CliParameterOptions
+} from "./cli-config.js";
+import { makeSkottRunner } from "./runner.js";
+import { renderStaticFile } from "./static-file.js";
+import {
+  displayCircularDependencies,
+  displayDependenciesReport
 } from "./ui/console/dependencies.js";
-import { displayAsFileTree } from "./ui/console/file-tree.js";
-import { displayAsGraph } from "./ui/console/graph.js";
-import { openWebApplication } from "./ui/webapp.js";
+import { renderFileTree } from "./ui/console/file-tree.js";
+import { renderGraph } from "./ui/console/graph.js";
+import { renderWebApplication } from "./ui/webapp.js";
 import { registerWatchMode } from "./watch-mode.js";
 
-async function generateStaticFile(
-  graph: Record<string, SkottNode>,
-  staticFileType: string
-): Promise<void> {
-  console.log();
+function displayInitialGetStructureTime(
+  files: SkottStructure["files"],
+  startTime: number
+) {
+  const filesWord = files.length > 1 ? "files" : "file";
+  const timeTookStructure = `${(performance.now() - startTime).toFixed(3)}ms`;
 
-  try {
-    const require = createRequire(import.meta.url);
-    const pluginPath = require.resolve("@skottorg/static-file-plugin");
-    const { generateStaticFile, supportedStaticFileTypes } = await import(
-      pluginPath
-    );
-
-    if (!supportedStaticFileTypes.includes(staticFileType)) {
-      console.error(
-        kleur.red(
-          ` Provided type: "${staticFileType}". Expected one of: ${supportedStaticFileTypes.join(
-            ", "
-          )}`
-        )
-      );
-
-      return;
-    }
-
-    try {
-      const spinner = ora("Generating static file").start();
-      // @ts-ignore - dynamic import that might not be available
-      generateStaticFile(graph, staticFileType);
-      spinner.stop();
-
-      console.log(kleur.green(` Static file generation successful.`));
-    } catch (error) {
-      console.error(
-        kleur.red(` Static file generation failed. Reason: ${error}`)
-      );
-      process.exitCode = 1;
-    }
-  } catch {
-    console.error(
-      kleur.red(
-        `Static file generation is not available. Please install the '@skottorg/static-file-plugin' package.`
-      )
-    );
-    process.exitCode = 1;
-  }
-}
-
-function makeCircularDependenciesUI(
-  skottInstance: SkottInstance,
-  options: CliOptions
-): string[][] {
-  const circularDependencies: string[][] = [];
-  const { findCircularDependencies, hasCircularDependencies } =
-    skottInstance.useGraph();
-
-  // only find circular dependencies on-demand as it can be expensive
-  if (options.showCircularDependencies) {
-    displayWarningOnHighCircularDepth(options.circularMaxDepth);
-
-    circularDependencies.push(...findCircularDependencies());
-    if (circularDependencies.length > 0) {
-      console.log(
-        kleur
-          .bold()
-          .red(
-            `\n ✖ (${circularDependencies.length}) circular dependencies found`
-          )
-      );
-      displayCircularDependenciesPaths(circularDependencies);
-      process.exitCode = options.exitCodeOnCircularDependencies;
-    } else {
-      displayNoCircularDependenciesFound(options.circularMaxDepth);
-    }
-
-    return circularDependencies;
-  }
-
-  // otherwise, just find if the graph has at least one cycle which is not expensive
-  const hasCircularDeps = hasCircularDependencies();
-
-  if (hasCircularDeps) {
-    console.log(
-      kleur
-        .bold()
-        .red(`\n ✖ Circular dependencies were found. Graph is not Acyclic.`)
-    );
-    process.exitCode = options.exitCodeOnCircularDependencies;
-  } else {
-    displayNoCircularDependenciesFound(options.circularMaxDepth);
-  }
-
-  return circularDependencies;
+  console.log(
+    `\n Processed ${kleur.bold().green(files.length)} ${filesWord} (${kleur
+      .magenta()
+      .bold(timeTookStructure)})`
+  );
 }
 
 export async function main(
   entrypoint: string | undefined,
-  options: CliOptions
+  options: CliParameterOptions
 ): Promise<void> {
   const isValid = ensureValidConfiguration(entrypoint, options);
+
   if (isValid._tag === "Left") {
     console.log(`\n ${kleur.bold().red(isValid.left)}`);
-    process.exitCode = 1;
-
-    return;
+    process.exit(1);
   }
 
   const runSkott = makeSkottRunner(entrypoint, options);
@@ -158,21 +74,13 @@ export async function main(
     );
   }
 
+  let mutableSkottInstance = await runSkott();
+
   const start = performance.now();
-  let mutableSkottInstance = await runSkott(start);
+  const { graph, files } = mutableSkottInstance.getStructure();
+  displayInitialGetStructureTime(files, start);
 
-  const skottStructure = mutableSkottInstance!.getStructure();
-  const { graph, files } = skottStructure;
-  const filesWord = files.length > 1 ? "files" : "file";
-  const timeTookStructure = `${(performance.now() - start).toFixed(3)}ms`;
-
-  console.log(
-    `\n Processed ${kleur.bold().green(files.length)} ${filesWord} (${kleur
-      .magenta()
-      .bold(timeTookStructure)})`
-  );
-
-  const circularDeps = makeCircularDependenciesUI(
+  const circularDeps = displayCircularDependencies(
     mutableSkottInstance!,
     options
   );
@@ -185,67 +93,25 @@ export async function main(
   }
 
   if (options.displayMode === "file-tree") {
-    displayAsFileTree(graph, filesInvolvedInCircularDependencies);
+    renderFileTree(graph, filesInvolvedInCircularDependencies);
   } else if (options.displayMode === "graph") {
-    displayAsGraph(graph, filesInvolvedInCircularDependencies);
+    renderGraph(graph, filesInvolvedInCircularDependencies);
   } else if (options.displayMode === "webapp") {
-    let baseEntrypointPath: string | undefined;
-    const dependencyTracking = {
-      thirdParty: options.trackThirdPartyDependencies,
-      builtin: options.trackBuiltinDependencies,
-      typeOnly: options.trackTypeOnlyDependencies
-    };
-
-    if (options.includeBaseDir && entrypoint) {
-      baseEntrypointPath = path.join(path.dirname(entrypoint), entrypoint);
-    } else if (entrypoint) {
-      baseEntrypointPath = path.basename(entrypoint);
-    }
-
-    openWebApplication({
+    renderWebApplication({
       skottInstance: mutableSkottInstance!,
-      getSkottStructure: () => mutableSkottInstance!.getStructure(),
-      entrypoint: baseEntrypointPath,
-      dependencyTracking,
-      watcherEmitter
+      watcherEmitter,
+      options: { entrypoint, ...options }
     });
   } else if (options.displayMode !== "raw") {
-    await generateStaticFile(graph, options.displayMode);
+    // @TODO: check if this is a valid display mode if the registered plugin
+    // is registered.
+    await renderStaticFile(graph, options.displayMode);
   }
 
+  // Additional information we want to display when using the console UI
+  // To avoid redondant information, we don't display it when using the webapp
   if (options.displayMode !== "webapp") {
-    if (
-      options.showUnusedDependencies &&
-      !options.trackThirdPartyDependencies
-    ) {
-      console.log(
-        `\n ${kleur
-          .bold()
-          .yellow(
-            "Warning: `--trackThirdPartyDependencies` must be provided when searching for unused dependencies."
-          )}`
-      );
-
-      console.log(
-        `\n ${kleur
-          .bold()
-          .grey(
-            "Example: `skott --displayMode=raw --showUnusedDependencies --trackThirdPartyDependencies`"
-          )} \n`
-      );
-    }
-
-    if (options.trackThirdPartyDependencies) {
-      await displayThirdPartyDependencies(
-        mutableSkottInstance,
-        graph,
-        options.showUnusedDependencies
-      );
-    }
-
-    if (options.trackBuiltinDependencies) {
-      displayBuiltinDependencies(graph);
-    }
+    displayDependenciesReport(mutableSkottInstance, options);
   }
 
   if (options.watch) {
@@ -254,9 +120,7 @@ export async function main(
       ignorePattern: options.ignorePattern,
       fileExtensions: options.fileExtensions.split(","),
       onChangesDetected: () => {
-        const now = performance.now();
-
-        runSkott(now).then((newSkottInstance) => {
+        runSkott().then((newSkottInstance) => {
           mutableSkottInstance = newSkottInstance;
           watcherEmitter?.emit("change");
         });

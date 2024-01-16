@@ -2,6 +2,7 @@ import kleur from "kleur";
 
 import type { SkottInstance } from "../../../index.js";
 import type { SkottNode } from "../../../src/graph/node.js";
+import type { CliParameterOptions } from "../../cli-config.js";
 
 import { makeIndents } from "./shared.js";
 
@@ -167,4 +168,88 @@ export function displayNoCircularDependenciesFound(
       .bold()
       .yellow(circularMaxDepth)})`
   );
+}
+
+export async function displayDependenciesReport(
+  skottInstance: SkottInstance,
+  options: CliParameterOptions
+) {
+  if (options.showUnusedDependencies && !options.trackThirdPartyDependencies) {
+    console.log(
+      `\n ${kleur
+        .bold()
+        .yellow(
+          "Warning: `--trackThirdPartyDependencies` must be provided when searching for unused dependencies."
+        )}`
+    );
+
+    console.log(
+      `\n ${kleur
+        .bold()
+        .grey(
+          "Example: `skott --displayMode=raw --showUnusedDependencies --trackThirdPartyDependencies`"
+        )} \n`
+    );
+  }
+
+  const { graph } = skottInstance.getStructure();
+
+  if (options.trackThirdPartyDependencies) {
+    await displayThirdPartyDependencies(
+      skottInstance,
+      graph,
+      options.showUnusedDependencies
+    );
+  }
+
+  if (options.trackBuiltinDependencies) {
+    displayBuiltinDependencies(graph);
+  }
+}
+
+export function displayCircularDependencies(
+  skottInstance: SkottInstance,
+  options: CliParameterOptions
+): string[][] {
+  const circularDependencies: string[][] = [];
+  const { findCircularDependencies, hasCircularDependencies } =
+    skottInstance.useGraph();
+
+  // only find circular dependencies on-demand as it can be expensive
+  if (options.showCircularDependencies) {
+    displayWarningOnHighCircularDepth(options.circularMaxDepth);
+
+    circularDependencies.push(...findCircularDependencies());
+    if (circularDependencies.length > 0) {
+      console.log(
+        kleur
+          .bold()
+          .red(
+            `\n ✖ (${circularDependencies.length}) circular dependencies found`
+          )
+      );
+      displayCircularDependenciesPaths(circularDependencies);
+      process.exitCode = options.exitCodeOnCircularDependencies;
+    } else {
+      displayNoCircularDependenciesFound(options.circularMaxDepth);
+    }
+
+    return circularDependencies;
+  }
+
+  // otherwise, just find if the graph has at least one cycle which is not expensive
+  const hasCircularDeps = hasCircularDependencies();
+
+  if (hasCircularDeps) {
+    console.log(
+      kleur
+        .bold()
+        .red(`\n ✖ Circular dependencies were found. Graph is not Acyclic.`)
+    );
+    process.exitCode = options.exitCodeOnCircularDependencies;
+  } else {
+    displayNoCircularDependenciesFound(options.circularMaxDepth);
+  }
+
+  return circularDependencies;
 }

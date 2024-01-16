@@ -1,6 +1,10 @@
 import * as E from "@effect/data/Either";
 
 export type CliOptions = {
+  entrypoint: string | undefined;
+} & CliParameterOptions;
+
+export type CliParameterOptions = {
   circularMaxDepth: number;
   cwd: string;
   displayMode: string;
@@ -16,23 +20,33 @@ export type CliOptions = {
   trackThirdPartyDependencies: boolean;
   trackTypeOnlyDependencies: boolean;
   tsconfig: string;
-  verbose: true;
-  watch: true;
+  verbose: boolean;
+  watch: boolean;
 };
 
-export function ensureValidConfiguration(
-  entrypoint: string | undefined,
-  options: CliOptions
-): E.Either<string, void> {
+function ensureNoIllegalConfigState({
+  entrypoint,
+  cwd,
+  includeBaseDir
+}: CliOptions) {
   if (entrypoint) {
-    if (options.cwd !== process.cwd()) {
+    if (cwd !== process.cwd()) {
       return E.left("`--cwd` can't be customized when providing an entrypoint");
     }
-  } else if (options.includeBaseDir) {
+  } else if (includeBaseDir) {
     return E.left(
       "`--includeBaseDir` can only be used when providing an entrypoint"
     );
   }
+
+  return E.right(void 0);
+}
+
+export function ensureValidConfiguration(
+  entrypoint: string | undefined,
+  options: CliParameterOptions
+): E.Either<string, void> {
+  ensureNoIllegalConfigState({ entrypoint, ...options });
 
   return E.right(void 0);
 }

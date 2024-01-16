@@ -1,3 +1,5 @@
+import { performance } from "node:perf_hooks";
+
 import kleur from "kleur";
 import type { Ora } from "ora";
 import ora from "ora";
@@ -6,12 +8,12 @@ import skott, { type SkottInstance } from "../index.js";
 import { kExpectedModuleExtensions } from "../src/modules/resolvers/base-resolver.js";
 import { EcmaScriptDependencyResolver } from "../src/modules/resolvers/ecmascript/resolver.js";
 
-import type { CliOptions } from "./cli-config.js";
+import type { CliParameterOptions } from "./cli-config.js";
 
 export function makeSkottRunner(
   entrypoint: string | undefined,
-  options: CliOptions
-): (startTime: number) => Promise<SkottInstance> {
+  options: CliParameterOptions
+): () => Promise<SkottInstance> {
   let isFirstRun = true;
 
   const dependencyTracking = {
@@ -24,7 +26,8 @@ export function makeSkottRunner(
     .filter((ext) => kExpectedModuleExtensions.has(ext));
   const dependencyResolvers = [new EcmaScriptDependencyResolver()];
 
-  return async (startTime) => {
+  return async () => {
+    const startTime = performance.now();
     let spinner: Ora | undefined;
 
     try {

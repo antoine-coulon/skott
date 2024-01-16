@@ -159,7 +159,7 @@ cli
   .option(
     "-fw, --watch",
     "Watch for changes depending on the provided '--cwd' or defaults to process.cwd() and re-run the analysis when a supported file is added/deleted/modified",
-    process.cwd()
+    false
   )
   .argument("[entrypoint]", "optional entrypoint file to use")
   .usage(

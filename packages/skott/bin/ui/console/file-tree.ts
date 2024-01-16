@@ -11,7 +11,7 @@ function isDirectory(nodePath: string): boolean {
   return path.extname(nodePath) === "";
 }
 
-function renderFileTree(
+function render(
   treeStructure: TreeStructure,
   filesInvolvedInCycles: string[],
   whitespaces = 0
@@ -28,11 +28,11 @@ function renderFileTree(
         `${indents} ${leftLevelSeparator} ${kleur.bold().blue(nodeId)}`
       );
     }
-    renderFileTree(subNodes, filesInvolvedInCycles, whitespaces + 2);
+    render(subNodes, filesInvolvedInCycles, whitespaces + 2);
   }
 }
 
-export function displayAsFileTree(
+export function renderFileTree(
   graph: SkottStructure["graph"],
   filesInvolvedInCircularDependencies: string[]
 ) {
@@ -42,5 +42,5 @@ export function displayAsFileTree(
   ]);
   const treeStructure = makeTreeStructure(flattenedFilesPaths);
   console.log();
-  renderFileTree(treeStructure, filesInvolvedInCircularDependencies, 0);
+  render(treeStructure, filesInvolvedInCircularDependencies, 0);
 }

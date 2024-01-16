@@ -4,7 +4,7 @@ import type { SkottNode, SkottNodeBody } from "../../../src/graph/node.js";
 
 import { bytesToKB, kLeftSeparator, makeIndents } from "./shared.js";
 
-function renderGraph(
+function render(
   graph: Record<string, SkottNode>,
   filesInvolvedInCycles: string[],
   nodesWithBodyBindings: Map<string, SkottNodeBody>
@@ -65,7 +65,7 @@ function renderGraph(
   }
 }
 
-export function displayAsGraph(
+export function renderGraph(
   graph: Record<string, SkottNode>,
   filesInvolvedInCycles: string[]
 ) {
@@ -75,5 +75,5 @@ export function displayAsGraph(
     nodesWithBodyBindings.set(nodeId, nodeValue.body);
   }
 
-  renderGraph(graph, filesInvolvedInCycles, nodesWithBodyBindings);
+  render(graph, filesInvolvedInCycles, nodesWithBodyBindings);
 }

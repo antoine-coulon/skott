@@ -1,5 +1,5 @@
 import type EventEmitter from "node:events";
-import { ServerResponse } from "node:http";
+import path from "node:path";
 
 import compression from "compression";
 import kleur from "kleur";
@@ -7,15 +7,10 @@ import polka from "polka";
 import sirv from "sirv";
 import resolveWebAppStaticPath from "skott-webapp";
 
-import type { SkottInstance, SkottStructure } from "../../src/skott.js";
+import type { SkottInstance } from "../../src/skott.js";
+import type { CliOptions } from "../cli-config.js";
 
 import { open } from "./open-url.js";
-
-function findSkottWebAppDirectory(): string {
-  const skottWebAppDirectory = resolveWebAppStaticPath();
-
-  return skottWebAppDirectory;
-}
 
 const trackingWithCommands = {
   builtin: {
@@ -32,7 +27,13 @@ const trackingWithCommands = {
   }
 } as const;
 
-function displaySelectedTracking(
+function findSkottWebAppDirectory(): string {
+  const skottWebAppDirectory = resolveWebAppStaticPath();
+
+  return skottWebAppDirectory;
+}
+
+function renderSelectedTracking(
   option: keyof typeof trackingWithCommands,
   enabled: boolean
 ): void {
@@ -51,40 +52,44 @@ function displaySelectedTracking(
   }
 }
 
-export function openWebApplication(config: {
+function resolveEntrypointPath(options: CliOptions) {
+  const { entrypoint, includeBaseDir } = options;
+  let baseEntrypointPath: string | undefined;
+
+  if (includeBaseDir && entrypoint) {
+    baseEntrypointPath = path.join(path.dirname(entrypoint), entrypoint);
+  } else if (entrypoint) {
+    baseEntrypointPath = path.basename(entrypoint);
+  }
+
+  return baseEntrypointPath;
+}
+
+export function renderWebApplication(config: {
   skottInstance: SkottInstance;
-  getSkottStructure: () => SkottStructure;
-  entrypoint: string | undefined;
-  dependencyTracking: {
-    thirdParty: boolean;
-    builtin: boolean;
-    typeOnly: boolean;
-  };
+  options: CliOptions;
   watcherEmitter?: EventEmitter;
 }): void {
-  const {
-    skottInstance,
-    getSkottStructure,
-    entrypoint,
-    dependencyTracking,
-    watcherEmitter
-  } = config;
-
+  const entrypoint = resolveEntrypointPath(config.options);
+  const { skottInstance, watcherEmitter } = config;
   const skottWebAppPath = findSkottWebAppDirectory();
+  const dependencyTracking = {
+    thirdParty: config.options.trackThirdPartyDependencies,
+    builtin: config.options.trackBuiltinDependencies,
+    typeOnly: config.options.trackTypeOnlyDependencies
+  };
 
   for (const [key, value] of Object.entries(dependencyTracking)) {
-    displaySelectedTracking(key as keyof typeof trackingWithCommands, value);
+    renderSelectedTracking(key as keyof typeof trackingWithCommands, value);
   }
 
   const compress = compression();
   const assets = sirv(skottWebAppPath, {
     immutable: true
   });
-  const srv = polka().use(compress, assets);
+  const app = polka().use(compress, assets);
 
-  console.log(`\n ${kleur.italic("Prefetching data...")} `);
-
-  srv.get("/subscribe", (_, response: ServerResponse) => {
+  app.get("/subscribe", (request, response) => {
     response.writeHead(200, {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
@@ -92,33 +97,38 @@ export function openWebApplication(config: {
       Connection: "keep-alive"
     });
 
-    watcherEmitter?.on("change", () => {
-      response.write("refresh\n\n");
+    const listener = () => response.write(`refresh\n\n`);
+    watcherEmitter?.on("change", listener);
+
+    request.on("close", () => {
+      watcherEmitter?.removeListener("change", listener);
     });
   });
 
-  srv.get("/api/cycles", (_, response: ServerResponse) => {
+  app.get("/api/cycles", (_, response) => {
     const cycles = skottInstance.useGraph().findCircularDependencies();
 
     response.setHeader("Content-Type", "application/json");
     response.end(JSON.stringify(cycles));
   });
 
-  srv.get("/api/analysis", (_, response: ServerResponse) => {
+  app.get("/api/analysis", (_, response) => {
+    const structure = skottInstance.getStructure();
+
     response.setHeader("Content-Type", "application/json");
     response.end(
       JSON.stringify({
-        ...getSkottStructure(),
+        ...structure,
         entrypoint: entrypoint ?? "none",
         cycles: []
       })
     );
   });
 
-  srv.listen(process.env.SKOTT_PORT || 0);
+  app.listen(process.env.SKOTT_PORT || 0);
 
   // @ts-expect-error - "port" exists
-  const bindedAddress = `http://localhost:${srv.server?.address()?.port}`;
+  const bindedAddress = `http://localhost:${app.server?.address()?.port}`;
 
   console.log(
     `\n ${kleur.bold(`💻 Web application is ready:`)} ${kleur
