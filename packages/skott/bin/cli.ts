@@ -8,7 +8,7 @@ import { Command } from "commander";
 
 import { kExpectedModuleExtensions } from "../src/modules/resolvers/base-resolver.js";
 
-import { displaySkott } from "./main.js";
+import { main } from "./main.js";
 
 function readManifestVersion(): string {
   try {
@@ -169,6 +169,6 @@ cli
           | ./node_modules/.bin/skott --showCircularDependencies --displayMode=raw --watch\n
         `)
   )
-  .action((name, commandAndOptions) => displaySkott(name, commandAndOptions));
+  .action((name, commandAndOptions) => main(name, commandAndOptions));
 
 cli.parse(process.argv);

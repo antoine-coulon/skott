@@ -3,25 +3,23 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
 
-import { makeTreeStructure } from "fs-tree-structure";
 import kleur from "kleur";
-import ora, { type Ora } from "ora";
+import ora from "ora";
 
-import skott from "../index.js";
-import type { SkottNode, SkottNodeBody } from "../src/graph/node.js";
-import { kExpectedModuleExtensions } from "../src/modules/resolvers/base-resolver.js";
-import { EcmaScriptDependencyResolver } from "../src/modules/resolvers/ecmascript/resolver.js";
+import type { SkottNode } from "../src/graph/node.js";
 import type { SkottInstance } from "../src/skott.js";
 
+import { ensureValidConfiguration, type CliOptions } from "./cli-config.js";
+import { makeSkottRunner } from "./runner.js";
 import {
-  displayAsFileTree,
-  displayAsGraph,
   displayBuiltinDependencies,
   displayCircularDependenciesPaths,
   displayNoCircularDependenciesFound,
   displayThirdPartyDependencies,
   displayWarningOnHighCircularDepth
-} from "./ui/console.js";
+} from "./ui/console/dependencies.js";
+import { displayAsFileTree } from "./ui/console/file-tree.js";
+import { displayAsGraph } from "./ui/console/graph.js";
 import { openWebApplication } from "./ui/webapp.js";
 import { registerWatchMode } from "./watch-mode.js";
 
@@ -120,30 +118,20 @@ function makeCircularDependenciesUI(
   return circularDependencies;
 }
 
-type CliOptions = {
-  circularMaxDepth: number;
-  cwd: string;
-  displayMode: string;
-  exitCodeOnCircularDependencies: number;
-  fileExtensions: string;
-  ignorePattern: string;
-  includeBaseDir: boolean;
-  incremental: boolean;
-  manifest: string;
-  showCircularDependencies: boolean;
-  showUnusedDependencies: boolean;
-  trackBuiltinDependencies: boolean;
-  trackThirdPartyDependencies: boolean;
-  trackTypeOnlyDependencies: boolean;
-  tsconfig: string;
-  verbose: true;
-  watch: true;
-};
-
-export async function displaySkott(
+export async function main(
   entrypoint: string | undefined,
   options: CliOptions
 ): Promise<void> {
+  const isValid = ensureValidConfiguration(entrypoint, options);
+  if (isValid._tag === "Left") {
+    console.log(`\n ${kleur.bold().red(isValid.left)}`);
+    process.exitCode = 1;
+
+    return;
+  }
+
+  const runSkott = makeSkottRunner(entrypoint, options);
+
   if (entrypoint) {
     console.log(
       `\n Running ${kleur.blue().bold("skott")} from entrypoint: ${kleur
@@ -151,33 +139,7 @@ export async function displaySkott(
         .underline()
         .bold(`${entrypoint}`)}`
     );
-
-    if (options.cwd !== process.cwd()) {
-      console.log(
-        `\n ${kleur
-          .red()
-          .bold("`--cwd` can't be customized when providing an entrypoint")} `
-      );
-
-      process.exitCode = 1;
-
-      return;
-    }
   } else {
-    if (options.includeBaseDir) {
-      console.log(
-        `\n ${kleur
-          .red()
-          .bold(
-            "`--includeBaseDir` can only be used when providing an entrypoint"
-          )} `
-      );
-
-      process.exitCode = 1;
-
-      return;
-    }
-
     console.log(
       `\n Running ${kleur.blue().bold("skott")} from current directory: ${kleur
         .yellow()
@@ -196,76 +158,10 @@ export async function displaySkott(
     );
   }
 
-  let spinner: Ora | undefined;
-  let skottInstance: SkottInstance;
-
-  const dependencyTracking = {
-    thirdParty: options.trackThirdPartyDependencies,
-    builtin: options.trackBuiltinDependencies,
-    typeOnly: options.trackTypeOnlyDependencies
-  };
   const start = performance.now();
+  let mutableSkottInstance = await runSkott(start);
 
-  async function runSkott() {
-    try {
-      if (!options.verbose) {
-        spinner = ora(`Initializing ${kleur.blue().bold("skott")}`).start();
-      }
-
-      skottInstance = await skott({
-        entrypoint: entrypoint ? entrypoint : undefined,
-        ignorePattern: options.ignorePattern,
-        incremental: options.incremental,
-        circularMaxDepth: options.circularMaxDepth ?? Number.POSITIVE_INFINITY,
-        includeBaseDir: options.includeBaseDir,
-        dependencyTracking,
-        fileExtensions: options.fileExtensions
-          .split(",")
-          .filter((ext) => kExpectedModuleExtensions.has(ext)),
-        tsConfigPath: options.tsconfig,
-        manifestPath: options.manifest,
-        dependencyResolvers: [new EcmaScriptDependencyResolver()],
-        cwd: options.cwd,
-        verbose: options.verbose
-      });
-    } catch (error: any) {
-      if (spinner) {
-        spinner.stop();
-      }
-
-      if (error.message) {
-        console.log(`\n ${kleur.bold().red("Error: ".concat(error.message))}`);
-      } else {
-        console.log(
-          `\n ${kleur
-            .bold()
-            .red(
-              "Unexpected error. Please use `--verbose` flag and report" +
-                " an issue at https://github.com/antoine-coulon/skott/issues"
-            )}`
-        );
-      }
-
-      process.exitCode = 1;
-
-      return;
-    }
-
-    const timeTook = `${(performance.now() - start).toFixed(3)}ms`;
-
-    if (spinner) {
-      spinner.text = `Finished Skott initialization (${kleur
-        .magenta()
-        .bold(timeTook)})`;
-      spinner.color = "green";
-    }
-
-    spinner?.stop();
-  }
-
-  await runSkott();
-
-  const skottStructure = skottInstance!.getStructure();
+  const skottStructure = mutableSkottInstance!.getStructure();
   const { graph, files } = skottStructure;
   const filesWord = files.length > 1 ? "files" : "file";
   const timeTookStructure = `${(performance.now() - start).toFixed(3)}ms`;
@@ -276,7 +172,10 @@ export async function displaySkott(
       .bold(timeTookStructure)})`
   );
 
-  const circularDeps = makeCircularDependenciesUI(skottInstance!, options);
+  const circularDeps = makeCircularDependenciesUI(
+    mutableSkottInstance!,
+    options
+  );
   const filesInvolvedInCircularDependencies = circularDeps.flat(1);
 
   let watcherEmitter: EventEmitter | undefined;
@@ -286,27 +185,16 @@ export async function displaySkott(
   }
 
   if (options.displayMode === "file-tree") {
-    const flattenedFilesPaths = Object.values(graph).flatMap((rootValue) => [
-      rootValue.id,
-      ...rootValue.adjacentTo
-    ]);
-    const treeStructure = makeTreeStructure(flattenedFilesPaths);
-    console.log();
-    displayAsFileTree(treeStructure, filesInvolvedInCircularDependencies, 0);
+    displayAsFileTree(graph, filesInvolvedInCircularDependencies);
   } else if (options.displayMode === "graph") {
-    const nodesWithBodyBindings = new Map<string, SkottNodeBody>();
-
-    for (const [nodeId, nodeValue] of Object.entries(graph)) {
-      nodesWithBodyBindings.set(nodeId, nodeValue.body);
-    }
-
-    displayAsGraph(
-      graph,
-      filesInvolvedInCircularDependencies,
-      nodesWithBodyBindings
-    );
+    displayAsGraph(graph, filesInvolvedInCircularDependencies);
   } else if (options.displayMode === "webapp") {
     let baseEntrypointPath: string | undefined;
+    const dependencyTracking = {
+      thirdParty: options.trackThirdPartyDependencies,
+      builtin: options.trackBuiltinDependencies,
+      typeOnly: options.trackTypeOnlyDependencies
+    };
 
     if (options.includeBaseDir && entrypoint) {
       baseEntrypointPath = path.join(path.dirname(entrypoint), entrypoint);
@@ -315,8 +203,8 @@ export async function displaySkott(
     }
 
     openWebApplication({
-      skottInstance: skottInstance!,
-      getSkottStructure: () => skottInstance!.getStructure(),
+      skottInstance: mutableSkottInstance!,
+      getSkottStructure: () => mutableSkottInstance!.getStructure(),
       entrypoint: baseEntrypointPath,
       dependencyTracking,
       watcherEmitter
@@ -349,8 +237,7 @@ export async function displaySkott(
 
     if (options.trackThirdPartyDependencies) {
       await displayThirdPartyDependencies(
-        // @ts-ignore
-        skottInstance,
+        mutableSkottInstance,
         graph,
         options.showUnusedDependencies
       );
@@ -367,7 +254,10 @@ export async function displaySkott(
       ignorePattern: options.ignorePattern,
       fileExtensions: options.fileExtensions.split(","),
       onChangesDetected: () => {
-        runSkott().then(() => {
+        const now = performance.now();
+
+        runSkott(now).then((newSkottInstance) => {
+          mutableSkottInstance = newSkottInstance;
           watcherEmitter?.emit("change");
         });
       }

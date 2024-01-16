@@ -92,12 +92,14 @@ export async function registerWatchMode({
   let changesCount = 0;
 
   function printChangeCount() {
-    return kleur.bold().green(`x${changesCount}`);
+    return kleur.bold().green(`(x${changesCount})`);
   }
 
   return watcher.subscribe(
     cwd,
     (_err, _events) => {
+      onChangesDetected();
+
       changesCount++;
 
       if (changesCount === 1) {
@@ -112,10 +114,9 @@ export async function registerWatchMode({
       process.stdout.write(
         ` ${kleur
           .bold()
-          .yellow(watchModeStatus.changes_detected)} ${printChangeCount()}`
+          .yellow(watchModeStatus.changes_detected)} ${printChangeCount()}` +
+          ` ${kleur.bold().grey("Re-running skott...")}`
       );
-
-      onChangesDetected();
     },
     {
       ignore: uniqueIgnoreList
