@@ -1,10 +1,11 @@
+import EventEmitter from "node:events";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
 
 import { makeTreeStructure } from "fs-tree-structure";
 import kleur from "kleur";
-import ora from "ora";
+import ora, { type Ora } from "ora";
 
 import skott from "../index.js";
 import type { SkottNode, SkottNodeBody } from "../src/graph/node.js";
@@ -195,86 +196,94 @@ export async function displaySkott(
     );
   }
 
-  let spinner;
-
-  if (!options.verbose) {
-    spinner = ora(`Initializing ${kleur.blue().bold("skott")}`).start();
-  }
-
-  const start = performance.now();
+  let spinner: Ora | undefined;
+  let skottInstance: SkottInstance;
 
   const dependencyTracking = {
     thirdParty: options.trackThirdPartyDependencies,
     builtin: options.trackBuiltinDependencies,
     typeOnly: options.trackTypeOnlyDependencies
   };
+  const start = performance.now();
 
-  let skottInstance: SkottInstance;
+  async function runSkott() {
+    try {
+      if (!options.verbose) {
+        spinner = ora(`Initializing ${kleur.blue().bold("skott")}`).start();
+      }
 
-  try {
-    skottInstance = await skott({
-      entrypoint: entrypoint ? entrypoint : undefined,
-      ignorePattern: options.ignorePattern,
-      incremental: options.incremental,
-      circularMaxDepth: options.circularMaxDepth ?? Number.POSITIVE_INFINITY,
-      includeBaseDir: options.includeBaseDir,
-      dependencyTracking,
-      fileExtensions: options.fileExtensions
-        .split(",")
-        .filter((ext) => kExpectedModuleExtensions.has(ext)),
-      tsConfigPath: options.tsconfig,
-      manifestPath: options.manifest,
-      dependencyResolvers: [new EcmaScriptDependencyResolver()],
-      cwd: options.cwd,
-      verbose: options.verbose
-    });
-  } catch (error: any) {
+      skottInstance = await skott({
+        entrypoint: entrypoint ? entrypoint : undefined,
+        ignorePattern: options.ignorePattern,
+        incremental: options.incremental,
+        circularMaxDepth: options.circularMaxDepth ?? Number.POSITIVE_INFINITY,
+        includeBaseDir: options.includeBaseDir,
+        dependencyTracking,
+        fileExtensions: options.fileExtensions
+          .split(",")
+          .filter((ext) => kExpectedModuleExtensions.has(ext)),
+        tsConfigPath: options.tsconfig,
+        manifestPath: options.manifest,
+        dependencyResolvers: [new EcmaScriptDependencyResolver()],
+        cwd: options.cwd,
+        verbose: options.verbose
+      });
+    } catch (error: any) {
+      if (spinner) {
+        spinner.stop();
+      }
+
+      if (error.message) {
+        console.log(`\n ${kleur.bold().red("Error: ".concat(error.message))}`);
+      } else {
+        console.log(
+          `\n ${kleur
+            .bold()
+            .red(
+              "Unexpected error. Please use `--verbose` flag and report" +
+                " an issue at https://github.com/antoine-coulon/skott/issues"
+            )}`
+        );
+      }
+
+      process.exitCode = 1;
+
+      return;
+    }
+
+    const timeTook = `${(performance.now() - start).toFixed(3)}ms`;
+
     if (spinner) {
-      spinner.stop();
+      spinner.text = `Finished Skott initialization (${kleur
+        .magenta()
+        .bold(timeTook)})`;
+      spinner.color = "green";
     }
 
-    if (error.message) {
-      console.log(`\n ${kleur.bold().red("Error: ".concat(error.message))}`);
-    } else {
-      console.log(
-        `\n ${kleur
-          .bold()
-          .red(
-            "Unexpected error. Please use `--verbose` flag and report" +
-              " an issue at https://github.com/antoine-coulon/skott/issues"
-          )}`
-      );
-    }
-
-    process.exitCode = 1;
-
-    return;
+    spinner?.stop();
   }
 
-  const timeTook = `${(performance.now() - start).toFixed(3)}ms`;
+  await runSkott();
 
-  if (spinner) {
-    spinner.text = `Finished Skott initialization (${kleur
-      .magenta()
-      .bold(timeTook)})`;
-    spinner.color = "green";
-  }
-
-  const skottStructure = skottInstance.getStructure();
+  const skottStructure = skottInstance!.getStructure();
   const { graph, files } = skottStructure;
   const filesWord = files.length > 1 ? "files" : "file";
   const timeTookStructure = `${(performance.now() - start).toFixed(3)}ms`;
 
-  spinner?.stop();
   console.log(
     `\n Processed ${kleur.bold().green(files.length)} ${filesWord} (${kleur
       .magenta()
       .bold(timeTookStructure)})`
   );
 
-  const circularDeps = makeCircularDependenciesUI(skottInstance, options);
-
+  const circularDeps = makeCircularDependenciesUI(skottInstance!, options);
   const filesInvolvedInCircularDependencies = circularDeps.flat(1);
+
+  let watcherEmitter: EventEmitter | undefined;
+
+  if (options.watch) {
+    watcherEmitter = new EventEmitter();
+  }
 
   if (options.displayMode === "file-tree") {
     const flattenedFilesPaths = Object.values(graph).flatMap((rootValue) => [
@@ -306,52 +315,62 @@ export async function displaySkott(
     }
 
     openWebApplication({
-      skottInstance,
-      skottStructure,
+      skottInstance: skottInstance!,
+      getSkottStructure: () => skottInstance!.getStructure(),
       entrypoint: baseEntrypointPath,
-      dependencyTracking
+      dependencyTracking,
+      watcherEmitter
     });
-
-    return;
   } else if (options.displayMode !== "raw") {
     await generateStaticFile(graph, options.displayMode);
   }
 
-  if (options.showUnusedDependencies && !options.trackThirdPartyDependencies) {
-    console.log(
-      `\n ${kleur
-        .bold()
-        .yellow(
-          "Warning: `--trackThirdPartyDependencies` must be provided when searching for unused dependencies."
-        )}`
-    );
+  if (options.displayMode !== "webapp") {
+    if (
+      options.showUnusedDependencies &&
+      !options.trackThirdPartyDependencies
+    ) {
+      console.log(
+        `\n ${kleur
+          .bold()
+          .yellow(
+            "Warning: `--trackThirdPartyDependencies` must be provided when searching for unused dependencies."
+          )}`
+      );
 
-    console.log(
-      `\n ${kleur
-        .bold()
-        .grey(
-          "Example: `skott --displayMode=raw --showUnusedDependencies --trackThirdPartyDependencies`"
-        )} \n`
-    );
-  }
+      console.log(
+        `\n ${kleur
+          .bold()
+          .grey(
+            "Example: `skott --displayMode=raw --showUnusedDependencies --trackThirdPartyDependencies`"
+          )} \n`
+      );
+    }
 
-  if (options.trackThirdPartyDependencies) {
-    await displayThirdPartyDependencies(
-      skottInstance,
-      graph,
-      options.showUnusedDependencies
-    );
-  }
+    if (options.trackThirdPartyDependencies) {
+      await displayThirdPartyDependencies(
+        // @ts-ignore
+        skottInstance,
+        graph,
+        options.showUnusedDependencies
+      );
+    }
 
-  if (options.trackBuiltinDependencies) {
-    displayBuiltinDependencies(graph);
+    if (options.trackBuiltinDependencies) {
+      displayBuiltinDependencies(graph);
+    }
   }
 
   if (options.watch) {
     registerWatchMode({
       cwd: options.cwd,
       ignorePattern: options.ignorePattern,
-      fileExtensions: options.fileExtensions.split(",")
+      fileExtensions: options.fileExtensions.split(","),
+      onChangesDetected: () => {
+        runSkott().then(() => {
+          watcherEmitter?.emit("change");
+        });
+      }
     });
   }
 }

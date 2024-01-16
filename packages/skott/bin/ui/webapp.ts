@@ -1,3 +1,4 @@
+import type EventEmitter from "node:events";
 import { ServerResponse } from "node:http";
 
 import compression from "compression";
@@ -52,16 +53,22 @@ function displaySelectedTracking(
 
 export function openWebApplication(config: {
   skottInstance: SkottInstance;
-  skottStructure: SkottStructure;
+  getSkottStructure: () => SkottStructure;
   entrypoint: string | undefined;
   dependencyTracking: {
     thirdParty: boolean;
     builtin: boolean;
     typeOnly: boolean;
   };
+  watcherEmitter?: EventEmitter;
 }): void {
-  const { skottInstance, skottStructure, entrypoint, dependencyTracking } =
-    config;
+  const {
+    skottInstance,
+    getSkottStructure,
+    entrypoint,
+    dependencyTracking,
+    watcherEmitter
+  } = config;
 
   const skottWebAppPath = findSkottWebAppDirectory();
 
@@ -77,6 +84,19 @@ export function openWebApplication(config: {
 
   console.log(`\n ${kleur.italic("Prefetching data...")} `);
 
+  srv.get("/subscribe", (_, response: ServerResponse) => {
+    response.writeHead(200, {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      "access-control-allow-origin": "*",
+      Connection: "keep-alive"
+    });
+
+    watcherEmitter?.on("change", () => {
+      response.write("refresh\n\n");
+    });
+  });
+
   srv.get("/api/cycles", (_, response: ServerResponse) => {
     const cycles = skottInstance.useGraph().findCircularDependencies();
 
@@ -88,7 +108,7 @@ export function openWebApplication(config: {
     response.setHeader("Content-Type", "application/json");
     response.end(
       JSON.stringify({
-        ...skottStructure,
+        ...getSkottStructure(),
         entrypoint: entrypoint ?? "none",
         cycles: []
       })

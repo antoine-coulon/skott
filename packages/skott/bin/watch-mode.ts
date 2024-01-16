@@ -52,11 +52,13 @@ async function retrieveGitIgnoredEntries(cwd: string): Promise<string[]> {
 export async function registerWatchMode({
   cwd,
   ignorePattern,
-  fileExtensions
+  fileExtensions,
+  onChangesDetected
 }: {
   cwd: string;
   ignorePattern: string;
   fileExtensions: string[];
+  onChangesDetected: () => void;
 }) {
   /**
    * For simplicity's sake, we only support discarding entries from the .gitignore
@@ -112,6 +114,8 @@ export async function registerWatchMode({
           .bold()
           .yellow(watchModeStatus.changes_detected)} ${printChangeCount()}`
       );
+
+      onChangesDetected();
     },
     {
       ignore: uniqueIgnoreList
