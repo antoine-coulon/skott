@@ -16,9 +16,9 @@ import {
   displayCircularDependencies,
   displayDependenciesReport
 } from "./ui/console/dependencies.js";
-import { renderFileTree } from "./ui/console/file-tree.js";
-import { renderGraph } from "./ui/console/graph.js";
-import { renderWebApplication } from "./ui/webapp.js";
+import { renderFileTree } from "./ui/display-modes/file-tree.js";
+import { renderGraph } from "./ui/display-modes/graph.js";
+import { renderWebApplication } from "./ui/display-modes/webapp.js";
 import { registerWatchMode } from "./watch-mode.js";
 
 function displayInitialGetStructureTime(

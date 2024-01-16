@@ -4,8 +4,7 @@ import { makeTreeStructure, type TreeStructure } from "fs-tree-structure";
 import kleur from "kleur";
 
 import type { SkottStructure } from "../../../index.js";
-
-import { kLeftSeparator, makeIndents } from "./shared.js";
+import { kLeftSeparator, makeIndents } from "../console/shared.js";
 
 function isDirectory(nodePath: string): boolean {
   return path.extname(nodePath) === "";

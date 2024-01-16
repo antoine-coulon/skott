@@ -7,10 +7,9 @@ import polka from "polka";
 import sirv from "sirv";
 import resolveWebAppStaticPath from "skott-webapp";
 
-import type { SkottInstance } from "../../src/skott.js";
-import type { CliOptions } from "../cli-config.js";
-
-import { open } from "./open-url.js";
+import type { SkottInstance } from "../../../src/skott.js";
+import type { CliOptions } from "../../cli-config.js";
+import { open } from "../../open-url.js";
 
 const trackingWithCommands = {
   builtin: {

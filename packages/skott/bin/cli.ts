@@ -98,7 +98,7 @@ cli
   )
   .option(
     "-m, --displayMode <mode>",
-    "Either display the result of the analysis as a 'graph', as a 'file-tree' or 'raw'",
+    "Either display the result of the analysis as a 'webapp', 'graph', 'file-tree' or 'raw'",
     "webapp"
   )
   .option(

@@ -1,8 +1,7 @@
 import kleur from "kleur";
 
 import type { SkottNode, SkottNodeBody } from "../../../src/graph/node.js";
-
-import { bytesToKB, kLeftSeparator, makeIndents } from "./shared.js";
+import { bytesToKB, kLeftSeparator, makeIndents } from "../console/shared.js";
 
 function render(
   graph: Record<string, SkottNode>,
