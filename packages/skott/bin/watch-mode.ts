@@ -1,3 +1,4 @@
+import { execSync } from "node:child_process";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -18,6 +19,13 @@ export const watchModeStatus = {
 
 function toDotlessExtension(fileExtension: string) {
   return fileExtension.replace(".", "");
+}
+
+function clearTerminal() {
+  const clearCommand = process.platform === "win32" ? "cls" : "clear";
+  try {
+    execSync(clearCommand, { stdio: "inherit" });
+  } catch {}
 }
 
 async function getRootGitIgnorePath(cwd: string) {
@@ -58,7 +66,7 @@ export async function registerWatchMode({
   cwd: string;
   ignorePattern: string;
   fileExtensions: string[];
-  onChangesDetected: () => void;
+  onChangesDetected: (doneSubscribersPropagation: () => void) => void;
 }) {
   /**
    * For simplicity's sake, we only support discarding entries from the .gitignore
@@ -83,11 +91,15 @@ export async function registerWatchMode({
     ignoreList.push(ignorePattern);
   }
 
-  const uniqueIgnoreList = [...new Set(ignoreList)];
+  console.log(
+    kleur.bold().grey("\n \n -------------skott(watch-mode)-------------")
+  );
 
   console.log(
     `\n ${kleur.bold().yellow(watchModeStatus.watching_for_changes)}`
   );
+
+  const uniqueIgnoreList = [...new Set(ignoreList)];
 
   let changesCount = 0;
 
@@ -98,25 +110,34 @@ export async function registerWatchMode({
   return watcher.subscribe(
     cwd,
     (_err, _events) => {
-      onChangesDetected();
-
       changesCount++;
 
       if (changesCount === 1) {
         process.stdout.write("\n");
       }
 
+      clearTerminal();
+
       if (changesCount > 1) {
         process.stdout.clearLine(0);
         process.stdout.cursorTo(0);
       }
 
-      process.stdout.write(
-        ` ${kleur
-          .bold()
-          .yellow(watchModeStatus.changes_detected)} ${printChangeCount()}` +
-          ` ${kleur.bold().grey("Re-running skott...")}`
-      );
+      onChangesDetected(() => {
+        console.log(
+          kleur.bold().grey("\n \n <------------skott(watch-mode)------------>")
+        );
+
+        console.log(
+          `\n ${kleur.bold().yellow(watchModeStatus.watching_for_changes)}`
+        );
+
+        process.stdout.write(
+          `\n ${kleur
+            .bold()
+            .yellow(watchModeStatus.changes_detected)} ${printChangeCount()}`
+        );
+      });
     },
     {
       ignore: uniqueIgnoreList
