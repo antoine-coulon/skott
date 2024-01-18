@@ -18,6 +18,10 @@ import {
 } from "./ui/console/dependencies.js";
 import { renderFileTree } from "./ui/display-modes/file-tree.js";
 import { renderGraph } from "./ui/display-modes/graph.js";
+import {
+  RenderManager,
+  ReRenderableMode
+} from "./ui/display-modes/render-manager.js";
 import { renderWebApplication } from "./ui/display-modes/webapp.js";
 import { registerWatchMode } from "./watch-mode.js";
 
@@ -80,29 +84,53 @@ export async function main(
   const { graph, files } = mutableSkottInstance.getStructure();
   displayInitialGetStructureTime(files, start);
 
-  const circularDeps = displayCircularDependencies(
-    mutableSkottInstance!,
-    options
-  );
-  const filesInvolvedInCircularDependencies = circularDeps.flat(1);
-
   let watcherEmitter: EventEmitter | undefined;
+  let renderManager: RenderManager | undefined;
 
   if (options.watch) {
     watcherEmitter = new EventEmitter();
+    renderManager = new RenderManager(watcherEmitter);
   }
 
   if (options.displayMode === "file-tree") {
-    renderFileTree(graph, filesInvolvedInCircularDependencies);
+    const rerenderableFileTree = new ReRenderableMode(() =>
+      renderFileTree(mutableSkottInstance, options)
+    );
+
+    renderManager?.renderOnChanges(rerenderableFileTree);
   } else if (options.displayMode === "graph") {
-    renderGraph(graph, filesInvolvedInCircularDependencies);
+    const rerenderableGraph = new ReRenderableMode(() =>
+      renderGraph(mutableSkottInstance, options)
+    );
+
+    renderManager?.renderOnChanges(rerenderableGraph);
   } else if (options.displayMode === "webapp") {
+    const circularDepsOverview = new ReRenderableMode(() =>
+      displayCircularDependencies(mutableSkottInstance, {
+        ...options,
+        /**
+         * We only want to display the overview that is whether the graph is
+         * acyclic or not. Circular dependencies will be displayed within the webapp
+         * itself.
+         */
+        showCircularDependencies: false
+      })
+    );
+
+    renderManager?.renderOnChanges(circularDepsOverview);
+
     renderWebApplication({
-      skottInstance: mutableSkottInstance!,
-      watcherEmitter,
-      options: { entrypoint, ...options }
+      skottInstance: mutableSkottInstance,
+      options: { entrypoint, ...options },
+      watcherEmitter
     });
-  } else if (options.displayMode !== "raw") {
+  } else if (options.displayMode === "raw") {
+    const rerenderableMode = new ReRenderableMode(() =>
+      displayCircularDependencies(mutableSkottInstance, options)
+    );
+
+    renderManager?.renderOnChanges(rerenderableMode);
+  } else {
     // @TODO: check if this is a valid display mode if the registered plugin
     // is registered.
     await renderStaticFile(graph, options.displayMode);
@@ -119,10 +147,12 @@ export async function main(
       cwd: options.cwd,
       ignorePattern: options.ignorePattern,
       fileExtensions: options.fileExtensions.split(","),
-      onChangesDetected: () => {
+      onChangesDetected: (done) => {
         runSkott().then((newSkottInstance) => {
           mutableSkottInstance = newSkottInstance;
           watcherEmitter?.emit("change");
+
+          done();
         });
       }
     });

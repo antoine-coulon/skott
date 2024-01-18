@@ -1,6 +1,9 @@
 import kleur from "kleur";
 
+import type { SkottInstance } from "../../../index.js";
 import type { SkottNode, SkottNodeBody } from "../../../src/graph/node.js";
+import type { CliParameterOptions } from "../../cli-config.js";
+import { displayCircularDependencies } from "../console/dependencies.js";
 import { bytesToKB, kLeftSeparator, makeIndents } from "../console/shared.js";
 
 function render(
@@ -65,9 +68,13 @@ function render(
 }
 
 export function renderGraph(
-  graph: Record<string, SkottNode>,
-  filesInvolvedInCycles: string[]
+  skottInstance: SkottInstance,
+  options: CliParameterOptions
 ) {
+  const circularDeps = displayCircularDependencies(skottInstance, options);
+  const filesInvolvedInCycles = circularDeps.flat(1);
+  const { graph } = skottInstance.getStructure();
+
   const nodesWithBodyBindings = new Map<string, SkottNodeBody>();
 
   for (const [nodeId, nodeValue] of Object.entries(graph)) {

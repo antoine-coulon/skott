@@ -47,7 +47,7 @@ export async function renderStaticFile(
     console.error(
       kleur.red(
         ` Static file generation is not available.` +
-          `Please install the '@skottorg/static-file-plugin' package.`
+          ` Please install the '@skottorg/static-file-plugin' package.`
       )
     );
     process.exitCode = 1;
