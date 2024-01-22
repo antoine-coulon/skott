@@ -159,6 +159,8 @@ export async function main(
   }
 }
 
+console.log("bonsoi");
+
 process.on("exit", (code) => {
   console.log(
     `\n ${kleur.bold().blue("skott")} exited with code ${kleur

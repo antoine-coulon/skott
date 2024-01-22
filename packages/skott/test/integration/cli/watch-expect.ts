@@ -28,8 +28,18 @@ function trackWatchModeChanges({
     const cliOutput = cliBuffer.toString();
 
     if (cliOutput.includes(watchModeStatus.watching_for_changes)) {
+      const fn = () => {
+        try {
+          actionToTriggerChanges();
+        } catch {}
+      };
+
       // trigger action when watch mode is active
-      actionToTriggerChanges();
+      if (process.env.CI) {
+        setTimeout(fn, 1_500);
+      } else {
+        fn();
+      }
     }
 
     if (cliOutput.includes(watchModeStatus.changes_detected)) {

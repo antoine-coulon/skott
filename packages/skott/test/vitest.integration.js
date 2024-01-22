@@ -5,6 +5,6 @@ export default defineConfig({
     include: ["./test/integration/**/*.spec.ts"],
     logHeapUsage: true,
     maxThreads: 1,
-    minThreads: 1
+    minThreads: 1,
   }
 });

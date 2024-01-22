@@ -93,7 +93,7 @@ cli
   )
   .option(
     "-e, --fileExtensions <extensions>",
-    'File extensions to explore when building the graph, separated by a comma (ex: ".js,.ts)".',
+    'File extensions to explore when building the graph, separated by a comma (ex: ".js,.ts)"',
     [...kExpectedModuleExtensions].join(",")
   )
   .option(
