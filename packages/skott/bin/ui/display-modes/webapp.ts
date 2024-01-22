@@ -92,11 +92,26 @@ export function renderWebApplication(config: {
     response.writeHead(200, {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
-      "access-control-allow-origin": "*",
       Connection: "keep-alive"
     });
 
-    const listener = () => response.write(`refresh\n\n`);
+    const listener = () => {
+      /**
+       * For now, we don't send any specific data related to the changes that
+       * were detected, we just want to send a raw notification for the client
+       * to be able to refresh the visualization.
+       */
+      response.write(`data: refresh\n\n`);
+      /**
+       * Response needs to be manually flushed to the client given that we are using
+       * `compression` middleware. Otherwise no events will be sent to the client.
+       * See the following comment to understand why we manually need to flush
+       * the response:
+       * https://github.com/lukeed/polka/issues/84#issuecomment-1902697935
+       */
+      response.flush();
+    };
+
     watcherEmitter?.on("change", listener);
 
     request.on("close", () => {
