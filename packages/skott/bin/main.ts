@@ -20,7 +20,7 @@ import { renderFileTree } from "./ui/display-modes/file-tree.js";
 import { renderGraph } from "./ui/display-modes/graph.js";
 import {
   RenderManager,
-  ReRenderableMode
+  CliComponent
 } from "./ui/display-modes/render-manager.js";
 import { renderWebApplication } from "./ui/display-modes/webapp.js";
 import { registerWatchMode } from "./watch-mode.js";
@@ -93,19 +93,19 @@ export async function main(
   }
 
   if (options.displayMode === "file-tree") {
-    const rerenderableFileTree = new ReRenderableMode(() =>
+    const fileTreeComponent = new CliComponent(() =>
       renderFileTree(mutableSkottInstance, options)
     );
 
-    renderManager?.renderOnChanges(rerenderableFileTree);
+    renderManager?.renderOnChanges(fileTreeComponent);
   } else if (options.displayMode === "graph") {
-    const rerenderableGraph = new ReRenderableMode(() =>
+    const graphComponent = new CliComponent(() =>
       renderGraph(mutableSkottInstance, options)
     );
 
-    renderManager?.renderOnChanges(rerenderableGraph);
+    renderManager?.renderOnChanges(graphComponent);
   } else if (options.displayMode === "webapp") {
-    const circularDepsOverview = new ReRenderableMode(() =>
+    const circularDepsComponent = new CliComponent(() =>
       displayCircularDependencies(mutableSkottInstance, {
         ...options,
         /**
@@ -117,7 +117,7 @@ export async function main(
       })
     );
 
-    renderManager?.renderOnChanges(circularDepsOverview);
+    renderManager?.renderOnChanges(circularDepsComponent);
 
     renderWebApplication({
       skottInstance: mutableSkottInstance,
@@ -125,11 +125,11 @@ export async function main(
       watcherEmitter
     });
   } else if (options.displayMode === "raw") {
-    const rerenderableMode = new ReRenderableMode(() =>
+    const circularDepsComponent = new CliComponent(() =>
       displayCircularDependencies(mutableSkottInstance, options)
     );
 
-    renderManager?.renderOnChanges(rerenderableMode);
+    renderManager?.renderOnChanges(circularDepsComponent);
   } else {
     // @TODO: check if this is a valid display mode if the registered plugin
     // is registered.
@@ -139,7 +139,13 @@ export async function main(
   // Additional information we want to display when using the console UI
   // To avoid redondant information, we don't display it when using the webapp
   if (options.displayMode !== "webapp") {
-    displayDependenciesReport(mutableSkottInstance, options);
+    await new Promise((resolve) => {
+      const depsReportComponent = new CliComponent(() =>
+        displayDependenciesReport(mutableSkottInstance, options).then(resolve)
+      );
+
+      renderManager?.renderOnChanges(depsReportComponent);
+    });
   }
 
   if (options.watch) {
@@ -150,16 +156,13 @@ export async function main(
       onChangesDetected: (done) => {
         runSkott().then((newSkottInstance) => {
           mutableSkottInstance = newSkottInstance;
-          watcherEmitter?.emit("change");
-
-          done();
+          watcherEmitter!.emit("change");
+          renderManager!.afterRenderingPhase(done);
         });
       }
     });
   }
 }
-
-console.log("bonsoi");
 
 process.on("exit", (code) => {
   console.log(

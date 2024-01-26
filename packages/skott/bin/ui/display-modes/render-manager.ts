@@ -1,32 +1,45 @@
 import type { EventEmitter } from "stream";
 
 interface Reredenrable {
-  rerender(): void;
+  rerender(): void | Promise<void>;
 }
 
-export class ReRenderableMode implements Reredenrable {
+export class CliComponent implements Reredenrable {
   constructor(private readonly renderFunction: () => void) {
     this.renderFunction();
   }
 
   rerender() {
-    this.renderFunction();
+    return this.renderFunction();
   }
 }
 
 export class RenderManager {
+  asyncComponents: Array<() => Promise<void>> = [];
+
   constructor(
     private readonly eventEmitter: EventEmitter,
-    private readonly displayModes: Reredenrable[] = []
+    private readonly components: Reredenrable[] = []
   ) {
     this.eventEmitter.on("change", () => {
-      for (const displayMode of this.displayModes) {
-        displayMode.rerender();
+      for (const component of this.components) {
+        const componentRender = component.rerender();
+
+        if (componentRender instanceof Promise) {
+          this.asyncComponents.push(
+            () => new Promise((resolve) => componentRender.then(resolve))
+          );
+        }
       }
     });
   }
 
-  public renderOnChanges(displayMode: Reredenrable) {
-    this.displayModes.push(displayMode);
+  async afterRenderingPhase(done: () => void) {
+    await Promise.all(this.asyncComponents.map((f) => f()));
+    done();
+  }
+
+  renderOnChanges(displayMode: Reredenrable) {
+    this.components.push(displayMode);
   }
 }
