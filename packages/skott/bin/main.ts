@@ -78,10 +78,9 @@ export async function main(
     );
   }
 
-  let mutableSkottInstance = await runSkott();
-
   const start = performance.now();
-  const { graph, files } = mutableSkottInstance.getStructure();
+  let skottInstance = await runSkott();
+  const { graph, files } = skottInstance.getStructure();
   displayInitialGetStructureTime(files, start);
 
   let watcherEmitter: EventEmitter | undefined;
@@ -94,19 +93,19 @@ export async function main(
 
   if (options.displayMode === "file-tree") {
     const fileTreeComponent = new CliComponent(() =>
-      renderFileTree(mutableSkottInstance, options)
+      renderFileTree(skottInstance, options)
     );
 
     renderManager?.renderOnChanges(fileTreeComponent);
   } else if (options.displayMode === "graph") {
     const graphComponent = new CliComponent(() =>
-      renderGraph(mutableSkottInstance, options)
+      renderGraph(skottInstance, options)
     );
 
     renderManager?.renderOnChanges(graphComponent);
   } else if (options.displayMode === "webapp") {
     const circularDepsComponent = new CliComponent(() =>
-      displayCircularDependencies(mutableSkottInstance, {
+      displayCircularDependencies(skottInstance, {
         ...options,
         /**
          * We only want to display the overview that is whether the graph is
@@ -120,13 +119,13 @@ export async function main(
     renderManager?.renderOnChanges(circularDepsComponent);
 
     renderWebApplication({
-      skottInstance: mutableSkottInstance,
+      getSkottInstance: () => skottInstance,
       options: { entrypoint, ...options },
       watcherEmitter
     });
   } else if (options.displayMode === "raw") {
     const circularDepsComponent = new CliComponent(() =>
-      displayCircularDependencies(mutableSkottInstance, options)
+      displayCircularDependencies(skottInstance, options)
     );
 
     renderManager?.renderOnChanges(circularDepsComponent);
@@ -141,7 +140,7 @@ export async function main(
   if (options.displayMode !== "webapp") {
     await new Promise((resolve) => {
       const depsReportComponent = new CliComponent(() =>
-        displayDependenciesReport(mutableSkottInstance, options).then(resolve)
+        displayDependenciesReport(skottInstance, options).then(resolve)
       );
 
       renderManager?.renderOnChanges(depsReportComponent);
@@ -155,7 +154,7 @@ export async function main(
       fileExtensions: options.fileExtensions.split(","),
       onChangesDetected: (done) => {
         runSkott().then((newSkottInstance) => {
-          mutableSkottInstance = newSkottInstance;
+          skottInstance = newSkottInstance;
           watcherEmitter!.emit("change");
           renderManager!.afterRenderingPhase(done);
         });

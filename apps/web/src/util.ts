@@ -15,3 +15,5 @@ export function isDevelopmentEnvironment(): boolean {
   // @ts-ignore - vite specific
   return import.meta.env.DEV;
 }
+
+export function noOp(): void {}

@@ -8,6 +8,8 @@ import { AppState, storeDefaultValue } from "./state";
 import { StoreReducer } from "./reducer";
 import { fileSystemReducers } from "../core/file-system/reducers";
 import { networkReducers } from "@/core/network/reducers";
+import { globalReducers } from "@/refresh-app";
+import { noOp } from "@/util";
 
 export type AppEffects = AppEvents | AppActions;
 
@@ -53,12 +55,7 @@ export class AppStore {
     this._reducers.forEach((reducer) =>
       pipe(
         reducer(action, this.getState()),
-        Option.match(
-          () => {},
-          (state) => {
-            return this._store$.next(state);
-          }
-        )
+        Option.match(noOp, (state) => this._store$.next(state))
       )
     );
 
@@ -68,7 +65,11 @@ export class AppStore {
   }
 }
 
-const listOfReducers = [...fileSystemReducers, ...networkReducers];
+const listOfReducers = [
+  ...fileSystemReducers,
+  ...networkReducers,
+  ...globalReducers,
+];
 
 const instance = new AppStore(
   new BehaviorSubject<AppState>(storeDefaultValue),

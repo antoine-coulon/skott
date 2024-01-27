@@ -65,12 +65,12 @@ function resolveEntrypointPath(options: CliOptions) {
 }
 
 export function renderWebApplication(config: {
-  skottInstance: SkottInstance;
+  getSkottInstance: () => SkottInstance;
   options: CliOptions;
   watcherEmitter?: EventEmitter;
 }): void {
   const entrypoint = resolveEntrypointPath(config.options);
-  const { skottInstance, watcherEmitter } = config;
+  const { getSkottInstance, watcherEmitter } = config;
   const skottWebAppPath = findSkottWebAppDirectory();
   const dependencyTracking = {
     thirdParty: config.options.trackThirdPartyDependencies,
@@ -120,14 +120,14 @@ export function renderWebApplication(config: {
   });
 
   app.get("/api/cycles", (_, response) => {
-    const cycles = skottInstance.useGraph().findCircularDependencies();
+    const cycles = getSkottInstance().useGraph().findCircularDependencies();
 
     response.setHeader("Content-Type", "application/json");
     response.end(JSON.stringify(cycles));
   });
 
   app.get("/api/analysis", (_, response) => {
-    const structure = skottInstance.getStructure();
+    const structure = getSkottInstance().getStructure();
 
     response.setHeader("Content-Type", "application/json");
     response.end(
