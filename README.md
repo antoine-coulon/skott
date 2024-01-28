@@ -21,7 +21,7 @@
 
 ✅ Deeply detects **circular dependencies** in an efficient way, with the ability to provide a max depth for the search
 
-✅ Builtin **watch mode** updating the graph when file changes are detected. It works with all display modes (webapp and all CLIs visualization modes).
+✅ Builtin **watch mode** updating the graph when file changes are detected. It works with all display modes (webapp and all CLIs visualization modes). Support all options of file ignoring/filtering from skott.
 
 ✅ File tree traversal supports **ignore pattern** and **Git ignored files** (via `.gitignore` files)
 
