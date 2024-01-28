@@ -88,7 +88,7 @@ export function renderWebApplication(config: {
   });
   const app = polka().use(compress, assets);
 
-  app.get("/subscribe", (request, response) => {
+  app.get("/api/subscribe", (request, response) => {
     response.writeHead(200, {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",

@@ -8,7 +8,7 @@ export function useSubscribeToWatchMode() {
   const client = useClient();
 
   React.useEffect(() => {
-    const eventSource = new EventSource("/subscribe");
+    const eventSource = new EventSource("/api/subscribe");
 
     eventSource.onopen = function () {
       logInfo(`Successfully subscribed to file watching events.`);
