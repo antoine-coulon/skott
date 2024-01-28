@@ -1,8 +1,8 @@
 import { SkottHttpClient } from "@/client/http-client";
+import { logError } from "@/logger";
 import { AppReducer } from "@/store/reducer";
 import { DataState } from "@/store/state";
 import { AppStore } from "@/store/store";
-import { noOp } from "@/util";
 import * as Option from "@effect/data/Option";
 
 export type GlobalActions = {
@@ -43,6 +43,8 @@ export function refreshApp(store: AppStore) {
           },
         });
       })
-      .catch(noOp);
+      .catch((exception) => {
+        logError(`Failed to refresh application. Reason ${exception}`);
+      });
   };
 }
