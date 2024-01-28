@@ -9,7 +9,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 
-**skott** is a minimalist developer tool that can be used to efficiently generate directed graphs from your **JavaScript/TypeScript/Node.js** project. It can **automatically collect metadata** such as _file size_, _third-party_ or _builtin dependencies_, **detect circular dependencies**, **finding unused npm dependencies**, help you **building tools relying on graph data structures** thanks to the exposed primitives. Many display modes exists (such as **embedded interactive web application** shown just below) but also other from the CLI **(.svg, .png, .md, .json)**.
+**skott** is a minimalist developer tool that can be used to efficiently generate directed graphs from your **JavaScript/TypeScript/Node.js** project. It can **automatically collect metadata** such as _file size_, _third-party_ or _builtin dependencies_, **detect circular dependencies**, **finding unused npm dependencies**, help you **building tools relying on graph data structures** thanks to the exposed primitives. Many display modes exists (such as **embedded interactive web application** shown just below) but also other from the CLI (file-tree, graph). Static files **(.svg, .png, .md, .json)** can also be generated.
 
 <p align="center">
 	<img alt="skott" src="https://github.com/antoine-coulon/skott/assets/43391199/90456c53-d554-43cc-b493-004849bb501a">
@@ -20,6 +20,8 @@
 ✅ Works for modern **JavaScript/TypeScript** projects (TSX/JSX, ECMAScript and CommonJS modules all supported). **TypeScript**'s path aliases are also supported.
 
 ✅ Deeply detects **circular dependencies** in an efficient way, with the ability to provide a max depth for the search
+
+✅ Builtin **watch mode** updating the graph when file changes are detected. It works with all display modes (webapp and all CLIs visualization modes). Support all options of file ignoring/filtering from skott.
 
 ✅ File tree traversal supports **ignore pattern** and **Git ignored files** (via `.gitignore` files)
 

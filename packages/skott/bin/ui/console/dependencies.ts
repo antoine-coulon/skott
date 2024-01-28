@@ -1,109 +1,10 @@
-import path from "node:path";
-import { performance } from "node:perf_hooks";
-
-import type { TreeStructure } from "fs-tree-structure";
 import kleur from "kleur";
 
-import type { SkottNode, SkottNodeBody } from "../../src/graph/node.js";
-import type { SkottInstance } from "../../src/skott.js";
+import type { SkottInstance } from "../../../index.js";
+import type { SkottNode } from "../../../src/graph/node.js";
+import type { CliParameterOptions } from "../../cli-config.js";
 
-const kLeftSeparator = "└──";
-
-export function bytesToKB(bytes: number): string {
-  const kilobytes = (bytes / 1024).toFixed(2);
-
-  return kleur.bold().yellow(`${kilobytes} KB`);
-}
-
-function isDirectory(nodePath: string): boolean {
-  return path.extname(nodePath) === "";
-}
-
-function makeIndents(numberOfIndents: number): string {
-  return Array.from({ length: numberOfIndents }, () => " ").join("");
-}
-
-export function displayAsFileTree(
-  treeStructure: TreeStructure,
-  filesInvolvedInCycles: string[],
-  whitespaces = 0
-): void {
-  const leftLevelSeparator = whitespaces === 0 ? "" : kLeftSeparator;
-  const indents = makeIndents(whitespaces);
-  for (const [nodeId, subNodes] of Object.entries(treeStructure)) {
-    if (isDirectory(nodeId)) {
-      console.log(
-        `${indents} ${leftLevelSeparator} ${kleur.bold().yellow(nodeId)}/`
-      );
-    } else {
-      console.log(
-        `${indents} ${leftLevelSeparator} ${kleur.bold().blue(nodeId)}`
-      );
-    }
-    displayAsFileTree(subNodes, filesInvolvedInCycles, whitespaces + 2);
-  }
-}
-
-export function displayAsGraph(
-  graph: Record<string, SkottNode>,
-  filesInvolvedInCycles: string[],
-  nodesWithBodyBindings: Map<string, SkottNodeBody>
-): void {
-  const leftArrow = `${kLeftSeparator}>`;
-  for (const [nodeId, nodeValue] of Object.entries(graph)) {
-    const localStore = nodeValue.adjacentTo.reduce(
-      (store, current) => {
-        const nodeSize = nodesWithBodyBindings.get(current)?.size ?? 0;
-        store[current] = nodeSize;
-        store.sum += nodeSize;
-
-        return store;
-      },
-      { sum: 0 } as Record<string, number>
-    );
-
-    const parentNodeSize = bytesToKB(nodeValue.body.size ?? 0);
-    const totalOfChildrenSize = bytesToKB(localStore.sum);
-    console.log();
-
-    if (filesInvolvedInCycles.includes(nodeId)) {
-      console.log(
-        `${makeIndents(1)} ${kleur.red().underline().bold(nodeId)} ${kleur
-          .bold()
-          .yellow("♻️")}`
-      );
-    } else {
-      console.log(
-        `${makeIndents(1)} ${kleur
-          .blue()
-          .underline()
-          .bold(
-            nodeId
-          )} (self=${parentNodeSize}, imported=${totalOfChildrenSize})`
-      );
-    }
-
-    for (const subNode of nodeValue.adjacentTo) {
-      const nodeSize = bytesToKB(localStore[subNode]);
-
-      console.log(kleur.bold().yellow(`${makeIndents(3)} │`));
-      if (filesInvolvedInCycles.includes(subNode)) {
-        const subNodeWithWarning = `${subNode} ${kleur.bold().yellow("♻️")}`;
-        console.log(
-          `${makeIndents(3)} ${kleur.bold().yellow(leftArrow)} ${kleur
-            .bold()
-            .red(subNodeWithWarning)}`
-        );
-      } else {
-        console.log(
-          `${makeIndents(3)} ${kleur.bold().yellow(leftArrow)} ${kleur
-            .bold()
-            .white(subNode)} (${nodeSize})`
-        );
-      }
-    }
-  }
-}
+import { makeIndents } from "./shared.js";
 
 export async function displayThirdPartyDependencies(
   skottInstance: SkottInstance,
@@ -178,7 +79,7 @@ export async function displayThirdPartyDependencies(
                 " source files before removing them. You might also want to move them as 'devDependencies'" +
                 " if that is the case."
             )}
-          `
+            `
         );
 
         for (const dep of thirdParty) {
@@ -267,4 +168,88 @@ export function displayNoCircularDependenciesFound(
       .bold()
       .yellow(circularMaxDepth)})`
   );
+}
+
+export async function displayDependenciesReport(
+  skottInstance: SkottInstance,
+  options: CliParameterOptions
+) {
+  if (options.showUnusedDependencies && !options.trackThirdPartyDependencies) {
+    console.log(
+      `\n ${kleur
+        .bold()
+        .yellow(
+          "Warning: `--trackThirdPartyDependencies` must be provided when searching for unused dependencies."
+        )}`
+    );
+
+    console.log(
+      `\n ${kleur
+        .bold()
+        .grey(
+          "Example: `skott --displayMode=raw --showUnusedDependencies --trackThirdPartyDependencies`"
+        )} \n`
+    );
+  }
+
+  const { graph } = skottInstance.getStructure();
+
+  if (options.trackThirdPartyDependencies) {
+    await displayThirdPartyDependencies(
+      skottInstance,
+      graph,
+      options.showUnusedDependencies
+    );
+  }
+
+  if (options.trackBuiltinDependencies) {
+    displayBuiltinDependencies(graph);
+  }
+}
+
+export function displayCircularDependencies(
+  skottInstance: SkottInstance,
+  options: CliParameterOptions
+): string[][] {
+  const circularDependencies: string[][] = [];
+  const { findCircularDependencies, hasCircularDependencies } =
+    skottInstance.useGraph();
+
+  // only find circular dependencies on-demand as it can be expensive
+  if (options.showCircularDependencies) {
+    displayWarningOnHighCircularDepth(options.circularMaxDepth);
+
+    circularDependencies.push(...findCircularDependencies());
+    if (circularDependencies.length > 0) {
+      console.log(
+        kleur
+          .bold()
+          .red(
+            `\n ✖ (${circularDependencies.length}) circular dependencies found`
+          )
+      );
+      displayCircularDependenciesPaths(circularDependencies);
+      process.exitCode = options.exitCodeOnCircularDependencies;
+    } else {
+      displayNoCircularDependenciesFound(options.circularMaxDepth);
+    }
+
+    return circularDependencies;
+  }
+
+  // otherwise, just find if the graph has at least one cycle which is not expensive
+  const hasCircularDeps = hasCircularDependencies();
+
+  if (hasCircularDeps) {
+    console.log(
+      kleur
+        .bold()
+        .red(`\n ✖ Circular dependencies were found. Graph is not Acyclic.`)
+    );
+    process.exitCode = options.exitCodeOnCircularDependencies;
+  } else {
+    displayNoCircularDependenciesFound(options.circularMaxDepth);
+  }
+
+  return circularDependencies;
 }

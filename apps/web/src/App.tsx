@@ -1,45 +1,43 @@
-import React from "react";
 import { AppShell } from "@mantine/core";
 
 import { DoubleNavbar } from "./sidebar/Layout";
 import GraphNetwork from "./network/Network";
 import GlobalSearch from "./global-search/GlobalSearch";
-import { SkottStructureWithMetadata } from "./skott";
 import Header from "./header/Header";
-import { storeDefaultValue } from "./store/state";
+import { AppState, storeDefaultValue } from "./store/state";
 import { useAppStore } from "./store/react-bindings";
+import { AppStore } from "@/store/store";
+import { SkottHttpClient } from "@/client/http-client";
+import { useClient } from "@/client/react-bindings";
+import { logError } from "@/logger";
+import { useSubscribeToWatchMode } from "@/event-source";
 
-function fetchAnalysisReport(): Promise<SkottStructureWithMetadata> {
-  return fetch("/api/analysis")
-    .then((res) => res.json())
-    .catch(() => {});
-}
+function initializeStore(client: SkottHttpClient, dataStoreRef: AppStore) {
+  return Promise.all([client.fetchAnalysis(), client.fetchCycles()])
+    .then(([analysisReport, cyclesReport]) => {
+      const nextDataValue = {
+        ...analysisReport,
+        cycles: cyclesReport,
+      };
 
-function fetchCyclesReport(): Promise<string[][]> {
-  return fetch("/api/cycles")
-    .then((res) => res.json())
-    .catch(() => ({
-      cycles: [],
-    }));
+      const appStateValue: AppState = {
+        ...storeDefaultValue,
+        data: nextDataValue,
+      };
+
+      dataStoreRef.setInitialState(appStateValue);
+    })
+    .catch((exception) => {
+      logError(`Failed to fetch analysis report. Reason: ${exception}`);
+    });
 }
 
 function App() {
   const dataStore = useAppStore();
+  const client = useClient();
+  useSubscribeToWatchMode();
 
-  React.useEffect(() => {
-    Promise.all([fetchAnalysisReport(), fetchCyclesReport()])
-      .then(([analysisReport, cyclesReport]) => {
-        const nextValue = {
-          ...analysisReport,
-          cycles: cyclesReport,
-        };
-        const appStateValue = { ...storeDefaultValue, data: nextValue };
-        dataStore.setInitialState(appStateValue);
-      })
-      .catch((exception) => {
-        console.error("Failed to fetch analysis report", exception);
-      });
-  }, []);
+  initializeStore(client, dataStore);
 
   return (
     <>
