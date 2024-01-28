@@ -1,5 +1,11 @@
 # skott-webapp
 
+## 2.1.0
+
+### Minor Changes
+
+- [#131](https://github.com/antoine-coulon/skott/pull/131) [`777998c`](https://github.com/antoine-coulon/skott/commit/777998c33f52909b1e596a8ba05eec601bf1a57c) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - Add hot application refresh through Server-Sent Events when watch mode is enabled on the backend
+
 ## 2.0.1
 
 ### Patch Changes
