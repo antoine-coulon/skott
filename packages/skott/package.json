@@ -41,14 +41,13 @@
     "test:integration:watch": "vitest --watch --config=test/vitest.integration.js"
   },
   "dependencies": {
-    "@effect/data": "^0.4.1",
-    "@effect/io": "^0.8.0",
     "@parcel/watcher": "^2.3.0",
     "@typescript-eslint/typescript-estree": "^6.7.4",
     "commander": "^11.0.0",
     "compression": "^1.7.4",
     "depcheck": "^1.4.3",
     "digraph-js": "^2.2.3",
+    "effect": "^2.2.2",
     "estree-walker": "^3.0.3",
     "fp-ts": "2.5.0",
     "fs-tree-structure": "workspace:*",
