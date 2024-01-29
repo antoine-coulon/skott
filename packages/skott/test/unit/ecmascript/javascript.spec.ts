@@ -45,13 +45,12 @@ describe("When traversing a JavaScript/Node.js project", () => {
           it("skott should build the graph with two nodes and one link", async () => {
             mountFakeFileSystem({
               "index.js": `
-                      import { foo } from "./src/foo.js";
-              
-                      console.log(foo.doSomething());
-                    `,
+                  import { foo } from "./src/foo.js";
+                  console.log(foo.doSomething());
+              `,
               "src/foo.js": `
-                      export const foo = { doSomething: () => 'Hello, world!' };
-                    `
+                  export const foo = { doSomething: () => 'Hello, world!' };
+              `
             });
 
             const skottProject =
@@ -84,25 +83,25 @@ describe("When traversing a JavaScript/Node.js project", () => {
           it("skott should build the graph with all nodes and links", async () => {
             mountFakeFileSystem({
               "index.js": `
-                      import { foo } from "./src/foo.js";
-                      console.log(foo.doSomething());
-                    `,
+                import { foo } from "./src/foo.js";
+                console.log(foo.doSomething());
+              `,
               "src/foo.js": `
-                      import { bar } from "./bar.js";
-                      export const foo = { doSomething: () => bar() };
-                    `,
+                import { bar } from "./bar.js";
+                export const foo = { doSomething: () => bar() };
+              `,
               "src/bar.js": `
-                      import { baz } from './lib/baz/index.js';
-                      export const bar = () => 'Hello, world!';
-                    `,
+                import { baz } from './lib/baz/index.js';
+                export const bar = () => 'Hello, world!';
+              `,
               "src/lib/baz/index.js": `
-                      import lol from "../../lol/index.js";
-                      export const baz = () => 'Hello, baz!';
-                    `,
+                import lol from "../../lol/index.js";
+                export const baz = () => 'Hello, baz!';
+              `,
               "src/lol/index.js": `
-                      const lol = () => 'Hello, baz!';
-                      export default lol;
-                    `
+                const lol = () => 'Hello, baz!';
+                export default lol;
+        `
             });
 
             const skottProject =
@@ -197,16 +196,16 @@ describe("When traversing a JavaScript/Node.js project", () => {
           it("should not consider third-party libraries as file dependencies", async () => {
             mountFakeFileSystem({
               "index.js": `
-                      import { parseScript } from "meriyah";
-                      import * as vuln from "@nodesecure/vuln";
+                import { parseScript } from "meriyah";
+                import * as vuln from "@nodesecure/vuln";
     
-                      import * as foobar from "./foobar.js";
+                import * as foobar from "./foobar.js";
     
-                      console.log(foobar.foo.doSomething());
-                    `,
+                console.log(foobar.foo.doSomething());
+              `,
               "foobar.js": `
-                      export const foo = { doSomething: () => 'Hello, world!' };
-                    `
+                export const foo = { doSomething: () => 'Hello, world!' };
+              `
             });
 
             const skottProject =
@@ -239,15 +238,15 @@ describe("When traversing a JavaScript/Node.js project", () => {
           it("should extract all related export declarations", async () => {
             mountFakeFileSystem({
               "index.js": `
-                      export * from "./foobar.js";
-                      export * as foo from "./foo.js";
-                    `,
+                export * from "./foobar.js";
+                export * as foo from "./foo.js";
+              `,
               "foobar.js": `
-                      export const foo = { doSomething: () => 'Hello, world!' };
-                    `,
+                export const foo = { doSomething: () => 'Hello, world!' };
+              `,
               "foo.js": `
-                      export const foo = { doSomething: () => 'Hello, world!' };
-                    `
+                export const foo = { doSomething: () => 'Hello, world!' };
+              `
             });
 
             const skottProject =
@@ -284,18 +283,18 @@ describe("When traversing a JavaScript/Node.js project", () => {
           it("should only extract named exports with a source", async () => {
             mountFakeFileSystem({
               "index.js": `
-                      export { foobar } from "./foobar.js";
-                    `,
+                export { foobar } from "./foobar.js";
+              `,
               "foobar.js": `
-                      import { foo } from "./foo.js"
-                      export const foobar = { doSomething: () => 'Hello, world!' };
-                    `,
+                import { foo } from "./foo.js"
+                export const foobar = { doSomething: () => 'Hello, world!' };
+              `,
               "foo.js": `
-                      export const foo = { doSomething: () => foobar() };
+                export const foo = { doSomething: () => foobar() };
     
-                      const foo2 = { doSomething: () => foobar() };
-                      export { foo2 };
-                    `
+                const foo2 = { doSomething: () => foobar() };
+                export { foo2 };
+        `
             });
 
             const skottProject =
@@ -334,17 +333,17 @@ describe("When traversing a JavaScript/Node.js project", () => {
           it("should find the cycle and keep traversing other nodes", async () => {
             mountFakeFileSystem({
               "a.js": `
-                      import { b } from "./b.js";
-                      export const a = () => b();
-                    `,
+                import { b } from "./b.js";
+                export const a = () => b();
+              `,
               "b.js": `
-                      import { a } from "./a.js";
-                      import { c } from "./c.js";
-                      export const b = { doSomething: () => bar() };
-                    `,
+                import { a } from "./a.js";
+                import { c } from "./c.js";
+                export const b = { doSomething: () => bar() };
+              `,
               "c.js": `
-                      export const c = { doSomething: () => {} };
-                    `
+                export const c = { doSomething: () => {} };
+              `
             });
 
             const { graph, hasCircularDependencies, circularDependencies } =
@@ -380,21 +379,21 @@ describe("When traversing a JavaScript/Node.js project", () => {
             it("should find the cycle and traverse+link all nodes involved in the cycle", async () => {
               mountFakeFileSystem({
                 "a.js": `
-                        import { b } from "./b.js";
-                        export const a = () => b();
-                      `,
+                  import { b } from "./b.js";
+                  export const a = () => b();
+                `,
                 "b.js": `
-                        import { c } from "./c.js";
-                        export const b = { doSomething: () => bar() };
-                      `,
+                  import { c } from "./c.js";
+                  export const b = { doSomething: () => bar() };
+                `,
                 "c.js": `
-                        import { d } from "./d.js";
-                        export const c = { doSomething: () => {} };
-                      `,
+                  import { d } from "./d.js";
+                  export const c = { doSomething: () => {} };
+                `,
                 "d.js": `
-                        import { a } from "./a.js";
-                        export const d = { doSomething: () => {} };
-                      `
+                  import { a } from "./a.js";
+                  export const d = { doSomething: () => {} };
+                `
               });
 
               const { graph, hasCircularDependencies, circularDependencies } =
@@ -436,24 +435,24 @@ describe("When traversing a JavaScript/Node.js project", () => {
             it("should find the cycle and keep traversing+linking other nodes not involved in the cycle", async () => {
               mountFakeFileSystem({
                 "index.js": `
-                      import * as _ from "./src/feature.js";
-                    `,
+                  import * as _ from "./src/feature.js";
+                `,
                 "src/feature.js": `
-                      import * as _ from "./constants.js";
-                      import * as _ from "./utils/index.js";
-                      import * as _ from "./other-feature.js";
-                    `,
+                  import * as _ from "./constants.js";
+                  import * as _ from "./utils/index.js";
+                  import * as _ from "./other-feature.js";
+                `,
                 "src/constants.js": ``,
                 "src/utils/index.js": `
-                      import { doSomethingUtil } from "./doSomethingUtil.js";
-                    `,
+                  import { doSomethingUtil } from "./doSomethingUtil.js";
+                `,
                 "src/utils/doSomethingUtil.js": `
-                      import { anything } from "./index.js";
-                    `,
+                  import { anything } from "./index.js";
+                `,
                 "src/other-feature.js": `
-                      import { scripts } from "./last-feature.js";
-                      import { utils } from "./utils/index.js";
-                    `,
+                  import { scripts } from "./last-feature.js";
+                  import { utils } from "./utils/index.js";
+                `,
                 "src/last-feature.js": ``
               });
 
@@ -606,9 +605,9 @@ describe("When traversing a JavaScript/Node.js project", () => {
         it("should find the index.js linked to the folder import", async () => {
           mountFakeFileSystem({
             "index.js": `
-                    const { foo } = require("./lib");
-                    const { foobar } = require("./foobar");
-                  `,
+              const { foo } = require("./lib");
+              const { foobar } = require("./foobar");
+            `,
             "lib/index.js": "",
             "foobar.js": ""
           });
@@ -651,18 +650,18 @@ describe("When traversing a JavaScript/Node.js project", () => {
         it("should add a link between the file exporting and the file being imported", async () => {
           mountFakeFileSystem({
             "index.js": `
-                    const { foo } = require("./lib");
-                    const { foobar } = require("./foobar");
-                  `,
+              const { foo } = require("./lib");
+              const { foobar } = require("./foobar");
+            `,
             "lib/index.js": `
-                    module.exports = require("../fizzbuzz.js");
-                  `,
+              module.exports = require("../fizzbuzz.js");
+            `,
             "fizzbuzz.js": `
-                    module.exports.foobaz = require("./foobaz.js");
-                  `,
+              module.exports.foobaz = require("./foobaz.js");
+            `,
             "foobar.js": `
-                    exports.foobaz = require("./foobaz.js");
-                  `,
+              exports.foobaz = require("./foobaz.js");
+            `,
             "foobaz.js": ""
           });
 
