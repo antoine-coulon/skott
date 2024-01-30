@@ -1,4 +1,4 @@
-import set from "lodash.set";
+import { set } from "lodash-es";
 
 export type TreeStructure = { [key: string]: TreeStructure };
 

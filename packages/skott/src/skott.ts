@@ -5,7 +5,7 @@ import * as Option from "@effect/data/Option";
 import * as Effect from "@effect/io/Effect";
 import * as Exit from "@effect/io/Exit";
 import { DiGraph } from "digraph-js";
-import difference from "lodash.difference";
+import { difference } from "lodash-es";
 
 import {
   isFileAffected,
