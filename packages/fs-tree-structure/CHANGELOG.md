@@ -1,5 +1,11 @@
 # fs-tree-structure
 
+## 0.0.5
+
+### Patch Changes
+
+- [#138](https://github.com/antoine-coulon/skott/pull/138) [`4a3bd27`](https://github.com/antoine-coulon/skott/commit/4a3bd277c0b9fabcd9e028ecb0c76cdddb957f4e) Thanks [@pedrolamas](https://github.com/pedrolamas)! - Fixes high severity vulnerability in lodash.\* dependency by replacing it with lodash-es
+
 ## 0.0.4
 
 ### Patch Changes
