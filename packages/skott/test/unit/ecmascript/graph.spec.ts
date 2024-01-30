@@ -263,7 +263,7 @@ describe("When building the project structure independently of JavaScript or Typ
                   import { parseScript } from 'meriyah';
                   import 'side-effect-library';
                   import { getStrategy } from "@nodesecure/vulnera";
-                  import difference from "lodash.difference";
+                  import { difference } from "lodash-es";
                   import _ from "next-plugin-preval/config";
                 `,
                   "lib.js": ""
@@ -278,7 +278,7 @@ describe("When building the project structure independently of JavaScript or Typ
                 "meriyah",
                 "side-effect-library",
                 "@nodesecure/vulnera",
-                "lodash.difference",
+                "lodash-es",
                 "next-plugin-preval"
               ]);
             });

@@ -236,7 +236,7 @@ describe("Searching for unused dependencies", () => {
                 skott: "*",
                 rxjs: "*",
                 ramda: "*",
-                "lodash.difference": "*",
+                "lodash-es": "*",
                 "@effect-ts/core": "*",
                 ajv: "*",
                 "ajv-format": "*"
@@ -253,7 +253,7 @@ describe("Searching for unused dependencies", () => {
           expect(thirdParty).to.deep.equal([
             "skott",
             "ramda",
-            "lodash.difference",
+            "lodash-es",
             "ajv"
           ]);
         });

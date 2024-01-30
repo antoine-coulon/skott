@@ -3,7 +3,7 @@ import { Subscription, delay, distinctUntilChanged, map, tap } from "rxjs";
 
 import { DataSet } from "vis-data";
 import { Edge, Network, Node } from "vis-network";
-import isEqual from "lodash.isequal";
+import { isEqual } from "lodash-es";
 
 import { AppState, NetworkLayout } from "@/store/state";
 import { useAppStore } from "@/store/react-bindings";
