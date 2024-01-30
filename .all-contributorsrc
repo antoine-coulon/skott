@@ -50,6 +50,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "pedrolamas",
+      "name": "Pedro Lamas",
+      "avatar_url": "https://avatars.githubusercontent.com/u/85504?v=4",
+      "profile": "https://www.pedrolamas.com",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
