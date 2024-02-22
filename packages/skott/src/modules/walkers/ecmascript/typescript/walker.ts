@@ -1,6 +1,6 @@
-import { pipe } from "@effect/data/Function";
-import * as Effect from "@effect/io/Effect";
 import { parse } from "@typescript-eslint/typescript-estree";
+import { pipe } from "effect";
+import { Effect } from "effect";
 import { walk as walkAST } from "estree-walker";
 
 import { highlight } from "../../../../logger.js";
@@ -22,8 +22,8 @@ export class TypeScriptModuleWalker implements ModuleWalker {
     const moduleDeclarations = new Set<string>();
 
     function processWalk({ jsx } = { jsx: true }) {
-      return Effect.tryCatch(
-        () => {
+      return Effect.try({
+        try: () => {
           const node = parse(fileContent, {
             jsx,
             loc: false,
@@ -41,8 +41,8 @@ export class TypeScriptModuleWalker implements ModuleWalker {
             }
           });
         },
-        () => Effect.fail("_")
-      );
+        catch: () => Effect.fail("_")
+      });
     }
 
     pipe(

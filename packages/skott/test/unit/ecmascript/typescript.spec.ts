@@ -418,8 +418,7 @@ describe("When traversing a TypeScript project", () => {
                   export function foo(): string {}
                 `,
                   "something-else.ts": `
-                  import { pipe } from "@effect/data/Function";
-                `,
+                  import { pipe } from "effect";                `,
                   "tsconfig.json": JSON.stringify(tsConfig)
                 });
 

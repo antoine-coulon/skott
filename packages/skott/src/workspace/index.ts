@@ -1,12 +1,12 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
-import { pipe } from "@effect/data/Function";
-import * as Effect from "@effect/io/Effect";
 import depcheck from "depcheck";
+import { pipe } from "effect";
+import { Effect } from "effect";
 
-import { type FileReader, FileReaderTag } from "../filesystem/file-reader.js";
-import type { SkottLogger } from "../logger.js";
+import { FileReader } from "../filesystem/file-reader.js";
+import type { Logger } from "../logger.js";
 
 export async function findWorkspaceEntrypointModule(): Promise<string> {
   // look for package.json
@@ -29,10 +29,9 @@ class ManifestFileReadingError {
 
 function readManifestAt(
   manifestPath: string
-): Effect.Effect<FileReader, ManifestFileReadingError, string> {
+): Effect.Effect<string, ManifestFileReadingError, FileReader> {
   return pipe(
-    Effect.service(FileReaderTag),
-    Effect.flatMap((fileReader) =>
+    Effect.flatMap(FileReader, (fileReader) =>
       Effect.tryPromise(() => fileReader.read(manifestPath))
     ),
     Effect.mapError(
@@ -46,8 +45,7 @@ function readManifestAt(
 
 export function findRootManifest(baseDir: string, manifestPath: string) {
   return pipe(
-    Effect.service(FileReaderTag),
-    Effect.map((fileReader) => fileReader.getCurrentWorkingDir()),
+    Effect.map(FileReader, (fileReader) => fileReader.getCurrentWorkingDir()),
     Effect.flatMap((cwd) =>
       pipe(
         readManifestAt(path.join(cwd, manifestPath)),
@@ -58,7 +56,7 @@ export function findRootManifest(baseDir: string, manifestPath: string) {
     ),
     Effect.flatMap((rawManifest) =>
       pipe(
-        Effect.attempt(() => JSON.parse(rawManifest) as Record<string, any>),
+        Effect.try(() => JSON.parse(rawManifest) as Record<string, any>),
         Effect.mapError(
           () =>
             new ManifestFileReadingError(
@@ -75,8 +73,9 @@ export function findManifestDependencies(
   manifestPath: string
 ) {
   return pipe(
-    Effect.service(FileReaderTag),
-    Effect.map((fileReader) => fileReader.getCurrentWorkingDir()),
+    Effect.flatMap(FileReader, (fileReader) =>
+      Effect.sync(() => fileReader.getCurrentWorkingDir())
+    ),
     Effect.flatMap((cwd) =>
       pipe(
         readManifestAt(path.join(cwd, manifestPath)),
@@ -87,7 +86,7 @@ export function findManifestDependencies(
     ),
     Effect.flatMap((rawManifest) =>
       pipe(
-        Effect.attempt(() => Object.keys(JSON.parse(rawManifest).dependencies)),
+        Effect.try(() => Object.keys(JSON.parse(rawManifest).dependencies)),
         Effect.orElse(() => Effect.succeed<string[]>([]))
       )
     )
@@ -178,7 +177,7 @@ export interface ManifestDependenciesByName {
 export function extractInformationFromManifest(
   manifestContent: string,
   rootFile: string,
-  logger: SkottLogger,
+  logger: Logger,
   manifests: ManifestDependenciesByName
 ) {
   try {

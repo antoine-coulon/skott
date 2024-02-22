@@ -3,7 +3,7 @@ import * as O from "@effect/data/Option";
 import { decodeInputConfig } from "./src/config.js";
 import { FileSystemReader } from "./src/filesystem/file-reader.js";
 import { FileSystemWriter } from "./src/filesystem/file-writer.js";
-import { FakeLogger, Logger } from "./src/logger.js";
+import { FakeLogger, SkottLogger } from "./src/logger.js";
 import { ModuleWalkerSelector } from "./src/modules/walkers/common.js";
 import { Skott } from "./src/skott.js";
 import type { SkottConfig, SkottInstance } from "./src/skott.js";
@@ -45,7 +45,7 @@ export default async function skott<T>(
 
   const { cwd, verbose, ignorePattern, ...skottConfig } =
     decodeInputConfig(config);
-  const logger = verbose ? new Logger() : new FakeLogger();
+  const logger = verbose ? new SkottLogger() : new FakeLogger();
 
   const skottInstance = await new Skott<T>(
     skottConfig,

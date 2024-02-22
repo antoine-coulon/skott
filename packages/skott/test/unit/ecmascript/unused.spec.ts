@@ -4,7 +4,7 @@ import { InMemoryFileReader } from "../../../src/filesystem/fake/file-reader.js"
 import { InMemoryFileWriter } from "../../../src/filesystem/file-writer.js";
 import { FakeLogger } from "../../../src/logger.js";
 import { ModuleWalkerSelector } from "../../../src/modules/walkers/common.js";
-import { defaultConfig, Skott, SkottConfig } from "../../../src/skott.js";
+import { defaultConfig, Skott, type SkottConfig } from "../../../src/skott.js";
 import {
   inMemoryImplicitDependenciesFinder,
   mountFakeFileSystem

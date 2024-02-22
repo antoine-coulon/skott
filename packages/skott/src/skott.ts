@@ -1,10 +1,7 @@
 import path from "node:path";
 
-import { pipe } from "@effect/data/Function";
-import * as Option from "@effect/data/Option";
-import * as Effect from "@effect/io/Effect";
-import * as Exit from "@effect/io/Exit";
 import { DiGraph } from "digraph-js";
+import { Exit, pipe, Option, Effect } from "effect";
 import { difference } from "lodash-es";
 
 import {
@@ -12,7 +9,7 @@ import {
   type SkottCache,
   SkottCacheHandler
 } from "./cache/index.js";
-import { type FileReader, FileReaderTag } from "./filesystem/file-reader.js";
+import { FileReader } from "./filesystem/file-reader.js";
 import type { FileWriter } from "./filesystem/file-writer.js";
 import { toUnixPathLike } from "./filesystem/path.js";
 import type { SkottNode } from "./graph/node.js";
@@ -20,10 +17,9 @@ import { type TraversalApi, makeTraversalApi } from "./graph/traversal.js";
 import {
   highlight,
   logFailureM,
-  LoggerTag,
+  Logger,
   logSuccessM,
-  lowlight,
-  type SkottLogger
+  lowlight
 } from "./logger.js";
 import {
   type DependencyResolver,
@@ -128,7 +124,7 @@ export class Skott<T> {
     private readonly fileReader: FileReader,
     private readonly fileWriter: FileWriter,
     private readonly walkerSelector: ModuleWalkerSelector,
-    private readonly logger: SkottLogger
+    private readonly logger: Logger
   ) {
     this.#cacheHandler = new SkottCacheHandler(
       this.fileReader,
@@ -317,8 +313,8 @@ export class Skott<T> {
 
         return resolveImportedModulePath(aliasPathStartingFromTsConfig);
       }),
-      Effect.provideService(FileReaderTag, this.fileReader),
-      Effect.provideService(LoggerTag, this.logger),
+      Effect.provideService(FileReader, this.fileReader),
+      Effect.provideService(Logger, this.logger),
       Effect.runPromiseExit
     );
 
@@ -458,7 +454,7 @@ export class Skott<T> {
   ): Promise<UnusedDependencies> {
     const manifestDependencies = await pipe(
       findManifestDependencies(this.#baseDir, this.config.manifestPath),
-      Effect.provideService(FileReaderTag, this.fileReader),
+      Effect.provideService(FileReader, this.fileReader),
       Effect.runPromise
     );
 
@@ -500,19 +496,21 @@ export class Skott<T> {
   private async buildFromEntrypoint(entrypoint: string): Promise<void> {
     const entrypointModulePath = await pipe(
       resolveImportedModulePath(entrypoint),
-      Effect.provideService(FileReaderTag, this.fileReader),
-      Effect.provideService(LoggerTag, this.logger),
+      Effect.provideService(FileReader, this.fileReader),
+      Effect.provideService(Logger, this.logger),
       Effect.mapError(() => new Error(`Entrypoint "${entrypoint}" not found`)),
-      Effect.tapBoth(
-        ({ message }) => Effect.sync(() => this.logger.failure(message)),
-        () => Effect.sync(() => this.logger.success(`${entrypoint} found.`))
-      ),
+      Effect.tapBoth({
+        onFailure: ({ message }) =>
+          Effect.sync(() => this.logger.failure(message)),
+        onSuccess: () =>
+          Effect.sync(() => this.logger.success(`${entrypoint} found.`))
+      }),
       Effect.runPromise
     );
 
     const doesTsConfigExist = await pipe(
       isTypeScriptProject(this.config.tsConfigPath),
-      Effect.provideService(FileReaderTag, this.fileReader),
+      Effect.provideService(FileReader, this.fileReader),
       Effect.runPromise
     );
 
@@ -583,18 +581,18 @@ export class Skott<T> {
           };
         })
       ),
-      Effect.tapBoth(
-        () =>
+      Effect.tapBoth({
+        onFailure: () =>
           logFailureM(
             "Root manifest not found. Third-party dependencies will to be resolved with other heuristics."
           ),
-        () =>
+        onSuccess: () =>
           logSuccessM(
             "Root manifest found. Third-party dependencies will to be resolved from it."
           )
-      ),
-      Effect.provideService(LoggerTag, this.logger),
-      Effect.provideService(FileReaderTag, this.fileReader)
+      }),
+      Effect.provideService(Logger, this.logger),
+      Effect.provideService(FileReader, this.fileReader)
     );
   }
 

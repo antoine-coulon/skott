@@ -1,14 +1,13 @@
 import { performance } from "perf_hooks";
 
-import * as Context from "@effect/data/Context";
-import * as Effect from "@effect/io/Effect";
+import { Context, Effect } from "effect";
 import kleur from "kleur";
 
 interface LogMessage<T = void> {
   (message: string): T;
 }
 
-export interface SkottLogger {
+export interface Logger {
   info: LogMessage;
   startInfo: LogMessage<LogMessage>;
   success: LogMessage;
@@ -27,9 +26,10 @@ export function lowlight(message: string) {
   return kleur.bold().grey(message);
 }
 
-export const LoggerTag = Context.Tag<SkottLogger>();
+// eslint-disable-next-line no-redeclare
+export const Logger = Context.GenericTag<SkottLogger>("Logger");
 
-export class Logger implements SkottLogger {
+export class SkottLogger implements SkottLogger {
   info(message: string) {
     process.stdout.write(logMessage(message));
   }
@@ -60,18 +60,24 @@ export class Logger implements SkottLogger {
 }
 
 export function logFailureM(message: string) {
-  return Effect.serviceWithEffect(LoggerTag, ({ failure }) =>
-    Effect.sync(() => failure(message))
-  );
+  // eslint-disable-next-line func-names
+  return Effect.gen(function* (_) {
+    const logger = yield* _(Logger);
+
+    return Effect.sync(() => logger.failure(message));
+  });
 }
 
 export function logSuccessM(message: string) {
-  return Effect.serviceWithEffect(LoggerTag, ({ success }) =>
-    Effect.sync(() => success(message))
-  );
+  // eslint-disable-next-line func-names
+  return Effect.gen(function* (_) {
+    const logger = yield* _(Logger);
+
+    return Effect.sync(() => logger.success(message));
+  });
 }
 
-export class FakeLogger implements SkottLogger {
+export class FakeLogger implements Logger {
   info() {}
   startInfo() {
     return () => {};

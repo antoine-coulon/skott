@@ -1,17 +1,14 @@
 import path from "node:path";
 
-import { pipe } from "@effect/data/Function";
-import * as Option from "@effect/data/Option";
-import * as Effect from "@effect/io/Effect";
 import { DiGraph } from "digraph-js";
+import { Option } from "effect";
+import { pipe } from "effect";
+import { Effect } from "effect";
 import * as D from "io-ts/lib/Decoder.js";
 
-import {
-  FileReaderTag,
-  type FileReader
-} from "../../filesystem/file-reader.js";
+import { FileReader } from "../../filesystem/file-reader.js";
 import type { SkottNode } from "../../graph/node.js";
-import { Logger, LoggerTag, highlight } from "../../logger.js";
+import { Logger, highlight } from "../../logger.js";
 import type { SkottConfig, WorkspaceConfiguration } from "../../skott.js";
 
 import {
@@ -116,9 +113,8 @@ export function isDirSupportedByDefault(directoryName: string): boolean {
 
 function isExistingModule(
   module: string
-): Effect.Effect<FileReader, never, boolean> {
-  return pipe(
-    Effect.service(FileReaderTag),
+): Effect.Effect<boolean, never, FileReader> {
+  return FileReader.pipe(
     Effect.flatMap((fileReader) =>
       pipe(
         Effect.tryPromise(() => fileReader.read(module)),
@@ -134,22 +130,21 @@ function isExistingModule(
  * readable file.
  */
 function resolveToModuleIfExists(moduleName: string) {
-  return pipe(
-    Effect.service(FileReaderTag),
-    Effect.zip(Effect.service(LoggerTag)),
+  return FileReader.pipe(
+    Effect.zip(Logger),
     Effect.flatMap(([fileReader, logger]) =>
       pipe(
         Effect.tryPromise(() => fileReader.read(moduleName)),
-        Effect.tapBoth(
-          () =>
-            Effect.sync(() => {
-              logger.failure(`Failed to resolve ${highlight(moduleName)}`);
-            }),
-          () =>
-            Effect.sync(() => {
-              logger.success(`Successfully resolved ${highlight(moduleName)}`);
-            })
-        ),
+        Effect.tapBoth({
+          onFailure: () =>
+            Effect.sync(() =>
+              logger.failure(`Failed to resolve ${highlight(moduleName)}`)
+            ),
+          onSuccess: () =>
+            Effect.sync(() =>
+              logger.success(`Successfully resolved ${highlight(moduleName)}`)
+            )
+        }),
         Effect.map(() => moduleName)
       )
     )
@@ -163,9 +158,8 @@ export class ModuleNotFoundError {
 
 export function resolveImportedModulePath(
   module: string
-): Effect.Effect<FileReader | Logger, ModuleNotFoundError, string> {
-  return pipe(
-    Effect.service(LoggerTag),
+): Effect.Effect<string, ModuleNotFoundError, FileReader | Logger> {
+  return Logger.pipe(
     Effect.tap((logger) =>
       Effect.sync(() =>
         logger.info(`Start resolution for ${highlight(module)}`)
@@ -173,19 +167,12 @@ export function resolveImportedModulePath(
     ),
     Effect.zip(isExistingModule(module)),
     Effect.flatMap(([logger, moduleExists]) => {
-      /**
-       * If the module name can directly be resolved, we have nothing to do.
-       * Note: If the module is supported and it appears that `moduleExists` is false, it
-       * might be the case where TypeScript is used with ECMAScript modules.
-       */
       if (isFileSupportedByDefault(module) && moduleExists) {
         return pipe(
-          Effect.succeed(module),
-          Effect.tap((module) =>
-            Effect.sync(() =>
-              logger.success(`Succesfully resolved ${highlight(module)}`)
-            )
-          )
+          Effect.sync(() =>
+            logger.success(`Succesfully resolved ${highlight(module)}`)
+          ),
+          Effect.map(() => module)
         );
       }
 
