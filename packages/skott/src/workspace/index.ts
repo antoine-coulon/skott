@@ -24,7 +24,7 @@ export async function findWorkspaceEntrypointModule(): Promise<string> {
 
 class ManifestFileReadingError {
   readonly _tag = "ManifestFileReadingError";
-  constructor(private readonly message: string) {}
+  constructor(readonly message: string) {}
 }
 
 function readManifestAt(

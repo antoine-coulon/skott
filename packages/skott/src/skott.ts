@@ -455,6 +455,7 @@ export class Skott<T> {
     const manifestDependencies = await pipe(
       findManifestDependencies(this.#baseDir, this.config.manifestPath),
       Effect.provideService(FileReader, this.fileReader),
+      Effect.mapError(({ message }) => message),
       Effect.runPromise
     );
 
