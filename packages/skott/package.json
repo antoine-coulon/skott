@@ -27,6 +27,7 @@
   },
   "types": "./dist/index.d.ts",
   "scripts": {
+    "bench": "pnpm vitest bench --config=test/vitest.config.js",
     "build": "rimraf ./dist && tsc --project tsconfig.build.json",
     "build:test": "rimraf ./test_dist && tsc --project tsconfig.test.json",
     "lint": "eslint .",
@@ -84,6 +85,7 @@
     "eslint-plugin-prettier": "^5.0.0",
     "memfs": "^3.5.3",
     "prettier": "^3.0.3",
+    "remote-tarball-fetcher": "workspace:*",
     "rimraf": "^5.0.5",
     "vitest": "^0.34.6"
   },
