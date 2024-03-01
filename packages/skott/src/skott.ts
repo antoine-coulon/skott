@@ -73,6 +73,10 @@ export interface SkottConfig<T> {
 
 export interface SkottStructure<T = unknown> {
   graph: Record<string, SkottNode<T>>;
+  /**
+   * If `groupBy` is provided in the configuration, this will be available as a graph of links between groups of modules.
+   */
+  groupedGraph?: Record<string, string[]>;
   files: string[];
 }
 
