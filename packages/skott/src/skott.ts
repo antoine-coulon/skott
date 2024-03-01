@@ -99,7 +99,7 @@ export interface SkottInstance<T = unknown> {
   ) => Promise<UnusedDependencies>;
 }
 
-export const defaultConfig = {
+export const defaultConfig: SkottConfig<unknown> = {
   entrypoint: "",
   circularMaxDepth: Number.POSITIVE_INFINITY,
   dependencyResolvers: [new EcmaScriptDependencyResolver()],
@@ -112,7 +112,8 @@ export const defaultConfig = {
   includeBaseDir: false,
   incremental: false,
   manifestPath: "package.json",
-  tsConfigPath: "tsconfig.json"
+  tsConfigPath: "tsconfig.json",
+  groupBy: undefined
 };
 
 export interface WorkspaceConfiguration {
