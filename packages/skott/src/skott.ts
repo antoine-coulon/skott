@@ -60,6 +60,15 @@ export interface SkottConfig<T> {
   incremental: boolean;
   manifestPath: string;
   tsConfigPath: string;
+  /**
+   *
+   * If this function is provided, Skott will build a separate graph of links between entire groups of modules.
+   * This is useful if you would rather see links between large architectural blocks than between specific modules within those blocks.
+   *
+   * @param path - The path of the module, e.g. `rootDir/src/feature-a/index.js`
+   * @returns - The group name, e.g. `Feature A` OR `undefined` if the module should not be included in any group.
+   */
+  groupBy?: (path: string) => string | undefined;
 }
 
 export interface SkottStructure<T = unknown> {
