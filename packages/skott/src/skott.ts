@@ -12,7 +12,7 @@ import {
 import { FileReader } from "./filesystem/file-reader.js";
 import type { FileWriter } from "./filesystem/file-writer.js";
 import { toUnixPathLike } from "./filesystem/path.js";
-import type { SkottNode } from "./graph/node.js";
+import type { SkottNode, SkottNodeBody } from "./graph/node.js";
 import { type TraversalApi, makeTraversalApi } from "./graph/traversal.js";
 import {
   highlight,
@@ -76,7 +76,7 @@ export interface SkottStructure<T = unknown> {
   /**
    * If `groupBy` is provided in the configuration, this will be available as a graph of links between groups of modules.
    */
-  groupedGraph?: Record<string, string[]>;
+  groupedGraph?: Record<string, SkottNode<{ files: string[] }>>;
   files: string[];
 }
 
@@ -499,12 +499,115 @@ export class Skott<T> {
     };
   }
 
+  private getValidGroup(nodePath: string) {
+    if (!this.config.groupBy) {
+      throw new Error(
+        "Grouped graph can't be built without a groupBy function in the configuration"
+      );
+    }
+
+    const result = this.config.groupBy(nodePath);
+
+    if (typeof result === "string" || !result) {
+      return result;
+    }
+
+    throw new Error(
+      `GroupBy function must return a string or undefined, but returned ${result}`
+    );
+  }
+
+  private buildGroupedGraph(
+    projectStructure: Record<string, SkottNode<T>>
+  ): DiGraph<SkottNode<{ files: string[] }>> {
+    const rawGroupedGraph = new DiGraph<
+      SkottNode<{ size: number; files: string[] }>
+    >();
+
+    for (const node of Object.values(projectStructure)) {
+      const group = this.getValidGroup(node.id);
+
+      if (group) {
+        /**
+         * Typecast is ok here:
+         * current typings are expecting SkottNodeBody + other arbitary values if available, but currently TS is not happy with it.
+         *
+         * The SkottNode type should be described in some other way to properly support that, but SkottNodeBody is avaiable at the runtime anyway.
+         */
+        const nodeBody = node.body as SkottNodeBody;
+
+        if (rawGroupedGraph.hasVertex(group)) {
+          /**
+           * Group vertex already exists, we need to add up:
+           * - the file to the group
+           * - the size of the new node
+           * - built-in and third-party dependencies
+           * - the links between groups
+           */
+          rawGroupedGraph.mergeVertexBody(group, (groupBody) => {
+            if (groupBody.files.includes(node.id)) return;
+
+            groupBody.files.push(node.id);
+
+            groupBody.size += nodeBody.size;
+
+            nodeBody.thirdPartyDependencies.forEach((dep) => {
+              if (!groupBody.thirdPartyDependencies.includes(dep)) {
+                groupBody.thirdPartyDependencies.push(dep);
+              }
+            });
+
+            nodeBody.builtinDependencies.forEach((dep) => {
+              if (!groupBody.builtinDependencies.includes(dep)) {
+                groupBody.builtinDependencies.push(dep);
+              }
+            });
+          });
+        } else {
+          /**
+           * Group vertex does not exist yet, we need to create it
+           *
+           * Initial size is the size of the first node, as for all kinds of dependencies
+           */
+
+          rawGroupedGraph.addVertex({
+            id: group,
+            adjacentTo: [],
+            body: {
+              size: nodeBody.size,
+              files: [node.id],
+              thirdPartyDependencies: [...nodeBody.thirdPartyDependencies],
+              builtinDependencies: [...nodeBody.builtinDependencies]
+            }
+          });
+        }
+      }
+    }
+
+    return rawGroupedGraph;
+  }
+
   private makeProjectStructure(): SkottStructure<T> {
     const projectStructure = this.#projectGraph.toDict();
+    const files = Object.keys(projectStructure);
+
+    if (this.config.groupBy) {
+      /**
+       * Grouping is enabled,
+       * so groupedGraph must be built.
+       */
+      const rawGroupedGraph = this.buildGroupedGraph(projectStructure);
+
+      return {
+        graph: projectStructure,
+        groupedGraph: rawGroupedGraph.toDict(),
+        files
+      };
+    }
 
     return {
       graph: projectStructure,
-      files: Object.keys(projectStructure)
+      files
     };
   }
 
