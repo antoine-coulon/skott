@@ -125,6 +125,10 @@ export interface WorkspaceConfiguration {
 export class Skott<T> {
   #cacheHandler: SkottCacheHandler<T>;
   #projectGraph = new DiGraph<SkottNode<T>>();
+  /**
+   * Lazily initilized, when getStructure is called
+   */
+  #groupedGraph?: DiGraph<SkottNode<{ files: string[] }>>;
   #visitedNodes = new Set<string>();
   #baseDir = ".";
   #workspaceConfiguration: WorkspaceConfiguration = {
@@ -517,74 +521,93 @@ export class Skott<T> {
     );
   }
 
+  private addNodeToGroupedGraph(node: SkottNode<T>) {
+    const group = this.getValidGroup(node.id);
+
+    if (group) {
+      /**
+       * Typecast is ok here:
+       * current typings are expecting SkottNodeBody + other arbitary values if available, but currently TS is not happy with it.
+       *
+       * The SkottNode type should be described in some other way to properly support that, but SkottNodeBody is avaiable at the runtime anyway.
+       */
+      const nodeBody = node.body as SkottNodeBody;
+
+      if (this.#groupedGraph!.hasVertex(group)) {
+        /**
+         * Group vertex already exists, we need to add up:
+         * - the file to the group
+         * - the size of the new node
+         * - built-in and third-party dependencies
+         * - the links between groups
+         */
+        this.#groupedGraph!.mergeVertexBody(group, (groupBody) => {
+          if (groupBody.files.includes(node.id)) return;
+
+          groupBody.files.push(node.id);
+
+          groupBody.size += nodeBody.size;
+
+          nodeBody.thirdPartyDependencies.forEach((dep) => {
+            if (!groupBody.thirdPartyDependencies.includes(dep)) {
+              groupBody.thirdPartyDependencies.push(dep);
+            }
+          });
+
+          nodeBody.builtinDependencies.forEach((dep) => {
+            if (!groupBody.builtinDependencies.includes(dep)) {
+              groupBody.builtinDependencies.push(dep);
+            }
+          });
+        });
+      } else {
+        /**
+         * Group vertex does not exist yet, we need to create it
+         *
+         * Initial size is the size of the first node, as for all kinds of dependencies
+         */
+        this.#groupedGraph!.addVertex({
+          id: group,
+          adjacentTo: [],
+          body: {
+            size: nodeBody.size,
+            files: [node.id],
+            thirdPartyDependencies: [...nodeBody.thirdPartyDependencies],
+            builtinDependencies: [...nodeBody.builtinDependencies]
+          }
+        });
+      }
+    }
+  }
+
   private buildGroupedGraph(
     projectStructure: Record<string, SkottNode<T>>
   ): DiGraph<SkottNode<{ files: string[] }>> {
-    const rawGroupedGraph = new DiGraph<
-      SkottNode<{ size: number; files: string[] }>
-    >();
+    this.#groupedGraph = new DiGraph<SkottNode<{ files: string[] }>>();
 
     for (const node of Object.values(projectStructure)) {
-      const group = this.getValidGroup(node.id);
+      this.addNodeToGroupedGraph(node);
 
-      if (group) {
-        /**
-         * Typecast is ok here:
-         * current typings are expecting SkottNodeBody + other arbitary values if available, but currently TS is not happy with it.
-         *
-         * The SkottNode type should be described in some other way to properly support that, but SkottNodeBody is avaiable at the runtime anyway.
-         */
-        const nodeBody = node.body as SkottNodeBody;
+      /**
+       * Update edges
+       */
+      node.adjacentTo.forEach((adjacentNode) => {
+        const group = this.getValidGroup(node.id);
+        const adjacentGroup = this.getValidGroup(adjacentNode);
 
-        if (rawGroupedGraph.hasVertex(group)) {
-          /**
-           * Group vertex already exists, we need to add up:
-           * - the file to the group
-           * - the size of the new node
-           * - built-in and third-party dependencies
-           * - the links between groups
-           */
-          rawGroupedGraph.mergeVertexBody(group, (groupBody) => {
-            if (groupBody.files.includes(node.id)) return;
+        if (group && adjacentGroup && group !== adjacentGroup) {
+          /** Ensure that "to" target exsists */
+          this.addNodeToGroupedGraph(projectStructure[adjacentNode]);
 
-            groupBody.files.push(node.id);
-
-            groupBody.size += nodeBody.size;
-
-            nodeBody.thirdPartyDependencies.forEach((dep) => {
-              if (!groupBody.thirdPartyDependencies.includes(dep)) {
-                groupBody.thirdPartyDependencies.push(dep);
-              }
-            });
-
-            nodeBody.builtinDependencies.forEach((dep) => {
-              if (!groupBody.builtinDependencies.includes(dep)) {
-                groupBody.builtinDependencies.push(dep);
-              }
-            });
-          });
-        } else {
-          /**
-           * Group vertex does not exist yet, we need to create it
-           *
-           * Initial size is the size of the first node, as for all kinds of dependencies
-           */
-
-          rawGroupedGraph.addVertex({
-            id: group,
-            adjacentTo: [],
-            body: {
-              size: nodeBody.size,
-              files: [node.id],
-              thirdPartyDependencies: [...nodeBody.thirdPartyDependencies],
-              builtinDependencies: [...nodeBody.builtinDependencies]
-            }
+          this.#groupedGraph!.addEdge({
+            from: group,
+            to: adjacentGroup
           });
         }
-      }
+      });
     }
 
-    return rawGroupedGraph;
+    return this.#groupedGraph;
   }
 
   private makeProjectStructure(): SkottStructure<T> {
@@ -593,14 +616,14 @@ export class Skott<T> {
 
     if (this.config.groupBy) {
       /**
-       * Grouping is enabled,
+       * Grouping is enabled and project structure is requested,
        * so groupedGraph must be built.
        */
-      const rawGroupedGraph = this.buildGroupedGraph(projectStructure);
+      this.buildGroupedGraph(projectStructure);
 
       return {
         graph: projectStructure,
-        groupedGraph: rawGroupedGraph.toDict(),
+        groupedGraph: this.#groupedGraph!.toDict(),
         files
       };
     }
