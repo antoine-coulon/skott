@@ -44,6 +44,27 @@ describe("When running Skott using all real dependencies", () => {
         "Illegal configuration: `cwd` can't be customized when providing an entrypoint"
       );
     });
+
+    describe("groupBy", () => {
+      test("Should not allow `groupBy` to be a non-function", async () => {
+        await expect(() =>
+          skott({
+            // @ts-expect-error
+            groupBy: "not-a-function"
+          })
+        ).rejects.toThrow(
+          "`groupBy` must be a function or not provided at all"
+        );
+      });
+
+      test("Should allow `groupBy` to be a function", async () => {
+        const skottInstance = await skott({
+          groupBy: (_path) => "group"
+        });
+
+        expect(skottInstance).toBeDefined();
+      });
+    });
   });
 
   describe("When traversing files", () => {
