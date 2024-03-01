@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import * as Either from "@effect/data/Either";
+import { Either } from "effect";
 import { expect, test, describe, beforeAll } from "vitest";
 
 import {

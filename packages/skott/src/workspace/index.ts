@@ -2,8 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 import depcheck from "depcheck";
-import { pipe } from "effect";
-import { Effect } from "effect";
+import { pipe, Effect } from "effect";
 
 import { FileReader } from "../filesystem/file-reader.js";
 import type { Logger } from "../logger.js";

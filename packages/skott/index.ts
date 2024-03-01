@@ -1,4 +1,4 @@
-import * as O from "@effect/data/Option";
+import { Option } from "effect";
 
 import { decodeInputConfig } from "./src/config.js";
 import { FileSystemReader } from "./src/filesystem/file-reader.js";
@@ -18,8 +18,8 @@ function raiseIllegalConfigException(configuration: string): never {
   throw new Error(`Illegal configuration: ${configuration}`);
 }
 
-function checkIllegalConfigs<T>(config: O.Option<InputConfig<T>>): void {
-  if (O.isSome(config)) {
+function checkIllegalConfigs<T>(config: Option.Option<InputConfig<T>>): void {
+  if (Option.isSome(config)) {
     const { entrypoint, includeBaseDir, cwd } = config.value;
 
     if (!entrypoint && includeBaseDir) {
@@ -39,7 +39,7 @@ function checkIllegalConfigs<T>(config: O.Option<InputConfig<T>>): void {
 export default async function skott<T>(
   inputConfig: InputConfig<T> | null = Object.create(null)
 ): Promise<SkottInstance<T>> {
-  const config = O.fromNullable(inputConfig);
+  const config = Option.fromNullable(inputConfig);
 
   checkIllegalConfigs(config);
 

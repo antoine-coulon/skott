@@ -1,8 +1,7 @@
 import { builtinModules } from "node:module";
 import path from "node:path";
 
-import { Option } from "effect";
-import { Effect } from "effect";
+import { Option, Effect } from "effect";
 
 import { FileReader } from "../../../filesystem/file-reader.js";
 import { highlight } from "../../../logger.js";

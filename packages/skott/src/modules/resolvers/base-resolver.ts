@@ -1,9 +1,7 @@
 import path from "node:path";
 
 import { DiGraph } from "digraph-js";
-import { Option } from "effect";
-import { pipe } from "effect";
-import { Effect } from "effect";
+import { Option, pipe, Effect } from "effect";
 import * as D from "io-ts/lib/Decoder.js";
 
 import { FileReader } from "../../filesystem/file-reader.js";

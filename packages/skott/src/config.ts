@@ -1,5 +1,4 @@
-import { identity, pipe } from "@effect/data/Function";
-import * as O from "@effect/data/Option";
+import { identity, pipe, Option } from "effect";
 import * as E from "fp-ts/lib/Either.js";
 import * as D from "io-ts/lib/Decoder.js";
 
@@ -44,11 +43,11 @@ const config = D.struct({
 });
 
 export function decodeInputConfig<T>(
-  partialConfig: O.Option<Partial<SkottConfig<T>>>
+  partialConfig: Option.Option<Partial<SkottConfig<T>>>
 ) {
   return pipe(
     partialConfig,
-    O.getOrNull,
+    Option.getOrNull,
     config.decode,
     E.fold((decodeError) => {
       throw new Error(`Invalid Skott config. Reason: ${D.draw(decodeError)}`);

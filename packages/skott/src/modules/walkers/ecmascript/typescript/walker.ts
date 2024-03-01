@@ -1,6 +1,5 @@
 import { parse } from "@typescript-eslint/typescript-estree";
-import { pipe } from "effect";
-import { Effect } from "effect";
+import { pipe, Effect } from "effect";
 import { walk as walkAST } from "estree-walker";
 
 import { highlight } from "../../../../logger.js";

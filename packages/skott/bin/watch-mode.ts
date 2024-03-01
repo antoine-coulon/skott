@@ -3,8 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 import watcher from "@parcel/watcher";
-import { pipe } from "effect";
-import { Option } from "effect";
+import { pipe, Option } from "effect";
 import kleur from "kleur";
 // @ts-expect-error - no valid type definitions exist
 import gitignoreParse from "parse-gitignore";
