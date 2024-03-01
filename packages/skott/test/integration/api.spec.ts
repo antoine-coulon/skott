@@ -309,5 +309,58 @@ describe("When running Skott using all real dependencies", () => {
         });
       });
     });
+
+    describe("When grouping is enabled", () => {
+      const fsRootDir = `skott-ignore-temp-fs`;
+
+      const runSandbox = createRealFileSystem(fsRootDir, {
+        "skott-ignore-temp-fs/src/core/index.js": `export const N = 42;`,
+        "skott-ignore-temp-fs/src/features/feature-a/index.js": `import { N } from "../../core"; export const A = N;`,
+        "skott-ignore-temp-fs/src/features/feature-b/index.js": `import { N } from "../../core"; import { A } from "../feature-a"; console.log(A); export const B = N;`,
+        "skott-ignore-temp-fs/src/features/feature-c/a.js": `import { N } from "../../core"; import { A } from "../feature-a"; export { N, A };`,
+        "skott-ignore-temp-fs/src/features/feature-c/b.js": `import { B } from "./src/features/feature-b"; export { B };`,
+        "skott-ignore-temp-fs/src/features/feature-c/c.js": `import { N, A } from "./a"; import { B } from "./b"; export { N, A, B };`,
+        "skott-ignore-temp-fs/src/features/feature-c/index.js": `export { N as CN, A as CA, B as CB } from "./c";`,
+        "skott-ignore-temp-fs/index.js": `import { N } from "./src/core"; import { A } from "./src/features/feature-a"; import { B } from "./src/features/feature-b"; import * as C from "./src/features/feature-c"; console.log(N, A, B, C);`
+      });
+
+      test("Should group files using the provided function", async () => {
+        expect.assertions(1);
+
+        const skott = new Skott(
+          {
+            ...defaultConfig,
+            groupBy: (path) => {
+              if (path.includes("src/core")) return "core";
+
+              if (path.includes("src/features/feature-a")) return "feature-a";
+
+              if (path.includes("src/features/feature-b")) return "feature-b";
+
+              if (path.includes("src/features/feature-c")) return "feature-c";
+
+              return undefined;
+            }
+          },
+          new FileSystemReader({ cwd: fsRootDir, ignorePattern: "" }),
+          new InMemoryFileWriter(),
+          new ModuleWalkerSelector(),
+          new FakeLogger()
+        );
+
+        await runSandbox(async () => {
+          const { groupedGraph } = await skott
+            .initialize()
+            .then(({ getStructure }) => getStructure());
+
+          expect(groupedGraph).toEqual({
+            core: {},
+            "feature-a": {},
+            "feature-b": {},
+            "feature-c": {}
+          });
+        });
+      });
+    });
   });
 });
