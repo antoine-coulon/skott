@@ -547,7 +547,6 @@ export class Skott<T> {
          * - the file to the group
          * - the size of the new node
          * - built-in and third-party dependencies
-         * - the links between groups
          */
         this.#groupedGraph!.mergeVertexBody(group, (groupBody) => {
           if (groupBody.files.includes(node.id)) return;
