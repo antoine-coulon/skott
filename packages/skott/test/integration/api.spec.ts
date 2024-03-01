@@ -354,10 +354,51 @@ describe("When running Skott using all real dependencies", () => {
             .then(({ getStructure }) => getStructure());
 
           expect(groupedGraph).toEqual({
-            core: {},
-            "feature-a": {},
-            "feature-b": {},
-            "feature-c": {}
+            core: {
+              id: "core",
+              adjacentTo: [],
+              body: {
+                size: 20,
+                files: ["skott-ignore-temp-fs/src/core/index.js"],
+                thirdPartyDependencies: [],
+                builtinDependencies: []
+              }
+            },
+            "feature-a": {
+              id: "feature-a",
+              adjacentTo: ["core"],
+              body: {
+                size: 51,
+                files: ["skott-ignore-temp-fs/src/features/feature-a/index.js"],
+                thirdPartyDependencies: [],
+                builtinDependencies: []
+              }
+            },
+            "feature-b": {
+              id: "feature-b",
+              adjacentTo: ["core", "feature-a"],
+              body: {
+                size: 101,
+                files: ["skott-ignore-temp-fs/src/features/feature-b/index.js"],
+                thirdPartyDependencies: [],
+                builtinDependencies: []
+              }
+            },
+            "feature-c": {
+              id: "feature-c",
+              adjacentTo: ["core", "feature-a", "feature-b"],
+              body: {
+                size: 261,
+                files: [
+                  "skott-ignore-temp-fs/src/features/feature-c/index.js",
+                  "skott-ignore-temp-fs/src/features/feature-c/c.js",
+                  "skott-ignore-temp-fs/src/features/feature-c/a.js",
+                  "skott-ignore-temp-fs/src/features/feature-c/b.js"
+                ],
+                thirdPartyDependencies: [],
+                builtinDependencies: []
+              }
+            }
           });
         });
       });
