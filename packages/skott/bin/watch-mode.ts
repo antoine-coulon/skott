@@ -2,9 +2,8 @@ import { execSync } from "node:child_process";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { pipe } from "@effect/data/Function";
-import * as Option from "@effect/data/Option";
 import watcher from "@parcel/watcher";
+import { pipe, Option } from "effect";
 import kleur from "kleur";
 // @ts-expect-error - no valid type definitions exist
 import gitignoreParse from "parse-gitignore";

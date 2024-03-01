@@ -2,7 +2,7 @@ import child_process from "node:child_process";
 import path from "node:path";
 import { promisify } from "node:util";
 
-import * as Either from "@effect/data/Either";
+import { Either } from "effect";
 
 export const skottBinaryPath = path.join(
   process.cwd(),

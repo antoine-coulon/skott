@@ -3,7 +3,7 @@ import fsSync from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import * as Context from "@effect/data/Context";
+import { Context } from "effect";
 import ignoreWalk from "ignore-walk";
 import { type MinimatchOptions, minimatch } from "minimatch";
 
@@ -24,7 +24,8 @@ export interface FileReader {
   getCurrentWorkingDir: () => string;
 }
 
-export const FileReaderTag = Context.Tag<FileReader>();
+// eslint-disable-next-line no-redeclare
+export const FileReader = Context.GenericTag<FileReader>("FileReader");
 
 interface FileSystemConfig {
   cwd: string;

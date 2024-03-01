@@ -274,12 +274,6 @@ importers:
 
   packages/skott:
     dependencies:
-      '@effect/data':
-        specifier: ^0.4.1
-        version: 0.4.1
-      '@effect/io':
-        specifier: ^0.8.0
-        version: 0.8.0
       '@parcel/watcher':
         specifier: ^2.3.0
         version: 2.3.0
@@ -298,6 +292,9 @@ importers:
       digraph-js:
         specifier: ^2.2.3
         version: 2.2.3
+      effect:
+        specifier: 2.4.0
+        version: 2.4.0
       estree-walker:
         specifier: ^3.0.3
         version: 3.0.3
@@ -892,12 +889,7 @@ packages:
 
   /@effect/data@0.4.1:
     resolution: {integrity: sha512-FdQ0qbYL7t+GP5eWdAPC+oeN2w3zqnujrdDLp/sj58UtMxFSHg21crprmbmiAJAWsL5EdB9aZzcisBGn382xHg==}
-
-  /@effect/io@0.8.0:
-    resolution: {integrity: sha512-JJUs05oiHzh/Eupf5mgeLRFA4RXJAJo2DNxPC4ZVXwhvgJeqJ/G0ftYo3znOO0vKLzXjw8WYrnXPBM1nYLPnfQ==}
-    dependencies:
-      '@effect/data': 0.4.1
-    dev: false
+    dev: true
 
   /@egjs/hammerjs@2.0.17:
     resolution: {integrity: sha512-XQsZgjm2EcVUiZQf11UBJQfmZeEmOW8DpI1gsFeln6w0ae0ii4dMQEQ0kjl6DspdWX1aGY1/loyXnP0JS06e/A==}
@@ -3445,6 +3437,10 @@ packages:
   /eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
     dev: true
+
+  /effect@2.4.0:
+    resolution: {integrity: sha512-HAtFVAbAGYDzfGbrSrX1gzMzXym15zk1+ps72X8W1wdZY0vxq+u23w8u9DhAZjiJPHT4W9ZYL7QWQqpP4t+dSg==}
+    dev: false
 
   /electron-to-chromium@1.4.439:
     resolution: {integrity: sha512-BHpErPSNhb9FB25+OwQP6mCAf3ZXfGbmuvc4LzBNVJwpCcXQJm++LerimocYRG9FRxUVRKZqaB7d0+pImSTPSg==}

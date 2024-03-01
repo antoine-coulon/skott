@@ -410,16 +410,16 @@ describe("When traversing a TypeScript project", () => {
 
                 mountFakeFileSystem({
                   "index.ts": `
-                  import { foo } from "foo";
-                  import * as Effect from "@effect/io";
-                  import * as smthing from "./something-else";
-                `,
+                    import { foo } from "foo";
+                    import * as Effect from "@effect/io";
+                    import * as smthing from "./something-else";
+                  `,
                   "libs/foo.ts": `
-                  export function foo(): string {}
-                `,
+                    export function foo(): string {}
+                  `,
                   "something-else.ts": `
-                  import { pipe } from "@effect/data/Function";
-                `,
+                    import { pipe } from "effect";                
+                  `,
                   "tsconfig.json": JSON.stringify(tsConfig)
                 });
 
@@ -448,7 +448,7 @@ describe("When traversing a TypeScript project", () => {
                     id: "something-else.ts",
                     body: {
                       ...fakeNodeBody,
-                      thirdPartyDependencies: ["@effect/data"]
+                      thirdPartyDependencies: ["effect"]
                     }
                   }
                 });

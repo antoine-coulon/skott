@@ -1,4 +1,4 @@
-import * as Option from "@effect/data/Option";
+import { Option } from "effect";
 import { describe, expect, test } from "vitest";
 
 import { InMemoryFileReader } from "../../../src/filesystem/fake/file-reader.js";

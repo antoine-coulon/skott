@@ -1,4 +1,4 @@
-import * as E from "@effect/data/Either";
+import { Either } from "effect";
 
 export type CliOptions = {
   entrypoint: string | undefined;
@@ -35,10 +35,12 @@ function ensureNoIllegalConfigState({
 }: CliOptions) {
   if (entrypoint) {
     if (cwd !== process.cwd()) {
-      return E.left("`--cwd` can't be customized when providing an entrypoint");
+      return Either.left(
+        "`--cwd` can't be customized when providing an entrypoint"
+      );
     }
   } else if (includeBaseDir) {
-    return E.left(
+    return Either.left(
       "`--includeBaseDir` can only be used when providing an entrypoint"
     );
   }
@@ -52,12 +54,12 @@ function ensureNoIllegalConfigState({
    */
   if (displayMode === "webapp") {
     if (showCircularDependencies) {
-      return E.left(
+      return Either.left(
         "`--showCircularDependencies` can't be used when using `--displayMode=webapp`"
       );
     }
     if (showUnusedDependencies) {
-      return E.left(
+      return Either.left(
         "`--showUnusedDependencies` can't be used when using `--displayMode=webapp`"
       );
     }
@@ -70,18 +72,18 @@ function ensureNoIllegalConfigState({
       displayMode !== "raw" &&
       displayMode !== "file-tree"
     ) {
-      return E.left(
+      return Either.left(
         "`--watch` needs either `raw`, `file-tree`, `graph` or `webapp` display mode"
       );
     }
   }
 
-  return E.right(void 0);
+  return Either.right(void 0);
 }
 
 export function ensureValidConfiguration(
   entrypoint: string | undefined,
   options: CliParameterOptions
-): E.Either<string, void> {
+): Either.Either<void, string> {
   return ensureNoIllegalConfigState({ entrypoint, ...options });
 }

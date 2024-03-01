@@ -1,8 +1,7 @@
 import { createRequire } from "node:module";
 import path from "node:path";
 
-import { pipe } from "@effect/data/Function";
-import * as Option from "@effect/data/Option";
+import { pipe, Option } from "effect";
 import JSON5 from "json5";
 import type { CompilerOptions } from "typescript";
 
