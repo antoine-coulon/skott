@@ -67,6 +67,14 @@ export interface SkottConfig<T> {
    *
    * @param path - The path of the module, e.g. `rootDir/src/feature-a/index.js`
    * @returns - The group name, e.g. `Feature A` OR `undefined` if the module should not be included in any group.
+   *
+   * @example
+   * ```
+   * const instance = await skott({ groupBy: (path) => ... })
+   *
+   * instance.getStructure().groupedGraph
+   *
+   * ```
    */
   groupBy?: (path: string) => string | undefined;
 }
