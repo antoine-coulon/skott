@@ -440,6 +440,76 @@ describe("When running Skott using all real dependencies", () => {
           '[Error: groupBy function must return a string or undefined, but returned "[object Object]" (for "skott-ignore-temp-fs/src/features/feature-b/index.js")]'
         );
       });
+
+      test("Emtpy string group should be discarded", async () => {
+        expect.assertions(1);
+
+        const skott = new Skott(
+          {
+            ...defaultConfig,
+            groupBy: (path) => {
+              if (path.includes("src/core")) return "core";
+
+              if (path.includes("src/features/feature-a")) return "feature-a";
+
+              // empty string
+              if (path.includes("src/features/feature-b")) return "";
+
+              if (path.includes("src/features/feature-c")) return "feature-c";
+
+              return undefined;
+            }
+          },
+          new FileSystemReader({ cwd: fsRootDir, ignorePattern: "" }),
+          new InMemoryFileWriter(),
+          new ModuleWalkerSelector(),
+          new FakeLogger()
+        );
+
+        await runSandbox(async () => {
+          const { groupedGraph } = await skott
+            .initialize()
+            .then(({ getStructure }) => getStructure());
+
+          expect(groupedGraph).toEqual({
+            core: {
+              id: "core",
+              adjacentTo: [],
+              body: {
+                size: 20,
+                files: ["skott-ignore-temp-fs/src/core/index.js"],
+                thirdPartyDependencies: [],
+                builtinDependencies: []
+              }
+            },
+            "feature-a": {
+              id: "feature-a",
+              adjacentTo: ["core"],
+              body: {
+                size: 51,
+                files: ["skott-ignore-temp-fs/src/features/feature-a/index.js"],
+                thirdPartyDependencies: [],
+                builtinDependencies: []
+              }
+            },
+            "feature-c": {
+              id: "feature-c",
+              adjacentTo: ["core", "feature-a"],
+              body: {
+                size: 261,
+                files: [
+                  "skott-ignore-temp-fs/src/features/feature-c/index.js",
+                  "skott-ignore-temp-fs/src/features/feature-c/c.js",
+                  "skott-ignore-temp-fs/src/features/feature-c/a.js",
+                  "skott-ignore-temp-fs/src/features/feature-c/b.js"
+                ],
+                thirdPartyDependencies: [],
+                builtinDependencies: []
+              }
+            }
+          });
+        });
+      });
     });
   });
 });
