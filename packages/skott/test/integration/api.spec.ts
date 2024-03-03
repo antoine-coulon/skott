@@ -402,6 +402,44 @@ describe("When running Skott using all real dependencies", () => {
           });
         });
       });
+
+      test("Should throw an error, when `groupBy` returns invalid groupName", async () => {
+        expect.assertions(1);
+
+        const skott = new Skott(
+          {
+            ...defaultConfig,
+            // @ts-expect-error
+            groupBy: (path) => {
+              if (path.includes("src/core")) return "core";
+
+              if (path.includes("src/features/feature-a")) return "feature-a";
+
+              // invalid group name
+              if (path.includes("src/features/feature-b")) return {};
+
+              if (path.includes("src/features/feature-c")) return "feature-c";
+
+              return undefined;
+            }
+          },
+          new FileSystemReader({ cwd: fsRootDir, ignorePattern: "" }),
+          new InMemoryFileWriter(),
+          new ModuleWalkerSelector(),
+          new FakeLogger()
+        );
+
+        expect(
+          async () =>
+            await runSandbox(async () => {
+              await skott
+                .initialize()
+                .then(({ getStructure }) => getStructure());
+            })
+        ).rejects.toMatchInlineSnapshot(
+          '[Error: groupBy function must return a string or undefined, but returned "[object Object]" (for "skott-ignore-temp-fs/src/features/feature-b/index.js")]'
+        );
+      });
     });
   });
 });

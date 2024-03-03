@@ -525,7 +525,7 @@ export class Skott<T> {
     }
 
     throw new Error(
-      `GroupBy function must return a string or undefined, but returned ${result}`
+      `groupBy function must return a string or undefined, but returned "${result}" (for "${nodePath}")`
     );
   }
 
