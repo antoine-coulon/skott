@@ -70,9 +70,26 @@ export interface SkottConfig<T> {
    *
    * @example
    * ```
-   * const instance = await skott({ groupBy: (path) => ... })
+   * const instance = await skott({
+   *  groupBy: (path) => {
    *
-   * instance.getStructure().groupedGraph
+   *   if (path.includes("core")) return "core";
+   *   if (path.includes("feature-a")) return "feature-a";
+   *
+   *   // ... other conditions
+   *
+   *   // if no match
+   *   return undefined;
+   *  }
+   * })
+   *
+   * const {groupedGraph} = instance.getStructure();
+   *
+   * groupedGraph["core"]
+   * // { id: "core", adjacentTo, body: { size, files, ... } }
+   *
+   * groupedGraph["feature-a"]
+   * // { id: "feature-a", adjacentTo, body: { size, files, ... } }
    *
    * ```
    */
