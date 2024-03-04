@@ -1,11 +1,24 @@
-import { Readable } from "node:stream";
+import type { ReadableStream } from "node:stream/web";
+
+import { Effect, Option } from "effect";
 
 export interface PackageInformation {
-  latestVersion: string;
+  id: string;
   tarballUrl: string;
 }
 
-export interface Fetcher {
-  fetchPackageInformation: (libraryName: string) => Promise<PackageInformation>;
-  downloadTarball: (tarballUrl: string) => Promise<Readable>;
+export class FetchPackageInformationError {
+  readonly _tag = "FetchPackageInformationError";
+}
+
+export interface Fetcher<AdditionalInformation = Record<string, string>> {
+  fetchPackageInformation: (
+    libraryName: string
+  ) => Effect.Effect<
+    PackageInformation & AdditionalInformation,
+    FetchPackageInformationError
+  >;
+  downloadTarball: (
+    tarballUrl: string
+  ) => Effect.Effect<Option.Option<ReadableStream>>;
 }

@@ -21,7 +21,8 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "node-fetch": "^3.3.1",
+    "@effect/schema": "0.63.2",
+    "effect": "^2.4.1",
     "semver": "^7.5.3",
     "tar": "^6.1.15"
   },
@@ -30,7 +31,7 @@
     "@skottorg/config": "workspace:*",
     "@types/chai": "^4.3.5",
     "@types/mocha": "^9.1.1",
-    "@types/node": "^16.18.36",
+    "@types/node": "^20.11.24",
     "@types/semver": "^7.5.0",
     "@types/tar": "^6.1.5",
     "chai": "^4.3.7",

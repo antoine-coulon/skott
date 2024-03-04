@@ -3,6 +3,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { pipeline } from "node:stream/promises";
 
+import { Effect, Option, pipe } from "effect";
 import semver from "semver";
 import tar from "tar";
 
@@ -19,72 +20,78 @@ export class TarballManager {
     return this._store;
   }
 
-  private isPackageIncludingValidSemver(packageName: string): boolean {
-    const nameWithMaybeSemver = packageName.split("@");
-    if (nameWithMaybeSemver.length === 1) {
-      return false;
-    }
-
+  private hasLocalIdentifier(packageName: string): boolean {
     const segmentThatShouldIncludeSemver = packageName.lastIndexOf("@");
-    const maybeSemver = packageName.slice(segmentThatShouldIncludeSemver + 1);
+    const identifier = packageName.slice(segmentThatShouldIncludeSemver + 1);
 
-    return semver.valid(maybeSemver) !== null;
+    return (
+      !Number.isNaN(Number(identifier)) || semver.valid(identifier) !== null
+    );
   }
 
-  private async fetchPackageInformation(
-    packageName: string
-  ): Promise<{ packageNameWithVersion: string; tarballUrl: string }> {
-    const { latestVersion, tarballUrl } =
-      await this._fetcher.fetchPackageInformation(packageName);
-
-    if (this.isPackageIncludingValidSemver(packageName)) {
-      return {
-        packageNameWithVersion: packageName,
-        tarballUrl
-      };
+  private makeLocalIdentifier(packageName: string, id: string): string {
+    if (this.hasLocalIdentifier(packageName)) {
+      return packageName;
     }
 
-    return {
-      packageNameWithVersion: `${packageName}@${latestVersion}`,
-      tarballUrl
-    };
+    return `${packageName}@${id}`;
   }
 
   public switchFetcher(fetcher: Fetcher): void {
     this._fetcher = fetcher;
   }
 
-  public async downloadAndStore(
+  public downloadAndStore(
     packageName: string,
     baseOutDir = os.tmpdir()
-  ): Promise<string | undefined> {
-    // package name already includes a package version
-    if (this._store.has(packageName)) {
-      return this._store.get(packageName);
-    }
+  ): Effect.Effect<Option.Option<string>> {
+    return pipe(
+      Effect.succeed(this),
+      Effect.flatMap((self) =>
+        Effect.gen(function* gen(_) {
+          if (self._store.has(packageName)) {
+            return self._store.get(packageName);
+          }
 
-    try {
-      const { packageNameWithVersion, tarballUrl } =
-        await this.fetchPackageInformation(packageName);
+          const { id, tarballUrl } = yield* _(
+            self._fetcher.fetchPackageInformation(packageName)
+          );
 
-      if (this._store.has(packageNameWithVersion)) {
-        return this._store.get(packageNameWithVersion);
-      }
+          const localTarballId = self.makeLocalIdentifier(packageName, id);
 
-      const pathToTarball = path.join(
-        baseOutDir,
-        kSkottStore,
-        packageNameWithVersion
-      );
+          if (self._store.has(localTarballId)) {
+            return self._store.get(localTarballId);
+          }
 
-      await mkdir(pathToTarball, { recursive: true });
-      const tarballStream = await this._fetcher.downloadTarball(tarballUrl);
-      await pipeline(tarballStream, tar.extract({ cwd: pathToTarball }));
-      this.store.set(packageNameWithVersion, pathToTarball);
+          const pathToTarball = path.join(
+            baseOutDir,
+            kSkottStore,
+            localTarballId
+          );
 
-      return pathToTarball;
-    } catch {
-      return undefined;
-    }
+          yield* _(
+            Effect.promise(() => mkdir(pathToTarball, { recursive: true }))
+          );
+
+          const tarballStream = yield* _(
+            self._fetcher
+              .downloadTarball(tarballUrl)
+              .pipe(Effect.map(Option.getOrThrow))
+          );
+
+          yield* _(
+            Effect.promise(() =>
+              pipeline(tarballStream, tar.extract({ cwd: pathToTarball }))
+            )
+          );
+
+          self.store.set(localTarballId, pathToTarball);
+
+          return pathToTarball;
+        })
+      ),
+      Effect.map(Option.fromNullable),
+      Effect.catchAllCause(() => Effect.succeed(Option.none()))
+    );
   }
 }
