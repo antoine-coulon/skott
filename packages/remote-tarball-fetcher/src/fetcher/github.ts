@@ -1,8 +1,7 @@
 import * as S from "@effect/schema/Schema";
 import { Effect, Option, flow, pipe } from "effect";
 
-import { FetchPackageInformationError, type Fetcher } from "./common.js";
-
+import { FetchPackageInformationError, type Fetcher } from "./definition.js";
 interface GitHubRepositoryInformation {
   defaultBranch: string;
 }
@@ -39,5 +38,11 @@ export const githubFetcher: Fetcher<GitHubRepositoryInformation> = {
   downloadTarball: (tarballUrl) =>
     Effect.promise(() =>
       fetch(tarballUrl).then((response) => Option.fromNullable(response.body))
+    ).pipe(
+      Effect.map(
+        Option.map((body) => {
+          return { stream: body, format: "zip" };
+        })
+      )
     )
 };

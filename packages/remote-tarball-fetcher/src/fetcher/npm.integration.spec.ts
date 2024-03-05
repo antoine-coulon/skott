@@ -31,14 +31,14 @@ describe("npm tarball fetcher", () => {
               "https://registry.npmjs.org/openforker/-/openforker-1.0.7.tgz"
           });
 
-          const tarball = yield* _(
+          const { stream } = yield* _(
             Effect.map(
               fetcher.downloadTarball(packageInformation.tarballUrl),
               Option.getOrThrow
             )
           );
 
-          expect(tarball).to.be.an.instanceOf(ReadableStream);
+          expect(stream).to.be.an.instanceOf(ReadableStream);
         })
       );
     });
@@ -60,13 +60,15 @@ describe("npm tarball fetcher", () => {
               "https://registry.npmjs.org/openforker/-/openforker-1.0.5.tgz"
           });
 
-          const tarball = yield* _(
+          const { format, stream } = yield* _(
             Effect.map(
               fetcher.downloadTarball(packageInformation.tarballUrl),
               Option.getOrThrow
             )
           );
-          expect(tarball).to.be.an.instanceOf(ReadableStream);
+
+          expect(format).to.equal("tar");
+          expect(stream).to.be.an.instanceOf(ReadableStream);
         })
       );
     });

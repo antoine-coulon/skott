@@ -18,7 +18,10 @@ export interface Fetcher<AdditionalInformation = Record<string, string>> {
     PackageInformation & AdditionalInformation,
     FetchPackageInformationError
   >;
-  downloadTarball: (
-    tarballUrl: string
-  ) => Effect.Effect<Option.Option<ReadableStream>>;
+  downloadTarball: (tarballUrl: string) => Effect.Effect<
+    Option.Option<{
+      stream: ReadableStream;
+      format: "zip" | "tar";
+    }>
+  >;
 }

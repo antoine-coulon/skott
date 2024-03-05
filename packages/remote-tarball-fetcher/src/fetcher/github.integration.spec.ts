@@ -1,4 +1,4 @@
-import { ReadableStream } from "stream/web";
+import { ReadableStream } from "node:stream/web";
 
 import { expect } from "chai";
 import { Effect, Option, pipe } from "effect";
@@ -29,7 +29,7 @@ describe("GitHub integration", () => {
           tarballUrl: "https://github.com/antoine-coulon/skott/archive/main.zip"
         });
 
-        const tarball = yield* _(
+        const { format, stream } = yield* _(
           pipe(
             Effect.map(
               fetcher.downloadTarball(
@@ -40,7 +40,8 @@ describe("GitHub integration", () => {
           )
         );
 
-        expect(tarball).to.be.an.instanceOf(ReadableStream);
+        expect(format).to.equal("zip");
+        expect(stream).to.be.an.instanceOf(ReadableStream);
       })
     );
   });

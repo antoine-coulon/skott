@@ -1,20 +1,22 @@
 import { mkdir } from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
+import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 
 import { Effect, Option, pipe } from "effect";
 import semver from "semver";
 import tar from "tar";
+import unzipper from "unzipper";
 
 import type { Fetcher } from "./fetcher/index.js";
 
 const kSkottStore = "skott_store";
 
-export class TarballManager {
+export class TarballManager<I = Record<string, string>> {
   private readonly _store = new Map();
 
-  constructor(private _fetcher: Fetcher) {}
+  constructor(private _fetcher: Fetcher<I>) {}
 
   get store(): Map<string, string> {
     return this._store;
@@ -37,7 +39,7 @@ export class TarballManager {
     return `${packageName}@${id}`;
   }
 
-  public switchFetcher(fetcher: Fetcher): void {
+  public switchFetcher(fetcher: Fetcher<I>): void {
     this._fetcher = fetcher;
   }
 
@@ -73,17 +75,37 @@ export class TarballManager {
             Effect.promise(() => mkdir(pathToTarball, { recursive: true }))
           );
 
-          const tarballStream = yield* _(
+          const { format, stream } = yield* _(
             self._fetcher
               .downloadTarball(tarballUrl)
               .pipe(Effect.map(Option.getOrThrow))
           );
 
-          yield* _(
-            Effect.promise(() =>
-              pipeline(tarballStream, tar.extract({ cwd: pathToTarball }))
-            )
-          );
+          if (format === "tar") {
+            yield* _(
+              Effect.promise(() =>
+                pipeline(stream, tar.extract({ cwd: pathToTarball }))
+              )
+            );
+          } else {
+            yield* _(
+              Effect.promise(() => {
+                const rdb = Readable.from(
+                  (async function* gen_() {
+                    for await (const chunk of stream) {
+                      yield chunk;
+                    }
+                  })()
+                );
+
+                return rdb
+                  .pipe(
+                    unzipper.Extract({ path: pathToTarball, forceStream: true })
+                  )
+                  .promise();
+              })
+            );
+          }
 
           self.store.set(localTarballId, pathToTarball);
 

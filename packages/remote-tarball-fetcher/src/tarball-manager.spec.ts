@@ -12,8 +12,12 @@ import { TarballManager } from "./tarball-manager.js";
 const kTemporaryDirFixture = path.join(process.cwd(), "fixture");
 // sample-project contains two dummy files
 const kTarGzFixture = path.join(kTemporaryDirFixture, "project.tgz");
+const kZipFixture = path.join(kTemporaryDirFixture, "project.zip");
 
-function makeInMemoryFetcher({ id, tarballUrl }: PackageInformation): Fetcher {
+function makeInMemoryFetcher(
+  { id, tarballUrl }: PackageInformation,
+  format: "zip" | "tar"
+): Fetcher {
   const fetcher: Fetcher = {
     fetchPackageInformation: () =>
       Effect.succeed({
@@ -22,20 +26,37 @@ function makeInMemoryFetcher({ id, tarballUrl }: PackageInformation): Fetcher {
       }),
     downloadTarball: () =>
       Effect.sync(() =>
-        Option.some(
-          new ReadableStream({
+        Option.some({
+          stream: new ReadableStream({
             start: async (controller) => {
-              for await (const chunk of fs.createReadStream(kTarGzFixture)) {
+              for await (const chunk of fs.createReadStream(
+                format === "zip" ? kZipFixture : kTarGzFixture
+              )) {
                 controller.enqueue(chunk);
               }
               controller.close();
             }
-          })
-        )
+          }),
+          format
+        })
       )
   };
 
   return fetcher;
+}
+
+function makeInMemoryTarFetcher({
+  id,
+  tarballUrl
+}: PackageInformation): Fetcher {
+  return makeInMemoryFetcher({ id, tarballUrl }, "tar");
+}
+
+function makeInMemoryZipFetcher({
+  id,
+  tarballUrl
+}: PackageInformation): Fetcher {
+  return makeInMemoryFetcher({ id, tarballUrl }, "zip");
 }
 
 function makeTarballManager(fetcher: Fetcher): TarballManager {
@@ -44,16 +65,18 @@ function makeTarballManager(fetcher: Fetcher): TarballManager {
 
 describe("Remote Tarball Fetcher", () => {
   afterEach(() => {
-    fs.rmdirSync(path.join(kTemporaryDirFixture, "skott_store"), {
-      recursive: true
-    });
+    try {
+      fs.rmdirSync(path.join(kTemporaryDirFixture, "skott_store"), {
+        recursive: true
+      });
+    } catch {}
   });
 
   describe("When fetching a package for the first time", () => {
     describe("When no identifier is specified", () => {
-      it("should download the latest version of the tarball and reference it in the store", async () => {
+      it("should download the latest version of the tgz tarball and reference it in the store", async () => {
         const manager = makeTarballManager(
-          makeInMemoryFetcher({
+          makeInMemoryTarFetcher({
             id: "2.0.0",
             tarballUrl: "https://location-of-the-thing-skott-2.0.0.tgz"
           })
@@ -81,13 +104,49 @@ describe("Remote Tarball Fetcher", () => {
           "folder"
         ]);
       });
+
+      it("should download the latest version of the zip tarball and reference it in the store", async () => {
+        const manager = makeTarballManager(
+          makeInMemoryZipFetcher({
+            id: "2.0.0",
+            tarballUrl: "https://location-of-the-thing-skott-2.0.0.zip"
+          })
+        );
+        const libraryNameWithScope = "@skott/zip";
+        const libraryNameWithLatestVersion = `${libraryNameWithScope}@2.0.0`;
+        const expectedLocation = path.join(
+          kTemporaryDirFixture,
+          `skott_store`,
+          libraryNameWithLatestVersion
+        );
+
+        const location = await Effect.runPromise(
+          manager
+            .downloadAndStore(libraryNameWithScope, kTemporaryDirFixture)
+            .pipe(Effect.map(Option.getOrThrow))
+        );
+
+        expect(location).to.equal(expectedLocation);
+        expect([...manager.store.entries()]).to.deep.equal([
+          [libraryNameWithLatestVersion, expectedLocation]
+        ]);
+
+        expect(
+          fs.readdirSync(expectedLocation, { recursive: true })
+        ).to.deep.equal([
+          "project",
+          "project/file1.js",
+          "project/folder",
+          "project/folder/file2.js"
+        ]);
+      });
     });
 
     describe("When a semver as identifier is specified", () => {
       describe("When the semver is valid", () => {
         it("should download the provided version of the tarball and reference it in the store", async () => {
           const manager = makeTarballManager(
-            makeInMemoryFetcher({
+            makeInMemoryTarFetcher({
               id: "3.0.0",
               tarballUrl: "https://location-of-the-thing-skott-2.4.1.tgz"
             })
@@ -129,7 +188,7 @@ describe("Remote Tarball Fetcher", () => {
     describe("When a unique identifier is specified", () => {
       it("should download the provided version of the tarball and reference it in the store", async () => {
         const manager = makeTarballManager(
-          makeInMemoryFetcher({
+          makeInMemoryTarFetcher({
             id: "3aiqDSFU3092",
             tarballUrl: "https://location-of-the-thing-skott-2.4.1.tgz"
           })
@@ -174,7 +233,7 @@ describe("Remote Tarball Fetcher", () => {
         };
 
         const manager = makeTarballManager(
-          makeInMemoryFetcher(packageInformation)
+          makeInMemoryTarFetcher(packageInformation)
         );
         const libraryName = "digraph-js";
         const packageNameWithIdentifier = `${libraryName}@0.4.1`;
@@ -230,7 +289,7 @@ describe("Remote Tarball Fetcher", () => {
         };
 
         const manager = makeTarballManager(
-          makeInMemoryFetcher(packageInformation)
+          makeInMemoryTarFetcher(packageInformation)
         );
         const libraryName = "openforker";
         const libraryNameWithSpecifiedVersion = `${libraryName}@8.1.0`;

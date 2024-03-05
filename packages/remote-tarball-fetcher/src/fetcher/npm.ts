@@ -2,7 +2,7 @@ import * as S from "@effect/schema/Schema";
 import { Effect, Option, flow, pipe } from "effect";
 import semver from "semver";
 
-import { FetchPackageInformationError, type Fetcher } from "./common.js";
+import { FetchPackageInformationError, type Fetcher } from "./definition.js";
 
 const kNpmRegistryApiUrl = "https://registry.npmjs.org";
 
@@ -110,5 +110,11 @@ export const npmFetcher: Fetcher<NpmRepositoryInformation> = {
   downloadTarball: (tarballUrl) =>
     Effect.promise(() =>
       fetch(tarballUrl).then((response) => Option.fromNullable(response.body))
+    ).pipe(
+      Effect.map(
+        Option.map((body) => {
+          return { stream: body, format: "tar" };
+        })
+      )
     )
 };

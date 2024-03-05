@@ -1,14 +1,14 @@
-import { Effect, pipe } from "effect";
-import { npmFetcher, TarballManager } from "remote-tarball-fetcher";
+import { Effect, Option, pipe } from "effect";
+import { githubFetcher, TarballManager } from "remote-tarball-fetcher";
 import { bench, describe } from "vitest";
 
 import skott from "../../index.js";
 
-const fetcher = new TarballManager(npmFetcher);
+const fetcher = new TarballManager(githubFetcher);
 
 const listOfPackages = {
-  js: ["webpack", "knex"],
-  ts: ["effect", "typescript"]
+  js: ["knex/knex", "parcel-bundler/parcel"],
+  ts: ["Effect-TS/effect", "gcanti/fp-ts"]
 };
 
 const localPackages = await pipe(
@@ -16,9 +16,7 @@ const localPackages = await pipe(
   Effect.forEach(
     (name) =>
       pipe(
-        Effect.promise(() => fetcher.downloadAndStore(name)),
-        Effect.flatMap(Effect.fromNullable),
-        Effect.orDie,
+        fetcher.downloadAndStore(name).pipe(Effect.map(Option.getOrThrow)),
         Effect.tap((location) => Effect.log(`[${name}]: ${location}`)),
         Effect.zip(Effect.succeed(name)),
         Effect.map(([location, name]) => {
@@ -35,10 +33,15 @@ const localPackages = await pipe(
 
 describe("skott benchmark", () => {
   for (const { location, name } of localPackages) {
-    bench(name, async () => {
-      await skott({
-        cwd: location
-      });
-    });
+    bench(
+      name,
+      async () => {
+        await skott({
+          cwd: location,
+          ignorePattern: "test/**/*.{ts,js}"
+        });
+      },
+      { iterations: 5 }
+    );
   }
 });
