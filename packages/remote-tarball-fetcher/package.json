@@ -22,11 +22,9 @@
   },
   "dependencies": {
     "@effect/schema": "0.63.2",
-    "adm-zip": "^0.5.10",
     "effect": "2.4.1",
     "semver": "^7.5.3",
     "tar": "^6.1.15",
-    "tar-stream": "^3.1.7",
     "unzipper": "^0.10.14"
   },
   "devDependencies": {

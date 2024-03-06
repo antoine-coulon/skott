@@ -2,6 +2,7 @@ import * as S from "@effect/schema/Schema";
 import { Effect, Option, flow, pipe } from "effect";
 
 import { FetchPackageInformationError, type Fetcher } from "./definition.js";
+
 interface GitHubRepositoryInformation {
   defaultBranch: string;
 }

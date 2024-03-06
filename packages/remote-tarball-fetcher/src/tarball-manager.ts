@@ -3,6 +3,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
+import type { ReadableStream } from "node:stream/web";
 
 import { Effect, Option, pipe } from "effect";
 import semver from "semver";
@@ -12,6 +13,16 @@ import unzipper from "unzipper";
 import type { Fetcher } from "./fetcher/index.js";
 
 const kSkottStore = "skott_store";
+
+function webToNodeStream(readableStream: ReadableStream): Readable {
+  async function* pull() {
+    for await (const chunk of readableStream) {
+      yield chunk;
+    }
+  }
+
+  return Readable.from(pull());
+}
 
 export class TarballManager<I = Record<string, string>> {
   private readonly _store = new Map();
@@ -89,21 +100,13 @@ export class TarballManager<I = Record<string, string>> {
             );
           } else {
             yield* _(
-              Effect.promise(() => {
-                const rdb = Readable.from(
-                  (async function* gen_() {
-                    for await (const chunk of stream) {
-                      yield chunk;
-                    }
-                  })()
-                );
-
-                return rdb
+              Effect.promise(() =>
+                webToNodeStream(stream)
                   .pipe(
                     unzipper.Extract({ path: pathToTarball, forceStream: true })
                   )
-                  .promise();
-              })
+                  .promise()
+              )
             );
           }
 
@@ -113,7 +116,9 @@ export class TarballManager<I = Record<string, string>> {
         })
       ),
       Effect.map(Option.fromNullable),
-      Effect.catchAllCause(() => Effect.succeed(Option.none()))
+      Effect.catchAllCause((cause) =>
+        pipe(Effect.logError(cause), Effect.map(Option.none))
+      )
     );
   }
 }
