@@ -1,12 +1,15 @@
 import child_process from "node:child_process";
+import fs from "node:fs";
 import path from "node:path";
 import { promisify } from "node:util";
 
 import { Either } from "effect";
 
-export const skottBinaryPath = path.join(
+const tempDistFolderName = "test_dist";
+
+export const skottTestBinaryPath = path.join(
   process.cwd(),
-  "dist",
+  tempDistFolderName,
   "bin",
   "cli.js"
 );
@@ -34,7 +37,7 @@ export function runOneShotSkottCli(
     let stdout = "";
     let stderr = "";
 
-    const childProcess = child_process.fork(skottBinaryPath, args, {
+    const childProcess = child_process.fork(skottTestBinaryPath, args, {
       signal,
       stdio: "pipe"
     });
@@ -65,14 +68,23 @@ export function runKeepAliveSkottCli(
   args: string[],
   signal: AbortSignal
 ): child_process.ChildProcess {
-  return child_process.fork(skottBinaryPath, args, {
+  return child_process.fork(skottTestBinaryPath, args, {
     signal,
     stdio: "pipe"
   });
 }
 
 export function transpileCliExecutable() {
-  const execP = promisify(child_process.exec);
+  const exec = promisify(child_process.exec);
 
-  return execP("npm run build", { cwd: process.cwd() }).catch(console.error);
+  return exec(`npm run build:test`, { cwd: process.cwd() }).catch(
+    console.error
+  );
+}
+
+export function deleteTranspiledFiles() {
+  fs.rmSync(path.join(process.cwd(), tempDistFolderName), {
+    recursive: true,
+    force: true
+  });
 }

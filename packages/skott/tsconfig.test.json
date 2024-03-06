@@ -1,0 +1,8 @@
+{
+  "extends": "@skottorg/config/tsconfig.build.json",
+  "compilerOptions": {
+    "outDir": "test_dist"
+  },
+  "include": ["src/**/*.ts", "bin/**/*.ts", "index.ts"],
+  "exclude": ["src/**/*.spec.ts"]
+}

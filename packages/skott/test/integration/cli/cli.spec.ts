@@ -2,9 +2,10 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { Either } from "effect";
-import { expect, test, describe, beforeAll } from "vitest";
+import { expect, test, describe, beforeAll, afterAll } from "vitest";
 
 import {
+  deleteTranspiledFiles,
   fixturesPath,
   runKeepAliveSkottCli,
   runOneShotSkottCli,
@@ -22,15 +23,10 @@ const increaseTimeoutFactor = process.env.CI ? 3 : 1;
 
 describe("When running skott cli", () => {
   beforeAll(async () => {
-    /**
-     * In the context of a CI, the build will occur before the test suite is run.
-     * Consequently we don't need to ensure the `skott` cli entrypoint is transpiled.
-     * already.
-     */
-    if (!process.env.CI) {
-      await transpileCliExecutable();
-    }
+    await transpileCliExecutable();
   });
+
+  afterAll(deleteTranspiledFiles);
 
   test("Should display help", async () => {
     const result = await runOneShotSkottCli(

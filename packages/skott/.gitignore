@@ -1,4 +1,5 @@
 dist
+test_dist
 fixtures
 *.txt
 build-local.sh

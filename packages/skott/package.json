@@ -28,6 +28,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "rimraf ./dist && tsc --project tsconfig.build.json",
+    "build:test": "rimraf ./test_dist && tsc --project tsconfig.test.json",
     "lint": "eslint .",
     "lint:fix": "pnpm run lint --fix",
     "prepublishOnly": "pnpm run test && pnpm run build",
