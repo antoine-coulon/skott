@@ -58,5 +58,6 @@ jobs:
 
       - name: Run benchmarks
         run: pnpm -r benchmark
+        if: runner.os == 'ubuntu-latest'
         env: 
           CI: true
