@@ -611,11 +611,11 @@ export class Skott<T> {
        */
       node.adjacentTo.forEach((adjacentNodeId) => {
         const group = this.getValidGroup(node.id);
-        const adjacentGroup = this.getValidGroup(adjacentNode);
+        const adjacentGroup = this.getValidGroup(adjacentNodeId);
 
         if (group && adjacentGroup && group !== adjacentGroup) {
           /** Ensure that "to" target exsists */
-          this.addNodeToGroupedGraph(projectStructure[adjacentNode]);
+          this.addNodeToGroupedGraph(projectStructure[adjacentNodeId]);
 
           this.#groupedGraph!.addEdge({
             from: group,
