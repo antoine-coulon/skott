@@ -31,7 +31,7 @@ const localPackages = await pipe(
   Effect.runPromise
 );
 
-describe("skott benchmark", () => {
+describe("skott_benchmark", () => {
   for (const { location, name } of localPackages) {
     bench(
       name,
