@@ -55,3 +55,8 @@ jobs:
         run: pnpm -r test:integration  
         env:
           CI: true
+
+      - name: Run benchmarks
+        run: pnpm -r benchmark
+        env: 
+          CI: true

@@ -30,7 +30,7 @@ export const githubFetcher: Fetcher<GitHubRepositoryInformation> = {
 
           return fetch(`https://api.github.com/repos/${repositoryName}`, {
             headers
-          }).then((response) => response.json());
+          } as any).then((response) => response.json());
         },
         catch: () => new FetchPackageInformationError()
       }),
