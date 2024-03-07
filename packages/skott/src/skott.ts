@@ -60,10 +60,48 @@ export interface SkottConfig<T> {
   incremental: boolean;
   manifestPath: string;
   tsConfigPath: string;
+  /**
+   *
+   * If this function is provided, Skott will build a separate graph of links between entire groups of modules.
+   * This is useful if you would rather see links between large architectural blocks than between specific modules within those blocks.
+   *
+   * @param path - The path of the module, e.g. `rootDir/src/feature-a/index.js`
+   * @returns - The group name, e.g. `Feature A` OR `undefined` if the module should not be included in any group.
+   *
+   * @example
+   * ```
+   * const instance = await skott({
+   *  groupBy: (path) => {
+   *
+   *   if (path.includes("core")) return "core";
+   *   if (path.includes("feature-a")) return "feature-a";
+   *
+   *   // ... other conditions
+   *
+   *   // if no match
+   *   return undefined;
+   *  }
+   * })
+   *
+   * const {groupedGraph} = instance.getStructure();
+   *
+   * groupedGraph["core"]
+   * // { id: "core", adjacentTo, body: { size, files, ... } }
+   *
+   * groupedGraph["feature-a"]
+   * // { id: "feature-a", adjacentTo, body: { size, files, ... } }
+   *
+   * ```
+   */
+  groupBy?: (path: string) => string | undefined;
 }
 
 export interface SkottStructure<T = unknown> {
   graph: Record<string, SkottNode<T>>;
+  /**
+   * If `groupBy` is provided in the configuration, this will be available as a graph of links between groups of modules.
+   */
+  groupedGraph?: Record<string, SkottNode<{ files: string[] }>>;
   files: string[];
 }
 
@@ -86,7 +124,7 @@ export interface SkottInstance<T = unknown> {
   ) => Promise<UnusedDependencies>;
 }
 
-export const defaultConfig = {
+export const defaultConfig: SkottConfig<unknown> = {
   entrypoint: "",
   circularMaxDepth: Number.POSITIVE_INFINITY,
   dependencyResolvers: [new EcmaScriptDependencyResolver()],
@@ -99,7 +137,8 @@ export const defaultConfig = {
   includeBaseDir: false,
   incremental: false,
   manifestPath: "package.json",
-  tsConfigPath: "tsconfig.json"
+  tsConfigPath: "tsconfig.json",
+  groupBy: undefined
 };
 
 export interface WorkspaceConfiguration {
@@ -111,6 +150,10 @@ export interface WorkspaceConfiguration {
 export class Skott<T> {
   #cacheHandler: SkottCacheHandler<T>;
   #projectGraph = new DiGraph<SkottNode<T>>();
+  /**
+   * Lazily initilized, when getStructure is called
+   */
+  #groupedGraph?: DiGraph<SkottNode<{ files: string[] }>>;
   #visitedNodes = new Set<string>();
   #baseDir = ".";
   #workspaceConfiguration: WorkspaceConfiguration = {
@@ -485,12 +528,119 @@ export class Skott<T> {
     };
   }
 
+  private getValidGroup(nodePath: string) {
+    const result = this.config.groupBy!(nodePath);
+
+    if (typeof result === "string" || !result) {
+      return result;
+    }
+
+    throw new Error(
+      `groupBy function must return a string or undefined, but returned "${result}" (for "${nodePath}")`
+    );
+  }
+
+  private addNodeToGroupedGraph(node: SkottNode<T>) {
+    const group = this.getValidGroup(node.id);
+
+    if (group) {
+      if (this.#groupedGraph!.hasVertex(group)) {
+        /**
+         * Group vertex already exists, we need to add up:
+         * - the file to the group
+         * - the size of the new node
+         * - built-in and third-party dependencies
+         */
+        this.#groupedGraph!.mergeVertexBody(group, (groupBody) => {
+          if (groupBody.files.includes(node.id)) return;
+
+          groupBody.files.push(node.id);
+
+          groupBody.size += node.body.size;
+
+          node.body.thirdPartyDependencies.forEach((dep) => {
+            if (!groupBody.thirdPartyDependencies.includes(dep)) {
+              groupBody.thirdPartyDependencies.push(dep);
+            }
+          });
+
+          node.body.builtinDependencies.forEach((dep) => {
+            if (!groupBody.builtinDependencies.includes(dep)) {
+              groupBody.builtinDependencies.push(dep);
+            }
+          });
+        });
+      } else {
+        /**
+         * Group vertex does not exist yet, we need to create it
+         *
+         * Initial size is the size of the first node, as for all kinds of dependencies
+         */
+        this.#groupedGraph!.addVertex({
+          id: group,
+          adjacentTo: [],
+          body: {
+            size: node.body.size,
+            files: [node.id],
+            thirdPartyDependencies: [...node.body.thirdPartyDependencies],
+            builtinDependencies: [...node.body.builtinDependencies]
+          }
+        });
+      }
+    }
+  }
+
+  private buildGroupedGraph(
+    projectStructure: Record<string, SkottNode<T>>
+  ): DiGraph<SkottNode<{ files: string[] }>> {
+    this.#groupedGraph = new DiGraph<SkottNode<{ files: string[] }>>();
+
+    for (const node of Object.values(projectStructure)) {
+      this.addNodeToGroupedGraph(node);
+
+      /**
+       * Update edges
+       */
+      node.adjacentTo.forEach((adjacentNodeId) => {
+        const group = this.getValidGroup(node.id);
+        const adjacentGroup = this.getValidGroup(adjacentNodeId);
+
+        if (group && adjacentGroup) {
+          /** Ensure that "to" target exsists */
+          this.addNodeToGroupedGraph(projectStructure[adjacentNodeId]);
+
+          this.#groupedGraph!.addEdge({
+            from: group,
+            to: adjacentGroup
+          });
+        }
+      });
+    }
+
+    return this.#groupedGraph;
+  }
+
   private makeProjectStructure(): SkottStructure<T> {
     const projectStructure = this.#projectGraph.toDict();
+    const files = Object.keys(projectStructure);
+
+    if (this.config.groupBy) {
+      /**
+       * Grouping is enabled and project structure is requested,
+       * so groupedGraph must be built.
+       */
+      this.buildGroupedGraph(projectStructure);
+
+      return {
+        graph: projectStructure,
+        groupedGraph: this.#groupedGraph!.toDict(),
+        files
+      };
+    }
 
     return {
       graph: projectStructure,
-      files: Object.keys(projectStructure)
+      files
     };
   }
 

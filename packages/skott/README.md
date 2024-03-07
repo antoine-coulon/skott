@@ -101,7 +101,20 @@ const { getStructure, getWorkspace, useGraph, findUnusedDependencies } = await s
    * (Optional) Enable verbose internal logging.
    * Defaults to `false`
    */
-  verbose: true
+  verbose: true,
+  /**
+   *
+   * (Optional) If this function is provided, Skott will build a separate graph of links
+   * between entire groups of modules, which can be later accessed as `groupedGraph` in the
+   * result of `getStructure` call.
+   *
+   */
+  groupBy: (path) => {
+    if (path.includes("core")) return "core";
+    if (path.includes("feature-a")) return "feature-a";
+
+    return undefined;
+  };
 });
 ```
 
@@ -390,6 +403,35 @@ console.log(graph["lib.js"].body);
   thirdPartyDependencies: ["meriyah"], 
   builtinDependencies: ["node:fs"] 
 }
+```
+
+### Explore your architecture
+
+Skott allows you to explore the relationships between parts of your architecture, not just between specific modules.
+
+To do that you need to tell Skott, how exactly modules in your project are combined into a architecture blocks - use `groupBy` API for that:
+
+
+```typescript
+const instance = await skott({
+  groupBy: (path) => {
+    if (path.includes("src/core")) return "core";
+    if (path.includes("src/feature-a")) return "feature-a";
+
+    // ... other conditions
+
+    // if no match
+    return undefined;
+  }
+});
+
+const { groupedGraph } = instance.getStructure();
+
+groupedGraph["core"];
+// { id: "core", adjacentTo: [], body: { size, files, ... } }
+
+groupedGraph["feature-a"];
+// { id: "feature-a", adjacentTo: ["core", ...], body: { size, files, ... } }
 ```
 
 ### Explore workspace content

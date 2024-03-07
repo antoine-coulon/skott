@@ -14,6 +14,20 @@ function withDefaultValue<T>(defaultValue: T) {
   };
 }
 
+const decodeGroupBy: D.Decoder<unknown, (input: string) => string | undefined> =
+  {
+    // Typecast is ok here as we can't really runtime-check (before any calls) that the provided function
+    // will always return a valid value anyawy
+    // Separate runtime checks will be done during the actual usage of the function for each call
+    decode: (input) =>
+      typeof input === "function"
+        ? D.success(input as (input: string) => string | undefined)
+        : D.failure(
+            input,
+            "`groupBy` must be a function or not provided at all"
+          )
+  };
+
 const config = D.struct({
   entrypoint: withDefaultValue(defaultConfig.entrypoint)(D.string),
   includeBaseDir: withDefaultValue(defaultConfig.includeBaseDir)(D.boolean),
@@ -34,6 +48,7 @@ const config = D.struct({
   dependencyResolvers: withDefaultValue(defaultConfig.dependencyResolvers)(
     D.array(dependencyResolverDecoder())
   ),
+  groupBy: withDefaultValue(defaultConfig.groupBy)(decodeGroupBy),
   /**
    * External runner only config
    */
