@@ -12,7 +12,7 @@ import {
 import { FileReader } from "./filesystem/file-reader.js";
 import type { FileWriter } from "./filesystem/file-writer.js";
 import { toUnixPathLike } from "./filesystem/path.js";
-import type { SkottNode, SkottNodeBody } from "./graph/node.js";
+import type { SkottNode } from "./graph/node.js";
 import { type TraversalApi, makeTraversalApi } from "./graph/traversal.js";
 import {
   highlight,
@@ -544,14 +544,6 @@ export class Skott<T> {
     const group = this.getValidGroup(node.id);
 
     if (group) {
-      /**
-       * Typecast is ok here:
-       * current typings are expecting SkottNodeBody + other arbitary values if available, but currently TS is not happy with it.
-       *
-       * The SkottNode type should be described in some other way to properly support that, but SkottNodeBody is avaiable at the runtime anyway.
-       */
-      const nodeBody = node.body as SkottNodeBody;
-
       if (this.#groupedGraph!.hasVertex(group)) {
         /**
          * Group vertex already exists, we need to add up:
@@ -564,15 +556,15 @@ export class Skott<T> {
 
           groupBody.files.push(node.id);
 
-          groupBody.size += nodeBody.size;
+          groupBody.size += node.body.size;
 
-          nodeBody.thirdPartyDependencies.forEach((dep) => {
+          node.body.thirdPartyDependencies.forEach((dep) => {
             if (!groupBody.thirdPartyDependencies.includes(dep)) {
               groupBody.thirdPartyDependencies.push(dep);
             }
           });
 
-          nodeBody.builtinDependencies.forEach((dep) => {
+          node.body.builtinDependencies.forEach((dep) => {
             if (!groupBody.builtinDependencies.includes(dep)) {
               groupBody.builtinDependencies.push(dep);
             }
@@ -588,10 +580,10 @@ export class Skott<T> {
           id: group,
           adjacentTo: [],
           body: {
-            size: nodeBody.size,
+            size: node.body.size,
             files: [node.id],
-            thirdPartyDependencies: [...nodeBody.thirdPartyDependencies],
-            builtinDependencies: [...nodeBody.builtinDependencies]
+            thirdPartyDependencies: [...node.body.thirdPartyDependencies],
+            builtinDependencies: [...node.body.builtinDependencies]
           }
         });
       }
