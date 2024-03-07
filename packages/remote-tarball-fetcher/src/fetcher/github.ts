@@ -21,10 +21,17 @@ export const githubFetcher: Fetcher<GitHubRepositoryInformation> = {
   fetchPackageInformation: (repositoryName) =>
     pipe(
       Effect.tryPromise({
-        try: () =>
-          fetch(`https://api.github.com/repos/${repositoryName}`).then(
-            (response) => response.json()
-          ),
+        try: () => {
+          const headers = process.env.GITHUB_TOKEN
+            ? {
+                Authorization: `Bearer ${process.env.GITHUB_TOKEN}`
+              }
+            : {};
+
+          return fetch(`https://api.github.com/repos/${repositoryName}`, {
+            headers
+          }).then((response) => response.json());
+        },
         catch: () => new FetchPackageInformationError()
       }),
       Effect.flatMap(flow(S.decodeUnknown(GitHubSchema), Effect.orDie)),
