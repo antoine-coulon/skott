@@ -529,13 +529,7 @@ export class Skott<T> {
   }
 
   private getValidGroup(nodePath: string) {
-    if (!this.config.groupBy) {
-      throw new Error(
-        "Grouped graph can't be built without a groupBy function in the configuration"
-      );
-    }
-
-    const result = this.config.groupBy(nodePath);
+    const result = this.config.groupBy!(nodePath);
 
     if (typeof result === "string" || !result) {
       return result;
