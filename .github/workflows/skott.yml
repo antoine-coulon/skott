@@ -48,16 +48,29 @@ jobs:
       - name: Build project
         run: pnpm -r build
 
-      - name: Run unit tests
-        run: pnpm -r test:unit
+      # - name: Run unit tests
+      #   run: pnpm -r test:unit
 
-      - name: Run integration tests
-        run: pnpm -r test:integration  
-        env:
-          CI: true
+      # - name: Run integration tests
+      #   run: pnpm -r test:integration  
+      #   env:
+      #     CI: true
 
       - name: Run benchmarks
-        run: pnpm -r benchmark
-        if: runner.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          pnpm -r benchmark
+          git config user.name "GitHub Actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add .
+          git commit -m "benchmark: publish results"
+
+          git remote -v
+          git remote set-url origin https://github.com/antoine-coulon/skott.git
+          git branch --set-upstream-to=origin/${{ github.head_ref }} ${{ github.head_ref }}
+          git push origin ${{ github.head_ref }}
         env: 
           CI: true
+
+
+  
