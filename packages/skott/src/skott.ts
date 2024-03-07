@@ -605,7 +605,7 @@ export class Skott<T> {
         const group = this.getValidGroup(node.id);
         const adjacentGroup = this.getValidGroup(adjacentNodeId);
 
-        if (group && adjacentGroup && group !== adjacentGroup) {
+        if (group && adjacentGroup) {
           /** Ensure that "to" target exsists */
           this.addNodeToGroupedGraph(projectStructure[adjacentNodeId]);
 
