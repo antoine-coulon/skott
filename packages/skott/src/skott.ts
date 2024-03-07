@@ -615,7 +615,7 @@ export class Skott<T> {
       /**
        * Update edges
        */
-      node.adjacentTo.forEach((adjacentNode) => {
+      node.adjacentTo.forEach((adjacentNodeId) => {
         const group = this.getValidGroup(node.id);
         const adjacentGroup = this.getValidGroup(adjacentNode);
 
