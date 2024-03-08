@@ -4,14 +4,7 @@
 
 ### Minor Changes
 
-- [#146](https://github.com/antoine-coulon/skott/pull/146) [`5ae16c9`](https://github.com/antoine-coulon/skott/commit/5ae16c96a239e353e78c465aca0c54ed4406d3db) Thanks [@AlexandrHoroshih](https://github.com/AlexandrHoroshih)! - Optional `groupBy` configuration is added - it is a function of `(path: string) => string | undefined` type.
-
-  If `groupBy` is provided, then `groupedGraph` will be emitted on `getStructure` call.
-
-### Patch Changes
-
-- Updated dependencies []:
-  - skott-webapp@2.1.1
+- [#146](https://github.com/antoine-coulon/skott/pull/146) [`5ae16c9`](https://github.com/antoine-coulon/skott/commit/5ae16c96a239e353e78c465aca0c54ed4406d3db) Thanks [@AlexandrHoroshih](https://github.com/AlexandrHoroshih)! - Adds `groupBy` API configuration option. This function allows all nodes from the graph to be grouped into a set of custom groups. If `groupBy` is provided, then `groupedGraph` will be emitted on `getStructure` call.
 
 ## 0.32.1
 
