@@ -21,21 +21,23 @@
 
 ✅ Deeply detects **circular dependencies** in an efficient way, with the ability to provide a max depth for the search
 
+✅ Many **builtin visualization modes** including a web application or terminal-based outputs such as file-tree or graph views.
+
 ✅ Builtin **watch mode** updating the graph when file changes are detected. It works with all display modes (webapp and all CLIs visualization modes). Support all options of file ignoring/filtering from skott.
 
 ✅ File tree traversal supports **ignore pattern** and **Git ignored files** (via `.gitignore` files)
 
-✅ Runs **incrementally** (experimental), meaning that Skott will _only analyze_ files that were modified/added since the last run, offering performance boosts.
+✅ Runs **incrementally** (experimental), meaning that skott will _only analyze_ files that were modified/added since the last run, offering performance boosts.
 
-✅ Works with any custom **dependency resolver** (useful for specific monorepos integration)
+✅ Works with any custom **dependency resolver** (useful for specific monorepos integration where module identifiers need to be mapped to a specific workspace package) 
 
 ✅ Detect **unused npm third-party dependencies**. Note that all unused `devDependencies` are not guaranteed to be detected as `depcheck` [only provides analysis for set of supported libraries](https://github.com/depcheck/depcheck) (eslint, karma, mocha, etc).
 
-✅ Deeply **collect all dependencies of the project graph**
+✅ Deeply **collect all dependencies of the project graph**, including third-party and builtin.
 
-✅ Deep **parent and child dependencies traversals**
+✅ Deep **parent and child dependencies traversals** using DFS and BFS algorithms.
 
-✅ Metadata collection for each traversed node (file size, view dependencies towards Node.js builtin modules and npm third-party libraries)
+✅ Metadata collection per traversed node (file size, dependencies)
 
 ✅ Generate static files including raw JSON, [mermaid-js](https://github.com/mermaid-js/mermaid) diagrams (.svg, .png, .md) representing your project's graph directly generated from the CLI.
 
@@ -120,13 +122,13 @@ const api = await skott({
 
 ## Why you should use skott or an equivalent project
 
-The whole purpose of Skott is to build a graph from your project source code and offer many features relying on that generated graph.
+The whole purpose of skott is to build a graph from your project source code and offer many features relying on that generated graph.
 
 Overall, a generated project graph in software engineering acts as a **powerful tool that enhances code comprehension, project management, code maintenance and refactoring, and collaboration**. It provides a holistic view of the project's structure, dependencies, and relationships, enabling developers to make informed decisions and streamline their development process.
 
-Moreover, Skott aims to provide a comprehensive visual representation of the project's structure, dependencies, and relationships between different components. This visual overview **allows developers to better understand the overall architecture and organization of the codebase, making it easier to navigate and identify potential areas of improvement or optimization**. 
+Moreover, skott aims to provide a comprehensive visual representation of the project's structure, dependencies, and relationships between different components. This visual overview **allows developers to better understand the overall architecture and organization of the codebase, making it easier to navigate and identify potential areas of improvement or optimization**. 
 
-In the essence the main goal of Skott is to **help developers understand the codebase's structure and to enable more effective refactoring, reducing code duplication, getting rid of circular dependencies and improving overall code quality**.
+In the essence the main goal of skott is to **help developers understand the codebase's structure and to enable more effective refactoring, reducing code duplication, getting rid of circular dependencies and improving overall code quality**.
 
 ## Why you should care about circular dependencies and dead code
 
@@ -180,7 +182,6 @@ a specific TS parser will be used instead.
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/daniel-relay"><img src="https://avatars.githubusercontent.com/u/88200787?v=4?s=100" width="100px;" alt="Daniel Sadilek"/><br /><sub><b>Daniel Sadilek</b></sub></a><br /><a href="https://github.com/antoine-coulon/skott/commits?author=daniel-relay" title="Code">💻</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://dev.to/antoinecoulon"><img src="https://avatars.githubusercontent.com/u/43391199?v=4?s=100" width="100px;" alt="Antoine Coulon"/><br /><sub><b>Antoine Coulon</b></sub></a><br /><a href="https://github.com/antoine-coulon/skott/commits?author=antoine-coulon" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/tarrsalah"><img src="https://avatars.githubusercontent.com/u/909959?v=4?s=100" width="100px;" alt="Salah Eddine Taouririt"/><br /><sub><b>Salah Eddine Taouririt</b></sub></a><br /><a href="https://github.com/antoine-coulon/skott/commits?author=tarrsalah" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/ACHP"><img src="https://avatars.githubusercontent.com/u/9294168?v=4?s=100" width="100px;" alt="Alexis CHAPPRON"/><br /><sub><b>Alexis CHAPPRON</b></sub></a><br /><a href="https://github.com/antoine-coulon/skott/commits?author=ACHP" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/robertoyoc"><img src="https://avatars.githubusercontent.com/u/16704638?v=4?s=100" width="100px;" alt="Roberto Yoc"/><br /><sub><b>Roberto Yoc</b></sub></a><br /><a href="https://github.com/antoine-coulon/skott/commits?author=robertoyoc" title="Code">💻</a></td>
