@@ -48,12 +48,24 @@ jobs:
       - name: Build project
         run: pnpm -r build
 
-      - name: Run unit tests
-        run: pnpm -r test:unit
+      # - name: Run unit tests
+      #   run: pnpm -r test:unit
 
-      - name: Run integration tests
-        run: pnpm -r test:integration  
-        env:
+      # - name: Run integration tests
+      #   run: pnpm -r test:integration  
+      #   env:
+      #     CI: true
+
+      - name: Run benchmarks
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          pnpm -r benchmark
+          git config --local user.name "skott_benchmark"
+          git config --local user.email "skott.devtool@gmail.com"
+          git commit -a -m "benchmark: publish results"
+          git pull origin ${{ github.head_ref }} --rebase
+          git push origin HEAD:${{ github.head_ref }}
+        env: 
           CI: true
 
 

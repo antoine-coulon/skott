@@ -6,13 +6,13 @@ import skott from "../../index.js";
 
 const fetcher = new TarballManager(githubFetcher);
 
-const listOfPackages = {
+const packagesByLang = {
   js: ["knex/knex", "parcel-bundler/parcel"],
   ts: ["Effect-TS/effect", "gcanti/fp-ts"]
 };
 
-const localPackages = await pipe(
-  Object.values(listOfPackages).flat(),
+const packageStore = await pipe(
+  Object.values(packagesByLang).flat(),
   Effect.forEach(
     (name) =>
       pipe(
@@ -32,7 +32,7 @@ const localPackages = await pipe(
 );
 
 describe("skott_benchmark", () => {
-  for (const { location, name } of localPackages) {
+  for (const { location, name } of packageStore) {
     bench(
       name,
       async () => {

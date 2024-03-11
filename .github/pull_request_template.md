@@ -37,7 +37,6 @@
 --------------------------------------------------------------------------->
 
 - [ ] Unit tests were added to cover the new feature or bug fix (+ eventually integration tests, but unit should be preferred whenever its possible).
-- [ ] Optional (related to core changes only): `benchmark` script in `skott` was run and the generated file was committed.
 
 ## Impacted documentation
 
