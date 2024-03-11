@@ -65,12 +65,12 @@ jobs:
           git add .
           git commit -m "benchmark: publish benchmark results from node_${{ matrix.node-version }}"
           git pull origin ${{ github.head_ref }} --rebase
-          git push origin HEAD:${{ github.head_ref }}
+          git push origin HEAD:${{ github.head_ref }} --force-with-lease
         env: 
           CI: true
           NODE_VERSION: ${{ matrix.node-version }}
           GITHUB_SHA: ${{ github.sha }}
-          GITHUB_REF: ${{ github.head_ref }}
+          GITHUB_REF: ${{ github.ref }}
 
 
   
