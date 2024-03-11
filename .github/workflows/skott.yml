@@ -62,6 +62,7 @@ jobs:
           pnpm -r benchmark
           git config --local user.name "skott_bot"
           git config --local user.email "skott.devtool@gmail.com"
+          git status
           git add .
           git commit -m "benchmark: publish benchmark results from node_${{ matrix.node-version }}"
           git pull origin ${{ github.head_ref }} --rebase
