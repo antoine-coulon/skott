@@ -60,24 +60,35 @@ function fromVitestBenchResultToSkottResult(benchmark) {
   };
 }
 
-const pathToResult = path.join(
+const pathToSourceResult = path.join(
   process.cwd(),
   "test",
   "benchmark",
-  "result.json"
+  `result.json`
 );
+
+const pathToDestinationResult = path.join(
+  process.cwd(),
+  "test",
+  "benchmark",
+  `result-node-${process.env.NODE_VERSION ?? "unknown"}.json`
+);
+
+function prettyWrite(content) {
+  return JSON.stringify(content, null, 2);
+}
 
 export function keepOnlyRelevantInformationFromResultFile(
   done
 ) {
-  fs.readFile(pathToResult, { encoding: "utf-8" }, (error, content) => {
+  fs.readFile(pathToSourceResult, { encoding: "utf-8" }, (error, content) => {
     if (error) {
       return done(new Error("An error happened while reading the result file"));
     }
 
     return fs.writeFile(
-      pathToResult,
-      JSON.stringify(fromVitestBenchResultToSkottResult(content)),
+      pathToDestinationResult,
+      prettyWrite(fromVitestBenchResultToSkottResult(content)),
       { encoding: "utf-8" },
       (error) => {
         if (error) {

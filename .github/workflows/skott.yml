@@ -60,13 +60,14 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           pnpm -r benchmark
-          git config --local user.name "skott_benchmark"
+          git config --local user.name "skott_bot"
           git config --local user.email "skott.devtool@gmail.com"
           git commit -a -m "benchmark: publish results"
           git pull origin ${{ github.head_ref }} --rebase
           git push origin HEAD:${{ github.head_ref }}
         env: 
           CI: true
+          NODE_VERSION: ${{ matrix.node-version }}
 
 
   
