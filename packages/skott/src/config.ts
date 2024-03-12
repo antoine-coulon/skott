@@ -28,34 +28,37 @@ const decodeGroupBy: D.Decoder<unknown, (input: string) => string | undefined> =
           )
   };
 
-const config = D.struct({
-  entrypoint: withDefaultValue(defaultConfig.entrypoint)(D.string),
-  includeBaseDir: withDefaultValue(defaultConfig.includeBaseDir)(D.boolean),
-  incremental: withDefaultValue(defaultConfig.incremental)(D.boolean),
-  circularMaxDepth: withDefaultValue(defaultConfig.circularMaxDepth)(D.number),
-  dependencyTracking: withDefaultValue(defaultConfig.dependencyTracking)(
-    D.struct({
-      thirdParty: D.boolean,
-      builtin: D.boolean,
-      typeOnly: D.boolean
-    })
-  ),
-  fileExtensions: withDefaultValue(defaultConfig.fileExtensions)(
-    D.array(D.literal(".js", ".ts", ".jsx", ".tsx", ".mjs", ".cjs"))
-  ),
-  tsConfigPath: withDefaultValue(defaultConfig.tsConfigPath)(D.string),
-  manifestPath: withDefaultValue(defaultConfig.manifestPath)(D.string),
-  dependencyResolvers: withDefaultValue(defaultConfig.dependencyResolvers)(
-    D.array(dependencyResolverDecoder())
-  ),
-  groupBy: withDefaultValue(defaultConfig.groupBy)(decodeGroupBy),
-  /**
-   * External runner only config
-   */
-  cwd: withDefaultValue(process.cwd())(D.string),
-  verbose: withDefaultValue(false)(D.boolean),
-  ignorePattern: withDefaultValue("")(D.string)
-});
+const getConfig = () =>
+  D.struct({
+    entrypoint: withDefaultValue(defaultConfig.entrypoint)(D.string),
+    includeBaseDir: withDefaultValue(defaultConfig.includeBaseDir)(D.boolean),
+    incremental: withDefaultValue(defaultConfig.incremental)(D.boolean),
+    circularMaxDepth: withDefaultValue(defaultConfig.circularMaxDepth)(
+      D.number
+    ),
+    dependencyTracking: withDefaultValue(defaultConfig.dependencyTracking)(
+      D.struct({
+        thirdParty: D.boolean,
+        builtin: D.boolean,
+        typeOnly: D.boolean
+      })
+    ),
+    fileExtensions: withDefaultValue(defaultConfig.fileExtensions)(
+      D.array(D.literal(".js", ".ts", ".jsx", ".tsx", ".mjs", ".cjs"))
+    ),
+    tsConfigPath: withDefaultValue(defaultConfig.tsConfigPath)(D.string),
+    manifestPath: withDefaultValue(defaultConfig.manifestPath)(D.string),
+    dependencyResolvers: withDefaultValue(defaultConfig.dependencyResolvers)(
+      D.array(dependencyResolverDecoder())
+    ),
+    groupBy: withDefaultValue(defaultConfig.groupBy)(decodeGroupBy),
+    /**
+     * External runner only config
+     */
+    cwd: withDefaultValue(process.cwd())(D.string),
+    verbose: withDefaultValue(false)(D.boolean),
+    ignorePattern: withDefaultValue("")(D.string)
+  });
 
 export function decodeInputConfig<T>(
   partialConfig: Option.Option<Partial<SkottConfig<T>>>
@@ -63,7 +66,7 @@ export function decodeInputConfig<T>(
   return pipe(
     partialConfig,
     Option.getOrNull,
-    config.decode,
+    getConfig().decode,
     E.fold((decodeError) => {
       throw new Error(`Invalid Skott config. Reason: ${D.draw(decodeError)}`);
     }, identity)
