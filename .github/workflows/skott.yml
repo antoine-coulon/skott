@@ -60,6 +60,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         continue-on-error: true
         run: |
+          echo ${{github.head_ref}} - ${{github.ref}} 
           pnpm -r benchmark
           git config --local user.name "skott_bot"
           git config --local user.email "skott.devtool@gmail.com"
