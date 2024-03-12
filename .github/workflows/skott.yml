@@ -58,6 +58,7 @@ jobs:
 
       - name: Run benchmarks
         if: matrix.os == 'ubuntu-latest'
+        continue-on-error: true
         run: |
           pnpm -r benchmark
           git config --local user.name "skott_bot"
@@ -66,8 +67,6 @@ jobs:
           git add .
           git commit -m "benchmark: publish benchmark results from node_${{ matrix.node-version }}"
           git pull origin ${{ github.head_ref }} --rebase
-          git checkout --theirs .
-          git add .
           git push origin HEAD:${{ github.head_ref }}
         env: 
           CI: true
