@@ -70,7 +70,16 @@ jobs:
           git status
           git add .
           git commit -m "benchmark: publish benchmark results from node_${{ matrix.node-version }}"
-          git pull origin ${{ github.head_ref }}
+          git pull origin ${{ github.head_ref }} --rebase
+
+          if git diff --quiet; then
+            echo "No conflicts, proceeding with the push."
+          else
+            git checkout --theirs .
+            git add .
+            git rebase --continue
+          fi
+
           git push origin HEAD:${{ github.head_ref }}
         env: 
           CI: true
