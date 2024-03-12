@@ -23,9 +23,6 @@
   You can find a real example of the difference between node paths using `process.chdir` and `cwd`: https://github.com/antoine-coulon/skott/issues/149#issuecomment-1989451725
   by @mattkindy.
 
-- Updated dependencies []:
-  - skott-webapp@2.1.1
-
 ## 0.33.0
 
 ### Minor Changes
