@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
    
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
@@ -62,11 +62,12 @@ jobs:
           pnpm -r benchmark
           git config --local user.name "skott_bot"
           git config --local user.email "skott.devtool@gmail.com"
-          git fetch origin
           git status
           git add .
           git commit -m "benchmark: publish benchmark results from node_${{ matrix.node-version }}"
           git pull origin ${{ github.head_ref }} --rebase
+          git checkout --theirs .
+          git add .
           git push origin HEAD:${{ github.head_ref }}
         env: 
           CI: true
