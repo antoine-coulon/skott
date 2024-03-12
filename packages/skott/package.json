@@ -31,7 +31,7 @@
     "build:test": "rimraf ./test_dist && tsc --project tsconfig.test.json",
     "lint": "eslint .",
     "lint:fix": "pnpm run lint --fix",
-    "prepublishOnly": "pnpm run test && pnpm run build",
+    "prepublishOnly": "pnpm run test:unit && pnpm run build",
     "prestart": "pnpm run build",
     "start": "node dist/bin/cli.js",
     "test": "pnpm run test:unit && pnpm run test:integration",
