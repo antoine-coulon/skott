@@ -1,5 +1,14 @@
 # skott
 
+## 0.33.2
+
+### Patch Changes
+
+- [#152](https://github.com/antoine-coulon/skott/pull/152) [`9d43673`](https://github.com/antoine-coulon/skott/commit/9d43673a1f86766f935a7759fe5ae2e7518b2fe0) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - Remove @typescript-eslint/typescript-estree warning occurring when an incompatible version of TypeScript is found by ensuring fixed compatible versions from the manifest.
+
+- Updated dependencies []:
+  - skott-webapp@2.1.1
+
 ## 0.33.1
 
 ### Patch Changes
