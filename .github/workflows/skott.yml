@@ -48,13 +48,13 @@ jobs:
       - name: Build project
         run: pnpm -r build
 
-      # - name: Run unit tests
-      #   run: pnpm -r test:unit
+      - name: Run unit tests
+        run: pnpm -r test:unit
 
-      # - name: Run integration tests
-      #   run: pnpm -r test:integration  
-      #   env:
-      #     CI: true
+      - name: Run integration tests
+        run: pnpm -r test:integration  
+        env:
+          CI: true
 
       - name: Run benchmarks
         if: matrix.os == 'ubuntu-latest'
