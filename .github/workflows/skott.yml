@@ -65,7 +65,6 @@ jobs:
           git pull origin ${{ github.head_ref }} --rebase
 
           pnpm -r benchmark
-          pnpm -r benchmark:publish
           
           git config --local user.name "skott_bot"
           git config --local user.email "skott.devtool@gmail.com"
@@ -86,8 +85,6 @@ jobs:
         env: 
           CI: true
           NODE_VERSION: ${{ matrix.node-version }}
-          GITHUB_SHA: ${{ github.sha }}
-          GITHUB_REF: ${{ github.head_ref }}
 
 
   

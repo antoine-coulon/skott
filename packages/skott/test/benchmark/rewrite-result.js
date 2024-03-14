@@ -2,6 +2,7 @@ import cp from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
+
 function spawnGitCommand(args) {
   return cp
     .spawnSync("git", args, {
@@ -28,7 +29,7 @@ function findCurrentGitReference() {
 
 function retrieveGitInformation() {
   const commitHash = process.env.GITHUB_SHA ?? findCurrentGitCommitHash();
-  const branchReference = process.env.GITHUB_REF ?? findCurrentGitReference();
+  const branchReference = process.env.GITHUB_HEAD_REF ?? findCurrentGitReference();
 
   return {
     commitHash,

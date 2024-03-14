@@ -27,8 +27,7 @@
   },
   "types": "./dist/index.d.ts",
   "scripts": {
-    "benchmark": "pnpm vitest bench --config=test/vitest.benchmark.js",
-    "benchmark:publish": "node test/benchmark/rewrite-result.js",
+    "benchmark": "pnpm vitest bench --config=test/vitest.benchmark.js && node test/benchmark/rewrite-result.js",
     "build": "rimraf ./dist && tsc --project tsconfig.build.json",
     "build:test": "rimraf ./test_dist && tsc --project tsconfig.test.json",
     "lint": "eslint .",
