@@ -1,2 +1,3 @@
 dist/
 vitest.*.js
+test/benchmark/*.js

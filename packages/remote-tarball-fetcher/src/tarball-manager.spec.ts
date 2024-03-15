@@ -1,8 +1,10 @@
 /* eslint-disable no-sync */
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { ReadableStream } from "stream/web";
 
 import { expect } from "chai";
+import { Effect, Option } from "effect";
 
 import type { Fetcher, PackageInformation } from "./fetcher/index.js";
 import { TarballManager } from "./tarball-manager.js";
@@ -10,22 +12,51 @@ import { TarballManager } from "./tarball-manager.js";
 const kTemporaryDirFixture = path.join(process.cwd(), "fixture");
 // sample-project contains two dummy files
 const kTarGzFixture = path.join(kTemporaryDirFixture, "project.tgz");
+const kZipFixture = path.join(kTemporaryDirFixture, "project.zip");
 
-function makeInMemoryFetcher({
-  latestVersion,
-  tarballUrl
-}: PackageInformation): Fetcher {
+function makeInMemoryFetcher(
+  { id, tarballUrl }: PackageInformation,
+  format: "zip" | "tar"
+): Fetcher {
   const fetcher: Fetcher = {
-    fetchPackageInformation: async () => {
-      return {
-        latestVersion,
+    fetchPackageInformation: () =>
+      Effect.succeed({
+        id,
         tarballUrl
-      };
-    },
-    downloadTarball: async () => fs.createReadStream(kTarGzFixture)
+      }),
+    downloadTarball: () =>
+      Effect.sync(() =>
+        Option.some({
+          stream: new ReadableStream({
+            start: async (controller) => {
+              for await (const chunk of fs.createReadStream(
+                format === "zip" ? kZipFixture : kTarGzFixture
+              )) {
+                controller.enqueue(chunk);
+              }
+              controller.close();
+            }
+          }),
+          format
+        })
+      )
   };
 
   return fetcher;
+}
+
+function makeInMemoryTarFetcher({
+  id,
+  tarballUrl
+}: PackageInformation): Fetcher {
+  return makeInMemoryFetcher({ id, tarballUrl }, "tar");
+}
+
+function makeInMemoryZipFetcher({
+  id,
+  tarballUrl
+}: PackageInformation): Fetcher {
+  return makeInMemoryFetcher({ id, tarballUrl }, "zip");
 }
 
 function makeTarballManager(fetcher: Fetcher): TarballManager {
@@ -34,198 +65,285 @@ function makeTarballManager(fetcher: Fetcher): TarballManager {
 
 describe("Remote Tarball Fetcher", () => {
   afterEach(() => {
-    fs.rmdirSync(path.join(kTemporaryDirFixture, "skott_store"), {
-      recursive: true
-    });
+    try {
+      fs.rmdirSync(path.join(kTemporaryDirFixture, "skott_store"), {
+        recursive: true
+      });
+    } catch {}
   });
+
   describe("When fetching a package for the first time", () => {
-    describe("When using the remote npm registry", () => {
-      describe("When no semver is specified", () => {
-        it("should download the latest version of the tarball and reference it in the store", async () => {
+    describe("When no identifier is specified", () => {
+      it("should download the latest version of the tgz tarball and reference it in the store", async () => {
+        const manager = makeTarballManager(
+          makeInMemoryTarFetcher({
+            id: "2.0.0",
+            tarballUrl: "https://location-of-the-thing-skott-2.0.0.tgz"
+          })
+        );
+        const libraryNameWithScope = "@skott/fs-tree-structure";
+        const libraryNameWithLatestVersion = `${libraryNameWithScope}@2.0.0`;
+        const expectedLocation = path.join(
+          kTemporaryDirFixture,
+          `skott_store`,
+          libraryNameWithLatestVersion
+        );
+
+        const location = await Effect.runPromise(
+          manager
+            .downloadAndStore(libraryNameWithScope, kTemporaryDirFixture)
+            .pipe(Effect.map(Option.getOrThrow))
+        );
+
+        expect(location).to.equal(expectedLocation);
+        expect([...manager.store.entries()]).to.deep.equal([
+          [libraryNameWithLatestVersion, expectedLocation]
+        ]);
+        expect(fs.readdirSync(expectedLocation)).to.deep.equal([
+          "file1.js",
+          "folder"
+        ]);
+      });
+
+      it("should download the latest version of the zip tarball and reference it in the store", async () => {
+        const manager = makeTarballManager(
+          makeInMemoryZipFetcher({
+            id: "2.0.0",
+            tarballUrl: "https://location-of-the-thing-skott-2.0.0.zip"
+          })
+        );
+        const libraryNameWithScope = "@skott/zip";
+        const libraryNameWithLatestVersion = `${libraryNameWithScope}@2.0.0`;
+        const expectedLocation = path.join(
+          kTemporaryDirFixture,
+          `skott_store`,
+          libraryNameWithLatestVersion
+        );
+
+        const location = await Effect.runPromise(
+          manager
+            .downloadAndStore(libraryNameWithScope, kTemporaryDirFixture)
+            .pipe(Effect.map(Option.getOrThrow))
+        );
+
+        expect(location).to.equal(expectedLocation);
+        expect([...manager.store.entries()]).to.deep.equal([
+          [libraryNameWithLatestVersion, expectedLocation]
+        ]);
+
+        expect(
+          fs.readdirSync(expectedLocation, { recursive: true })
+        ).to.deep.equal([
+          "project",
+          "project/file1.js",
+          "project/folder",
+          "project/folder/file2.js"
+        ]);
+      });
+    });
+
+    describe("When a semver as identifier is specified", () => {
+      describe("When the semver is valid", () => {
+        it("should download the provided version of the tarball and reference it in the store", async () => {
           const manager = makeTarballManager(
-            makeInMemoryFetcher({
-              latestVersion: "2.0.0",
-              tarballUrl: "https://location-of-the-thing-skott-2.0.0.tgz"
+            makeInMemoryTarFetcher({
+              id: "3.0.0",
+              tarballUrl: "https://location-of-the-thing-skott-2.4.1.tgz"
             })
           );
-          const libraryNameWithScope = "@skott/fs-tree-structure";
-          const libraryNameWithLatestVersion = `${libraryNameWithScope}@2.0.0`;
+          const libraryName = "fs-tree-structure";
+          const libraryNameWithSpecifiedVersion = `${libraryName}@2.4.1`;
           const expectedLocation = path.join(
             kTemporaryDirFixture,
             `skott_store`,
-            libraryNameWithLatestVersion
+            libraryNameWithSpecifiedVersion
           );
 
-          const location = await manager.downloadAndStore(
-            libraryNameWithScope,
-            kTemporaryDirFixture
+          const location = await Effect.runPromise(
+            manager
+              .downloadAndStore(
+                libraryNameWithSpecifiedVersion,
+                kTemporaryDirFixture
+              )
+              .pipe(Effect.map(Option.getOrThrow))
           );
 
+          try {
+            expect(location).to.equal(expectedLocation);
+            expect([...manager.store.entries()]).to.deep.equal([
+              [libraryNameWithSpecifiedVersion, expectedLocation]
+            ]);
+            expect(fs.readdirSync(expectedLocation)).to.deep.equal([
+              "file1.js",
+              "folder"
+            ]);
+          } finally {
+            // cleanup
+            fs.rmSync(expectedLocation, { recursive: true });
+          }
+        });
+      });
+    });
+
+    describe("When a unique identifier is specified", () => {
+      it("should download the provided version of the tarball and reference it in the store", async () => {
+        const manager = makeTarballManager(
+          makeInMemoryTarFetcher({
+            id: "3aiqDSFU3092",
+            tarballUrl: "https://location-of-the-thing-skott-2.4.1.tgz"
+          })
+        );
+        const libraryName = "fs-tree-structure";
+        const libraryWithIdentifier = `${libraryName}@3aiqDSFU3092`;
+        const expectedLocation = path.join(
+          kTemporaryDirFixture,
+          `skott_store`,
+          libraryWithIdentifier
+        );
+
+        const location = await Effect.runPromise(
+          manager
+            .downloadAndStore(libraryName, kTemporaryDirFixture)
+            .pipe(Effect.map(Option.getOrThrow))
+        );
+
+        try {
           expect(location).to.equal(expectedLocation);
           expect([...manager.store.entries()]).to.deep.equal([
-            [libraryNameWithLatestVersion, expectedLocation]
+            [libraryWithIdentifier, expectedLocation]
           ]);
           expect(fs.readdirSync(expectedLocation)).to.deep.equal([
             "file1.js",
             "folder"
           ]);
-        });
-      });
-
-      describe("When a semver is specified", () => {
-        describe("When the semver is valid", () => {
-          it("should download the provided version of the tarball and reference it in the store", async () => {
-            const manager = makeTarballManager(
-              makeInMemoryFetcher({
-                latestVersion: "3.0.0",
-                tarballUrl: "https://location-of-the-thing-skott-2.4.1.tgz"
-              })
-            );
-            const libraryName = "fs-tree-structure";
-            const libraryNameWithSpecifiedVersion = `${libraryName}@2.4.1`;
-            const expectedLocation = path.join(
-              kTemporaryDirFixture,
-              `skott_store`,
-              libraryNameWithSpecifiedVersion
-            );
-
-            const location = await manager.downloadAndStore(
-              libraryNameWithSpecifiedVersion,
-              kTemporaryDirFixture
-            );
-
-            try {
-              expect(location).to.equal(expectedLocation);
-              expect([...manager.store.entries()]).to.deep.equal([
-                [libraryNameWithSpecifiedVersion, expectedLocation]
-              ]);
-              expect(fs.readdirSync(expectedLocation)).to.deep.equal([
-                "file1.js",
-                "folder"
-              ]);
-            } finally {
-              // cleanup
-              fs.rmSync(expectedLocation, { recursive: true });
-            }
-          });
-        });
+        } finally {
+          // cleanup
+          fs.rmSync(expectedLocation, { recursive: true });
+        }
       });
     });
   });
 
   describe("When downloading a same package more than once", () => {
-    describe("When using the remote npm registry for which any tarball is frozen for a published version", () => {
-      describe("When the package version is specified", () => {
-        it("should directly use the locally stored package using the provided version", async () => {
-          const packageInformation = {
-            latestVersion: "3.0.0",
-            tarballUrl: "https://location-of-the-package-2.0.0.tgz"
-          };
+    describe("When the package identifier is specified", () => {
+      it("should directly use the locally stored package using the provided identifier", async () => {
+        const packageInformation = {
+          id: "3.0.0",
+          tarballUrl: "https://location-of-the-package-2.0.0.tgz"
+        };
 
-          const manager = makeTarballManager(
-            makeInMemoryFetcher(packageInformation)
-          );
-          const libraryName = "digraph-js";
-          const libraryNameWithSpecifiedVersion = `${libraryName}@0.4.1`;
-          const expectedLocation = path.join(
-            kTemporaryDirFixture,
-            `skott_store`,
-            libraryNameWithSpecifiedVersion
-          );
+        const manager = makeTarballManager(
+          makeInMemoryTarFetcher(packageInformation)
+        );
+        const libraryName = "digraph-js";
+        const packageNameWithIdentifier = `${libraryName}@0.4.1`;
+        const expectedLocation = path.join(
+          kTemporaryDirFixture,
+          `skott_store`,
+          packageNameWithIdentifier
+        );
 
-          const location = await manager.downloadAndStore(
-            libraryNameWithSpecifiedVersion,
-            kTemporaryDirFixture
-          );
+        const location = await Effect.runPromise(
+          manager
+            .downloadAndStore(packageNameWithIdentifier, kTemporaryDirFixture)
+            .pipe(Effect.map(Option.getOrThrow))
+        );
 
-          expect(location).to.equal(expectedLocation);
+        expect(location).to.equal(expectedLocation);
 
-          const fetcherNotWorking: Fetcher = {
-            fetchPackageInformation: () => {
-              throw new Error("Should not be called");
-            },
-            downloadTarball: () => {
-              throw new Error("Should not be called");
-            }
-          };
+        const fetcherNotWorking: Fetcher = {
+          fetchPackageInformation: () => {
+            throw new Error("Should not be called");
+          },
+          downloadTarball: () => {
+            throw new Error("Should not be called");
+          }
+        };
 
-          /**
-           * Switch an implementation with a fetcher that does not work at all
-           * but the tarball should be already in the store so we
-           * should be able to still retrieve the path and the tarball
-           */
-          manager.switchFetcher(fetcherNotWorking);
+        /**
+         * Switch an implementation with a fetcher that does not work at all
+         * but the tarball should be already in the store so we
+         * should be able to still retrieve the path and the tarball
+         */
+        manager.switchFetcher(fetcherNotWorking);
 
-          const sameLocation = await manager.downloadAndStore(
-            libraryNameWithSpecifiedVersion,
-            kTemporaryDirFixture
-          );
+        const sameLocation = await Effect.runPromise(
+          manager
+            .downloadAndStore(packageNameWithIdentifier, kTemporaryDirFixture)
+            .pipe(Effect.map(Option.getOrThrow))
+        );
 
-          expect(location).to.equal(sameLocation);
-          expect(fs.readdirSync(expectedLocation)).to.deep.equal([
-            "file1.js",
-            "folder"
-          ]);
-        });
+        expect(location).to.equal(sameLocation);
+        expect(fs.readdirSync(expectedLocation)).to.deep.equal([
+          "file1.js",
+          "folder"
+        ]);
       });
+    });
 
-      describe("When the package version is not specified", () => {
-        it("should only require the latest version to be fetched then use the locally stored package", async () => {
-          const packageInformation = {
-            latestVersion: "8.1.0",
-            tarballUrl: "https://location-of-the-package-8.1.0.tgz"
-          };
+    describe("When the package identifier is not specified", () => {
+      it("should only require the identifier to be fetched then use the locally stored package", async () => {
+        const packageInformation = {
+          id: "8.1.0",
+          tarballUrl: "https://location-of-the-package-8.1.0.tgz"
+        };
 
-          const manager = makeTarballManager(
-            makeInMemoryFetcher(packageInformation)
-          );
-          const libraryName = "openforker";
-          const libraryNameWithSpecifiedVersion = `${libraryName}@8.1.0`;
-          const expectedLocation = path.join(
-            kTemporaryDirFixture,
-            `skott_store`,
-            libraryNameWithSpecifiedVersion
-          );
+        const manager = makeTarballManager(
+          makeInMemoryTarFetcher(packageInformation)
+        );
+        const libraryName = "openforker";
+        const libraryNameWithSpecifiedVersion = `${libraryName}@8.1.0`;
+        const expectedLocation = path.join(
+          kTemporaryDirFixture,
+          `skott_store`,
+          libraryNameWithSpecifiedVersion
+        );
 
-          const location = await manager.downloadAndStore(
-            libraryNameWithSpecifiedVersion,
-            kTemporaryDirFixture
-          );
+        const location = await Effect.runPromise(
+          manager
+            .downloadAndStore(
+              libraryNameWithSpecifiedVersion,
+              kTemporaryDirFixture
+            )
+            .pipe(Effect.map(Option.getOrThrow))
+        );
 
-          expect(location).to.equal(expectedLocation);
+        expect(location).to.equal(expectedLocation);
 
-          const fetcherWithOnlyPackageInformationWorking: Fetcher = {
-            fetchPackageInformation: async () => {
-              return {
-                latestVersion: packageInformation.latestVersion,
-                tarballUrl: packageInformation.tarballUrl
-              };
-            },
-            downloadTarball: () => {
-              throw new Error("Should not be called");
-            }
-          };
+        const fetcherWithOnlyPackageInformationWorking: Fetcher = {
+          fetchPackageInformation: () =>
+            Effect.succeed({
+              id: packageInformation.id,
+              tarballUrl: packageInformation.tarballUrl
+            }),
+          downloadTarball: () => {
+            throw new Error("Should not be called");
+          }
+        };
 
-          /**
-           * Switch an implementation with a fetcher that only work for the
-           * version information but not for the tarball downloading. As the
-           * tarball is already in the store, we should be able to still
-           * retrieve it using the package name and the specific version provided.
-           */
-          manager.switchFetcher(fetcherWithOnlyPackageInformationWorking);
+        /**
+         * Switch an implementation with a fetcher that only work for the
+         * version information but not for the tarball downloading. As the
+         * tarball is already in the store, we should be able to still
+         * retrieve it using the package name and the specific version provided.
+         */
+        manager.switchFetcher(fetcherWithOnlyPackageInformationWorking);
 
-          const sameLocation = await manager.downloadAndStore(
-            // We do not provide the version here
-            libraryName,
-            kTemporaryDirFixture
-          );
+        const sameLocation = await Effect.runPromise(
+          manager
+            .downloadAndStore(
+              // We do not provide the version here
+              libraryName,
+              kTemporaryDirFixture
+            )
+            .pipe(Effect.map(Option.getOrThrow))
+        );
 
-          expect(location).to.equal(sameLocation);
-          expect(fs.readdirSync(expectedLocation)).to.deep.equal([
-            "file1.js",
-            "folder"
-          ]);
-        });
+        expect(location).to.equal(sameLocation);
+        expect(fs.readdirSync(expectedLocation)).to.deep.equal([
+          "file1.js",
+          "folder"
+        ]);
       });
     });
   });
@@ -234,24 +352,20 @@ describe("Remote Tarball Fetcher", () => {
     describe("When at least one of the steps of the folder creation from the tarball fails", () => {
       it("should ensure that nothing is added in the store if nothing is added in the local filesystem state", async () => {
         const manager = makeTarballManager({
-          fetchPackageInformation: async () => {
-            return {
-              latestVersion: "0.1.79",
+          fetchPackageInformation: () =>
+            Effect.succeed({
+              id: "0.1.79",
               tarballUrl: "url-of-the-tarball"
-            };
-          },
-          downloadTarball: () => {
-            throw new Error("Something failed while downloading!");
-          }
+            }),
+          downloadTarball: () => Effect.succeed(Option.none())
         });
         const libraryName = "fs-tree-structure";
 
-        const location = await manager.downloadAndStore(
-          libraryName,
-          kTemporaryDirFixture
+        const location = await Effect.runPromise(
+          manager.downloadAndStore(libraryName, kTemporaryDirFixture)
         );
 
-        expect(location).to.equal(undefined);
+        expect(location._tag).to.equal("None");
         expect(manager.store.size).to.equal(0);
       });
     });

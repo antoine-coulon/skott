@@ -1,9 +1,10 @@
-import { Readable } from "node:stream";
-
-import fetch from "node-fetch";
+import * as S from "@effect/schema/Schema";
+import { Effect, Option, flow, pipe } from "effect";
 import semver from "semver";
 
-import type { Fetcher } from "./common.js";
+import { FetchPackageInformationError, type Fetcher } from "./definition.js";
+
+const kNpmRegistryApiUrl = "https://registry.npmjs.org";
 
 function isSemverValid(version: string): boolean {
   return semver.valid(version) !== null;
@@ -32,44 +33,88 @@ function dissociatePackageNameFromItsSemver(packageName: string): {
   };
 }
 
-const kNpmRegistryApiUrl = "https://registry.npmjs.org";
+const NpmRepositorySchema = S.struct({
+  "dist-tags": S.struct({
+    latest: S.string
+  }),
+  versions: S.record(
+    S.string,
+    S.struct({ dist: S.struct({ tarball: S.string }) })
+  )
+});
 
-type NpmApiPayload = any;
+const NpmRepositoryByVersionSchema = S.struct({
+  dist: S.struct({ tarball: S.string })
+});
 
-async function fetchAndParseResponse(url: string): Promise<NpmApiPayload> {
-  return fetch(url).then((response) => response.json());
+function fetchFromNpm(url: string) {
+  return pipe(
+    Effect.tryPromise({
+      try: () => fetch(url).then((response) => response.json()),
+      catch: () => new FetchPackageInformationError()
+    })
+  );
 }
 
-export const npmFetcher: Fetcher = {
-  fetchPackageInformation: async (packageName) => {
-    const { name, semver } = dissociatePackageNameFromItsSemver(packageName);
-    const packageUrl = new URL(name, kNpmRegistryApiUrl);
+interface NpmRepositoryInformation {
+  latestVersion: string;
+}
 
-    const allPackageInformation = await fetchAndParseResponse(packageUrl.href);
+export const npmFetcher: Fetcher<NpmRepositoryInformation> = {
+  fetchPackageInformation: (packageName) =>
+    Effect.gen(function* _gen(_) {
+      const { name, semver: packageSemver } =
+        dissociatePackageNameFromItsSemver(packageName);
 
-    const latestVersion = allPackageInformation["dist-tags"].latest;
+      const packageUrl = new URL(name, kNpmRegistryApiUrl);
 
-    if (!semver) {
+      const allPackageInformation = yield* _(
+        fetchFromNpm(packageUrl.href).pipe(
+          Effect.flatMap(
+            flow(S.decodeUnknown(NpmRepositorySchema), Effect.orDie)
+          )
+        )
+      );
+
+      const latestVersion = allPackageInformation["dist-tags"].latest;
+
+      if (!packageSemver) {
+        return {
+          id: latestVersion,
+          latestVersion,
+          tarballUrl: allPackageInformation.versions[latestVersion].dist.tarball
+        };
+      }
+
+      const specificPackageVersionUrl = new URL(
+        name.concat("/", packageSemver),
+        kNpmRegistryApiUrl
+      );
+
+      const specificPackageVersionInformation = yield* _(
+        fetchFromNpm(specificPackageVersionUrl.href).pipe(
+          Effect.flatMap(
+            flow(S.decodeUnknown(NpmRepositoryByVersionSchema), Effect.orDie)
+          )
+        )
+      );
+
+      const tarballUrl = specificPackageVersionInformation.dist.tarball;
+
       return {
+        id: packageSemver,
         latestVersion,
-        tarballUrl: allPackageInformation.versions[latestVersion].dist.tarball
+        tarballUrl
       };
-    }
-
-    const specificPackageVersionUrl = new URL(
-      name.concat("/", semver),
-      kNpmRegistryApiUrl
-    );
-    const specificPackageVersionInformation = await fetchAndParseResponse(
-      specificPackageVersionUrl.href
-    );
-    const tarballUrl = specificPackageVersionInformation.dist.tarball;
-
-    return {
-      latestVersion,
-      tarballUrl
-    };
-  },
+    }),
   downloadTarball: (tarballUrl) =>
-    fetch(tarballUrl).then((response) => response.body as Readable)
+    Effect.promise(() =>
+      fetch(tarballUrl).then((response) => Option.fromNullable(response.body))
+    ).pipe(
+      Effect.map(
+        Option.map((body) => {
+          return { stream: body, format: "tar" };
+        })
+      )
+    )
 };

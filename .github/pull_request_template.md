@@ -36,7 +36,7 @@
     integration tests?
 --------------------------------------------------------------------------->
 
-- [ ] Unit tests were added to cover the new feature or bug fix (+ eventually integration tests)
+- [ ] Unit tests were added to cover the new feature or bug fix (+ eventually integration tests, but unit should be preferred whenever its possible).
 
 ## Impacted documentation
 
