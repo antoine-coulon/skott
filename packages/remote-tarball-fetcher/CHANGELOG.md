@@ -1,5 +1,13 @@
 # remote-tarball-fetcher
 
+## 0.1.0
+
+### Minor Changes
+
+- [#145](https://github.com/antoine-coulon/skott/pull/145) [`2c00723`](https://github.com/antoine-coulon/skott/commit/2c00723006de42d031d5877d44ceb7bdc1f33707) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - Add GitHub tarball fetcher to be able to pull public repositories as `.zip` (used in skott's benchmark).
+
+  Switch to an [Effect](https://github.com/Effect-TS)-based API.
+
 ## 0.0.2
 
 ### Patch Changes
