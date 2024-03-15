@@ -7,6 +7,7 @@ on:
 
 env:
   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   skott:
@@ -48,11 +49,8 @@ jobs:
       - name: Build project
         run: pnpm -r build
 
-      - name: Run unit tests
-        run: pnpm -r test:unit
-
-      - name: Run integration tests
-        run: pnpm -r test:integration  
+      - name: Run tests
+        run: pnpm -r test
         env:
           CI: true
 

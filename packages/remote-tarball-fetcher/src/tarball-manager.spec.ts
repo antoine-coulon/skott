@@ -63,13 +63,27 @@ function makeTarballManager(fetcher: Fetcher): TarballManager {
   return new TarballManager(fetcher);
 }
 
+function normalizePath(path: string | Buffer) {
+  const p = path.toString();
+  if (process.platform === "win32") {
+    return p.replace(/\\/g, "/");
+  }
+
+  return p;
+}
+
+function forceRecursiveRm(path: string) {
+  try {
+    fs.rmSync(path, {
+      recursive: true,
+      force: true
+    });
+  } catch {}
+}
+
 describe("Remote Tarball Fetcher", () => {
   afterEach(() => {
-    try {
-      fs.rmdirSync(path.join(kTemporaryDirFixture, "skott_store"), {
-        recursive: true
-      });
-    } catch {}
+    forceRecursiveRm(path.join(kTemporaryDirFixture, "skott_store"));
   });
 
   describe("When fetching a package for the first time", () => {
@@ -132,7 +146,9 @@ describe("Remote Tarball Fetcher", () => {
         ]);
 
         expect(
-          fs.readdirSync(expectedLocation, { recursive: true })
+          fs
+            .readdirSync(expectedLocation, { recursive: true })
+            .map(normalizePath)
         ).to.deep.equal([
           "project",
           "project/file1.js",
@@ -179,7 +195,7 @@ describe("Remote Tarball Fetcher", () => {
             ]);
           } finally {
             // cleanup
-            fs.rmSync(expectedLocation, { recursive: true });
+            forceRecursiveRm(expectedLocation);
           }
         });
       });
@@ -218,7 +234,7 @@ describe("Remote Tarball Fetcher", () => {
           ]);
         } finally {
           // cleanup
-          fs.rmSync(expectedLocation, { recursive: true });
+          forceRecursiveRm(expectedLocation);
         }
       });
     });

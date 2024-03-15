@@ -15,7 +15,7 @@
   "license": "MIT",
   "scripts": {
     "prestart": "npm run build",
-    "prepublishOnly": "npm run test && npm run build",
+    "prepublishOnly": "npm run build",
     "build": "rimraf ./dist && tsc --project tsconfig.build.json",
     "test": "mocha --parallel",
     "lint": "eslint ."
