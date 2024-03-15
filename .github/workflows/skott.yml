@@ -57,17 +57,15 @@ jobs:
           CI: true
 
       - name: Run benchmarks
-        if: matrix.os == 'ubuntu-latest'
-        continue-on-error: true
+        if: matrix.os == 'ubuntu-latest' && !contains(github.ref, 'main') && !contains(github.ref, 'release')
         run: |
+          git config --local user.name "skott_bot"
+          git config --local user.email "skott.devtool@gmail.com"
           git fetch origin
-
           git pull origin ${{ github.head_ref }} --rebase
 
           pnpm -r benchmark
           
-          git config --local user.name "skott_bot"
-          git config --local user.email "skott.devtool@gmail.com"
           git status
           git add .
           git commit -m "benchmark: publish benchmark results from node_${{ matrix.node-version }}"
