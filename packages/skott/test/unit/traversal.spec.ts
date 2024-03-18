@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import { InMemoryFileReader } from "../../src/filesystem/fake/file-reader.js";
-import { InMemoryFileWriter } from "../../src/filesystem/file-writer.js";
+import { InMemoryFileWriter } from "../../src/filesystem/fake/file-writer.js";
 import { CollectLevel } from "../../src/graph/traversal.js";
 import { FakeLogger } from "../../src/logger.js";
 import { ModuleWalkerSelector } from "../../src/modules/walkers/common.js";

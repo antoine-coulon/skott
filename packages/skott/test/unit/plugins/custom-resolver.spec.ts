@@ -2,9 +2,9 @@ import { Option } from "effect";
 import { describe, expect, test } from "vitest";
 
 import { InMemoryFileReader } from "../../../src/filesystem/fake/file-reader.js";
-import { InMemoryFileWriter } from "../../../src/filesystem/file-writer.js";
+import { InMemoryFileWriter } from "../../../src/filesystem/fake/file-writer.js";
 import { FakeLogger } from "../../../src/logger.js";
-import {
+import type {
   DependencyResolver,
   DependencyResolverOptions
 } from "../../../src/modules/resolvers/base-resolver.js";

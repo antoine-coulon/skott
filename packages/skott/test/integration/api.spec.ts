@@ -1,8 +1,8 @@
 import { describe, expect, test } from "vitest";
 
 import skott from "../../index.js";
+import { InMemoryFileWriter } from "../../src/filesystem/fake/file-writer.js";
 import { FileSystemReader } from "../../src/filesystem/file-reader.js";
-import { InMemoryFileWriter } from "../../src/filesystem/file-writer.js";
 import { FakeLogger } from "../../src/logger.js";
 import { ModuleWalkerSelector } from "../../src/modules/walkers/common.js";
 import { Skott, defaultConfig } from "../../src/skott.js";

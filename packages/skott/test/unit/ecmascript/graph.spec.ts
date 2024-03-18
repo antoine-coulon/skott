@@ -1,8 +1,8 @@
 import * as memfs from "memfs";
 import { describe, expect, it } from "vitest";
 
+import { InMemoryFileWriter } from "../../../src/filesystem/fake/file-writer.js";
 import { FileReader } from "../../../src/filesystem/file-reader.js";
-import { InMemoryFileWriter } from "../../../src/filesystem/file-writer.js";
 import { SkottNode } from "../../../src/graph/node.js";
 import { CollectLevel } from "../../../src/graph/traversal.js";
 import { FakeLogger } from "../../../src/logger.js";
