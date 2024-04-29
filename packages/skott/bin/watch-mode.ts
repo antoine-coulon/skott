@@ -56,17 +56,19 @@ async function retrieveGitIgnoredEntries(cwd: string): Promise<string[]> {
   );
 }
 
+export interface WatchModeOptions {
+  cwd: string;
+  ignorePattern: string;
+  fileExtensions: string[];
+  onChangesDetected: (doneSubscribersPropagation: () => void) => void;
+}
+
 export async function registerWatchMode({
   cwd,
   ignorePattern,
   fileExtensions,
   onChangesDetected
-}: {
-  cwd: string;
-  ignorePattern: string;
-  fileExtensions: string[];
-  onChangesDetected: (doneSubscribersPropagation: () => void) => void;
-}) {
+}: WatchModeOptions) {
   /**
    * For simplicity's sake, we only support discarding entries from the .gitignore
    * located at the provided cwd.

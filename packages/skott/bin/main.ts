@@ -16,13 +16,10 @@ import {
   displayCircularDependencies,
   displayDependenciesReport
 } from "./ui/console/dependencies.js";
-import { renderFileTree } from "./ui/display-modes/file-tree.js";
-import { renderGraph } from "./ui/display-modes/graph.js";
-import {
-  RenderManager,
-  CliComponent
-} from "./ui/display-modes/render-manager.js";
-import { renderWebApplication } from "./ui/display-modes/webapp.js";
+import { renderFileTree } from "./ui/renderers/file-tree.js";
+import { renderGraph } from "./ui/renderers/graph.js";
+import { RenderManager, CliComponent } from "./ui/renderers/render-manager.js";
+import { renderWebApplication } from "./ui/renderers/webapp.js";
 import { registerWatchMode } from "./watch-mode.js";
 
 function displayInitialGetStructureTime(
