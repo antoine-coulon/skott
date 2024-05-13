@@ -20,7 +20,15 @@ async function showcase() {
     incremental: false,
     manifestPath: "package.json",
     tsConfigPath: "tsconfig.json",
-    verbose: false
+    verbose: false,
+    groupBy: (modulePath) => {
+      // Group by using the returned value as the key
+      if (modulePath.includes("__tests__")) {
+        return "tests";
+      }
+
+      return modulePath;
+    }
   });
 
   const { getStructure, getWorkspace, useGraph, findUnusedDependencies } = api;

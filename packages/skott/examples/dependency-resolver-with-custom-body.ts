@@ -4,8 +4,8 @@ import "async_hooks";
 import skott from "../index.js";
 import {
   continueResolution,
-  DependencyResolver,
-  DependencyResolverOptions
+  type DependencyResolver,
+  type DependencyResolverOptions
 } from "../src/modules/resolvers/base-resolver.js";
 import { EcmaScriptDependencyResolver } from "../src/modules/resolvers/ecmascript/resolver.js";
 

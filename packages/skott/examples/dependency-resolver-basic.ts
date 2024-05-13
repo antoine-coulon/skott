@@ -4,8 +4,8 @@ import * as _Effect from "@effect/io/Effect";
 import skott from "../index.js";
 import {
   continueResolution,
-  DependencyResolver,
-  DependencyResolverOptions
+  type DependencyResolver,
+  type DependencyResolverOptions
 } from "../src/modules/resolvers/base-resolver.js";
 
 class BasicDependencyResolver implements DependencyResolver {
