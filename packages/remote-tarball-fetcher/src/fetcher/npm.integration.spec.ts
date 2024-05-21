@@ -1,7 +1,7 @@
 import { ReadableStream } from "node:stream/web";
 
-import { expect } from "chai";
 import { Effect, Option } from "effect";
+import { describe, expect, test } from "vitest";
 
 import { npmFetcher } from "./npm.js";
 
@@ -9,7 +9,7 @@ function itEffect<A, E>(
   description: string,
   effect: Effect.Effect<A, E, never>
 ) {
-  it(description, () => effect.pipe(Effect.runPromise));
+  test(description, () => effect.pipe(Effect.runPromise));
 }
 
 describe("npm tarball fetcher", () => {

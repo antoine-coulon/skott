@@ -87,9 +87,10 @@ export class TarballManager<I = Record<string, string>> {
           );
 
           const { format, stream } = yield* _(
-            self._fetcher
-              .downloadTarball(tarballUrl)
-              .pipe(Effect.map(Option.getOrThrow))
+            pipe(
+              self._fetcher.downloadTarball(tarballUrl),
+              Effect.map(Option.getOrThrow)
+            )
           );
 
           if (format === "tar") {

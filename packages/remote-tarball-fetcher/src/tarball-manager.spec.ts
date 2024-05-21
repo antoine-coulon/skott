@@ -3,8 +3,8 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { ReadableStream } from "stream/web";
 
-import { expect } from "chai";
-import { Effect, Option } from "effect";
+import { Effect, Logger, Option } from "effect";
+import { describe, expect, test, afterEach } from "vitest";
 
 import type { Fetcher, PackageInformation } from "./fetcher/index.js";
 import { TarballManager } from "./tarball-manager.js";
@@ -81,6 +81,9 @@ function forceRecursiveRm(path: string) {
   } catch {}
 }
 
+const stubLogger = Logger.make(() => {});
+const LoggerTest = Logger.replace(Logger.defaultLogger, stubLogger);
+
 describe("Remote Tarball Fetcher", () => {
   afterEach(() => {
     forceRecursiveRm(path.join(kTemporaryDirFixture, "skott_store"));
@@ -88,7 +91,7 @@ describe("Remote Tarball Fetcher", () => {
 
   describe("When fetching a package for the first time", () => {
     describe("When no identifier is specified", () => {
-      it("should download the latest version of the tgz tarball and reference it in the store", async () => {
+      test("should download the latest version of the tgz tarball and reference it in the store", async () => {
         const manager = makeTarballManager(
           makeInMemoryTarFetcher({
             id: "2.0.0",
@@ -107,6 +110,7 @@ describe("Remote Tarball Fetcher", () => {
           manager
             .downloadAndStore(libraryNameWithScope, kTemporaryDirFixture)
             .pipe(Effect.map(Option.getOrThrow))
+            .pipe(Effect.provide(LoggerTest))
         );
 
         expect(location).to.equal(expectedLocation);
@@ -119,7 +123,7 @@ describe("Remote Tarball Fetcher", () => {
         ]);
       });
 
-      it("should download the latest version of the zip tarball and reference it in the store", async () => {
+      test("should download the latest version of the zip tarball and reference it in the store", async () => {
         const manager = makeTarballManager(
           makeInMemoryZipFetcher({
             id: "2.0.0",
@@ -138,6 +142,7 @@ describe("Remote Tarball Fetcher", () => {
           manager
             .downloadAndStore(libraryNameWithScope, kTemporaryDirFixture)
             .pipe(Effect.map(Option.getOrThrow))
+            .pipe(Effect.provide(LoggerTest))
         );
 
         expect(location).to.equal(expectedLocation);
@@ -160,7 +165,7 @@ describe("Remote Tarball Fetcher", () => {
 
     describe("When a semver as identifier is specified", () => {
       describe("When the semver is valid", () => {
-        it("should download the provided version of the tarball and reference it in the store", async () => {
+        test("should download the provided version of the tarball and reference it in the store", async () => {
           const manager = makeTarballManager(
             makeInMemoryTarFetcher({
               id: "3.0.0",
@@ -182,6 +187,7 @@ describe("Remote Tarball Fetcher", () => {
                 kTemporaryDirFixture
               )
               .pipe(Effect.map(Option.getOrThrow))
+              .pipe(Effect.provide(LoggerTest))
           );
 
           try {
@@ -202,7 +208,7 @@ describe("Remote Tarball Fetcher", () => {
     });
 
     describe("When a unique identifier is specified", () => {
-      it("should download the provided version of the tarball and reference it in the store", async () => {
+      test("should download the provided version of the tarball and reference it in the store", async () => {
         const manager = makeTarballManager(
           makeInMemoryTarFetcher({
             id: "3aiqDSFU3092",
@@ -221,6 +227,7 @@ describe("Remote Tarball Fetcher", () => {
           manager
             .downloadAndStore(libraryName, kTemporaryDirFixture)
             .pipe(Effect.map(Option.getOrThrow))
+            .pipe(Effect.provide(LoggerTest))
         );
 
         try {
@@ -242,7 +249,7 @@ describe("Remote Tarball Fetcher", () => {
 
   describe("When downloading a same package more than once", () => {
     describe("When the package identifier is specified", () => {
-      it("should directly use the locally stored package using the provided identifier", async () => {
+      test("should directly use the locally stored package using the provided identifier", async () => {
         const packageInformation = {
           id: "3.0.0",
           tarballUrl: "https://location-of-the-package-2.0.0.tgz"
@@ -263,6 +270,7 @@ describe("Remote Tarball Fetcher", () => {
           manager
             .downloadAndStore(packageNameWithIdentifier, kTemporaryDirFixture)
             .pipe(Effect.map(Option.getOrThrow))
+            .pipe(Effect.provide(LoggerTest))
         );
 
         expect(location).to.equal(expectedLocation);
@@ -287,6 +295,7 @@ describe("Remote Tarball Fetcher", () => {
           manager
             .downloadAndStore(packageNameWithIdentifier, kTemporaryDirFixture)
             .pipe(Effect.map(Option.getOrThrow))
+            .pipe(Effect.provide(LoggerTest))
         );
 
         expect(location).to.equal(sameLocation);
@@ -298,7 +307,7 @@ describe("Remote Tarball Fetcher", () => {
     });
 
     describe("When the package identifier is not specified", () => {
-      it("should only require the identifier to be fetched then use the locally stored package", async () => {
+      test("should only require the identifier to be fetched then use the locally stored package", async () => {
         const packageInformation = {
           id: "8.1.0",
           tarballUrl: "https://location-of-the-package-8.1.0.tgz"
@@ -322,6 +331,7 @@ describe("Remote Tarball Fetcher", () => {
               kTemporaryDirFixture
             )
             .pipe(Effect.map(Option.getOrThrow))
+            .pipe(Effect.provide(LoggerTest))
         );
 
         expect(location).to.equal(expectedLocation);
@@ -353,6 +363,7 @@ describe("Remote Tarball Fetcher", () => {
               kTemporaryDirFixture
             )
             .pipe(Effect.map(Option.getOrThrow))
+            .pipe(Effect.provide(LoggerTest))
         );
 
         expect(location).to.equal(sameLocation);
@@ -366,7 +377,7 @@ describe("Remote Tarball Fetcher", () => {
 
   describe("When creating the tarball on the local filesystem", () => {
     describe("When at least one of the steps of the folder creation from the tarball fails", () => {
-      it("should ensure that nothing is added in the store if nothing is added in the local filesystem state", async () => {
+      test("should ensure that nothing is added in the store if nothing is added in the local filesystem state", async () => {
         const manager = makeTarballManager({
           fetchPackageInformation: () =>
             Effect.succeed({
@@ -378,7 +389,9 @@ describe("Remote Tarball Fetcher", () => {
         const libraryName = "fs-tree-structure";
 
         const location = await Effect.runPromise(
-          manager.downloadAndStore(libraryName, kTemporaryDirFixture)
+          manager
+            .downloadAndStore(libraryName, kTemporaryDirFixture)
+            .pipe(Effect.provide(LoggerTest))
         );
 
         expect(location._tag).to.equal("None");
