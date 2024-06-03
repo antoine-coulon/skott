@@ -1,17 +1,11 @@
 import type EventEmitter from "node:events";
 import path from "node:path";
 
-import compression from "compression";
 import kleur from "kleur";
-import polka from "polka";
-import sirv from "sirv";
-import type { SkottStructure } from "skott";
-import resolveWebAppStaticPath from "skott-webapp";
 
+import { createHttpApp } from "../../../src/rendering/webapp/internal.js";
 import type { SkottInstance } from "../../../src/skott.js";
 import type { CliOptions } from "../../cli-config.js";
-import { open } from "../../open-url.js";
-import type { WatchModeOptions } from "../../watch-mode.js";
 
 const trackingWithCommands = {
   builtin: {
@@ -27,12 +21,6 @@ const trackingWithCommands = {
     argument: "--trackTypeOnlyDependencies"
   }
 } as const;
-
-function findSkottWebAppDirectory(): string {
-  const skottWebAppDirectory = resolveWebAppStaticPath();
-
-  return skottWebAppDirectory;
-}
 
 function renderSelectedTracking(
   option: keyof typeof trackingWithCommands,
@@ -64,50 +52,6 @@ function resolveEntrypointPath(options: CliOptions) {
   }
 
   return baseEntrypointPath;
-}
-
-function createHttpApp(port: number) {
-  const skottWebAppPath = findSkottWebAppDirectory();
-  const compress = compression();
-  const assets = sirv(skottWebAppPath, {
-    immutable: true
-  });
-  const app = polka().use(compress, assets);
-
-  return {
-    app,
-    listen: () => {
-      app.listen(port);
-
-      // @ts-expect-error - "port" exists
-      const bindedAddress = `http://localhost:${app.server?.address()?.port}`;
-
-      console.log(
-        `\n ${kleur.bold(`💻 Web application is ready:`)} ${kleur
-          .bold()
-          .underline()
-          .magenta(`${bindedAddress}`)}`
-      );
-
-      open(bindedAddress, (error) => {
-        if (error) {
-          console.log(
-            `\n ${kleur
-              .red()
-              .bold(
-                `Could not automatically open the application on ${bindedAddress}. Reason: "${
-                  error.message ?? "unknown"
-                }"`
-              )}
-              \n ${kleur
-                .yellow()
-                .bold("Application remains accessible manually")}
-            `
-          );
-        }
-      });
-    }
-  };
 }
 
 export function renderWebApplication(config: {
@@ -182,38 +126,5 @@ export function renderWebApplication(config: {
     );
   });
 
-  listen();
-}
-
-export function renderStandaloneWebApplication(config: {
-  application: {
-    port: number;
-    watchMode: WatchModeOptions;
-    data: {
-      cycles: () => string[][];
-      structure: () => SkottStructure & {
-        entrypoint: string | "none";
-        cycles: string[][];
-      };
-    };
-  };
-}) {
-  const { application } = config;
-  const { app, listen } = createHttpApp(application.port);
-
-  app.get("/api/cycles", (_, response) => {
-    const cycles = application.data.cycles();
-
-    response.setHeader("Content-Type", "application/json");
-    response.end(JSON.stringify(cycles));
-  });
-
-  app.get("/api/analysis", (_, response) => {
-    const structure = application.data.structure();
-
-    response.setHeader("Content-Type", "application/json");
-    response.end(JSON.stringify(structure));
-  });
-
-  listen();
+  listen({ autoOpen: true });
 }
