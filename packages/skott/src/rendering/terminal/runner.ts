@@ -4,9 +4,9 @@ import kleur from "kleur";
 import type { Ora } from "ora";
 import ora from "ora";
 
-import skott, { type SkottInstance } from "../index.js";
-import { kExpectedModuleExtensions } from "../src/modules/resolvers/base-resolver.js";
-import { EcmaScriptDependencyResolver } from "../src/modules/resolvers/ecmascript/resolver.js";
+import skott, { type SkottInstance } from "../../../index.js";
+import { kExpectedModuleExtensions } from "../../modules/resolvers/base-resolver.js";
+import { EcmaScriptDependencyResolver } from "../../modules/resolvers/ecmascript/resolver.js";
 
 import type { CliParameterOptions } from "./cli-config.js";
 

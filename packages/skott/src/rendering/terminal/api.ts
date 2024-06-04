@@ -4,7 +4,7 @@ import { performance } from "node:perf_hooks";
 
 import kleur from "kleur";
 
-import type { SkottStructure } from "../index.js";
+import type { SkottStructure } from "../../../index.js";
 
 import {
   ensureValidConfiguration,
@@ -36,7 +36,7 @@ function displayInitialGetStructureTime(
   );
 }
 
-export async function main(
+export async function renderTerminalApplication(
   entrypoint: string | undefined,
   options: CliParameterOptions
 ): Promise<void> {

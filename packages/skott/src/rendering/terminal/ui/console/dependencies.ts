@@ -1,7 +1,7 @@
 import kleur from "kleur";
 
-import type { SkottInstance } from "../../../index.js";
-import type { SkottNode } from "../../../src/graph/node.js";
+import type { SkottInstance } from "../../../../../index.js";
+import type { SkottNode } from "../../../../graph/node.js";
 import type { CliParameterOptions } from "../../cli-config.js";
 
 import { makeIndents } from "./shared.js";

@@ -7,8 +7,7 @@ import { fileURLToPath } from "node:url";
 import { Command } from "commander";
 
 import { kExpectedModuleExtensions } from "../src/modules/resolvers/base-resolver.js";
-
-import { main } from "./main.js";
+import { renderTerminalApplication } from "../src/rendering/terminal/api.js";
 
 function readManifestVersion(): string {
   try {
@@ -169,6 +168,8 @@ cli
           | ./node_modules/.bin/skott --showCircularDependencies --displayMode=raw --watch\n
         `)
   )
-  .action((name, commandAndOptions) => main(name, commandAndOptions));
+  .action((name, commandAndOptions) =>
+    renderTerminalApplication(name, commandAndOptions)
+  );
 
 cli.parse(process.argv);

@@ -3,7 +3,7 @@ import path from "node:path";
 import { makeTreeStructure, type TreeStructure } from "fs-tree-structure";
 import kleur from "kleur";
 
-import type { SkottInstance } from "../../../index.js";
+import type { SkottInstance } from "../../../../../index.js";
 import type { CliParameterOptions } from "../../cli-config.js";
 import { displayCircularDependencies } from "../console/dependencies.js";
 import { kLeftSeparator, makeIndents } from "../console/shared.js";

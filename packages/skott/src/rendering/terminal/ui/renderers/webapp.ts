@@ -3,8 +3,8 @@ import path from "node:path";
 
 import kleur from "kleur";
 
-import { createHttpApp } from "../../../src/rendering/webapp/internal.js";
-import type { SkottInstance } from "../../../src/skott.js";
+import { createHttpApp } from "../../../../rendering/webapp/internal.js";
+import type { SkottInstance } from "../../../../skott.js";
 import type { CliOptions } from "../../cli-config.js";
 
 const trackingWithCommands = {

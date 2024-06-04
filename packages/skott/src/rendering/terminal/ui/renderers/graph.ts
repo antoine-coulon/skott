@@ -1,7 +1,7 @@
 import kleur from "kleur";
 
-import type { SkottInstance } from "../../../index.js";
-import type { SkottNode, SkottNodeBody } from "../../../src/graph/node.js";
+import type { SkottInstance } from "../../../../../index.js";
+import type { SkottNode, SkottNodeBody } from "../../../../graph/node.js";
 import type { CliParameterOptions } from "../../cli-config.js";
 import { displayCircularDependencies } from "../console/dependencies.js";
 import { bytesToKB, kLeftSeparator, makeIndents } from "../console/shared.js";
