@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { Command } from "commander";
 
 import { kExpectedModuleExtensions } from "../src/modules/resolvers/base-resolver.js";
-import { runTerminalApplication } from "../src/rendering/terminal/internal.js";
+import { runTerminalApplicationFromCLI } from "../src/rendering/terminal/internal.js";
 
 function readManifestVersion(): string {
   try {
@@ -169,7 +169,7 @@ cli
         `)
   )
   .action((name, commandAndOptions) =>
-    runTerminalApplication(name, commandAndOptions)
+    runTerminalApplicationFromCLI(name, commandAndOptions)
   );
 
 cli.parse(process.argv);

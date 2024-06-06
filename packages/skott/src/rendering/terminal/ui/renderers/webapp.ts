@@ -1,9 +1,11 @@
 import type EventEmitter from "node:events";
-import path from "node:path";
 
 import kleur from "kleur";
 
-import { createHttpApp } from "../../../../rendering/webapp/internal.js";
+import {
+  createHttpApp,
+  resolveEntrypointPath
+} from "../../../../rendering/webapp/internal.js";
 import type { SkottInstance } from "../../../../skott.js";
 
 import type { SkottConfig } from "skott";
@@ -40,22 +42,6 @@ function renderSelectedTracking(
         .yellow(optionInformation.argument)} to enable tracking.`
     );
   }
-}
-
-function resolveEntrypointPath(options: {
-  entrypoint: string | undefined;
-  includeBaseDir: boolean;
-}) {
-  const { entrypoint, includeBaseDir } = options;
-  let baseEntrypointPath: string | undefined;
-
-  if (includeBaseDir && entrypoint) {
-    baseEntrypointPath = path.join(path.dirname(entrypoint), entrypoint);
-  } else if (entrypoint) {
-    baseEntrypointPath = path.basename(entrypoint);
-  }
-
-  return baseEntrypointPath;
 }
 
 export function renderWebApplication(config: {

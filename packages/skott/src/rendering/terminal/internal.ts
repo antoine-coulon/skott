@@ -1,42 +1,37 @@
-import EventEmitter from "node:events";
-import path from "node:path";
-import { performance } from "node:perf_hooks";
-
 import kleur from "kleur";
 
-import type { SkottStructure } from "../../../index.js";
+import { createRuntimeConfig } from "../../instance.js";
+import { kExpectedModuleExtensions } from "../../modules/resolvers/base-resolver.js";
 
+import { runTerminal } from "./runner.js";
 import { makeSkottRunner } from "./runner.js";
-import { renderStaticFile } from "./static-file.js";
-import {
-  ensureNoIllegalTerminalConfig,
-  type CliParameterOptions
-} from "./terminal-config.js";
-import {
-  displayCircularDependencies,
-  displayDependenciesReport
-} from "./ui/console/dependencies.js";
-import { renderFileTree } from "./ui/renderers/file-tree.js";
-import { renderGraph } from "./ui/renderers/graph.js";
-import { RenderManager, CliComponent } from "./ui/renderers/render-manager.js";
-import { renderWebApplication } from "./ui/renderers/webapp.js";
-import { registerWatchMode } from "./watch-mode.js";
+import { ensureNoIllegalTerminalConfig } from "./terminal-config.js";
 
-function displayInitialGetStructureTime(
-  files: SkottStructure["files"],
-  startTime: number
-) {
-  const filesWord = files.length > 1 ? "files" : "file";
-  const timeTookStructure = `${(performance.now() - startTime).toFixed(3)}ms`;
+export type CliOptions = {
+  entrypoint: string | undefined;
+} & CliParameterOptions;
 
-  console.log(
-    `\n Processed ${kleur.bold().green(files.length)} ${filesWord} (${kleur
-      .magenta()
-      .bold(timeTookStructure)})`
-  );
-}
+export type CliParameterOptions = {
+  circularMaxDepth: number;
+  cwd: string;
+  displayMode: "raw" | "file-tree" | "graph" | "webapp";
+  exitCodeOnCircularDependencies: number;
+  fileExtensions: string;
+  ignorePattern: string;
+  includeBaseDir: boolean;
+  incremental: boolean;
+  manifest: string;
+  showCircularDependencies: boolean;
+  showUnusedDependencies: boolean;
+  trackBuiltinDependencies: boolean;
+  trackThirdPartyDependencies: boolean;
+  trackTypeOnlyDependencies: boolean;
+  tsconfig: string;
+  verbose: boolean;
+  watch: boolean;
+};
 
-export async function runTerminalApplication(
+export async function runTerminalApplicationFromCLI<T>(
   entrypoint: string | undefined,
   options: CliParameterOptions
 ): Promise<void> {
@@ -47,131 +42,15 @@ export async function runTerminalApplication(
     process.exit(1);
   }
 
-  const runSkott = makeSkottRunner(entrypoint, options);
+  const runtimeConfig = createRuntimeConfig<T>({
+    ...options,
+    entrypoint,
+    fileExtensions: options.fileExtensions
+      .split(",")
+      .filter((ext) => kExpectedModuleExtensions.has(ext))
+  });
 
-  if (entrypoint) {
-    console.log(
-      `\n Running ${kleur.blue().bold("skott")} from entrypoint: ${kleur
-        .yellow()
-        .underline()
-        .bold(`${entrypoint}`)}`
-    );
-  } else {
-    console.log(
-      `\n Running ${kleur.blue().bold("skott")} from current directory: ${kleur
-        .yellow()
-        .underline()
-        .bold(`${path.basename(options.cwd)}`)}`
-    );
-  }
+  const runSkott = makeSkottRunner(runtimeConfig);
 
-  if (options.incremental) {
-    console.log(
-      `\n ${kleur
-        .bold()
-        .yellow(
-          "`incremental` mode is experimental. Please report any issues you encounter."
-        )}`
-    );
-  }
-
-  const start = performance.now();
-  let skottInstance = await runSkott();
-  const { graph, files } = skottInstance.getStructure();
-  displayInitialGetStructureTime(files, start);
-
-  let watcherEmitter: EventEmitter | undefined;
-  let renderManager: RenderManager | undefined;
-
-  if (options.watch) {
-    watcherEmitter = new EventEmitter();
-    renderManager = new RenderManager(watcherEmitter);
-  }
-
-  if (options.displayMode === "file-tree") {
-    const fileTreeComponent = new CliComponent(() =>
-      renderFileTree(skottInstance, options)
-    );
-
-    renderManager?.renderOnChanges(fileTreeComponent);
-  } else if (options.displayMode === "graph") {
-    const graphComponent = new CliComponent(() =>
-      renderGraph(skottInstance, options)
-    );
-
-    renderManager?.renderOnChanges(graphComponent);
-  } else if (options.displayMode === "webapp") {
-    const circularDepsComponent = new CliComponent(() =>
-      displayCircularDependencies(skottInstance, {
-        ...options,
-        /**
-         * We only want to display the overview that is whether the graph is
-         * acyclic or not. Circular dependencies will be displayed within the webapp
-         * itself.
-         */
-        showCircularDependencies: false
-      })
-    );
-
-    renderManager?.renderOnChanges(circularDepsComponent);
-
-    renderWebApplication({
-      getSkottInstance: () => skottInstance,
-      options: {
-        entrypoint,
-        includeBaseDir: options.includeBaseDir,
-        tracking: {
-          builtin: options.trackBuiltinDependencies,
-          thirdParty: options.trackThirdPartyDependencies,
-          typeOnly: options.trackTypeOnlyDependencies
-        }
-      },
-      watcherEmitter
-    });
-  } else if (options.displayMode === "raw") {
-    const circularDepsComponent = new CliComponent(() =>
-      displayCircularDependencies(skottInstance, options)
-    );
-
-    renderManager?.renderOnChanges(circularDepsComponent);
-  } else {
-    // @TODO: check if this is a valid display mode if the registered plugin
-    // is registered.
-    await renderStaticFile(graph, options.displayMode);
-  }
-
-  // Additional information we want to display when using the console UI
-  // To avoid redondant information, we don't display it when using the webapp
-  if (options.displayMode !== "webapp") {
-    await new Promise((resolve) => {
-      const depsReportComponent = new CliComponent(() =>
-        displayDependenciesReport(skottInstance, options).then(resolve)
-      );
-
-      renderManager?.renderOnChanges(depsReportComponent);
-    });
-  }
-
-  if (options.watch) {
-    registerWatchMode({
-      cwd: options.cwd,
-      ignorePattern: options.ignorePattern,
-      fileExtensions: options.fileExtensions.split(","),
-      onChangesDetected: (done) => {
-        runSkott().then((newSkottInstance) => {
-          skottInstance = newSkottInstance;
-          watcherEmitter!.emit("change");
-          renderManager!.afterRenderingPhase(done);
-        });
-      }
-    });
-  }
+  runTerminal(runSkott, runtimeConfig, options);
 }
-
-process.on("exit", (code) => {
-  console.log(
-    `\n ${kleur.bold().blue("skott")} exited with code ${kleur
-      .bold()
-      .yellow(code)}`
-  );
-});

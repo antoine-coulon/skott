@@ -36,11 +36,17 @@ export function createInstance<T>(runtimeConfig: RuntimeConfig): Skott<T> {
   );
 }
 
-export async function run<T>(
+export function run<T>(
   inputConfig: InputConfig<T> | null = Object.create(null)
 ): Promise<SkottInstance<T>> {
   const config = createRuntimeConfig(inputConfig);
   const instance = createInstance<T>(config);
 
   return instance.initialize();
+}
+
+export async function runFromRuntimeConfig<T>(
+  runtimeConfig: RuntimeConfig
+): Promise<SkottInstance<T>> {
+  return createInstance<T>(runtimeConfig).initialize();
 }

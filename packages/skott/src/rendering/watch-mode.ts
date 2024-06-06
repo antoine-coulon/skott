@@ -8,7 +8,7 @@ import kleur from "kleur";
 // @ts-expect-error - no valid type definitions exist
 import gitignoreParse from "parse-gitignore";
 
-import { defaultIgnoredDirs } from "../../modules/resolvers/base-resolver.js";
+import { defaultIgnoredDirs } from "../modules/resolvers/base-resolver.js";
 
 export const watchModeStatus = {
   watching_for_changes:

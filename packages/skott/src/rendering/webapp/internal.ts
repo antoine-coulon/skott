@@ -1,4 +1,5 @@
 import { ChildProcess, spawn } from "node:child_process";
+import path from "node:path";
 import { platform } from "node:process";
 
 import compression from "compression";
@@ -131,4 +132,20 @@ export function createHttpApp(port: number) {
       });
     }
   };
+}
+
+export function resolveEntrypointPath(options: {
+  entrypoint: string | undefined;
+  includeBaseDir: boolean;
+}) {
+  const { entrypoint, includeBaseDir } = options;
+  let baseEntrypointPath: string | undefined;
+
+  if (includeBaseDir && entrypoint) {
+    baseEntrypointPath = path.join(path.dirname(entrypoint), entrypoint);
+  } else if (entrypoint) {
+    baseEntrypointPath = path.basename(entrypoint);
+  }
+
+  return baseEntrypointPath;
 }

@@ -1,41 +1,19 @@
 import { Either } from "effect";
 
-export type CliOptions = {
-  entrypoint: string | undefined;
-} & CliParameterOptions;
-
-export type CliParameterOptions = {
-  circularMaxDepth: number;
-  cwd: string;
-  displayMode: "raw" | "file-tree" | "graph" | "webapp";
-  exitCodeOnCircularDependencies: number;
-  fileExtensions: string;
-  ignorePattern: string;
-  includeBaseDir: boolean;
-  incremental: boolean;
-  manifest: string;
-  showCircularDependencies: boolean;
-  showUnusedDependencies: boolean;
-  trackBuiltinDependencies: boolean;
-  trackThirdPartyDependencies: boolean;
-  trackTypeOnlyDependencies: boolean;
-  tsconfig: string;
-  verbose: boolean;
-  watch: boolean;
-};
-
 export interface TerminalConfig {
   watch: boolean;
   displayMode: "raw" | "file-tree" | "graph" | "webapp";
   showCircularDependencies: boolean;
   showUnusedDependencies: boolean;
+  exitCodeOnCircularDependencies: number;
 }
 
 export const defaultTerminalConfig: TerminalConfig = {
   watch: false,
   displayMode: "raw",
   showCircularDependencies: false,
-  showUnusedDependencies: false
+  showUnusedDependencies: false,
+  exitCodeOnCircularDependencies: 1
 };
 
 export function ensureNoIllegalTerminalConfig(options: TerminalConfig) {
