@@ -2,7 +2,6 @@ import kleur from "kleur";
 
 import type { SkottInstance } from "../../../../../index.js";
 import type { SkottNode, SkottNodeBody } from "../../../../graph/node.js";
-import type { CliParameterOptions } from "../../cli-config.js";
 import { displayCircularDependencies } from "../console/dependencies.js";
 import { bytesToKB, kLeftSeparator, makeIndents } from "../console/shared.js";
 
@@ -69,7 +68,11 @@ function render(
 
 export function renderGraph(
   skottInstance: SkottInstance,
-  options: CliParameterOptions
+  options: {
+    circularMaxDepth: number;
+    showCircularDependencies: boolean;
+    exitCodeOnCircularDependencies: number;
+  }
 ) {
   const circularDeps = displayCircularDependencies(skottInstance, options);
   const filesInvolvedInCycles = circularDeps.flat(1);

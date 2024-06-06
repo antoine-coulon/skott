@@ -5,7 +5,8 @@ import kleur from "kleur";
 
 import { createHttpApp } from "../../../../rendering/webapp/internal.js";
 import type { SkottInstance } from "../../../../skott.js";
-import type { CliOptions } from "../../cli-config.js";
+
+import type { SkottConfig } from "skott";
 
 const trackingWithCommands = {
   builtin: {
@@ -41,7 +42,10 @@ function renderSelectedTracking(
   }
 }
 
-function resolveEntrypointPath(options: CliOptions) {
+function resolveEntrypointPath(options: {
+  entrypoint: string | undefined;
+  includeBaseDir: boolean;
+}) {
   const { entrypoint, includeBaseDir } = options;
   let baseEntrypointPath: string | undefined;
 
@@ -56,15 +60,19 @@ function resolveEntrypointPath(options: CliOptions) {
 
 export function renderWebApplication(config: {
   getSkottInstance: () => SkottInstance;
-  options: CliOptions;
+  options: {
+    tracking: SkottConfig<unknown>["dependencyTracking"];
+    entrypoint: string | undefined;
+    includeBaseDir: boolean;
+  };
   watcherEmitter?: EventEmitter;
 }): void {
   const entrypoint = resolveEntrypointPath(config.options);
   const { getSkottInstance, watcherEmitter } = config;
   const dependencyTracking = {
-    thirdParty: config.options.trackThirdPartyDependencies,
-    builtin: config.options.trackBuiltinDependencies,
-    typeOnly: config.options.trackTypeOnlyDependencies
+    thirdParty: config.options.tracking.thirdParty,
+    builtin: config.options.tracking.builtin,
+    typeOnly: config.options.tracking.typeOnly
   };
 
   for (const [key, value] of Object.entries(dependencyTracking)) {

@@ -2,7 +2,6 @@ import kleur from "kleur";
 
 import type { SkottInstance } from "../../../../../index.js";
 import type { SkottNode } from "../../../../graph/node.js";
-import type { CliParameterOptions } from "../../cli-config.js";
 
 import { makeIndents } from "./shared.js";
 
@@ -172,7 +171,11 @@ export function displayNoCircularDependenciesFound(
 
 export async function displayDependenciesReport(
   skottInstance: SkottInstance,
-  options: CliParameterOptions
+  options: {
+    showUnusedDependencies: boolean;
+    trackThirdPartyDependencies: boolean;
+    trackBuiltinDependencies: boolean;
+  }
 ) {
   if (options.showUnusedDependencies && !options.trackThirdPartyDependencies) {
     console.log(
@@ -209,7 +212,11 @@ export async function displayDependenciesReport(
 
 export function displayCircularDependencies(
   skottInstance: SkottInstance,
-  options: CliParameterOptions
+  options: {
+    circularMaxDepth: number;
+    showCircularDependencies: boolean;
+    exitCodeOnCircularDependencies: number;
+  }
 ): string[][] {
   const circularDependencies: string[][] = [];
   const { findCircularDependencies, hasCircularDependencies } =

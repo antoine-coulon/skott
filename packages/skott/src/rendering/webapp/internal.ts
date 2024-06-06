@@ -82,7 +82,7 @@ export function createHttpApp(port: number) {
         | {
             autoOpen: true;
             onListen?: (port: number) => void;
-            onOpen?: (err?: Error) => void;
+            onOpenError?: (error: Error) => void;
           }
     ) => {
       app.listen(port);
@@ -107,8 +107,8 @@ export function createHttpApp(port: number) {
 
       open(bindedAddress, (error) => {
         if (error) {
-          if (inputOptions.onOpen) {
-            inputOptions.onOpen(error);
+          if (inputOptions.onOpenError) {
+            inputOptions.onOpenError(error);
 
             return;
           }

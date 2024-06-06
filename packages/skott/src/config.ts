@@ -5,6 +5,36 @@ import * as D from "io-ts/lib/Decoder.js";
 import { dependencyResolverDecoder } from "./modules/resolvers/base-resolver.js";
 import { defaultConfig, type SkottConfig } from "./skott.js";
 
+export interface InputConfig<T> extends Partial<SkottConfig<T>> {
+  cwd?: string;
+  verbose?: boolean;
+  ignorePattern?: string;
+}
+
+function raiseIllegalConfigException(configuration: string): never {
+  throw new Error(`Illegal configuration: ${configuration}`);
+}
+
+export function checkIllegalRuntimeConfigs<T>(
+  config: Option.Option<InputConfig<T>>
+): void {
+  if (Option.isSome(config)) {
+    const { entrypoint, includeBaseDir, cwd } = config.value;
+
+    if (!entrypoint && includeBaseDir) {
+      raiseIllegalConfigException(
+        "`includeBaseDir` can only be used when providing an entrypoint"
+      );
+    }
+
+    if (entrypoint && cwd && cwd !== process.cwd()) {
+      raiseIllegalConfigException(
+        "`cwd` can't be customized when providing an entrypoint"
+      );
+    }
+  }
+}
+
 function withDefaultValue<T>(defaultValue: T) {
   return (decoder: D.Decoder<unknown, T>): D.Decoder<unknown, T> => {
     return {
@@ -59,6 +89,8 @@ const getConfig = () =>
     verbose: withDefaultValue(false)(D.boolean),
     ignorePattern: withDefaultValue("")(D.string)
   });
+
+export type RuntimeConfig = ReturnType<typeof decodeInputConfig>;
 
 export function decodeInputConfig<T>(
   partialConfig: Option.Option<Partial<SkottConfig<T>>>

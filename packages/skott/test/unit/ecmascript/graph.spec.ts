@@ -3,16 +3,17 @@ import { describe, expect, it } from "vitest";
 
 import { InMemoryFileWriter } from "../../../src/filesystem/fake/file-writer.js";
 import { FileReader } from "../../../src/filesystem/file-reader.js";
-import { SkottNode } from "../../../src/graph/node.js";
 import { CollectLevel } from "../../../src/graph/traversal.js";
 import { FakeLogger } from "../../../src/logger.js";
 import { EcmaScriptDependencyResolver } from "../../../src/modules/resolvers/ecmascript/resolver.js";
 import { ModuleWalkerSelector } from "../../../src/modules/walkers/common.js";
-import { Skott, SkottStructure } from "../../../src/skott.js";
+import { Skott, type SkottStructure } from "../../../src/skott.js";
 import {
   buildSkottProjectUsingInMemoryFileExplorer,
   mountFakeFileSystem
 } from "../shared.js";
+
+import type { SkottNode } from "skott/graph/node";
 
 class InMemoryFileReaderWithFakeStats implements FileReader {
   read(filename: string): Promise<string> {

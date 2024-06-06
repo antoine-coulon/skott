@@ -4,11 +4,12 @@ import kleur from "kleur";
 import type { Ora } from "ora";
 import ora from "ora";
 
-import skott, { type SkottInstance } from "../../../index.js";
+import { type SkottInstance } from "../../../index.js";
+import { run } from "../../instance.js";
 import { kExpectedModuleExtensions } from "../../modules/resolvers/base-resolver.js";
 import { EcmaScriptDependencyResolver } from "../../modules/resolvers/ecmascript/resolver.js";
 
-import type { CliParameterOptions } from "./cli-config.js";
+import type { CliParameterOptions } from "./terminal-config.js";
 
 export function makeSkottRunner(
   entrypoint: string | undefined,
@@ -37,7 +38,7 @@ export function makeSkottRunner(
 
       isFirstRun = false;
 
-      const skottResult = await skott({
+      const skottResult = await run({
         entrypoint: entrypoint ? entrypoint : undefined,
         ignorePattern: options.ignorePattern,
         incremental: options.incremental,
