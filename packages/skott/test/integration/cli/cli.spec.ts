@@ -21,7 +21,7 @@ const useTimeout = (time_ms: number) => AbortSignal.timeout(time_ms);
 
 const increaseTimeoutFactor = process.env.CI ? 3 : 1;
 
-describe("When running skott cli", () => {
+describe.sequential("When running skott cli", () => {
   beforeAll(async () => {
     await transpileCliExecutable();
   });
@@ -277,6 +277,6 @@ describe("When running skott cli", () => {
         });
       });
     },
-    { timeout: 30_000 }
+    30_000
   );
 });

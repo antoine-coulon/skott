@@ -1,7 +1,7 @@
 import child_process from "node:child_process";
 import fs from "node:fs";
 
-import { watchModeStatus } from "../../../bin/watch-mode.js";
+import { watchModeStatus } from "../../../src/rendering/watch-mode.js";
 
 export function prepareFinalizer(entryPath: string) {
   return (done: () => void) => {

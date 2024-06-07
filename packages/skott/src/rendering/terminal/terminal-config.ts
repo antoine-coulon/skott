@@ -1,4 +1,5 @@
 import { Either } from "effect";
+import * as D from "io-ts/lib/Decoder.js";
 
 export interface TerminalConfig {
   watch: boolean;
@@ -16,7 +17,27 @@ export const defaultTerminalConfig: TerminalConfig = {
   exitCodeOnCircularDependencies: 1
 };
 
+const terminalSchema = D.struct({
+  watch: D.boolean,
+  displayMode: D.union(
+    D.literal("raw"),
+    D.literal("file-tree"),
+    D.literal("graph"),
+    D.literal("webapp")
+  ),
+  showCircularDependencies: D.boolean,
+  showUnusedDependencies: D.boolean,
+  exitCodeOnCircularDependencies: D.number
+});
+
 export function ensureNoIllegalTerminalConfig(options: TerminalConfig) {
+  const result = terminalSchema.decode(options);
+
+  if (result._tag === "Left") {
+    return Either.left(
+      `Invalid terminal configuration: ${D.draw(result.left)}`
+    );
+  }
   /**
    * Some `show*` params exist but are only relevant when using CLI-based.
    * `--showCircularDependencies` is already supported in the webapp even without

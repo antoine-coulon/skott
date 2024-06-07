@@ -9,7 +9,7 @@ import { Skott, defaultConfig } from "../../src/skott.js";
 
 import { createRealFileSystem } from "./create-fs-sandbox.js";
 
-describe("When running Skott using all real dependencies", () => {
+describe("When running skott using all real dependencies", () => {
   describe("When providing various configurations", () => {
     test("Should support empty config", async () => {
       const skottInstance = await skott();
