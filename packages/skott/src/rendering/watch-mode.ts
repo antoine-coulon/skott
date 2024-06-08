@@ -56,10 +56,24 @@ async function retrieveGitIgnoredEntries(cwd: string): Promise<string[]> {
   );
 }
 
+function makeLogger(verbose: boolean) {
+  return {
+    log: (message: string) => {
+      if (!verbose) return;
+      console.log(message);
+    },
+    stdout: (message: string) => {
+      if (!verbose) return;
+      process.stdout.write(message);
+    }
+  };
+}
+
 export interface WatchModeOptions {
   cwd: string;
   ignorePattern: string;
   fileExtensions: string[];
+  verbose?: boolean;
   onChangesDetected: (doneSubscribersPropagation: () => void) => void;
 }
 
@@ -67,6 +81,7 @@ export async function registerWatchMode({
   cwd,
   ignorePattern,
   fileExtensions,
+  verbose,
   onChangesDetected
 }: WatchModeOptions) {
   /**
@@ -74,6 +89,7 @@ export async function registerWatchMode({
    * located at the provided cwd.
    */
   const gitIgnoredEntries = await retrieveGitIgnoredEntries(cwd);
+  const logger = makeLogger(verbose ?? false);
 
   const listOfWatchableFileExtensions = fileExtensions
     .map(toDotlessExtension)
@@ -92,13 +108,11 @@ export async function registerWatchMode({
     ignoreList.push(ignorePattern);
   }
 
-  console.log(
+  logger.log(
     kleur.bold().grey("\n \n -------------skott(watch-mode)-------------")
   );
 
-  console.log(
-    `\n ${kleur.bold().yellow(watchModeStatus.watching_for_changes)}`
-  );
+  logger.log(`\n ${kleur.bold().yellow(watchModeStatus.watching_for_changes)}`);
 
   const uniqueIgnoreList = [...new Set(ignoreList)];
 
@@ -111,29 +125,31 @@ export async function registerWatchMode({
   return watcher.subscribe(
     cwd,
     (_err, _events) => {
-      changesCount++;
+      if (verbose) {
+        changesCount++;
 
-      if (changesCount === 1) {
-        process.stdout.write("\n");
-      }
+        if (changesCount === 1) {
+          logger.stdout("\n");
+        }
 
-      clearTerminal();
+        clearTerminal();
 
-      if (changesCount > 1) {
-        process.stdout.clearLine(0);
-        process.stdout.cursorTo(0);
+        if (changesCount > 1) {
+          process.stdout.clearLine(0);
+          process.stdout.cursorTo(0);
+        }
       }
 
       onChangesDetected(() => {
-        console.log(
+        logger.log(
           kleur.bold().grey("\n \n <------------skott(watch-mode)------------>")
         );
 
-        console.log(
+        logger.log(
           `\n ${kleur.bold().yellow(watchModeStatus.watching_for_changes)}`
         );
 
-        process.stdout.write(
+        logger.stdout(
           `\n ${kleur
             .bold()
             .yellow(watchModeStatus.changes_detected)} ${printChangeCount()}`

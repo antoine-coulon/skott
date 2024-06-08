@@ -223,6 +223,7 @@ export async function runTerminal<T>(
       cwd: runtimeConfig.cwd,
       ignorePattern: runtimeConfig.ignorePattern,
       fileExtensions: runtimeConfig.fileExtensions,
+      verbose: true,
       onChangesDetected: (done) => {
         run().then((newSkottInstance) => {
           skottInstance = newSkottInstance;

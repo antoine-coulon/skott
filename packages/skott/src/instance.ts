@@ -45,7 +45,7 @@ export function run<T>(
   return instance.initialize();
 }
 
-export async function runFromRuntimeConfig<T>(
+export function runFromRuntimeConfig<T>(
   runtimeConfig: RuntimeConfig
 ): Promise<SkottInstance<T>> {
   return createInstance<T>(runtimeConfig).initialize();

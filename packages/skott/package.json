@@ -24,7 +24,7 @@
     "./filesystem/*": "./dist/src/filesystem/*.js",
     "./modules/*": "./dist/src/modules/*.js",
     "./graph/*": "./dist/src/graph/*.js",
-    "./rendering/*": "./dist/src/rendering/api.js"
+    "./rendering": "./dist/src/rendering/api.js"
   },
   "types": "./dist/index.d.ts",
   "scripts": {

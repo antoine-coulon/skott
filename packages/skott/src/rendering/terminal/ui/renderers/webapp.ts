@@ -6,9 +6,7 @@ import {
   createHttpApp,
   resolveEntrypointPath
 } from "../../../../rendering/webapp/internal.js";
-import type { SkottInstance } from "../../../../skott.js";
-
-import type { SkottConfig } from "skott";
+import type { SkottInstance, SkottConfig } from "../../../../skott.js";
 
 const trackingWithCommands = {
   builtin: {

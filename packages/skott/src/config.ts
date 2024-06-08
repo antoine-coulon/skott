@@ -100,7 +100,7 @@ export function decodeInputConfig<T>(
     Option.getOrNull,
     getConfig().decode,
     E.fold((decodeError) => {
-      throw new Error(`Invalid Skott config. Reason: ${D.draw(decodeError)}`);
+      throw new Error(`Invalid skott config. Reason: ${D.draw(decodeError)}`);
     }, identity)
   );
 }
