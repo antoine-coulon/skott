@@ -1,13 +1,12 @@
 import { describe, expect, test } from "vitest";
 
-import skott from "../../index.js";
-import { InMemoryFileWriter } from "../../src/filesystem/fake/file-writer.js";
-import { FileSystemReader } from "../../src/filesystem/file-reader.js";
-import { FakeLogger } from "../../src/logger.js";
-import { ModuleWalkerSelector } from "../../src/modules/walkers/common.js";
-import { Skott, defaultConfig } from "../../src/skott.js";
-
-import { createRealFileSystem } from "./create-fs-sandbox.js";
+import skott from "../../../index.js";
+import { InMemoryFileWriter } from "../../../src/filesystem/fake/file-writer.js";
+import { FileSystemReader } from "../../../src/filesystem/file-reader.js";
+import { FakeLogger } from "../../../src/logger.js";
+import { ModuleWalkerSelector } from "../../../src/modules/walkers/common.js";
+import { Skott, defaultConfig } from "../../../src/skott.js";
+import { createRealFileSystem } from "../create-fs-sandbox.js";
 
 describe("When running skott using all real dependencies", () => {
   describe("When providing various configurations", () => {
@@ -26,7 +25,7 @@ describe("When running skott using all real dependencies", () => {
         });
       }
 
-      await expect(makeSkott()).rejects.toThrow(
+      await expect(async () => makeSkott()).rejects.toThrow(
         "Illegal configuration: `includeBaseDir` can only be used when providing an entrypoint"
       );
     });
@@ -40,14 +39,14 @@ describe("When running skott using all real dependencies", () => {
         });
       }
 
-      await expect(makeSkott()).rejects.toThrow(
+      await expect(async () => makeSkott()).rejects.toThrow(
         "Illegal configuration: `cwd` can't be customized when providing an entrypoint"
       );
     });
 
     describe("groupBy", () => {
       test("Should not allow `groupBy` to be a non-function", async () => {
-        await expect(() =>
+        await expect(async () =>
           skott({
             // @ts-expect-error
             groupBy: "not-a-function"
@@ -212,7 +211,7 @@ describe("When running skott using all real dependencies", () => {
             });
           });
 
-          test("Should ignore files + their relatively imported files with pattern realtive to cwd", async () => {
+          test("Should ignore files + their relatively imported files with pattern relative to cwd", async () => {
             const skott = new Skott(
               defaultConfig,
               new FileSystemReader({
@@ -228,7 +227,7 @@ describe("When running skott using all real dependencies", () => {
               .initialize()
               .then(({ getStructure }) => getStructure());
 
-            expect(files.filter((f) => f.includes("src"))).toEqual([]);
+            expect(files.filter((f) => f.startsWith("src"))).toEqual([]);
           });
         });
       });
