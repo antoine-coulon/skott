@@ -8,8 +8,8 @@ import { ModuleWalkerSelector } from "../../../src/modules/walkers/common.js";
 import { Skott, defaultConfig } from "../../../src/skott.js";
 import { createRealFileSystem } from "../create-fs-sandbox.js";
 
-describe("When running skott using all real dependencies", () => {
-  describe("When providing various configurations", () => {
+describe.sequential("When running skott using all real dependencies", () => {
+  describe.sequential("When providing various configurations", () => {
     test("Should support empty config", async () => {
       const skottInstance = await skott();
 
@@ -44,7 +44,7 @@ describe("When running skott using all real dependencies", () => {
       );
     });
 
-    describe("groupBy", () => {
+    describe.sequential("groupBy", () => {
       test("Should not allow `groupBy` to be a non-function", async () => {
         await expect(async () =>
           skott({
@@ -66,7 +66,7 @@ describe("When running skott using all real dependencies", () => {
     });
   });
 
-  describe("When traversing files", () => {
+  describe.sequential("When traversing files", () => {
     test("Should ignore files listed in `.gitignore`", async () => {
       const fsRootDir = `skott-ignore-temp-fs`;
 
@@ -106,8 +106,8 @@ describe("When running skott using all real dependencies", () => {
       });
     });
 
-    describe("When using ignore pattern", () => {
-      describe("When running bulk analysis", () => {
+    describe.sequential("When using ignore pattern", () => {
+      describe.sequential("When running bulk analysis", () => {
         test("Should discard files with pattern relative to an absolute directory path", async () => {
           const fsRootDir = `skott-ignore-temp-fs`;
 
@@ -176,23 +176,89 @@ describe("When running skott using all real dependencies", () => {
           });
         });
 
-        describe("When there is module imports between files", () => {
-          test("Should discard files + ignore their imported files with pattern relative to the baseDir", async () => {
+        describe.sequential(
+          "When there is module imports between files",
+          () => {
+            test("Should discard files + ignore their imported files with pattern relative to the baseDir", async () => {
+              const fsRootDir = `skott-ignore-temp-fs`;
+
+              const runSandbox = createRealFileSystem(fsRootDir, {
+                "skott-ignore-temp-fs/project-a/file.ts": `import ../util/dates`,
+                "skott-ignore-temp-fs/project-b/nested/file.ts": `import ../../util/dates`,
+                "skott-ignore-temp-fs/util/dates/index.ts": `console.log("hello world")`
+              });
+
+              expect.assertions(1);
+
+              const skott = new Skott(
+                defaultConfig,
+                new FileSystemReader({
+                  cwd: fsRootDir,
+                  ignorePattern: `util/dates/**/*`
+                }),
+                new InMemoryFileWriter(),
+                new ModuleWalkerSelector(),
+                new FakeLogger()
+              );
+
+              await runSandbox(async () => {
+                const { files } = await skott
+                  .initialize()
+                  .then(({ getStructure }) => getStructure());
+
+                expect(files).toEqual([
+                  "skott-ignore-temp-fs/project-a/file.ts",
+                  "skott-ignore-temp-fs/project-b/nested/file.ts"
+                ]);
+              });
+            });
+
+            test("Should ignore files + their relatively imported files with pattern relative to cwd", async () => {
+              const skott = new Skott(
+                defaultConfig,
+                new FileSystemReader({
+                  cwd: process.cwd(),
+                  ignorePattern: `src/**/*`
+                }),
+                new InMemoryFileWriter(),
+                new ModuleWalkerSelector(),
+                new FakeLogger()
+              );
+
+              const { files } = await skott
+                .initialize()
+                .then(({ getStructure }) => getStructure());
+
+              expect(files.filter((f) => f.startsWith("src"))).toEqual([]);
+            });
+          }
+        );
+      });
+
+      describe.sequential(
+        "When running analysis starting from an entrypoint",
+        () => {
+          test("Should ignore files using ignore pattern relatively to the provided the base dir", async () => {
             const fsRootDir = `skott-ignore-temp-fs`;
 
             const runSandbox = createRealFileSystem(fsRootDir, {
-              "skott-ignore-temp-fs/project-a/file.ts": `import ../util/dates`,
-              "skott-ignore-temp-fs/project-b/nested/file.ts": `import ../../util/dates`,
-              "skott-ignore-temp-fs/util/dates/index.ts": `console.log("hello world")`
+              "skott-ignore-temp-fs/project-a/file.ts": `
+              import "../lib/index";
+            `,
+              "skott-ignore-temp-fs/lib/index.ts": `console.log("hello world")`
             });
 
             expect.assertions(1);
 
             const skott = new Skott(
-              defaultConfig,
+              {
+                ...defaultConfig,
+                entrypoint: `${fsRootDir}/project-a/file.ts`,
+                includeBaseDir: true
+              },
               new FileSystemReader({
                 cwd: fsRootDir,
-                ignorePattern: `util/dates/**/*`
+                ignorePattern: `lib/**/*`
               }),
               new InMemoryFileWriter(),
               new ModuleWalkerSelector(),
@@ -204,112 +270,52 @@ describe("When running skott using all real dependencies", () => {
                 .initialize()
                 .then(({ getStructure }) => getStructure());
 
-              expect(files).toEqual([
-                "skott-ignore-temp-fs/project-a/file.ts",
-                "skott-ignore-temp-fs/project-b/nested/file.ts"
-              ]);
+              expect(files).toEqual(["skott-ignore-temp-fs/project-a/file.ts"]);
             });
           });
 
-          test("Should ignore files + their relatively imported files with pattern relative to cwd", async () => {
+          test("Should ignore files using ignore pattern without relying on provided the base dir", async () => {
+            const fsRootDir = `skott-ignore-temp-fs`;
+
+            const runSandbox = createRealFileSystem(fsRootDir, {
+              "skott-ignore-temp-fs/project-a/file.ts": `
+              import "../lib/index";
+              import "../sub-folder/lib/index";
+            `,
+              "skott-ignore-temp-fs/sub-folder/lib/index.ts": `console.log("hello world")`,
+              "skott-ignore-temp-fs/lib/index.ts": `console.log("hello world")`
+            });
+
+            expect.assertions(1);
+
             const skott = new Skott(
-              defaultConfig,
+              {
+                ...defaultConfig,
+                entrypoint: `${fsRootDir}/project-a/file.ts`,
+                includeBaseDir: false
+              },
               new FileSystemReader({
-                cwd: process.cwd(),
-                ignorePattern: `src/**/*`
+                cwd: fsRootDir,
+                ignorePattern: `lib/**/*`
               }),
               new InMemoryFileWriter(),
               new ModuleWalkerSelector(),
               new FakeLogger()
             );
 
-            const { files } = await skott
-              .initialize()
-              .then(({ getStructure }) => getStructure());
+            await runSandbox(async () => {
+              const { files } = await skott
+                .initialize()
+                .then(({ getStructure }) => getStructure());
 
-            expect(files.filter((f) => f.startsWith("src"))).toEqual([]);
+              expect(files).toEqual(["file.ts", "../sub-folder/lib/index.ts"]);
+            });
           });
-        });
-      });
-
-      describe("When running analysis starting from an entrypoint", () => {
-        test("Should ignore files using ignore pattern relatively to the provided the base dir", async () => {
-          const fsRootDir = `skott-ignore-temp-fs`;
-
-          const runSandbox = createRealFileSystem(fsRootDir, {
-            "skott-ignore-temp-fs/project-a/file.ts": `
-              import "../lib/index";
-            `,
-            "skott-ignore-temp-fs/lib/index.ts": `console.log("hello world")`
-          });
-
-          expect.assertions(1);
-
-          const skott = new Skott(
-            {
-              ...defaultConfig,
-              entrypoint: `${fsRootDir}/project-a/file.ts`,
-              includeBaseDir: true
-            },
-            new FileSystemReader({
-              cwd: fsRootDir,
-              ignorePattern: `lib/**/*`
-            }),
-            new InMemoryFileWriter(),
-            new ModuleWalkerSelector(),
-            new FakeLogger()
-          );
-
-          await runSandbox(async () => {
-            const { files } = await skott
-              .initialize()
-              .then(({ getStructure }) => getStructure());
-
-            expect(files).toEqual(["skott-ignore-temp-fs/project-a/file.ts"]);
-          });
-        });
-
-        test("Should ignore files using ignore pattern without relying on provided the base dir", async () => {
-          const fsRootDir = `skott-ignore-temp-fs`;
-
-          const runSandbox = createRealFileSystem(fsRootDir, {
-            "skott-ignore-temp-fs/project-a/file.ts": `
-              import "../lib/index";
-              import "../sub-folder/lib/index";
-            `,
-            "skott-ignore-temp-fs/sub-folder/lib/index.ts": `console.log("hello world")`,
-            "skott-ignore-temp-fs/lib/index.ts": `console.log("hello world")`
-          });
-
-          expect.assertions(1);
-
-          const skott = new Skott(
-            {
-              ...defaultConfig,
-              entrypoint: `${fsRootDir}/project-a/file.ts`,
-              includeBaseDir: false
-            },
-            new FileSystemReader({
-              cwd: fsRootDir,
-              ignorePattern: `lib/**/*`
-            }),
-            new InMemoryFileWriter(),
-            new ModuleWalkerSelector(),
-            new FakeLogger()
-          );
-
-          await runSandbox(async () => {
-            const { files } = await skott
-              .initialize()
-              .then(({ getStructure }) => getStructure());
-
-            expect(files).toEqual(["file.ts", "../sub-folder/lib/index.ts"]);
-          });
-        });
-      });
+        }
+      );
     });
 
-    describe("When grouping is enabled", () => {
+    describe.sequential("When grouping is enabled", () => {
       const fsRootDir = `skott-ignore-temp-fs`;
 
       const runSandbox = createRealFileSystem(fsRootDir, {
@@ -435,8 +441,8 @@ describe("When running skott using all real dependencies", () => {
                 .initialize()
                 .then(({ getStructure }) => getStructure());
             })
-        ).rejects.toMatchInlineSnapshot(
-          '[Error: groupBy function must return a string or undefined, but returned "[object Object]" (for "skott-ignore-temp-fs/src/features/feature-b/index.js")]'
+        ).rejects.toThrowError(
+          'groupBy function must return a string or undefined, but returned "[object Object]" (for "skott-ignore-temp-fs/src/features/feature-b/index.js")'
         );
       });
 
