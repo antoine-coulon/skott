@@ -1,5 +1,44 @@
 # skott
 
+## 0.34.0
+
+### Minor Changes
+
+- [#157](https://github.com/antoine-coulon/skott/pull/157) [`0871131`](https://github.com/antoine-coulon/skott/commit/0871131b9e6eb4dfb80c8899df0ae4a5fdff8cb0) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - Expose a new rendering module providing a programmatic access to terminal and web visualizations through skott's API.
+
+  This is equivalent to use the CLI such as `skott --displayMode=webapp` but offers more flexibility for the runtime configuration which suffers from limitations when only using the CLI (some configurations are nearly impossible to represent using strings e.g. providing custom functions), this is why often authors tend to introduce runtime configuration files that CLIs can pick up automatically, thing that we want to avoid with skott, by unifying it's usage either coming from the API or CLI.
+
+  **Using the rendering module**
+
+  ```js
+  import { defaultConfig } from "skott";
+  import { Web, Terminal } from "skott/rendering";
+
+  await Web.renderWebApplication(
+    // skott runtime config
+    defaultConfig,
+    // application config
+    {
+      visualization: {
+        granularity: "module",
+      },
+      watch: true,
+      port: 1111,
+      onListen: (port) => console.log(`Listening on port ${port}`),
+      open: true,
+      onOpenError: () => console.log(`Error when opening the browser`),
+    },
+  );
+
+  await Terminal.renderTerminalApplication(defaultConfig, {
+    displayMode: "graph",
+    exitCodeOnCircularDependencies: 1,
+    showCircularDependencies: true,
+    showUnusedDependencies: true,
+    watch: true,
+  });
+  ```
+
 ## 0.33.2
 
 ### Patch Changes
