@@ -11,7 +11,15 @@ import {
   type TerminalConfig
 } from "./terminal-config.js";
 
-export async function renderTerminalApplication<T>(
+process.on("exit", (code) => {
+  console.log(
+    `\n ${kleur.bold().blue("skott")} exited with code ${kleur
+      .bold()
+      .yellow(code)}`
+  );
+});
+
+export function renderTerminalApplication<T>(
   apiConfig: InputConfig<T>,
   options: TerminalConfig = defaultTerminalConfig
 ): Promise<void> {
@@ -36,5 +44,5 @@ export async function renderTerminalApplication<T>(
 
   const runSkott = makeSkottRunner(runtimeConfig);
 
-  runTerminal(runSkott, runtimeConfig, terminalOptions);
+  return runTerminal(runSkott, runtimeConfig, terminalOptions);
 }

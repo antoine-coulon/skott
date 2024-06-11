@@ -234,11 +234,3 @@ export async function runTerminal<T>(
     });
   }
 }
-
-process.on("exit", (code) => {
-  console.log(
-    `\n ${kleur.bold().blue("skott")} exited with code ${kleur
-      .bold()
-      .yellow(code)}`
-  );
-});

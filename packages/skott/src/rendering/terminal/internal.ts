@@ -31,7 +31,7 @@ export type CliParameterOptions = {
   watch: boolean;
 };
 
-export async function runTerminalApplicationFromCLI<T>(
+export function runTerminalApplicationFromCLI<T>(
   entrypoint: string | undefined,
   options: CliParameterOptions
 ): Promise<void> {
@@ -52,5 +52,5 @@ export async function runTerminalApplicationFromCLI<T>(
 
   const runSkott = makeSkottRunner(runtimeConfig);
 
-  runTerminal(runSkott, runtimeConfig, options);
+  return runTerminal(runSkott, runtimeConfig, options);
 }

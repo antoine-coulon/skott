@@ -161,3 +161,8 @@ export async function registerWatchMode({
     }
   );
 }
+
+process.on("SIGINT", () => {
+  console.log(`\n ${kleur.bold().blue("skott")} was interrupted`);
+  process.exit(130);
+});
