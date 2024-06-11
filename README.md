@@ -21,7 +21,7 @@
 
 ✅ Deeply detects **circular dependencies** in an efficient way, with the ability to provide a max depth for the search
 
-✅ Many **builtin visualization modes** including a web application or terminal-based outputs such as file-tree or graph views.
+✅ Many **builtin visualization modes** including a web application or terminal-based outputs such as file-tree or graph views. Visualization modes can be rendered using both the CLI and API.
 
 ✅ Builtin **watch mode** updating the graph when file changes are detected. It works with all display modes (webapp and all CLIs visualization modes). Support all options of file ignoring/filtering from skott.
 

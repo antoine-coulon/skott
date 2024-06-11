@@ -15,18 +15,20 @@ export function createRealFileSystem<
   entries: Record<`${FsDelimiter}${RootDir}/${File}`, string>
 ) {
   async function make() {
-    try {
-      for (const [filePath, content] of Object.entries<string>(entries)) {
+    for (const [filePath, content] of Object.entries<string>(entries)) {
+      try {
         await fs.mkdir(path.dirname(filePath), {
           recursive: true
         });
         await fs.writeFile(filePath, content);
-      }
-    } catch {}
+      } catch {}
+    }
   }
 
   async function unmake() {
-    await fs.rm(fsRootDir, { recursive: true });
+    try {
+      await fs.rm(fsRootDir, { recursive: true });
+    } catch {}
   }
 
   return async (cb: AsyncCallback) => {

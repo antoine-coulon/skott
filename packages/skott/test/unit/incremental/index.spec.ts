@@ -5,14 +5,14 @@ import { createNodeHash } from "../../../src/cache/affected.js";
 import {
   createInitialSkottNodeValue,
   kSkottCacheFileName,
-  SkottCache,
-  SkottCachedNode
+  type SkottCache,
+  type SkottCachedNode
 } from "../../../src/cache/handler.js";
 import { InMemoryFileReader } from "../../../src/filesystem/fake/file-reader.js";
-import { InMemoryFileWriter } from "../../../src/filesystem/file-writer.js";
+import { InMemoryFileWriter } from "../../../src/filesystem/fake/file-writer.js";
 import { FakeLogger } from "../../../src/logger.js";
 import {
-  ModuleWalker,
+  type ModuleWalker,
   ModuleWalkerSelector
 } from "../../../src/modules/walkers/common.js";
 import { JavaScriptModuleWalker } from "../../../src/modules/walkers/ecmascript/index.js";

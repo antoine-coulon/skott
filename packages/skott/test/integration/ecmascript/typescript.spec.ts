@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, test } from "vitest";
 
+import { InMemoryFileWriter } from "../../../src/filesystem/fake/file-writer.js";
 import { FileSystemReader } from "../../../src/filesystem/file-reader.js";
-import { InMemoryFileWriter } from "../../../src/filesystem/file-writer.js";
 import { FakeLogger } from "../../../src/logger.js";
 import { ModuleWalkerSelector } from "../../../src/modules/walkers/common.js";
 import { Skott, defaultConfig } from "../../../src/skott.js";
@@ -9,7 +9,7 @@ import { fakeNodeBody } from "../../unit/shared.js";
 import { createRealFileSystem, withRootDir } from "../create-fs-sandbox.js";
 
 describe("When the extended config is coming from a third-party module", () => {
-  it("should resolve the path alias using the third-party config", async () => {
+  test("should resolve the path alias using the third-party config", async () => {
     const tsConfigRemote = {
       compilerOptions: {
         baseUrl: "./",
@@ -70,7 +70,7 @@ describe("When the extended config is coming from a third-party module", () => {
 });
 
 describe("When resolving modules with path aliases", () => {
-  it("Should only include file paths starting from the project base directory", async () => {
+  test("Should only include file paths starting from the project base directory", async () => {
     const tsConfig = {
       compilerOptions: {
         baseUrl: "src"

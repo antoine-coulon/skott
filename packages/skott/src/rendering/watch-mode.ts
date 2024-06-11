@@ -8,7 +8,7 @@ import kleur from "kleur";
 // @ts-expect-error - no valid type definitions exist
 import gitignoreParse from "parse-gitignore";
 
-import { defaultIgnoredDirs } from "../src/modules/resolvers/base-resolver.js";
+import { defaultIgnoredDirs } from "../modules/resolvers/base-resolver.js";
 
 export const watchModeStatus = {
   watching_for_changes:
@@ -56,22 +56,40 @@ async function retrieveGitIgnoredEntries(cwd: string): Promise<string[]> {
   );
 }
 
+function makeLogger(verbose: boolean) {
+  return {
+    log: (message: string) => {
+      if (!verbose) return;
+      console.log(message);
+    },
+    stdout: (message: string) => {
+      if (!verbose) return;
+      process.stdout.write(message);
+    }
+  };
+}
+
+export interface WatchModeOptions {
+  cwd: string;
+  ignorePattern: string;
+  fileExtensions: string[];
+  verbose?: boolean;
+  onChangesDetected: (doneSubscribersPropagation: () => void) => void;
+}
+
 export async function registerWatchMode({
   cwd,
   ignorePattern,
   fileExtensions,
+  verbose,
   onChangesDetected
-}: {
-  cwd: string;
-  ignorePattern: string;
-  fileExtensions: string[];
-  onChangesDetected: (doneSubscribersPropagation: () => void) => void;
-}) {
+}: WatchModeOptions) {
   /**
    * For simplicity's sake, we only support discarding entries from the .gitignore
    * located at the provided cwd.
    */
   const gitIgnoredEntries = await retrieveGitIgnoredEntries(cwd);
+  const logger = makeLogger(verbose ?? false);
 
   const listOfWatchableFileExtensions = fileExtensions
     .map(toDotlessExtension)
@@ -90,13 +108,11 @@ export async function registerWatchMode({
     ignoreList.push(ignorePattern);
   }
 
-  console.log(
+  logger.log(
     kleur.bold().grey("\n \n -------------skott(watch-mode)-------------")
   );
 
-  console.log(
-    `\n ${kleur.bold().yellow(watchModeStatus.watching_for_changes)}`
-  );
+  logger.log(`\n ${kleur.bold().yellow(watchModeStatus.watching_for_changes)}`);
 
   const uniqueIgnoreList = [...new Set(ignoreList)];
 
@@ -109,29 +125,31 @@ export async function registerWatchMode({
   return watcher.subscribe(
     cwd,
     (_err, _events) => {
-      changesCount++;
+      if (verbose) {
+        changesCount++;
 
-      if (changesCount === 1) {
-        process.stdout.write("\n");
-      }
+        if (changesCount === 1) {
+          logger.stdout("\n");
+        }
 
-      clearTerminal();
+        clearTerminal();
 
-      if (changesCount > 1) {
-        process.stdout.clearLine(0);
-        process.stdout.cursorTo(0);
+        if (changesCount > 1) {
+          process.stdout.clearLine(0);
+          process.stdout.cursorTo(0);
+        }
       }
 
       onChangesDetected(() => {
-        console.log(
+        logger.log(
           kleur.bold().grey("\n \n <------------skott(watch-mode)------------>")
         );
 
-        console.log(
+        logger.log(
           `\n ${kleur.bold().yellow(watchModeStatus.watching_for_changes)}`
         );
 
-        process.stdout.write(
+        logger.stdout(
           `\n ${kleur
             .bold()
             .yellow(watchModeStatus.changes_detected)} ${printChangeCount()}`
@@ -143,3 +161,8 @@ export async function registerWatchMode({
     }
   );
 }
+
+process.on("SIGINT", () => {
+  console.log(`\n ${kleur.bold().blue("skott")} was interrupted`);
+  process.exit(130);
+});

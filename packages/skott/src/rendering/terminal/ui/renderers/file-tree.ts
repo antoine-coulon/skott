@@ -3,8 +3,7 @@ import path from "node:path";
 import { makeTreeStructure, type TreeStructure } from "fs-tree-structure";
 import kleur from "kleur";
 
-import type { SkottInstance } from "../../../index.js";
-import type { CliParameterOptions } from "../../cli-config.js";
+import type { SkottInstance } from "../../../../../index.js";
 import { displayCircularDependencies } from "../console/dependencies.js";
 import { kLeftSeparator, makeIndents } from "../console/shared.js";
 
@@ -35,7 +34,11 @@ function render(
 
 export function renderFileTree(
   skottInstance: SkottInstance,
-  options: CliParameterOptions
+  options: {
+    circularMaxDepth: number;
+    showCircularDependencies: boolean;
+    exitCodeOnCircularDependencies: number;
+  }
 ) {
   const circularDeps = displayCircularDependencies(skottInstance, options);
   const filesInvolvedInCycles = circularDeps.flat(1);

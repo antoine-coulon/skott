@@ -23,7 +23,8 @@
     ".": "./dist/index.js",
     "./filesystem/*": "./dist/src/filesystem/*.js",
     "./modules/*": "./dist/src/modules/*.js",
-    "./graph/*": "./dist/src/graph/*.js"
+    "./graph/*": "./dist/src/graph/*.js",
+    "./rendering": "./dist/src/rendering/api.js"
   },
   "types": "./dist/index.d.ts",
   "scripts": {

@@ -3,7 +3,7 @@ import { createRequire } from "module";
 import kleur from "kleur";
 import ora from "ora";
 
-import type { SkottNode } from "../src/graph/node.js";
+import type { SkottNode } from "../../graph/node.js";
 
 export async function renderStaticFile(
   graph: Record<string, SkottNode>,
