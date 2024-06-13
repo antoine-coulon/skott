@@ -122,9 +122,8 @@ export async function runTerminal<T>(
   runtimeConfig: RuntimeConfig,
   terminalOptions: TerminalConfig
 ): Promise<void> {
-  let skottInstance = await run();
-
   const start = performance.now();
+  let skottInstance = await run();
   const { graph, files } = skottInstance.getStructure();
   displayInitialGetStructureTime(files, start);
 
