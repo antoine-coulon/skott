@@ -698,25 +698,28 @@ export class Skott<T> {
       this.fileReader.getCurrentWorkingDir(),
       this.config.fileExtensions
     )) {
-      const rootFileContent = await this.fileReader.read(rootFile);
+      try {
+        const rootFileContent = await this.fileReader.read(rootFile);
+        if (isManifestFile(rootFile)) {
+          extractInformationFromManifest(
+            rootFileContent,
+            rootFile,
+            this.logger,
+            this.#workspaceConfiguration.manifests
+          );
 
-      if (isManifestFile(rootFile)) {
-        extractInformationFromManifest(
-          rootFileContent,
-          rootFile,
-          this.logger,
-          this.#workspaceConfiguration.manifests
-        );
+          continue;
+        }
 
+        if (this.config.incremental) {
+          this.#cacheHandler.addSourceFile(rootFile, rootFileContent);
+        }
+
+        await this.addNode(rootFile);
+        await this.collectModuleDeclarations(rootFile, rootFileContent);
+      } catch {
         continue;
       }
-
-      if (this.config.incremental) {
-        this.#cacheHandler.addSourceFile(rootFile, rootFileContent);
-      }
-
-      await this.addNode(rootFile);
-      await this.collectModuleDeclarations(rootFile, rootFileContent);
     }
   }
 

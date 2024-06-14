@@ -60,9 +60,10 @@ export class FileSystemReader implements FileReader {
     const match = matchWith(filename);
 
     return this.config.ignorePatterns.some(
-      (p) =>
-        match(toForwardSlashesOnly(path.join(this.config.cwd, path.sep, p))) ||
-        match(p)
+      (pattern) =>
+        match(
+          toForwardSlashesOnly(path.join(this.config.cwd, path.sep, pattern))
+        ) || match(pattern)
     );
   }
 
