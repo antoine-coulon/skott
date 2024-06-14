@@ -70,7 +70,7 @@ async function _renderStandaloneWebApplication() {
       },
       watch: {
         cwd: process.cwd(),
-        ignorePattern: "tests/**/*",
+        ignorePatterns: ["tests/**/*"],
         fileExtensions: [".ts"],
         verbose: true
       },

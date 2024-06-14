@@ -23,13 +23,13 @@ export function createRuntimeConfig<T>(
 }
 
 export function createInstance<T>(runtimeConfig: RuntimeConfig): Skott<T> {
-  const { cwd, verbose, ignorePattern, ...skottConfig } =
+  const { cwd, verbose, ignorePatterns, ...skottConfig } =
     createRuntimeConfig(runtimeConfig);
   const logger = verbose ? new SkottLogger() : new FakeLogger();
 
   return new Skott<T>(
     skottConfig,
-    new FileSystemReader({ cwd, ignorePattern }),
+    new FileSystemReader({ cwd, ignorePatterns }),
     new FileSystemWriter(),
     new ModuleWalkerSelector(),
     logger

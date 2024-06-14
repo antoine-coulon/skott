@@ -8,12 +8,7 @@ import {
   isFileSupportedByDefault,
   isManifestFile
 } from "../../modules/resolvers/base-resolver.js";
-import type { FileReader } from "../file-reader.js";
-
-interface FileSystemConfig {
-  cwd: string;
-  ignorePattern: string;
-}
+import type { FileReader, FileSystemConfig } from "../file-reader.js";
 
 const minimatchDefaultOptions: MinimatchOptions = {
   dot: true
@@ -22,14 +17,15 @@ const minimatchDefaultOptions: MinimatchOptions = {
 /* eslint-disable no-sync */
 export class InMemoryFileReader implements FileReader {
   constructor(
-    private readonly config: FileSystemConfig = { cwd: "./", ignorePattern: "" }
+    private readonly config: FileSystemConfig = {
+      cwd: "./",
+      ignorePatterns: []
+    }
   ) {}
 
   private isFileIgnored(filename: string): boolean {
-    return minimatch(
-      filename,
-      this.config.ignorePattern,
-      minimatchDefaultOptions
+    return this.config.ignorePatterns.some((pattern) =>
+      minimatch(filename, pattern, minimatchDefaultOptions)
     );
   }
 

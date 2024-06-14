@@ -8,7 +8,7 @@ import { defaultConfig, type SkottConfig } from "./skott.js";
 export interface InputConfig<T> extends Partial<SkottConfig<T>> {
   cwd?: string;
   verbose?: boolean;
-  ignorePattern?: string;
+  ignorePatterns?: string[];
 }
 
 function raiseIllegalConfigException(configuration: string): never {
@@ -87,7 +87,7 @@ const getConfig = () =>
      */
     cwd: withDefaultValue(process.cwd())(D.string),
     verbose: withDefaultValue(false)(D.boolean),
-    ignorePattern: withDefaultValue("")(D.string)
+    ignorePatterns: withDefaultValue<string[]>([])(D.array(D.string))
   });
 
 export type RuntimeConfig = ReturnType<typeof decodeInputConfig>;

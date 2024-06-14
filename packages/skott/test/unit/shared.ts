@@ -52,7 +52,7 @@ export async function buildSkottProjectUsingInMemoryFileExplorer({
       manifestPath,
       dependencyResolvers: [new EcmaScriptDependencyResolver()]
     },
-    new InMemoryFileReader({ cwd, ignorePattern: "" }),
+    new InMemoryFileReader({ cwd, ignorePatterns: [] }),
     new InMemoryFileWriter(),
     new ModuleWalkerSelector(),
     new FakeLogger()

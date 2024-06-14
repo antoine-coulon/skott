@@ -21,7 +21,8 @@ describe.sequential("When running skott using all real dependencies", () => {
         return skott({
           cwd: "./",
           entrypoint: undefined,
-          includeBaseDir: true
+          includeBaseDir: true,
+          ignorePatterns: []
         });
       }
 
@@ -35,7 +36,8 @@ describe.sequential("When running skott using all real dependencies", () => {
         return skott({
           cwd: "./apps/some-app",
           verbose: false,
-          entrypoint: "./anything.ts"
+          entrypoint: "./anything.ts",
+          ignorePatterns: []
         });
       }
 
@@ -58,7 +60,8 @@ describe.sequential("When running skott using all real dependencies", () => {
 
       test("Should allow `groupBy` to be a function", async () => {
         const skottInstance = await skott({
-          groupBy: (_path) => "group"
+          groupBy: (_path) => "group",
+          ignorePatterns: []
         });
 
         expect(skottInstance).toBeDefined();
@@ -81,7 +84,7 @@ describe.sequential("When running skott using all real dependencies", () => {
 
       const skott = new Skott(
         defaultConfig,
-        new FileSystemReader({ cwd: fsRootDir, ignorePattern: "" }),
+        new FileSystemReader({ cwd: fsRootDir, ignorePatterns: [] }),
         new InMemoryFileWriter(),
         new ModuleWalkerSelector(),
         new FakeLogger()
@@ -123,7 +126,7 @@ describe.sequential("When running skott using all real dependencies", () => {
             defaultConfig,
             new FileSystemReader({
               cwd: fsRootDir,
-              ignorePattern: `src/project-b/**/*`
+              ignorePatterns: [`src/project-b/**/*`]
             }),
             new InMemoryFileWriter(),
             new ModuleWalkerSelector(),
@@ -157,7 +160,7 @@ describe.sequential("When running skott using all real dependencies", () => {
             defaultConfig,
             new FileSystemReader({
               cwd: fsRootDir,
-              ignorePattern: `src/project-b/**/*`
+              ignorePatterns: [`src/project-b/**/*`]
             }),
             new InMemoryFileWriter(),
             new ModuleWalkerSelector(),
@@ -194,7 +197,7 @@ describe.sequential("When running skott using all real dependencies", () => {
                 defaultConfig,
                 new FileSystemReader({
                   cwd: fsRootDir,
-                  ignorePattern: `util/dates/**/*`
+                  ignorePatterns: [`util/dates/**/*`]
                 }),
                 new InMemoryFileWriter(),
                 new ModuleWalkerSelector(),
@@ -218,7 +221,7 @@ describe.sequential("When running skott using all real dependencies", () => {
                 defaultConfig,
                 new FileSystemReader({
                   cwd: process.cwd(),
-                  ignorePattern: `src/**/*`
+                  ignorePatterns: [`src/**/*`]
                 }),
                 new InMemoryFileWriter(),
                 new ModuleWalkerSelector(),
@@ -258,7 +261,7 @@ describe.sequential("When running skott using all real dependencies", () => {
               },
               new FileSystemReader({
                 cwd: fsRootDir,
-                ignorePattern: `lib/**/*`
+                ignorePatterns: [`lib/**/*`]
               }),
               new InMemoryFileWriter(),
               new ModuleWalkerSelector(),
@@ -296,7 +299,7 @@ describe.sequential("When running skott using all real dependencies", () => {
               },
               new FileSystemReader({
                 cwd: fsRootDir,
-                ignorePattern: `lib/**/*`
+                ignorePatterns: [`lib/**/*`]
               }),
               new InMemoryFileWriter(),
               new ModuleWalkerSelector(),
@@ -347,7 +350,7 @@ describe.sequential("When running skott using all real dependencies", () => {
               return undefined;
             }
           },
-          new FileSystemReader({ cwd: fsRootDir, ignorePattern: "" }),
+          new FileSystemReader({ cwd: fsRootDir, ignorePatterns: [] }),
           new InMemoryFileWriter(),
           new ModuleWalkerSelector(),
           new FakeLogger()
@@ -428,7 +431,7 @@ describe.sequential("When running skott using all real dependencies", () => {
               return undefined;
             }
           },
-          new FileSystemReader({ cwd: fsRootDir, ignorePattern: "" }),
+          new FileSystemReader({ cwd: fsRootDir, ignorePatterns: [] }),
           new InMemoryFileWriter(),
           new ModuleWalkerSelector(),
           new FakeLogger()
@@ -465,7 +468,7 @@ describe.sequential("When running skott using all real dependencies", () => {
               return undefined;
             }
           },
-          new FileSystemReader({ cwd: fsRootDir, ignorePattern: "" }),
+          new FileSystemReader({ cwd: fsRootDir, ignorePatterns: [] }),
           new InMemoryFileWriter(),
           new ModuleWalkerSelector(),
           new FakeLogger()

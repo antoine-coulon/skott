@@ -71,7 +71,7 @@ function makeLogger(verbose: boolean) {
 
 export interface WatchModeOptions {
   cwd: string;
-  ignorePattern: string;
+  ignorePatterns: string[];
   fileExtensions: string[];
   verbose?: boolean;
   onChangesDetected: (doneSubscribersPropagation: () => void) => void;
@@ -79,7 +79,7 @@ export interface WatchModeOptions {
 
 export async function registerWatchMode({
   cwd,
-  ignorePattern,
+  ignorePatterns,
   fileExtensions,
   verbose,
   onChangesDetected
@@ -101,12 +101,9 @@ export async function registerWatchMode({
     // Discard all entries ignored by gitignore
     ...gitIgnoredEntries,
     // Discard all directories ignored by default
-    ...defaultIgnoredDirs
+    ...defaultIgnoredDirs,
+    ...ignorePatterns
   ];
-
-  if (ignorePattern) {
-    ignoreList.push(ignorePattern);
-  }
 
   logger.log(
     kleur.bold().grey("\n \n -------------skott(watch-mode)-------------")

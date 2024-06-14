@@ -26,7 +26,7 @@ describe("Skott analysis runner", () => {
 
     const skott = new Skott(
       defaultConfig,
-      new InMemoryFileReader({ cwd: "./apps", ignorePattern: "" }),
+      new InMemoryFileReader({ cwd: "./apps", ignorePatterns: [] }),
       new InMemoryFileWriter(),
       new ModuleWalkerSelector(),
       new FakeLogger()
@@ -96,7 +96,7 @@ describe("Skott analysis runner", () => {
 
       const skott = new Skott(
         defaultConfig,
-        new InMemoryFileReader({ cwd, ignorePattern: "" }),
+        new InMemoryFileReader({ cwd, ignorePatterns: [] }),
         new InMemoryFileWriter(),
         new ModuleWalkerSelector(),
         new FakeLogger()
@@ -126,8 +126,8 @@ describe("Skott analysis runner", () => {
     );
   });
 
-  describe("When using ignore pattern", () => {
-    describe("When using a pattern specific to file names", () => {
+  describe("When using ignore patterns", () => {
+    describe("When using a single pattern specific to file names", () => {
       test("Should ignore all test files including `.spec` and `.test` prefixes", async () => {
         mountFakeFileSystem({
           "./src/apps/app1/src/feature.ts": ``,
@@ -140,7 +140,35 @@ describe("Skott analysis runner", () => {
           defaultConfig,
           new InMemoryFileReader({
             cwd: "./",
-            ignorePattern: "**/*.+(spec|test).*"
+            ignorePatterns: ["**/*.+(spec|test).*"]
+          }),
+          new InMemoryFileWriter(),
+          new ModuleWalkerSelector(),
+          new FakeLogger()
+        );
+
+        const { files } = await skott
+          .initialize()
+          .then(({ getStructure }) => getStructure());
+
+        expect(files).toEqual(["src/apps/app1/src/feature.ts"]);
+      });
+    });
+
+    describe("When using multiple patterns", () => {
+      test("Should ignore all test files including `.spec` and `.test` prefixes", async () => {
+        mountFakeFileSystem({
+          "./src/apps/app1/src/feature.ts": ``,
+          "./src/apps/app1/src/feature.spec.ts": ``,
+          "./src/lib/feature.test.ts": ``,
+          "./src/lib/feature.unit.test.ts": ``
+        });
+
+        const skott = new Skott(
+          defaultConfig,
+          new InMemoryFileReader({
+            cwd: "./",
+            ignorePatterns: ["**/*.spec.*", "**/*.test.*"]
           }),
           new InMemoryFileWriter(),
           new ModuleWalkerSelector(),
@@ -168,7 +196,7 @@ describe("Skott analysis runner", () => {
           defaultConfig,
           new InMemoryFileReader({
             cwd: "./",
-            ignorePattern: "**/tests/**/*.ts"
+            ignorePatterns: ["**/tests/**/*.ts"]
           }),
           new InMemoryFileWriter(),
           new ModuleWalkerSelector(),
@@ -195,7 +223,7 @@ describe("Skott analysis runner", () => {
           defaultConfig,
           new InMemoryFileReader({
             cwd: "./",
-            ignorePattern: "src/config/**/*"
+            ignorePatterns: ["src/config/**/*"]
           }),
           new InMemoryFileWriter(),
           new ModuleWalkerSelector(),
@@ -227,7 +255,10 @@ describe("Skott analysis runner", () => {
 
         const skott = new Skott(
           { ...defaultConfig },
-          new InMemoryFileReader({ ignorePattern: "libs/**/*.ts", cwd: "./" }),
+          new InMemoryFileReader({
+            ignorePatterns: ["libs/**/*.ts"],
+            cwd: "./"
+          }),
           new InMemoryFileWriter(),
           new ModuleWalkerSelector(),
           new FakeLogger()
@@ -275,7 +306,10 @@ describe("Skott analysis runner", () => {
             entrypoint: "apps/app1/index.ts",
             includeBaseDir: true
           },
-          new InMemoryFileReader({ ignorePattern: "libs/**/*.ts", cwd: "./" }),
+          new InMemoryFileReader({
+            ignorePatterns: ["libs/**/*.ts"],
+            cwd: "./"
+          }),
           new InMemoryFileWriter(),
           new ModuleWalkerSelector(),
           new FakeLogger()
