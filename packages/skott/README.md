@@ -26,12 +26,12 @@ const { getStructure, getWorkspace, useGraph, findUnusedDependencies } = await s
    */ 
   entrypoint: "src/index.ts",
   /**
-   * (Optional) Ignore pattern that applies during file traversal and module 
-   * resolution. Each module matching the pattern will be discarded from the 
+   * (Optional) Ignore patterns that applies during file traversal and module 
+   * resolution. Each module matching one of the patterns will be discarded from the 
    * graph.
-   * Defaults to `none`;
+   * Defaults to `[]`;
    */ 
-  ignorePattern: "src/examples/**/*",
+  ignorePatterns: ["src/examples/**/*"],
   /**
    * (Optional) Whether to run Skott using the incremental pattern. By setting "true",
    * Skott will create a `.skott/cache.json` file to only detect and re-process what
@@ -562,7 +562,7 @@ await Web.renderStandaloneWebApplication(
     },
     watch: {
       cwd: process.cwd(),
-      ignorePattern: "tests/**/*",
+      ignorePatterns: ["tests/**/*"],
       fileExtensions: [".ts"],
       verbose: true
     },
