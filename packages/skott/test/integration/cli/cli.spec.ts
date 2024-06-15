@@ -70,7 +70,7 @@ describe.sequential("When running skott cli", () => {
     });
 
     describe("When collecting unused files", () => {
-      test("Should throw an error when providing an entrypoint ", async () => {
+      test("Should fail when providing an entrypoint", async () => {
         const result = await runOneShotSkottCli(
           ["entrypoint.ts", "--displayMode=raw", "--showUnusedFiles"],
           AbortSignal.timeout(5000)
@@ -83,6 +83,36 @@ describe.sequential("When running skott cli", () => {
         expect(right).toContain(
           "`--showUnusedFiles` can't be used when using providing an entrypoint."
         );
+      });
+    });
+
+    describe.only("When collecting unused dependencies", () => {
+      test("Should fail when not having third-party tracking enabled", async () => {
+        const result = await runOneShotSkottCli(
+          ["--displayMode=raw", "--showUnusedDependencies"],
+          AbortSignal.timeout(5000)
+        );
+
+        expect(Either.isRight(result)).toBeTruthy();
+
+        const right = Either.getOrThrow(result);
+
+        expect(right).toContain(
+          "`--trackThirdPartyDependencies` must be provided when searching for unused dependencies."
+        );
+      });
+
+      test("Should display unused dependencies when third-party tracking is enabled", async () => {
+        const result = await runOneShotSkottCli(
+          [
+            "--displayMode=raw",
+            "--trackThirdPartyDependencies",
+            "--showUnusedDependencies"
+          ],
+          AbortSignal.timeout(5000)
+        );
+
+        expect(Either.isLeft(result)).toBeTruthy();
       });
     });
   });

@@ -36,9 +36,9 @@ export function runTerminalApplicationFromCLI<T>(
   entrypoint: string | undefined,
   options: CliParameterOptions
 ): Promise<void> {
-  const isTerminalConfigValid = ensureNoIllegalTerminalConfig({
-    ...options,
-    entrypoint
+  const isTerminalConfigValid = ensureNoIllegalTerminalConfig(options, {
+    entrypoint,
+    trackThirdPartyDependencies: options.trackThirdPartyDependencies
   });
 
   if (isTerminalConfigValid._tag === "Left") {

@@ -37,9 +37,9 @@ export function renderTerminalApplication<T>(
     showUnusedFiles:
       options.showUnusedFiles ?? defaultTerminalConfig.showUnusedFiles
   };
-  const isTerminalConfigValid = ensureNoIllegalTerminalConfig({
-    ...terminalOptions,
-    entrypoint: apiConfig.entrypoint
+  const isTerminalConfigValid = ensureNoIllegalTerminalConfig(terminalOptions, {
+    entrypoint: runtimeConfig.entrypoint,
+    trackThirdPartyDependencies: runtimeConfig.dependencyTracking.thirdParty
   });
 
   if (isTerminalConfigValid._tag === "Left") {

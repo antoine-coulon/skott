@@ -33,15 +33,29 @@ const terminalSchema = D.struct({
 });
 
 export function ensureNoIllegalTerminalConfig(
-  options: TerminalConfig & { entrypoint: string | undefined }
+  terminalConfig: TerminalConfig,
+  apiConfig: {
+    entrypoint: string | undefined;
+    trackThirdPartyDependencies: boolean;
+  }
 ) {
-  const result = terminalSchema.decode(options);
+  const result = terminalSchema.decode(terminalConfig);
 
   if (result._tag === "Left") {
     return Either.left(
       `Invalid terminal configuration: ${D.draw(result.left)}`
     );
   }
+
+  if (
+    terminalConfig.showUnusedDependencies &&
+    !apiConfig.trackThirdPartyDependencies
+  ) {
+    return Either.left(
+      "`--trackThirdPartyDependencies` must be provided when searching for unused dependencies."
+    );
+  }
+
   /**
    * Some `show*` params exist but are only relevant when using CLI-based.
    * `--showCircularDependencies` is already supported in the webapp even without
@@ -49,36 +63,36 @@ export function ensureNoIllegalTerminalConfig(
    * `--showUnusedDependencies` is not supported in the webapp yet but to enforce
    * consistency, we don't allow it to be used with `--displayMode=webapp`.
    */
-  if (options.displayMode === "webapp") {
-    if (options.showCircularDependencies) {
+  if (terminalConfig.displayMode === "webapp") {
+    if (terminalConfig.showCircularDependencies) {
       return Either.left(
         "`--showCircularDependencies` can't be used when using `--displayMode=webapp`"
       );
     }
-    if (options.showUnusedDependencies) {
+    if (terminalConfig.showUnusedDependencies) {
       return Either.left(
         "`--showUnusedDependencies` can't be used when using `--displayMode=webapp`"
       );
     }
-    if (options.showUnusedFiles) {
+    if (terminalConfig.showUnusedFiles) {
       return Either.left(
         "`--showUnusedFiles` can't be used when using `--displayMode=webapp`"
       );
     }
   }
 
-  if (options.entrypoint && options.showUnusedFiles) {
+  if (apiConfig.entrypoint && terminalConfig.showUnusedFiles) {
     return Either.left(
       "`--showUnusedFiles` can't be used when using providing an entrypoint."
     );
   }
 
-  if (options.watch) {
+  if (terminalConfig.watch) {
     if (
-      options.displayMode !== "webapp" &&
-      options.displayMode !== "graph" &&
-      options.displayMode !== "raw" &&
-      options.displayMode !== "file-tree"
+      terminalConfig.displayMode !== "webapp" &&
+      terminalConfig.displayMode !== "graph" &&
+      terminalConfig.displayMode !== "raw" &&
+      terminalConfig.displayMode !== "file-tree"
     ) {
       return Either.left(
         "`--watch` needs either `raw`, `file-tree`, `graph` or `webapp` display mode"

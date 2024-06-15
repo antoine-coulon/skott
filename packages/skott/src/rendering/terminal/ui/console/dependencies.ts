@@ -173,28 +173,11 @@ export async function displayDependenciesReport(
   skottInstance: SkottInstance,
   options: {
     showUnusedDependencies: boolean;
+    showUnusedFiles: boolean;
     trackThirdPartyDependencies: boolean;
     trackBuiltinDependencies: boolean;
   }
 ) {
-  if (options.showUnusedDependencies && !options.trackThirdPartyDependencies) {
-    console.log(
-      `\n ${kleur
-        .bold()
-        .yellow(
-          "Warning: `--trackThirdPartyDependencies` must be provided when searching for unused dependencies."
-        )}`
-    );
-
-    console.log(
-      `\n ${kleur
-        .bold()
-        .grey(
-          "Example: `skott --displayMode=raw --showUnusedDependencies --trackThirdPartyDependencies`"
-        )} \n`
-    );
-  }
-
   const { graph } = skottInstance.getStructure();
 
   if (options.trackThirdPartyDependencies) {
@@ -207,6 +190,10 @@ export async function displayDependenciesReport(
 
   if (options.trackBuiltinDependencies) {
     displayBuiltinDependencies(graph);
+  }
+
+  if (options.showUnusedFiles) {
+    displayUnusedFiles(skottInstance);
   }
 }
 
@@ -259,4 +246,28 @@ export function displayCircularDependencies(
   }
 
   return circularDependencies;
+}
+
+export function displayUnusedFiles(skottInstance: SkottInstance) {
+  const unusedFiles = skottInstance.useGraph().collectUnusedFiles();
+
+  if (unusedFiles.length > 0) {
+    console.log("\n " + kleur.bold().red().underline(`Unused files found:`));
+
+    for (const unused of unusedFiles) {
+      console.log(kleur.bold().red(`\n ➡️ ${unused}`));
+    }
+
+    console.log(
+      kleur
+        .bold()
+        .yellow(
+          `\n Warning: files are marked as unused based on source code analysis.` +
+            `\n They might be exported through package.json or used through other mechanisms not analyzed by skott.` +
+            `\n Please double check their potential use before removing them.`
+        )
+    );
+  } else {
+    console.log(kleur.bold().green(`\n 🧹 no unused files found`));
+  }
 }
