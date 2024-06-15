@@ -33,18 +33,18 @@ function dissociatePackageNameFromItsSemver(packageName: string): {
   };
 }
 
-const NpmRepositorySchema = S.struct({
-  "dist-tags": S.struct({
-    latest: S.string
+const NpmRepositorySchema = S.Struct({
+  "dist-tags": S.Struct({
+    latest: S.String
   }),
-  versions: S.record(
-    S.string,
-    S.struct({ dist: S.struct({ tarball: S.string }) })
+  versions: S.Record(
+    S.String,
+    S.Struct({ dist: S.Struct({ tarball: S.String }) })
   )
 });
 
-const NpmRepositoryByVersionSchema = S.struct({
-  dist: S.struct({ tarball: S.string })
+const NpmRepositoryByVersionSchema = S.Struct({
+  dist: S.Struct({ tarball: S.String })
 });
 
 function fetchFromNpm(url: string) {

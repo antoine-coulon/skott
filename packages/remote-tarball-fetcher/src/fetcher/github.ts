@@ -7,9 +7,9 @@ interface GitHubRepositoryInformation {
   defaultBranch: string;
 }
 
-const GitHubSchema = S.struct({
-  default_branch: S.string,
-  id: S.number
+const GitHubSchema = S.Struct({
+  default_branch: S.String,
+  id: S.Number
 });
 
 function makeTarballUrl(branch: string, repositoryFullName: string) {
