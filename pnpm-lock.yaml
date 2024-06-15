@@ -199,11 +199,11 @@ importers:
   packages/remote-tarball-fetcher:
     dependencies:
       '@effect/schema':
-        specifier: 0.63.2
-        version: 0.63.2(effect@2.4.1)(fast-check@3.15.1)
+        specifier: ^0.67.23
+        version: 0.67.23(effect@3.3.2)
       effect:
-        specifier: 2.4.1
-        version: 2.4.1
+        specifier: 3.3.2
+        version: 3.3.2
       semver:
         specifier: ^7.5.3
         version: 7.5.3
@@ -1076,14 +1076,13 @@ packages:
     resolution: {integrity: sha512-FdQ0qbYL7t+GP5eWdAPC+oeN2w3zqnujrdDLp/sj58UtMxFSHg21crprmbmiAJAWsL5EdB9aZzcisBGn382xHg==}
     dev: true
 
-  /@effect/schema@0.63.2(effect@2.4.1)(fast-check@3.15.1):
-    resolution: {integrity: sha512-piS+6dlGmcX8sAPGXdY4T6QmBbY2YXVnYjUguXpClk6FL7lQ9u2aIDib5kjCpciawJjil2VwltmPnMj0NJKKQQ==}
+  /@effect/schema@0.67.23(effect@3.3.2):
+    resolution: {integrity: sha512-REKPOCm8guN6CEMvlQfR5ovjldeVRSnf3sj8FhyOIOeWuUtWlqghyBtgXLbAniSkjFFMFxWwDFyAoxVX9C0wGw==}
     peerDependencies:
-      effect: ^2.4.1
-      fast-check: ^3.13.2
+      effect: ^3.3.2
     dependencies:
-      effect: 2.4.1
-      fast-check: 3.15.1
+      effect: 3.3.2
+      fast-check: 3.19.0
     dev: false
 
   /@egjs/hammerjs@2.0.17:
@@ -3630,10 +3629,6 @@ packages:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
     dev: true
 
-  /effect@2.4.1:
-    resolution: {integrity: sha512-YsoMB/EGCohGKFyTPYqaFe2B7UCU2MM303dkoowF8DNOdks/4q/00cyhTbBUmM/0FMDoUPmUi/AJ0Aj3E7vO1A==}
-    dev: false
-
   /effect@3.3.2:
     resolution: {integrity: sha512-695XQBtp+UUYG50oREG9ujnRoeQU7xhwHDhT6ZAexm3Q+umdml1kjxcPoYRrS65crmaLlhVpjZHePJNzWOODnA==}
     dev: false
@@ -4200,11 +4195,11 @@ packages:
       - supports-color
     dev: false
 
-  /fast-check@3.15.1:
-    resolution: {integrity: sha512-GutOXZ+SCxGaFWfHe0Pbeq8PrkpGtPxA9/hdkI3s9YzqeMlrq5RdJ+QfYZ/S93jMX+tAyqgW0z5c9ppD+vkGUw==}
+  /fast-check@3.19.0:
+    resolution: {integrity: sha512-CO2JX/8/PT9bDGO1iXa5h5ey1skaKI1dvecERyhH4pp3PGjwd3KIjMAXEg79Ps9nclsdt4oPbfqiAnLU0EwrAQ==}
     engines: {node: '>=8.0.0'}
     dependencies:
-      pure-rand: 6.0.4
+      pure-rand: 6.1.0
     dev: false
 
   /fast-deep-equal@3.1.3:
@@ -5862,8 +5857,8 @@ packages:
       - utf-8-validate
     dev: false
 
-  /pure-rand@6.0.4:
-    resolution: {integrity: sha512-LA0Y9kxMYv47GIPJy6MI84fqTd2HmYZI83W/kM/SkKfDlajnZYfmXFTxkbY+xSBPkLJxltMa9hIkmdc29eguMA==}
+  /pure-rand@6.1.0:
+    resolution: {integrity: sha512-bVWawvoZoBYpp6yIoQtQXHZjmz35RSVHnUOTefl8Vcjr8snTPY1wnpSPMWekcFwbxI6gtmT7rSYPFvz71ldiOA==}
     dev: false
 
   /query-ast@1.0.5:
