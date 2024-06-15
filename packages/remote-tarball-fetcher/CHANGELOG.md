@@ -1,5 +1,11 @@
 # remote-tarball-fetcher
 
+## 0.1.1
+
+### Patch Changes
+
+- [#163](https://github.com/antoine-coulon/skott/pull/163) [`efb106a`](https://github.com/antoine-coulon/skott/commit/efb106aee9ad319375e654b9e4f2bb224c945ae1) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - Upgrade to Effect v3
+
 ## 0.1.0
 
 ### Minor Changes

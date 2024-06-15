@@ -1,6 +1,6 @@
 {
   "name": "remote-tarball-fetcher",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Fetch tarballs from various registries and use them locally",
   "main": "dist/index.js",
   "type": "module",

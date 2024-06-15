@@ -1,5 +1,33 @@
 # skott
 
+## 0.35.0
+
+### Minor Changes
+
+- [#162](https://github.com/antoine-coulon/skott/pull/162) [`b13d3c9`](https://github.com/antoine-coulon/skott/commit/b13d3c915b600cd0bba3587d7be7a2942de32008) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - Allow unused files to be tracked and reported. From the CLI, `--showUnusedFiles` can be used to report unused files. From the API, a new `collectUnusedFiles` method is accessible through the graph API:
+
+  ```js
+  import skott from "skott";
+
+  const instance = await skott();
+  const unusedFiles = instance.useGraph().collectUnusedFiles();
+  ```
+
+  This version also includes a fix for a bug related to `--trackBuiltinDependencies` and `--trackThirdPartyDependencies` that were not propagated anymore (since 0.34.0) when being provided from the CLI.
+
+- [#161](https://github.com/antoine-coulon/skott/pull/161) [`4d19c97`](https://github.com/antoine-coulon/skott/commit/4d19c973278267c1218dcc89589be1781ea9464e) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - Add support for multiple ignore patterns:
+  - the CLI can now accumulate multiple ignore patterns such as `skott --ignorePattern=X --ignorePattern=Y`
+  - the API configuration now takes a `ignorePatterns` property instead of a single `ignorePattern` (breaking change).
+
+### Patch Changes
+
+- [#163](https://github.com/antoine-coulon/skott/pull/163) [`efb106a`](https://github.com/antoine-coulon/skott/commit/efb106aee9ad319375e654b9e4f2bb224c945ae1) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - Upgrade to Effect v3
+
+- [#159](https://github.com/antoine-coulon/skott/pull/159) [`8cb4f1c`](https://github.com/antoine-coulon/skott/commit/8cb4f1cdfef2528216b6448422b4adf0bf51e8f3) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - Fix skott performance timing in the CLI
+
+- Updated dependencies []:
+  - skott-webapp@2.1.1
+
 ## 0.34.0
 
 ### Minor Changes
