@@ -17,7 +17,7 @@ export type CliParameterOptions = {
   displayMode: "raw" | "file-tree" | "graph" | "webapp";
   exitCodeOnCircularDependencies: number;
   fileExtensions: string;
-  ignorePattern: string;
+  ignorePattern: string[];
   includeBaseDir: boolean;
   incremental: boolean;
   manifest: string;
@@ -45,6 +45,7 @@ export function runTerminalApplicationFromCLI<T>(
   const runtimeConfig = createRuntimeConfig<T>({
     ...options,
     entrypoint,
+    ignorePatterns: options.ignorePattern,
     fileExtensions: options.fileExtensions
       .split(",")
       .filter((ext) => kExpectedModuleExtensions.has(ext))

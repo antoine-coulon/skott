@@ -63,7 +63,7 @@ export async function renderWebApplication<T>(
   if (watch) {
     registerWatchMode({
       cwd: runtimeConfig.cwd,
-      ignorePattern: runtimeConfig.ignorePattern,
+      ignorePatterns: runtimeConfig.ignorePatterns,
       fileExtensions: runtimeConfig.fileExtensions,
       verbose: true,
       onChangesDetected: (done) => {
@@ -164,7 +164,7 @@ export async function renderStandaloneWebApplication<T>(
     };
     watch: {
       cwd: string;
-      ignorePattern: string;
+      ignorePatterns: string[];
       fileExtensions: string[];
       verbose: boolean;
     };
@@ -186,7 +186,7 @@ export async function renderStandaloneWebApplication<T>(
   if (watch) {
     registerWatchMode({
       cwd: applicationConfig.watch.cwd,
-      ignorePattern: applicationConfig.watch.ignorePattern,
+      ignorePatterns: applicationConfig.watch.ignorePatterns,
       fileExtensions: applicationConfig.watch.fileExtensions,
       verbose: applicationConfig.watch.verbose,
       onChangesDetected: (done) => {

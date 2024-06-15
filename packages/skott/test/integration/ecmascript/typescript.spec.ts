@@ -42,7 +42,7 @@ describe("When the extended config is coming from a third-party module", () => {
       { ...defaultConfig, tsConfigPath: "tsconfig.build.json" },
       new FileSystemReader({
         cwd: rootDir,
-        ignorePattern: ""
+        ignorePatterns: []
       }),
       new InMemoryFileWriter(),
       new ModuleWalkerSelector(),
@@ -102,7 +102,7 @@ describe("When resolving modules with path aliases", () => {
       },
       new FileSystemReader({
         cwd: process.cwd(),
-        ignorePattern: ""
+        ignorePatterns: []
       }),
       new InMemoryFileWriter(),
       new ModuleWalkerSelector(),

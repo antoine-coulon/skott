@@ -3,9 +3,9 @@ import fs from "node:fs";
 import path from "node:path";
 
 
-function spawnGitCommand(args) {
+function spawnCommand(command, args) {
   return cp
-    .spawnSync("git", args, {
+    .spawnSync(command, args, {
       encoding: "utf-8"
     })
     .stdout.replace("\n", "");
@@ -13,7 +13,7 @@ function spawnGitCommand(args) {
 
 function findCurrentGitCommitHash() {
   try {
-    return spawnGitCommand(["rev-parse", "HEAD"]);
+    return spawnCommand("git", ["rev-parse", "HEAD"]);
   } catch {
     return "unknown_commit_hash";
   }
@@ -21,7 +21,7 @@ function findCurrentGitCommitHash() {
 
 function findCurrentGitReference() {
   try {
-    return spawnGitCommand(["rev-parse", "--abbrev-ref", "HEAD"]);
+    return spawnCommand("git", ["rev-parse", "--abbrev-ref", "HEAD"]);
   } catch {
     return "unknown_reference";
   }
@@ -39,7 +39,7 @@ function retrieveGitInformation() {
 
 function fromVitestBenchResultToSkottResult(benchmark) {
   const content = JSON.parse(benchmark);
-  const results = content.testResults.skott_benchmark;
+  const results = content.files[0].groups[0].benchmarks;
   const { commitHash, branchReference } = retrieveGitInformation();
 
   return {
@@ -68,11 +68,11 @@ const pathToSourceResult = path.join(
   `result.json`
 );
 
-const pathToDestinationResult = path.join(
+const makePathToDestinationResult = (nodeVersion) => path.join(
   process.cwd(),
   "test",
   "benchmark",
-  `result-node-${process.env.NODE_VERSION ?? "unknown"}.json`
+  `result-node-${nodeVersion}.json`
 );
 
 function prettyWrite(content) {
@@ -87,8 +87,10 @@ export function keepOnlyRelevantInformationFromResultFile(
       return done(new Error("An error happened while reading the result file"));
     }
 
+    const nodeVersion = process.env.NODE_VERSION ?? spawnCommand("node", ["-v"]);
+
     return fs.writeFile(
-      pathToDestinationResult,
+      makePathToDestinationResult(nodeVersion),
       prettyWrite(fromVitestBenchResultToSkottResult(content)),
       { encoding: "utf-8" },
       (error) => {

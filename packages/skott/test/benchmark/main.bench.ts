@@ -38,7 +38,7 @@ describe("skott_benchmark", () => {
       async () => {
         await skott({
           cwd: location,
-          ignorePattern: "test/**/*.{ts,js}"
+          ignorePatterns: ["test/**/*.{ts,js}"]
         });
       },
       { iterations: 5 }

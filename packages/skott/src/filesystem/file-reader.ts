@@ -27,9 +27,9 @@ export interface FileReader {
 // eslint-disable-next-line no-redeclare
 export const FileReader = Context.GenericTag<FileReader>("FileReader");
 
-interface FileSystemConfig {
+export interface FileSystemConfig {
   cwd: string;
-  ignorePattern: string;
+  ignorePatterns: string[];
 }
 
 const minimatchDefaultOptions: MinimatchOptions = {
@@ -53,25 +53,26 @@ export class FileSystemReader implements FileReader {
   constructor(private readonly config: FileSystemConfig) {}
 
   private isFileIgnored(filename: string): boolean {
-    if (this.config.ignorePattern === "") {
+    if (this.config.ignorePatterns.length === 0) {
       return false;
     }
 
     const match = matchWith(filename);
 
-    return (
-      match(
-        toForwardSlashesOnly(
-          path.join(this.config.cwd, path.sep, this.config.ignorePattern)
-        )
-      ) || match(this.config.ignorePattern)
+    return this.config.ignorePatterns.some(
+      (pattern) =>
+        match(
+          toForwardSlashesOnly(path.join(this.config.cwd, path.sep, pattern))
+        ) || match(pattern)
     );
   }
 
   read(filename: string): Promise<string> {
     if (this.isFileIgnored(filename)) {
       return Promise.reject(
-        `File ${filename} is ignored due to the ignore pattern ${this.config.ignorePattern}`
+        `File ${filename} is ignored due to one of these ignore patterns ${this.config.ignorePatterns.join(
+          " - "
+        )}`
       );
     }
 

@@ -25,7 +25,7 @@
 
 ✅ Builtin **watch mode** updating the graph when file changes are detected. It works with all display modes (webapp and all CLIs visualization modes). Support all options of file ignoring/filtering from skott.
 
-✅ File tree traversal supports **ignore pattern** and **Git ignored files** (via `.gitignore` files)
+✅ File tree traversal supports **ignore patterns** and **Git ignored files** (via `.gitignore` files)
 
 ✅ Runs **incrementally** (experimental), meaning that skott will _only analyze_ files that were modified/added since the last run, offering performance boosts.
 
@@ -53,7 +53,7 @@ Install `skott` from npm using whatever package manager you like:
 <insert-your-package-manager> install skott
 ```
 
-Let's see examples of an analysis that will traverse all files (minus the ignored ones via the ignorePattern + .gitignore) starting from the current working directory.
+Let's see examples of an analysis that will traverse all files (minus the ignored ones via the ignorePatterns + .gitignore) starting from the current working directory.
 
 **Using the CLI**
 
@@ -67,7 +67,7 @@ skott --displayMode=webapp --trackThirdPartyDependencies --ignorePattern="test/*
 import skott from "skott";
 
 const { getStructure, getWorkspace, findUnusedDependencies, useGraph } = await skott({
-    ignorePattern: "test/**/*",
+    ignorePatterns: ["test/**/*"],
     dependencyTracking: {
         builtin: false,
         thirdParty: true,

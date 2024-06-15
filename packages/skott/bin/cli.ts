@@ -70,6 +70,10 @@ export function trimMargin(delimiter = "|"): (str: string) => string {
 
 const cli = new Command();
 
+function collectIgnorePatterns(value: string, previous: string[]) {
+  return previous.concat([value]);
+}
+
 cli
   .version(readManifestVersion())
   .description("Start the skott analysis to fully build the graph")
@@ -122,7 +126,8 @@ cli
   .option(
     "-ig, --ignorePattern <pattern>",
     "Provide ignore pattern to exclude files from the analysis",
-    ""
+    collectIgnorePatterns,
+    []
   )
   .option(
     "-s, --showCircularDependencies",

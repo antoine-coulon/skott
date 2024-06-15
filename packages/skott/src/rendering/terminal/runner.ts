@@ -220,7 +220,7 @@ export async function runTerminal<T>(
   if (terminalOptions.watch) {
     registerWatchMode({
       cwd: runtimeConfig.cwd,
-      ignorePattern: runtimeConfig.ignorePattern,
+      ignorePatterns: runtimeConfig.ignorePatterns,
       fileExtensions: runtimeConfig.fileExtensions,
       verbose: true,
       onChangesDetected: (done) => {

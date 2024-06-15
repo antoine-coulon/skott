@@ -15,7 +15,7 @@ async function showcase() {
       typeOnly: true
     },
     fileExtensions: [".ts", ".tsx", ".js", ".jsx"],
-    ignorePattern: "",
+    ignorePatterns: [],
     includeBaseDir: false,
     incremental: false,
     manifestPath: "package.json",

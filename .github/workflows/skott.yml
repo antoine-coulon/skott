@@ -54,34 +54,34 @@ jobs:
         env:
           CI: true
 
-      # - name: Run benchmarks
-      #   if: matrix.os == 'ubuntu-latest' && !contains(github.ref, 'main') && !contains(github.ref, 'release')
-      #   run: |
-      #     git stash
-      #     git config --local user.name "skott_bot"
-      #     git config --local user.email "skott.devtool@gmail.com"
-      #     git fetch origin
-      #     git pull origin ${{ github.head_ref }} --rebase
+      - name: Run benchmarks
+        if: matrix.os == 'ubuntu-latest' && !contains(github.ref, 'main') && !contains(github.ref, 'release')
+        run: |
+          git stash
+          git config --local user.name "skott_bot"
+          git config --local user.email "skott.devtool@gmail.com"
+          git fetch origin
+          git pull origin ${{ github.head_ref }} --rebase
 
-      #     pnpm -r benchmark
+          pnpm -r benchmark
           
-      #     git status
-      #     git add .
-      #     git commit -m "benchmark: publish benchmark results from node_${{ matrix.node-version }}"
-      #     git pull origin ${{ github.head_ref }} --rebase
+          git status
+          git add .
+          git commit -m "benchmark: publish benchmark results from node_${{ matrix.node-version }}"
+          git pull origin ${{ github.head_ref }} --rebase
 
-      #     if git diff --quiet; then
-      #       echo "No conflicts, proceeding with the push."
-      #     else
-      #       git checkout --theirs .
-      #       git add .
-      #       git rebase --continue
-      #     fi
+          if git diff --quiet; then
+            echo "No conflicts, proceeding with the push."
+          else
+            git checkout --theirs .
+            git add .
+            git rebase --continue
+          fi
 
-      #     git push origin HEAD:${{ github.head_ref }}
-      #   env: 
-      #     CI: true
-      #     NODE_VERSION: ${{ matrix.node-version }}
+          git push origin HEAD:${{ github.head_ref }}
+        env: 
+          CI: true
+          NODE_VERSION: ${{ matrix.node-version }}
 
 
   

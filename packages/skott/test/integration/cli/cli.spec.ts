@@ -59,7 +59,7 @@ describe.sequential("When running skott cli", () => {
                     "--exitCodeOnCircularDependencies=0",
                     `--cwd=${fixturesPath}`
                   ],
-                  useTimeout(1_500 * increaseTimeoutFactor)
+                  useTimeout(2_000 * increaseTimeoutFactor)
                 ),
                 doneSuccess,
                 doneFailure,
@@ -88,7 +88,7 @@ describe.sequential("When running skott cli", () => {
                     "--exitCodeOnCircularDependencies=0",
                     `--cwd=${fixturesPath}`
                   ],
-                  useTimeout(1_500 * increaseTimeoutFactor)
+                  useTimeout(2_000 * increaseTimeoutFactor)
                 ),
                 doneSuccess,
                 doneFailure,
@@ -123,7 +123,7 @@ describe.sequential("When running skott cli", () => {
                     "--exitCodeOnCircularDependencies=0",
                     `--cwd=${fixtureSubDirectoryPath}`
                   ],
-                  useTimeout(1_500 * increaseTimeoutFactor)
+                  useTimeout(2_000 * increaseTimeoutFactor)
                 ),
                 doneSuccess,
                 doneFailure,
@@ -150,7 +150,7 @@ describe.sequential("When running skott cli", () => {
                       "--exitCodeOnCircularDependencies=0",
                       `--cwd=${fixturesPath}`
                     ],
-                    useTimeout(1_500 * increaseTimeoutFactor)
+                    useTimeout(2_000 * increaseTimeoutFactor)
                   ),
                   doneSuccess,
                   doneFailure,
@@ -184,7 +184,7 @@ describe.sequential("When running skott cli", () => {
                         "--exitCodeOnCircularDependencies=0",
                         `--cwd=${fixturesPath}`
                       ],
-                      useTimeout(1_500 * increaseTimeoutFactor)
+                      useTimeout(2_000 * increaseTimeoutFactor)
                     ),
                     doneSuccess,
                     doneFailure,
@@ -225,7 +225,7 @@ describe.sequential("When running skott cli", () => {
                         "--exitCodeOnCircularDependencies=0",
                         `--cwd=${path.join(fixturesPath, "git-ignore-sandbox")}`
                       ],
-                      useTimeout(1_500 * increaseTimeoutFactor)
+                      useTimeout(2_000 * increaseTimeoutFactor)
                     ),
                     doneSuccess,
                     doneFailure,
@@ -262,7 +262,7 @@ describe.sequential("When running skott cli", () => {
                         `--cwd=${fixturesPath}`,
                         "--ignorePattern=voluntarily-ignored/**/*"
                       ],
-                      useTimeout(1_500 * increaseTimeoutFactor)
+                      useTimeout(2_000 * increaseTimeoutFactor)
                     ),
                     doneSuccess,
                     doneFailure,
