@@ -1,7 +1,7 @@
 import kleur from "kleur";
 
 import type { InputConfig } from "../../config.js";
-import { createRuntimeConfig } from "../../instance.js";
+import { toRuntimeConfigOrDie } from "../config.js";
 
 import { runTerminal } from "./runner.js";
 import { makeSkottRunner } from "./runner.js";
@@ -23,7 +23,8 @@ export function renderTerminalApplication<T>(
   apiConfig: InputConfig<T>,
   options: TerminalConfig = defaultTerminalConfig
 ): Promise<void> {
-  const runtimeConfig = createRuntimeConfig(apiConfig);
+  const runtimeConfig = toRuntimeConfigOrDie(apiConfig);
+
   const terminalOptions: TerminalConfig = {
     watch: options.watch ?? defaultTerminalConfig.watch,
     displayMode: options.displayMode ?? defaultTerminalConfig.displayMode,
@@ -33,9 +34,15 @@ export function renderTerminalApplication<T>(
       defaultTerminalConfig.showCircularDependencies,
     showUnusedDependencies:
       options.showUnusedDependencies ??
-      defaultTerminalConfig.showUnusedDependencies
+      defaultTerminalConfig.showUnusedDependencies,
+    showUnusedFiles:
+      options.showUnusedFiles ?? defaultTerminalConfig.showUnusedFiles
   };
-  const isTerminalConfigValid = ensureNoIllegalTerminalConfig(terminalOptions);
+
+  const isTerminalConfigValid = ensureNoIllegalTerminalConfig(terminalOptions, {
+    entrypoint: runtimeConfig.entrypoint,
+    trackThirdPartyDependencies: runtimeConfig.dependencyTracking.thirdParty
+  });
 
   if (isTerminalConfigValid._tag === "Left") {
     console.log(`\n ${kleur.bold().red(isTerminalConfigValid.left)}`);

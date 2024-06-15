@@ -55,7 +55,7 @@ export function runOneShotSkottCli(
     });
 
     childProcess.on("exit", (code) => {
-      if (code === 0) {
+      if (code === 0 || stderr === "") {
         return resolve(Either.right(stdout));
       }
 

@@ -105,6 +105,20 @@ export function renderWebApplication(config: {
     response.end(JSON.stringify(cycles));
   });
 
+  app.get("/api/unused", async (_, response) => {
+    const unusedDependencies =
+      await getSkottInstance().findUnusedDependencies();
+    const unusedFiles = getSkottInstance().useGraph().collectUnusedFiles();
+
+    response.setHeader("Content-Type", "application/json");
+    response.end(
+      JSON.stringify({
+        dependencies: unusedDependencies,
+        files: unusedFiles
+      })
+    );
+  });
+
   app.get("/api/analysis", (_, response) => {
     const structure = getSkottInstance().getStructure();
 
@@ -116,6 +130,17 @@ export function renderWebApplication(config: {
         cycles: []
       })
     );
+  });
+
+  app.get("/api/meta", (_, response) => {
+    // When the webapp is registered from the CLI, the only default option is "group"
+    const meta = {
+      visualization: "group",
+      tracking: dependencyTracking
+    };
+
+    response.setHeader("Content-Type", "application/json");
+    response.end(JSON.stringify(meta));
   });
 
   listen({ autoOpen: true });

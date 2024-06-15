@@ -21,7 +21,11 @@
 
 ✅ Deeply detects **circular dependencies** in an efficient way, with the ability to provide a max depth for the search
 
-✅ Many **builtin visualization modes** including a web application or terminal-based outputs such as file-tree or graph views. Visualization modes can be rendered using both the CLI and API.
+✅ Detect **unused source code files**. Eliminate dead code by finding files not imported anywhere else in the graph.
+
+✅ Detect **unused npm third-party dependencies**. Note that all unused `devDependencies` are not guaranteed to be detected as `depcheck` [only provides analysis for set of supported libraries](https://github.com/depcheck/depcheck) (eslint, karma, mocha, etc).
+
+✅ Many **builtin visualization modes** including a web application or terminal-based outputs such as file-tree or graph views. Visualization modes can be rendered using both the CLI and programatically using the API.
 
 ✅ Builtin **watch mode** updating the graph when file changes are detected. It works with all display modes (webapp and all CLIs visualization modes). Support all options of file ignoring/filtering from skott.
 
@@ -31,11 +35,9 @@
 
 ✅ Works with any custom **dependency resolver** (useful for specific monorepos integration where module identifiers need to be mapped to a specific workspace package) 
 
-✅ Detect **unused npm third-party dependencies**. Note that all unused `devDependencies` are not guaranteed to be detected as `depcheck` [only provides analysis for set of supported libraries](https://github.com/depcheck/depcheck) (eslint, karma, mocha, etc).
-
 ✅ Deeply **collect all dependencies of the project graph**, including third-party and builtin.
 
-✅ Deep **parent and child dependencies traversals** using DFS and BFS algorithms.
+✅ Graph API including deep **parent and child dependencies traversals** using DFS and BFS algorithms.
 
 ✅ Metadata collection per traversed node (file size, dependencies)
 
@@ -158,8 +160,9 @@ _Dead code_ can be defined as a code literally having no impact on the applicati
 
 However, tree shaking is not an easy task and can mostly work with module systems using static-based imports/exports such as ECMAScript modules. To avoid removing code that appears to be used at runtime, module bundlers are being very precise about determining automatically chunks of code that can be safely removed. Module bundlers can also be helped by providing them manually clues about what can be safely removed e.g. `/*#__PURE__*/` for Webpack.
 
-If you're not using tools implementing tree shaking, you will be able soon to use **skott**, which will bring up soon unused imports/exports warnings 🚀  
+Also, bundling might not be possible or might not even be a target. In that context, it's even more important to care about dead code elimination. Dead code can harm cold start and have unwanted side-effects.
 
+**skott** exposes information that can help identifying dead code and getting rid of it. Check documentation to get more information about identifying unused files and dependencies. 
 
 ## Graph Management
 

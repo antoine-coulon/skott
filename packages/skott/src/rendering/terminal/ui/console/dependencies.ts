@@ -32,7 +32,9 @@ export async function displayThirdPartyDependencies(
     );
   }
 
-  console.log(`\n production third-party dependencies: \n`);
+  console.log(
+    "\n" + kleur.bold().white().underline("Third-party dependencies:") + "\n"
+  );
 
   const sortedDependencies = [...thirdPartyRegistry.entries()].sort(
     ([a], [b]) => {
@@ -60,15 +62,6 @@ export async function displayThirdPartyDependencies(
       const indents = makeIndents(1);
       if (thirdParty.length > 0) {
         console.log(
-          `${kleur.bold(
-            `\n Found ${kleur
-              .bold()
-              .red(
-                thirdParty.length
-              )} third-party dependencies (dev/prod) that ${kleur.yellow(
-              "might be unused"
-            )}`
-          )} (${kleur.bold().magenta(timeTook)}) \n`,
           `\n ${kleur
             .bold()
             .grey(
@@ -78,11 +71,21 @@ export async function displayThirdPartyDependencies(
                 " source files before removing them. You might also want to move them as 'devDependencies'" +
                 " if that is the case."
             )}
-            `
+            `,
+          `${kleur.bold(
+            `\n Found ${kleur
+              .bold()
+              .red(
+                thirdParty.length
+              )} third-party dependencies (dev/prod) that ${kleur.yellow(
+              "might be unused (check message just above)"
+            )}`
+          )} (${kleur.bold().magenta(timeTook)}) \n`
         );
 
         for (const dep of thirdParty) {
-          console.log(`${indents} ${kleur.bold().red(dep)}`);
+          const d = `➡️ ${dep}`;
+          console.log(`${indents} ${kleur.bold().red(d)}`);
         }
       } else {
         console.log(
@@ -123,7 +126,11 @@ export function displayBuiltinDependencies(
     return;
   }
 
-  console.log(`\n Builtin Node.js dependencies: \n`);
+  console.log(
+    "\n" +
+      kleur.bold().white().underline("Builtin Node.js dependencies:") +
+      "\n"
+  );
 
   for (const [depName, depOccurrence] of builtinRegistry.entries()) {
     console.log(
@@ -173,28 +180,11 @@ export async function displayDependenciesReport(
   skottInstance: SkottInstance,
   options: {
     showUnusedDependencies: boolean;
+    showUnusedFiles: boolean;
     trackThirdPartyDependencies: boolean;
     trackBuiltinDependencies: boolean;
   }
 ) {
-  if (options.showUnusedDependencies && !options.trackThirdPartyDependencies) {
-    console.log(
-      `\n ${kleur
-        .bold()
-        .yellow(
-          "Warning: `--trackThirdPartyDependencies` must be provided when searching for unused dependencies."
-        )}`
-    );
-
-    console.log(
-      `\n ${kleur
-        .bold()
-        .grey(
-          "Example: `skott --displayMode=raw --showUnusedDependencies --trackThirdPartyDependencies`"
-        )} \n`
-    );
-  }
-
   const { graph } = skottInstance.getStructure();
 
   if (options.trackThirdPartyDependencies) {
@@ -207,6 +197,10 @@ export async function displayDependenciesReport(
 
   if (options.trackBuiltinDependencies) {
     displayBuiltinDependencies(graph);
+  }
+
+  if (options.showUnusedFiles) {
+    displayUnusedFiles(skottInstance);
   }
 }
 
@@ -259,4 +253,28 @@ export function displayCircularDependencies(
   }
 
   return circularDependencies;
+}
+
+export function displayUnusedFiles(skottInstance: SkottInstance) {
+  const unusedFiles = skottInstance.useGraph().collectUnusedFiles();
+
+  if (unusedFiles.length > 0) {
+    console.log("\n " + kleur.bold().white().underline(`Unused files found:`));
+
+    for (const unused of unusedFiles) {
+      console.log(kleur.bold().red(`\n ➡️ ${unused}`));
+    }
+
+    console.log(
+      kleur
+        .bold()
+        .grey(
+          `\n Warning: files are marked as unused based on source code analysis.` +
+            `\n They might be exported through package.json or used through other mechanisms not analyzed by skott.` +
+            `\n Please double check their potential use before removing them.`
+        )
+    );
+  } else {
+    console.log(kleur.bold().green(`\n 🧹 no unused files found`));
+  }
 }

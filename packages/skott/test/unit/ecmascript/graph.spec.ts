@@ -1,9 +1,10 @@
 import * as memfs from "memfs";
 import { describe, expect, it } from "vitest";
 
+import { InMemoryFileReader } from "../../../src/filesystem/fake/file-reader.js";
 import { InMemoryFileWriter } from "../../../src/filesystem/fake/file-writer.js";
 import { FileReader } from "../../../src/filesystem/file-reader.js";
-import { CollectLevel } from "../../../src/graph/traversal.js";
+import { CollectLevel } from "../../../src/graph/api.js";
 import { FakeLogger } from "../../../src/logger.js";
 import { EcmaScriptDependencyResolver } from "../../../src/modules/resolvers/ecmascript/resolver.js";
 import { ModuleWalkerSelector } from "../../../src/modules/walkers/common.js";
@@ -166,6 +167,100 @@ describe("When building the project structure independently of JavaScript or Typ
       ]);
       expect(extractIdsFromGraph("c.js")).to.deep.equal(["b.js", "a.js"]);
       expect(extractIdsFromGraph("a.js")).to.deep.equal([]);
+    });
+  });
+
+  describe("When searching for isolated nodes", () => {
+    describe("When isolated nodes don't have any dependencies", () => {
+      it("Should return all isolated nodes", async () => {
+        mountFakeFileSystem({
+          "a.js": `
+                import { b } from "./b.js";
+                export const a = () => b();
+              `,
+          "b.js": `
+                export const b = { doSomething: () => bar() };
+              `,
+          "isolated.js": `
+                export const x = { doSomething: () => {} };
+              `
+        });
+
+        const skott = new Skott(
+          {
+            entrypoint: undefined,
+            incremental: false,
+            circularMaxDepth: Number.POSITIVE_INFINITY,
+            includeBaseDir: false,
+            dependencyTracking: {
+              thirdParty: false,
+              builtin: false,
+              typeOnly: true
+            },
+            fileExtensions: [".js"],
+            tsConfigPath: "./tsconfig.json",
+            manifestPath: "./package.json",
+            dependencyResolvers: [new EcmaScriptDependencyResolver()]
+          },
+          new InMemoryFileReader(),
+          new InMemoryFileWriter(),
+          new ModuleWalkerSelector(),
+          new FakeLogger()
+        );
+
+        const { collectUnusedFiles } = await skott
+          .initialize()
+          .then(({ useGraph }) => useGraph());
+
+        expect(collectUnusedFiles()).to.deep.equal(["isolated.js"]);
+      });
+    });
+
+    describe("When isolated nodes have third-party dependencies or unresolved dependencies", () => {
+      it("Should return all isolated nodes", async () => {
+        mountFakeFileSystem({
+          "a.js": `
+                import { b } from "./b.js";
+                export const a = () => b();
+              `,
+          "b.js": `
+                export const b = { doSomething: () => bar() };
+              `,
+          "isolated.js": `
+                import { Effect } from "effect";
+                import notFound from "./not-found.js";
+                export const x = { doSomething: () => {} };
+              `
+        });
+
+        const skott = new Skott(
+          {
+            entrypoint: undefined,
+            incremental: false,
+            circularMaxDepth: Number.POSITIVE_INFINITY,
+            includeBaseDir: false,
+            dependencyTracking: {
+              thirdParty: false,
+              builtin: false,
+              typeOnly: true
+            },
+            fileExtensions: [".js"],
+            tsConfigPath: "./tsconfig.json",
+            manifestPath: "./package.json",
+            dependencyResolvers: [new EcmaScriptDependencyResolver()]
+          },
+          new InMemoryFileReader(),
+          new InMemoryFileWriter(),
+          new ModuleWalkerSelector(),
+          new FakeLogger()
+        );
+
+        const { collectUnusedFiles } = await skott
+          .initialize()
+          .then(({ useGraph }) => useGraph());
+
+        expect(collectUnusedFiles()).to.deep.equal(["isolated.js"]);
+      });
     });
   });
 

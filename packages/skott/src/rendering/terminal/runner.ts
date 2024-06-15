@@ -206,6 +206,7 @@ export async function runTerminal<T>(
     await new Promise((resolve) => {
       const depsReportComponent = new CliComponent(() =>
         displayDependenciesReport(skottInstance, {
+          showUnusedFiles: terminalOptions.showUnusedFiles,
           showUnusedDependencies: terminalOptions.showUnusedDependencies,
           trackBuiltinDependencies: runtimeConfig.dependencyTracking.builtin,
           trackThirdPartyDependencies:

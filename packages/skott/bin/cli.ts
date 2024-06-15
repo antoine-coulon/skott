@@ -154,6 +154,11 @@ cli
     "Search for unused third-party dependencies in the graph",
     false
   )
+  .option(
+    "-uf, --showUnusedFiles",
+    "Search for unused files in the graph",
+    false
+  )
   .option("-vb, --verbose", "Enable verbose mode. Display all the logs", false)
   .option(
     "-w, --cwd <path>",
