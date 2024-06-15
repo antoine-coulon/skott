@@ -53,7 +53,7 @@ describe.sequential("When running skott cli", () => {
         "Should not allow all `show*` options",
         async (o) => {
           const result = await runOneShotSkottCli(
-            ["--displayMode=webapp", o],
+            ["--displayMode=webapp", "--trackThirdPartyDependencies", o],
             AbortSignal.timeout(5000)
           );
 
@@ -86,7 +86,7 @@ describe.sequential("When running skott cli", () => {
       });
     });
 
-    describe.only("When collecting unused dependencies", () => {
+    describe("When collecting unused dependencies", () => {
       test("Should fail when not having third-party tracking enabled", async () => {
         const result = await runOneShotSkottCli(
           ["--displayMode=raw", "--showUnusedDependencies"],

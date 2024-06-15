@@ -157,6 +157,14 @@ Using this command, skott will deeply search for all ".ts" and ".tsx" files star
 $ skott --fileExtensions=.ts,.tsx
 ```
 
+**Finding unused files and dependencies:**
+
+```bash
+$ skott --showUnusedFiles --showUnusedDependencies --trackThirdPartyDependencies
+```
+
+An important description of that feature is available below in the API section.
+
 **skott** offers many ways to visualize the generated graph.
 
 **Embedded Web Application**
@@ -246,6 +254,7 @@ const {
   traverseFiles, 
   collectFilesDependencies, 
   collectFilesDependingOn, 
+  collectUnusedFiles,
   findLeaves, 
   findCircularDependencies, 
   hasCircularDependencies 
@@ -257,6 +266,8 @@ const {
 ```javascript
 const { useGraph } = await skott();
 const { traverseFiles } = useGraph();
+
+const unusedFiles = collectUnusedFiles();
 
 // Starting from any node, walking the whole graph
 for(const file of traverseFiles()) {
@@ -351,6 +362,23 @@ console.log(collectFilesDependingOn("children.js", CollectLevel.Shallow));
 
 console.log(collectFilesDependencies("parent.js", CollectLevel.Shallow)); 
 // logs [ SkottNode { id: "children.js" } ]
+```
+
+### Find unused files
+
+skott provides a way to collect **unused** files. Files are marked as "unused" from a pure source code analysis standpoint, meaning that a given file is considered unused only if it is not importing any other file and there is no other file importing it. In the graph lingo, we refer to these nodes as **isolated nodes**.
+
+Note: having a file being marked as unused does not necessarily mean that this file is useless, but rather than skott didn't find any use of it when traversing the whole project graph. Sometimes files are being exported as a npm library entrypoint even though they are not used in the internals of that library (for instance `package.json#exports`), or sometimes files are being used by other tools being run from npm scripts or whatever else toolchain.
+
+Unlike `unused dependencies` shown below, `unused files` don't need further analysis or need additional context e.g. a manifest file (package.json for Node.js) to be determined. This is why they belong in the Graph API, as `unused files` are nothing but `isolated nodes` in the context of skott.
+
+```javascript
+import skott from "skott";
+
+const { useGraph } = await skott();
+
+const unusedFiles = useGraph().collectUnusedFiles();
+// [ "index.js", "some-other-file.ts", "else.js" ]
 ```
 
 ### Find unused dependencies
