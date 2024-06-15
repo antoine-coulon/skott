@@ -25,9 +25,6 @@
 
 - [#159](https://github.com/antoine-coulon/skott/pull/159) [`8cb4f1c`](https://github.com/antoine-coulon/skott/commit/8cb4f1cdfef2528216b6448422b4adf0bf51e8f3) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - Fix skott performance timing in the CLI
 
-- Updated dependencies []:
-  - skott-webapp@2.1.1
-
 ## 0.34.0
 
 ### Minor Changes
