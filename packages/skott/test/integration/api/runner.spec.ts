@@ -46,26 +46,31 @@ describe("When running skott using all real dependencies", () => {
       );
     });
 
-    describe("groupBy", () => {
-      test("Should not allow `groupBy` to be a non-function", async () => {
-        await expect(async () =>
-          skott({
-            // @ts-expect-error
-            groupBy: "not-a-function"
-          })
-        ).rejects.toThrow(
-          "`groupBy` must be a function or not provided at all"
-        );
+    test("Should allow `groupBy` to be a function", async () => {
+      const skottInstance = await skott({
+        groupBy: (_path) => "group",
+        ignorePatterns: []
       });
 
-      test("Should allow `groupBy` to be a function", async () => {
-        const skottInstance = await skott({
-          groupBy: (_path) => "group",
-          ignorePatterns: []
-        });
+      expect(skottInstance).toBeDefined();
+    });
 
-        expect(skottInstance).toBeDefined();
+    test("Should not allow `groupBy` to be a non-function", async () => {
+      await expect(async () =>
+        skott({
+          // @ts-expect-error
+          groupBy: "not-a-function"
+        })
+      ).rejects.toThrow("`groupBy` must be a function or not provided at all");
+    });
+
+    test("Should allow `groupBy` to be a function", async () => {
+      const skottInstance = await skott({
+        groupBy: (_path) => "group",
+        ignorePatterns: []
       });
+
+      expect(skottInstance).toBeDefined();
     });
   });
 

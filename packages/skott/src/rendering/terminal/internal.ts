@@ -23,6 +23,7 @@ export type CliParameterOptions = {
   manifest: string;
   showCircularDependencies: boolean;
   showUnusedDependencies: boolean;
+  showUnusedFiles: boolean;
   trackBuiltinDependencies: boolean;
   trackThirdPartyDependencies: boolean;
   trackTypeOnlyDependencies: boolean;
@@ -35,7 +36,10 @@ export function runTerminalApplicationFromCLI<T>(
   entrypoint: string | undefined,
   options: CliParameterOptions
 ): Promise<void> {
-  const isTerminalConfigValid = ensureNoIllegalTerminalConfig(options);
+  const isTerminalConfigValid = ensureNoIllegalTerminalConfig({
+    ...options,
+    entrypoint
+  });
 
   if (isTerminalConfigValid._tag === "Left") {
     console.log(`\n ${kleur.bold().red(isTerminalConfigValid.left)}`);

@@ -6,6 +6,7 @@ export interface TerminalConfig {
   displayMode: "raw" | "file-tree" | "graph" | "webapp";
   showCircularDependencies: boolean;
   showUnusedDependencies: boolean;
+  showUnusedFiles: boolean;
   exitCodeOnCircularDependencies: number;
 }
 
@@ -14,6 +15,7 @@ export const defaultTerminalConfig: TerminalConfig = {
   displayMode: "raw",
   showCircularDependencies: false,
   showUnusedDependencies: false,
+  showUnusedFiles: false,
   exitCodeOnCircularDependencies: 1
 };
 
@@ -30,7 +32,9 @@ const terminalSchema = D.struct({
   exitCodeOnCircularDependencies: D.number
 });
 
-export function ensureNoIllegalTerminalConfig(options: TerminalConfig) {
+export function ensureNoIllegalTerminalConfig(
+  options: TerminalConfig & { entrypoint: string | undefined }
+) {
   const result = terminalSchema.decode(options);
 
   if (result._tag === "Left") {
@@ -56,6 +60,17 @@ export function ensureNoIllegalTerminalConfig(options: TerminalConfig) {
         "`--showUnusedDependencies` can't be used when using `--displayMode=webapp`"
       );
     }
+    if (options.showUnusedFiles) {
+      return Either.left(
+        "`--showUnusedFiles` can't be used when using `--displayMode=webapp`"
+      );
+    }
+  }
+
+  if (options.entrypoint && options.showUnusedFiles) {
+    return Either.left(
+      "`--showUnusedFiles` can't be used when using providing an entrypoint."
+    );
   }
 
   if (options.watch) {

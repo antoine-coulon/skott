@@ -33,9 +33,14 @@ export function renderTerminalApplication<T>(
       defaultTerminalConfig.showCircularDependencies,
     showUnusedDependencies:
       options.showUnusedDependencies ??
-      defaultTerminalConfig.showUnusedDependencies
+      defaultTerminalConfig.showUnusedDependencies,
+    showUnusedFiles:
+      options.showUnusedFiles ?? defaultTerminalConfig.showUnusedFiles
   };
-  const isTerminalConfigValid = ensureNoIllegalTerminalConfig(terminalOptions);
+  const isTerminalConfigValid = ensureNoIllegalTerminalConfig({
+    ...terminalOptions,
+    entrypoint: apiConfig.entrypoint
+  });
 
   if (isTerminalConfigValid._tag === "Left") {
     console.log(`\n ${kleur.bold().red(isTerminalConfigValid.left)}`);
