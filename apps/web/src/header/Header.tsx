@@ -47,7 +47,7 @@ export default function Header() {
             onClick={openGlobalSearch}
           >
             <Group position="apart">
-              <Text>Browse files</Text>
+              <Text>Browse elements</Text>
               <Code>CMD + K</Code>
             </Group>
           </Button>

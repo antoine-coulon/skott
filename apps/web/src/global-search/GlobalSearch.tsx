@@ -49,7 +49,7 @@ export default function GlobalSearch() {
   return (
     // @ts-ignore
     <ninja-keys
-      placeholder="Search for a node..."
+      placeholder="Search for an element in the graph..."
       hideBreadcrumbs="true"
       ref={containerRef}
     />
