@@ -290,8 +290,8 @@ importers:
         specifier: ^2.2.3
         version: 2.2.3
       effect:
-        specifier: 2.4.1
-        version: 2.4.1
+        specifier: 3.3.2
+        version: 3.3.2
       estree-walker:
         specifier: ^3.0.3
         version: 3.0.3
@@ -3632,6 +3632,10 @@ packages:
 
   /effect@2.4.1:
     resolution: {integrity: sha512-YsoMB/EGCohGKFyTPYqaFe2B7UCU2MM303dkoowF8DNOdks/4q/00cyhTbBUmM/0FMDoUPmUi/AJ0Aj3E7vO1A==}
+    dev: false
+
+  /effect@3.3.2:
+    resolution: {integrity: sha512-695XQBtp+UUYG50oREG9ujnRoeQU7xhwHDhT6ZAexm3Q+umdml1kjxcPoYRrS65crmaLlhVpjZHePJNzWOODnA==}
     dev: false
 
   /electron-to-chromium@1.4.439:
