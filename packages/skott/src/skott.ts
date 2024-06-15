@@ -12,8 +12,8 @@ import {
 import { FileReader } from "./filesystem/file-reader.js";
 import type { FileWriter } from "./filesystem/file-writer.js";
 import { toUnixPathLike } from "./filesystem/path.js";
+import { GraphApi } from "./graph/api.js";
 import type { SkottNode } from "./graph/node.js";
-import { type TraversalApi, makeTraversalApi } from "./graph/traversal.js";
 import {
   highlight,
   logFailureM,
@@ -116,7 +116,7 @@ export interface ImplicitUnusedDependenciesOptions {
 }
 
 export interface SkottInstance<T = unknown> {
-  useGraph: () => TraversalApi<T>;
+  useGraph: () => GraphApi<T>;
   getStructure: () => SkottStructure<T>;
   getWorkspace: () => ManifestDependenciesByName;
   findUnusedDependencies: (
@@ -767,7 +767,7 @@ export class Skott<T> {
     }
 
     return {
-      useGraph: () => makeTraversalApi(this.#projectGraph, this.config),
+      useGraph: () => new GraphApi(this.#projectGraph, this.config),
       getStructure: this.makeProjectStructure.bind(this),
       getWorkspace: () => this.#workspaceConfiguration.manifests,
       findUnusedDependencies: this.findUnusedDependencies.bind(this)
