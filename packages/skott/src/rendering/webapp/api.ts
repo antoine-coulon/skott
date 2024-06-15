@@ -115,6 +115,19 @@ export async function renderWebApplication<T>(
     response.end(JSON.stringify(cycles));
   });
 
+  app.get("/api/unused", async (_, response) => {
+    const unusedDependencies = await skottInstance.findUnusedDependencies();
+    const unusedFiles = skottInstance.useGraph().collectUnusedFiles();
+
+    response.setHeader("Content-Type", "application/json");
+    response.end(
+      JSON.stringify({
+        dependencies: unusedDependencies,
+        files: unusedFiles
+      })
+    );
+  });
+
   app.get("/api/analysis", (_, response) => {
     const structure = skottInstance.getStructure();
 
@@ -129,7 +142,10 @@ export async function renderWebApplication<T>(
   });
 
   app.get("/api/meta", (_, response) => {
-    const meta = { visualization };
+    const meta = {
+      visualization,
+      tracking: runtimeConfig.dependencyTracking
+    };
 
     response.setHeader("Content-Type", "application/json");
     response.end(JSON.stringify(meta));
@@ -238,7 +254,20 @@ export async function renderStandaloneWebApplication<T>(
     response.end(JSON.stringify(cycles));
   });
 
-  app.get("/api/analysis", (_, response) => {
+  app.get("/api/unused", async (_, response) => {
+    const unusedDependencies = await skottInstance.findUnusedDependencies();
+    const unusedFiles = skottInstance.useGraph().collectUnusedFiles();
+
+    response.setHeader("Content-Type", "application/json");
+    response.end(
+      JSON.stringify({
+        dependencies: unusedDependencies,
+        files: unusedFiles
+      })
+    );
+  });
+
+  app.get("/api/analysis", async (_, response) => {
     const structure = skottInstance.getStructure();
 
     response.setHeader("Content-Type", "application/json");

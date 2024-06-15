@@ -495,6 +495,14 @@ export class Skott<T> {
       }
     }
   ): Promise<UnusedDependencies> {
+    if (!this.config.dependencyTracking.thirdParty) {
+      this.logger.info(
+        `Skipping finding unused third-party dependencies as they are not tracked by the analysis.`
+      );
+
+      return { thirdParty: [] };
+    }
+
     const manifestDependencies = await pipe(
       findManifestDependencies(this.#baseDir, this.config.manifestPath),
       Effect.provideService(FileReader, this.fileReader),

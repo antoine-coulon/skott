@@ -95,7 +95,13 @@ describe("Skott analysis runner", () => {
       mountFakeFileSystem(fs);
 
       const skott = new Skott(
-        defaultConfig,
+        {
+          ...defaultConfig,
+          dependencyTracking: {
+            ...defaultConfig.dependencyTracking,
+            thirdParty: true
+          }
+        },
         new InMemoryFileReader({ cwd, ignorePatterns: [] }),
         new InMemoryFileWriter(),
         new ModuleWalkerSelector(),
