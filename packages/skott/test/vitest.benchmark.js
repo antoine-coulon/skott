@@ -3,10 +3,11 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     watch: false,
+    passWithNoTests: true,
     benchmark: {
-      reporters: process.env.CI ? ['json'] : ['default'],
+      reporters: ['default'],
       include: ["./test/benchmark/**/*.bench.ts"],
-      outputFile: './test/benchmark/result.json',
+      outputJson: './test/benchmark/result.json',
     }
   },
 });
