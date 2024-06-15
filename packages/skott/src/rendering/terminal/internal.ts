@@ -1,7 +1,7 @@
 import kleur from "kleur";
 
-import { createRuntimeConfig } from "../../instance.js";
 import { kExpectedModuleExtensions } from "../../modules/resolvers/base-resolver.js";
+import { toRuntimeConfigOrDie } from "../config.js";
 
 import { runTerminal } from "./runner.js";
 import { makeSkottRunner } from "./runner.js";
@@ -46,13 +46,24 @@ export function runTerminalApplicationFromCLI<T>(
     process.exit(1);
   }
 
-  const runtimeConfig = createRuntimeConfig<T>({
-    ...options,
+  const runtimeConfig = toRuntimeConfigOrDie<T>({
     entrypoint,
     ignorePatterns: options.ignorePattern,
+    dependencyTracking: {
+      thirdParty: options.trackThirdPartyDependencies,
+      builtin: options.trackBuiltinDependencies,
+      typeOnly: options.trackTypeOnlyDependencies
+    },
     fileExtensions: options.fileExtensions
       .split(",")
-      .filter((ext) => kExpectedModuleExtensions.has(ext))
+      .filter((ext) => kExpectedModuleExtensions.has(ext)),
+    circularMaxDepth: options.circularMaxDepth,
+    tsConfigPath: options.tsconfig,
+    manifestPath: options.manifest,
+    includeBaseDir: options.includeBaseDir,
+    cwd: options.cwd,
+    incremental: options.incremental,
+    verbose: options.verbose
   });
 
   const runSkott = makeSkottRunner(runtimeConfig);

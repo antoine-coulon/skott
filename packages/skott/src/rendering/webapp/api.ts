@@ -1,8 +1,9 @@
 import EventEmitter from "events";
 
 import type { InputConfig } from "../../config.js";
-import { createRuntimeConfig, runFromRuntimeConfig } from "../../instance.js";
+import { runFromRuntimeConfig } from "../../instance.js";
 import type { SkottInstance, SkottStructure } from "../../skott.js";
+import { toRuntimeConfigOrDie } from "../config.js";
 import { registerWatchMode } from "../watch-mode.js";
 
 import { createHttpApp, resolveEntrypointPath } from "./internal.js";
@@ -44,7 +45,7 @@ export async function renderWebApplication<T>(
     onOpenError?: (error: Error) => void;
   }
 ) {
-  const runtimeConfig = createRuntimeConfig<T>(apiConfig);
+  const runtimeConfig = toRuntimeConfigOrDie<T>(apiConfig);
   const entrypoint = resolveEntrypointPath({
     entrypoint: runtimeConfig.entrypoint,
     includeBaseDir: runtimeConfig.includeBaseDir
