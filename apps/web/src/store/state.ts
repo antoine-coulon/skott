@@ -13,6 +13,9 @@ export type NetworkLayout = (
 ) & { node_spacing: number; smooth_edges: boolean };
 
 export interface UiState {
+  visualization: {
+    granularity: "module" | "group";
+  };
   filters: {
     glob: string;
   };
@@ -32,7 +35,13 @@ export interface UiState {
   };
 }
 
-export interface DataState extends SkottStructureWithCycles {}
+export interface DataState extends SkottStructureWithCycles {
+  tracking: {
+    builtin: boolean;
+    thirdParty: boolean;
+    typeOnly: boolean;
+  };
+}
 
 export interface AppState {
   data: DataState;
@@ -45,8 +54,16 @@ export const storeDefaultValue = {
     cycles: [],
     files: [],
     graph: {},
+    tracking: {
+      builtin: false,
+      thirdParty: false,
+      typeOnly: false,
+    },
   },
   ui: {
+    visualization: {
+      granularity: "module",
+    },
     filters: {
       glob: "",
     },

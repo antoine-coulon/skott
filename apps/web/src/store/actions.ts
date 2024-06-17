@@ -1,5 +1,8 @@
 import { FileExplorerActions } from "@/core/file-system/actions";
 import { NetworkActions } from "@/core/network/actions";
-import { GlobalActions } from "@/refresh-app";
+import { ApplicationLifecycleActions } from "@/core/refresh-app";
 
-export type AppActions = NetworkActions | FileExplorerActions | GlobalActions;
+export type AppActions =
+  | NetworkActions
+  | FileExplorerActions
+  | ApplicationLifecycleActions;

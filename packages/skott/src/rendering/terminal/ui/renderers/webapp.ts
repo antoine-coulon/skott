@@ -135,7 +135,9 @@ export function renderWebApplication(config: {
   app.get("/api/meta", (_, response) => {
     // When the webapp is registered from the CLI, the only default option is "group"
     const meta = {
-      visualization: "group",
+      visualization: {
+        granularity: "group"
+      },
       tracking: dependencyTracking
     };
 

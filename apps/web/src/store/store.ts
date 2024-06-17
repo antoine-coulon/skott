@@ -8,8 +8,8 @@ import { AppState, storeDefaultValue } from "./state";
 import { StoreReducer } from "./reducer";
 import { fileSystemReducers } from "../core/file-system/reducers";
 import { networkReducers } from "@/core/network/reducers";
-import { globalReducers } from "@/refresh-app";
 import { noOp } from "@/util";
+import { applicationLifecycleReducers } from "@/core/refresh-app";
 
 export type AppEffects = AppEvents | AppActions;
 
@@ -68,7 +68,7 @@ export class AppStore {
 const listOfReducers = [
   ...fileSystemReducers,
   ...networkReducers,
-  ...globalReducers,
+  ...applicationLifecycleReducers,
 ];
 
 const instance = new AppStore(

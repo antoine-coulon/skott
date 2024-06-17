@@ -1,6 +1,6 @@
 import { useClient } from "@/client/react-bindings";
+import { refreshApp } from "@/core/refresh-app";
 import { logError, logInfo } from "@/logger";
-import { refreshApp } from "@/refresh-app";
 import { callUseCase } from "@/store/store";
 import React from "react";
 

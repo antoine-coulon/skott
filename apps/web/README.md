@@ -12,3 +12,5 @@ The application needs 3 endpoints to correctly work:
 - `/api/cycles`: endpoint returning `{ cycles: string[][] }` payload. See `src/skott.ts`
   
 - `/api/subscribe`: endpoint that provides Server-Sent Events support to hot refresh the application whenever an event is received.
+
+- `/api/meta`: endpoint returning meta information about the application, especially visualization related stuff that can change including visualization granularity e.g. "group" that might fit better with monorepo visualization.
