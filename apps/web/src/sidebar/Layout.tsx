@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { useDisclosure } from "@mantine/hooks";
-import { LoadingOverlay, Button, Group, Box } from "@mantine/core";
 import {
   createStyles,
   Navbar,
@@ -18,7 +16,7 @@ import {
   IconAB2,
 } from "@tabler/icons-react";
 
-import { useAppEffects } from "@/store/react-bindings";
+import { useAppEffects, useStoreSelect } from "@/store/react-bindings";
 
 import { Circular } from "./Circular";
 import { GraphConfiguration } from "./graph-configuration/GraphConfiguration";
@@ -86,7 +84,7 @@ const useStyles = createStyles((theme) => ({
   },
 }));
 
-const menus = [
+const staticMenus = [
   { icon: IconClipboardData, label: "Summary", key: "summary" },
   { icon: IconFiles, label: "File Explorer", key: "file_explorer" },
   {
@@ -116,9 +114,27 @@ const menus = [
   },
 ] as const;
 
-const menuKeys = menus.map((menu) => menu.key);
+type MenuKeys = (typeof staticMenus)[number]["key"];
 
-type MenuKeys = (typeof menus)[number]["key"];
+function useMenus() {
+  const state = useStoreSelect("ui", "visualization");
+
+  if (!state) {
+    return { menus: [], menuKeys: [] };
+  }
+
+  const filteredMenus = staticMenus.filter((menu) => {
+    if (menu.key === "file_explorer") {
+      return state.granularity === "module";
+    }
+
+    return true;
+  });
+
+  const menuKeys = filteredMenus.map((menu) => menu.key);
+
+  return { menus: filteredMenus, menuKeys };
+}
 
 const isFeatureDisabled = (section: string) =>
   section !== "file_explorer" &&
@@ -130,6 +146,7 @@ export function DoubleNavbar() {
   const { classes, cx } = useStyles();
 
   const [active, setActive] = useState<MenuKeys>("summary");
+  const { menuKeys, menus } = useMenus();
 
   useAppEffects((action) => {
     if (

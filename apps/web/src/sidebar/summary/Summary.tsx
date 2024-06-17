@@ -34,6 +34,10 @@ function harmonizeBuiltinDependencyProtocol(dep: string) {
   return dep;
 }
 
+function sortByUsage(a: [string, number], b: [string, number]) {
+  return b[1] - a[1];
+}
+
 export function Summary() {
   const appStore = useAppStore();
   const [summary, setSummary] = React.useState({
@@ -77,8 +81,8 @@ export function Summary() {
       numberOfFiles: data.files.length,
       cycles: data.cycles,
       files: filesMap,
-      builtinRegistry,
-      npmRegistry,
+      builtinRegistry: new Map([...builtinRegistry].sort(sortByUsage)),
+      npmRegistry: new Map([...npmRegistry].sort(sortByUsage)),
       totalBytes: convertBytesToUserFriendlyUnit(bytesSize),
     });
   }
