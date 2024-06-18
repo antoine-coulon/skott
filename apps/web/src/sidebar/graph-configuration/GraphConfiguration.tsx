@@ -13,6 +13,7 @@ import {
   Text,
 } from "@mantine/core";
 import { createFormContext } from "@mantine/form";
+import * as Option from "@effect/data/Option";
 
 import { callUseCase, notify } from "@/store/store";
 import { updateConfiguration } from "@/core/network/update-configuration";
@@ -141,11 +142,11 @@ export function GraphConfiguration() {
   });
 
   React.useEffect(() => {
-    if (!network) {
+    if (Option.isNone(network)) {
       return;
     }
 
-    const layout = network.layout;
+    const { layout } = network.value;
 
     if (layout.type === "cluster") {
       form.setValues({
@@ -259,7 +260,9 @@ export function GraphConfiguration() {
               />
             </Box>
 
-            {selectedLayout === "hierarchical" && cycles.length > 0 ? (
+            {selectedLayout === "hierarchical" &&
+            cycles._tag === "Some" &&
+            cycles.value.length > 0 ? (
               <Box m="md">
                 <Text size="sm" mt="xl" mb="md">
                   Hierarchical layout is discouraged when the{" "}
@@ -268,7 +271,7 @@ export function GraphConfiguration() {
                   </Text>{" "}
                   Current cycles:{" "}
                   <Text span c="red" inherit>
-                    {cycles.length}
+                    {cycles.value.length}
                   </Text>
                 </Text>
               </Box>

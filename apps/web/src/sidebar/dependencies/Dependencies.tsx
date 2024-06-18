@@ -2,10 +2,18 @@ import { toggleDependencies } from "@/core/network/toggle-dependencies";
 import { useAppStore, useStoreSelect } from "@/store/react-bindings";
 import { callUseCase } from "@/store/store";
 import { Box, Checkbox, Navbar, ScrollArea } from "@mantine/core";
+import * as Option from "@effect/data/Option";
 
 export function Dependencies() {
-  const network = useStoreSelect("ui", "network");
+  const maybeNetwork = useStoreSelect("ui", "network");
   const state = useAppStore().getState();
+
+  if (Option.isNone(maybeNetwork)) {
+    return null;
+  }
+
+  const network = maybeNetwork.value;
+
   const { hasThirdParty, hasBuiltin } = {
     hasThirdParty: Object.values(state.data.graph).some(
       (node) => node.body.thirdPartyDependencies.length > 0

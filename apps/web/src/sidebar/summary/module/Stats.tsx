@@ -10,8 +10,8 @@ import {
 } from "@mantine/core";
 import { IconRefreshAlert } from "@tabler/icons-react";
 
-import { isJavaScriptModule, isTypeScriptModule } from "../../util";
-import { SkottStructureWithCycles } from "../../skott";
+import { isJavaScriptModule, isTypeScriptModule } from "../../../util";
+import { SkottStructureWithCycles } from "../../../skott";
 import { convertBytesToUserFriendlyUnit, formatForm } from "./formatters";
 import { LanguageRing } from "./LanguageRing";
 import { Dependencies } from "./Dependencies";
@@ -38,7 +38,7 @@ function sortByUsage(a: [string, number], b: [string, number]) {
   return b[1] - a[1];
 }
 
-export function Summary() {
+export function Stats() {
   const appStore = useAppStore();
   const [summary, setSummary] = React.useState({
     totalBytes: "0",

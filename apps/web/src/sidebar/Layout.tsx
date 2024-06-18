@@ -20,11 +20,13 @@ import { useAppEffects, useStoreSelect } from "@/store/react-bindings";
 
 import { Circular } from "./Circular";
 import { GraphConfiguration } from "./graph-configuration/GraphConfiguration";
-import { Summary } from "./summary/Summary";
+import { Stats } from "./summary/module/Stats";
 import { FileExplorer } from "./file-explorer/FileExplorer";
 import { InteractivePlayground } from "./InteractivePlayground";
 import { UserSettings } from "./UserSettings";
 import { Dependencies } from "./dependencies/Dependencies";
+import { Summary } from "@/sidebar/Summary";
+import * as Option from "@effect/data/Option";
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -117,15 +119,17 @@ const staticMenus = [
 type MenuKeys = (typeof staticMenus)[number]["key"];
 
 function useMenus() {
-  const state = useStoreSelect("ui", "visualization");
+  const maybe = useStoreSelect("ui", "visualization");
 
-  if (!state) {
+  if (Option.isNone(maybe)) {
     return { menus: [], menuKeys: [] };
   }
 
+  const visualization = maybe.value;
+
   const filteredMenus = staticMenus.filter((menu) => {
     if (menu.key === "file_explorer") {
-      return state.granularity === "module";
+      return visualization.granularity === "module";
     }
 
     return true;
@@ -196,7 +200,7 @@ export function DoubleNavbar() {
       case "settings":
         return <UserSettings />;
       default:
-        return <Summary />;
+        return <Stats />;
     }
   };
 

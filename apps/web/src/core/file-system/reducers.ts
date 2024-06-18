@@ -29,6 +29,8 @@ function applyGlob(glob: string, state: AppState["data"]): AppState["data"] {
     files: filteredFiles,
     graph: filteredGraph,
     cycles: filteredCycles,
+    tracking: state.tracking,
+    entrypoint: state.entrypoint,
   };
 }
 

@@ -20,7 +20,9 @@
     "prepublishOnly": "npm run build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "typecheck:watch": "tsc --noEmit --watch"
   },
   "devDependencies": {
     "@effect/data": "^0.4.1",
