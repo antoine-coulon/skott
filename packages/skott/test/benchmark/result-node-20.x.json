@@ -1,40 +1,40 @@
 {
   "name": "skott_benchmark",
-  "done_at": "2024-06-23T12:41:57.251Z",
-  "git_commit_hash": "a1f4ef7d594b186f109cc45dcd43dab242415242",
-  "git_branch_reference": "pin-typescript",
+  "done_at": "2024-06-18T20:33:44.705Z",
+  "git_commit_hash": "1ab30f60ad583f8fa477bdd909c336185873a062",
+  "git_branch_reference": "manage-webapp-groups",
   "results": [
     {
       "name": "knex/knex",
       "rank": 1,
-      "totalTime": 7102.217719,
-      "min": 1388.7323109999998,
-      "mean": 1420.4435438,
-      "max": 1462.9529479999983
+      "totalTime": 7140.686279000003,
+      "min": 1396.3560349999989,
+      "mean": 1428.1372558000007,
+      "max": 1449.815923000002
     },
     {
       "name": "parcel-bundler/parcel",
       "rank": 3,
-      "totalTime": 26285.999716000006,
-      "min": 5177.377133000002,
-      "mean": 5257.199943200001,
-      "max": 5361.640671000001
+      "totalTime": 26748.420022,
+      "min": 5295.289515000004,
+      "mean": 5349.6840044,
+      "max": 5380.509494000005
     },
     {
       "name": "Effect-TS/effect",
       "rank": 4,
-      "totalTime": 66054.934489,
-      "min": 13175.492679999996,
-      "mean": 13210.986897800001,
-      "max": 13254.01873000001
+      "totalTime": 63438.03164300005,
+      "min": 12493.229148000013,
+      "mean": 12687.60632860001,
+      "max": 12940.787734000012
     },
     {
       "name": "gcanti/fp-ts",
       "rank": 2,
-      "totalTime": 21125.038750999956,
-      "min": 4121.4466439999815,
-      "mean": 4225.007750199991,
-      "max": 4278.501751000003
+      "totalTime": 21274.487017999985,
+      "min": 4156.450332999986,
+      "mean": 4254.897403599997,
+      "max": 4307.361151999998
     }
   ]
 }
