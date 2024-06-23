@@ -1,12 +1,15 @@
 import { useStoreSelect } from "@/store/react-bindings";
 import { Badge, Flex, Navbar, Paper, ScrollArea, Text } from "@mantine/core";
+import * as Option from "@effect/data/Option";
 
 export function Groups() {
-  const graph = useStoreSelect("data", "graph");
+  const maybeGraph = useStoreSelect("data", "graph");
 
-  if (!graph) {
+  if (Option.isNone(maybeGraph)) {
     return null;
   }
+
+  const graph = maybeGraph.value;
 
   return (
     <ScrollArea.Autosize mah="90vh" mx="auto">

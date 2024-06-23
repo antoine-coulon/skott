@@ -9,11 +9,7 @@
     "access": "public"
   },
   "license": "MIT",
-  "files": [
-    "dist",
-    "index.d.ts",
-    "index.js"
-  ],
+  "files": ["dist", "index.d.ts", "index.js"],
   "scripts": {
     "build": "vite build",
     "dev": "vite & node server.js",
@@ -21,8 +17,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit",
-    "typecheck:watch": "tsc --noEmit --watch"
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@effect/data": "^0.4.1",

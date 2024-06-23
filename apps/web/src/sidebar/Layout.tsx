@@ -16,7 +16,11 @@ import {
   IconAB2,
 } from "@tabler/icons-react";
 
-import { useAppEffects, useStoreSelect } from "@/store/react-bindings";
+import {
+  isSelectorAvailable,
+  useAppEffects,
+  useStoreSelect,
+} from "@/store/react-bindings";
 
 import { Circular } from "./Circular";
 import { GraphConfiguration } from "./graph-configuration/GraphConfiguration";
@@ -26,7 +30,6 @@ import { InteractivePlayground } from "./InteractivePlayground";
 import { UserSettings } from "./UserSettings";
 import { Dependencies } from "./dependencies/Dependencies";
 import { Summary } from "@/sidebar/Summary";
-import * as Option from "@effect/data/Option";
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -119,17 +122,17 @@ const staticMenus = [
 type MenuKeys = (typeof staticMenus)[number]["key"];
 
 function useMenus() {
-  const maybe = useStoreSelect("ui", "visualization");
+  const selector = useStoreSelect("ui", "visualization");
 
-  if (Option.isNone(maybe)) {
+  if (!isSelectorAvailable(selector)) {
     return { menus: [], menuKeys: [] };
   }
 
-  const visualization = maybe.value;
+  const visualization = selector.value.granularity;
 
   const filteredMenus = staticMenus.filter((menu) => {
     if (menu.key === "file_explorer") {
-      return visualization.granularity === "module";
+      return visualization._tag === "Some" && visualization.value === "module";
     }
 
     return true;

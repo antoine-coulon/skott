@@ -1,18 +1,22 @@
 import { Groups } from "@/sidebar/summary/group/Groups";
 import { Stats } from "@/sidebar/summary/module/Stats";
-import { useStoreSelect } from "@/store/react-bindings";
+import { isSelectorAvailable, useStoreSelect } from "@/store/react-bindings";
 import * as Option from "@effect/data/Option";
 
 export function Summary() {
-  const maybeProp = useStoreSelect("ui", "visualization");
+  const visualizationSelector = useStoreSelect("ui", "visualization");
 
-  if (Option.isNone(maybeProp)) {
+  if (!isSelectorAvailable(visualizationSelector)) {
     return null;
   }
 
-  const visualization = maybeProp.value;
+  if (Option.isNone(visualizationSelector.value.granularity)) {
+    return null;
+  }
 
-  switch (visualization.granularity) {
+  const granularity = visualizationSelector.value.granularity.value;
+
+  switch (granularity) {
     case "module":
       return <Stats />;
     case "group":

@@ -4,12 +4,13 @@ import { AppStore } from "@/store/store";
 import { BehaviorSubject } from "rxjs";
 import { describe, expect, test } from "vitest";
 import { bootstrapApp } from "@/core/bootstrap-app";
+import * as Option from "@effect/data/Option";
 
 describe("Initialization of the application", () => {
   test("Should populate store with initially fetched values", async () => {
     const appStore = new AppStore(
       new BehaviorSubject<AppState>(storeDefaultValue),
-      []
+      [],
     );
 
     const dispatchAction = bootstrapApp(appStore);
@@ -94,7 +95,7 @@ describe("Initialization of the application", () => {
           layout: storeDefaultValue.ui.network.layout,
         },
         visualization: {
-          granularity: "group",
+          granularity: Option.some("group"),
         },
       },
     });
@@ -104,7 +105,7 @@ describe("Initialization of the application", () => {
     test("Should populate store with initially fetched values", async () => {
       const appStore = new AppStore(
         new BehaviorSubject<AppState>(storeDefaultValue),
-        []
+        [],
       );
 
       const dispatchAction = bootstrapApp(appStore);
@@ -184,7 +185,7 @@ describe("Initialization of the application", () => {
             layout: storeDefaultValue.ui.network.layout,
           },
           visualization: {
-            granularity: "group",
+            granularity: Option.some("group"),
           },
         },
       });

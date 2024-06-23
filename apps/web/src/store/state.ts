@@ -1,4 +1,5 @@
 import { SkottStructureWithCycles } from "../skott";
+import * as Option from "@effect/data/Option";
 
 export type NetworkLayout = (
   | {
@@ -14,7 +15,7 @@ export type NetworkLayout = (
 
 export interface UiState {
   visualization: {
-    granularity: "module" | "group";
+    granularity: Option.Option<"module" | "group">;
   };
   filters: {
     glob: string;
@@ -62,7 +63,7 @@ export const storeDefaultValue = {
   },
   ui: {
     visualization: {
-      granularity: "module",
+      granularity: Option.none(),
     },
     filters: {
       glob: "",

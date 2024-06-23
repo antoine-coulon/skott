@@ -82,6 +82,7 @@ function ClusterOptions() {
 
 function HierarchicalOptions() {
   const form = useFormContext();
+
   return (
     <Box m="md">
       <Text size="sm" mt="md">
@@ -261,7 +262,7 @@ export function GraphConfiguration() {
             </Box>
 
             {selectedLayout === "hierarchical" &&
-            cycles._tag === "Some" &&
+            Option.isSome(cycles) &&
             cycles.value.length > 0 ? (
               <Box m="md">
                 <Text size="sm" mt="xl" mb="md">

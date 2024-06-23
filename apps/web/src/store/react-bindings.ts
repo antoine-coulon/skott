@@ -17,10 +17,10 @@ export const useStoreSelect = <
   K extends keyof AppState[T],
 >(
   storeSegment: T,
-  pluckedProperty: K
+  pluckedProperty: K,
 ) => {
   const [state, setState] = React.useState<Option.Option<AppState[T][K]>>(
-    null!
+    Option.none,
   );
   const store = useAppStore();
 
@@ -36,6 +36,12 @@ export const useStoreSelect = <
 
   return state;
 };
+
+export function isSelectorAvailable<K>(
+  selector: Option.Option<K>,
+): selector is Option.Some<K> {
+  return selector._tag === "Some";
+}
 
 export const useAppEffects = <R>(callback: (events: AppEffects) => R) => {
   const store = useAppStore();
