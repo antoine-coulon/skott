@@ -67,7 +67,7 @@
     "polka": "^0.5.2",
     "sirv": "^2.0.3",
     "skott-webapp": "workspace:^",
-    "typescript": "5.5.2"
+    "typescript": "5.4.5"
   },
   "devDependencies": {
     "@nodesecure/eslint-config": "^1.7.0",
