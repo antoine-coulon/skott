@@ -1,5 +1,14 @@
 # skott
 
+## 0.35.1
+
+### Patch Changes
+
+- [`8147b70`](https://github.com/antoine-coulon/skott/commit/8147b7004e7a4ccd35e7cb01a3bfbf38ff7d9877) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - pin TypeScript version used by skott to prevent @typescript-estree from emitting warnings
+
+- Updated dependencies []:
+  - skott-webapp@2.1.1
+
 ## 0.35.0
 
 ### Minor Changes
