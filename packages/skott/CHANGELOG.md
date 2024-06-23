@@ -1,5 +1,14 @@
 # skott
 
+## 0.35.1
+
+### Patch Changes
+
+- [#168](https://github.com/antoine-coulon/skott/pull/168) [`bcf043a`](https://github.com/antoine-coulon/skott/commit/bcf043ae965c7c01c922c070ecc355f4d2801e96) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - pin TypeScript version to ensure its aligned with @typescript-estree and that parser does not emit warnings
+
+- Updated dependencies []:
+  - skott-webapp@2.1.1
+
 ## 0.35.0
 
 ### Minor Changes
