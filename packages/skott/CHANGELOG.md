@@ -1,5 +1,14 @@
 # skott
 
+## 0.35.2
+
+### Patch Changes
+
+- [#170](https://github.com/antoine-coulon/skott/pull/170) [`1716f5d`](https://github.com/antoine-coulon/skott/commit/1716f5ddffb57ccebe46522de99f1ff1cbe9f65a) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - fix: remove typescript-estree warning by using latest typescript compatible version
+
+- Updated dependencies []:
+  - skott-webapp@2.1.1
+
 ## 0.35.1
 
 ### Patch Changes
