@@ -17,7 +17,11 @@ function App() {
   return (
     <>
       <GlobalSearch />
-      <AppShell header={<Header />} navbar={<DoubleNavbar />}>
+      <AppShell
+        navbarOffsetBreakpoint="sm"
+        header={<Header />}
+        navbar={<DoubleNavbar />}
+      >
         <div className="root-container">
           <GraphNetwork />
         </div>

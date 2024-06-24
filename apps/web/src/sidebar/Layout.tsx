@@ -208,7 +208,7 @@ export function DoubleNavbar() {
   };
 
   return (
-    <Navbar width={{ sm: 300 }}>
+    <Navbar width={{ sm: 300 }} hidden={true} hiddenBreakpoint="sm">
       <Navbar.Section grow className={classes.wrapper}>
         <div className={classes.aside}>{mainMenus}</div>
         <div className={classes.main}>{selectComponent(active)}</div>
