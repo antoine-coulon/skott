@@ -1,20 +1,24 @@
-import { GroupNode } from "./GroupNode";
 import { useStoreSelect } from "@/store/react-bindings";
 import * as Option from "@effect/data/Option";
 import {
   ActionIcon,
-  Badge,
   Blockquote,
   Box,
+  Button,
+  Divider,
   Flex,
   Modal,
   Navbar,
-  Paper,
   ScrollArea,
+  Switch,
   Text,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { IconHelpCircle, IconInfoCircle } from "@tabler/icons-react";
+import {
+  IconCirclePlus,
+  IconHelpCircle,
+  IconInfoCircle,
+} from "@tabler/icons-react";
 
 export function GroupedGraphDocumentation() {
   const [opened, { open, close }] = useDisclosure(false);
@@ -53,36 +57,46 @@ export function GroupedGraphDocumentation() {
   );
 }
 
-export function Groups() {
+export function CustomGroupsPlayground() {
   const maybeGraph = useStoreSelect("data", "graph");
 
   if (Option.isNone(maybeGraph)) {
     return null;
   }
 
-  const graph = maybeGraph.value;
   return (
     <ScrollArea.Autosize mah="90vh" mx="auto">
       <Navbar.Section>
-        <Box p="md">
-          <Paper withBorder py={5} my={10}>
-            <Flex p="sm" justify="space-between" align="center" direction="row">
-              <Text> Groups visualization</Text>
-              <Badge
-                variant="gradient"
-                gradient={{ from: "indigo", to: "blue" }}
-                size="lg"
-              >
-                {Object.keys(graph).length}
-              </Badge>
-            </Flex>
-          </Paper>
+        <Box>
+          <Flex p="sm" justify="space-between" align="center" direction="row">
+            <Text size="md">Grouped Graph</Text>
+            <GroupedGraphDocumentation />
+          </Flex>
+          <Flex p="sm" justify="center" align="center" direction="row">
+            <Switch
+              w="100%"
+              size="md"
+              checked={false}
+              labelPosition="left"
+              label="Visualize"
+            />
+            or... no grouped graph found
+          </Flex>
         </Box>
-
-        <Box p="md">
-          {Object.values(graph).map(({ id, adjacentTo }) => {
-            return <GroupNode id={id} adjacentTo={adjacentTo} graph={graph} />;
-          })}
+        <Divider mt="lg" />
+        <Box>
+          <Flex p="sm" justify="space-between" align="center" direction="row">
+            <Text size="md">Dynamic Groups</Text>
+            <GroupedGraphDocumentation />
+          </Flex>
+          <Flex p="sm" justify="center" align="center" direction="row">
+            <Button
+              rightIcon={<IconCirclePlus stroke={1.5} />}
+              variant="gradient"
+            >
+              Create dynamic group
+            </Button>
+          </Flex>
         </Box>
       </Navbar.Section>
     </ScrollArea.Autosize>

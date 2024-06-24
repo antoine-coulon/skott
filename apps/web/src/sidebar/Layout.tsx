@@ -143,7 +143,7 @@ function useMenus() {
   return { menus: filteredMenus, menuKeys };
 }
 
-const isFeatureDisabled = (section: string) =>
+const isFeatureDisabled = (section: MenuKeys) =>
   section !== "file_explorer" &&
   section !== "summary" &&
   section !== "dependencies" &&

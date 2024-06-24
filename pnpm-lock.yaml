@@ -16,6 +16,10 @@ importers:
         version: 2.26.1
 
   apps/web:
+    dependencies:
+      digraph-js:
+        specifier: ^2.2.3
+        version: 2.2.3
     devDependencies:
       '@effect/data':
         specifier: ^0.4.1
