@@ -15,7 +15,12 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { IconHelpCircle, IconInfoCircle } from "@tabler/icons-react";
+import { DiGraph } from "digraph-js";
 
+/**
+ * Not used yet, but will be once we enable the visualization for custom
+ * grouped graphs
+ */
 export function GroupedGraphDocumentation() {
   const [opened, { open, close }] = useDisclosure(false);
 
@@ -60,7 +65,9 @@ export function Groups() {
     return null;
   }
 
-  const graph = maybeGraph.value;
+  const rawGraph = maybeGraph.value;
+  const digraph = DiGraph.fromRaw(rawGraph);
+
   return (
     <ScrollArea.Autosize mah="90vh" mx="auto">
       <Navbar.Section>
@@ -73,15 +80,22 @@ export function Groups() {
                 gradient={{ from: "indigo", to: "blue" }}
                 size="lg"
               >
-                {Object.keys(graph).length}
+                {Object.keys(rawGraph).length}
               </Badge>
             </Flex>
           </Paper>
         </Box>
 
         <Box p="md">
-          {Object.values(graph).map(({ id, adjacentTo }) => {
-            return <GroupNode id={id} adjacentTo={adjacentTo} graph={graph} />;
+          {Object.values(rawGraph).map(({ id, adjacentTo }) => {
+            return (
+              <GroupNode
+                key={id}
+                id={id}
+                adjacentTo={adjacentTo}
+                graph={digraph}
+              />
+            );
           })}
         </Box>
       </Navbar.Section>
