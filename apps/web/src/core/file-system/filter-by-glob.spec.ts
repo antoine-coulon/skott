@@ -26,6 +26,7 @@ describe("When filtering data by adding a glob", () => {
         cycles: [],
         files: [],
         graph: {},
+        tracking: storeDefaultValue.data.tracking,
       });
 
       expect(ui).toEqual({
@@ -68,6 +69,7 @@ describe("When filtering data by adding a glob", () => {
                 body: {} as any,
               },
             },
+            tracking: storeDefaultValue.data.tracking,
           },
         }),
         fileSystemReducers
@@ -95,6 +97,7 @@ describe("When filtering data by adding a glob", () => {
             body: {} as any,
           },
         },
+        tracking: storeDefaultValue.data.tracking,
       });
 
       expect(ui).toEqual({
@@ -117,6 +120,7 @@ describe("When filtering data by adding a glob", () => {
             ],
             files: [],
             graph: {},
+            tracking: storeDefaultValue.data.tracking,
           },
         }),
         fileSystemReducers
@@ -133,6 +137,7 @@ describe("When filtering data by adding a glob", () => {
         cycles: [["c.js", "d.js"]],
         files: [],
         graph: {},
+        tracking: storeDefaultValue.data.tracking,
       });
 
       expect(ui).toEqual({
@@ -164,6 +169,7 @@ describe("When resetting the glob to none", () => {
             body: {} as any,
           },
         },
+        tracking: storeDefaultValue.data.tracking,
       },
       ui: storeDefaultValue.ui,
     };
@@ -210,6 +216,7 @@ describe("When removing an initially set glob", () => {
             body: {} as any,
           },
         },
+        tracking: storeDefaultValue.data.tracking,
       },
       ui: storeDefaultValue.ui,
     };
@@ -240,6 +247,7 @@ describe("When removing an initially set glob", () => {
             body: {} as any,
           },
         },
+        tracking: storeDefaultValue.data.tracking,
       },
       ui: {
         ...storeDefaultValue.ui,

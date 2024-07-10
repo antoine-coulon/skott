@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { useDisclosure } from "@mantine/hooks";
-import { LoadingOverlay, Button, Group, Box } from "@mantine/core";
 import {
   createStyles,
   Navbar,
@@ -18,15 +16,20 @@ import {
   IconAB2,
 } from "@tabler/icons-react";
 
-import { useAppEffects } from "@/store/react-bindings";
+import {
+  isSelectorAvailable,
+  useAppEffects,
+  useStoreSelect,
+} from "@/store/react-bindings";
 
 import { Circular } from "./Circular";
 import { GraphConfiguration } from "./graph-configuration/GraphConfiguration";
-import { Summary } from "./summary/Summary";
+import { Stats } from "./summary/module/Stats";
 import { FileExplorer } from "./file-explorer/FileExplorer";
 import { InteractivePlayground } from "./InteractivePlayground";
 import { UserSettings } from "./UserSettings";
 import { Dependencies } from "./dependencies/Dependencies";
+import { Summary } from "@/sidebar/Summary";
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -86,7 +89,7 @@ const useStyles = createStyles((theme) => ({
   },
 }));
 
-const menus = [
+const staticMenus = [
   { icon: IconClipboardData, label: "Summary", key: "summary" },
   { icon: IconFiles, label: "File Explorer", key: "file_explorer" },
   {
@@ -116,11 +119,31 @@ const menus = [
   },
 ] as const;
 
-const menuKeys = menus.map((menu) => menu.key);
+type MenuKeys = (typeof staticMenus)[number]["key"];
 
-type MenuKeys = (typeof menus)[number]["key"];
+function useMenus() {
+  const selector = useStoreSelect("ui", "visualization");
 
-const isFeatureDisabled = (section: string) =>
+  if (!isSelectorAvailable(selector)) {
+    return { menus: [], menuKeys: [] };
+  }
+
+  const visualization = selector.value.granularity;
+
+  const filteredMenus = staticMenus.filter((menu) => {
+    if (menu.key === "file_explorer") {
+      return visualization._tag === "Some" && visualization.value === "module";
+    }
+
+    return true;
+  });
+
+  const menuKeys = filteredMenus.map((menu) => menu.key);
+
+  return { menus: filteredMenus, menuKeys };
+}
+
+const isFeatureDisabled = (section: MenuKeys) =>
   section !== "file_explorer" &&
   section !== "summary" &&
   section !== "dependencies" &&
@@ -130,6 +153,7 @@ export function DoubleNavbar() {
   const { classes, cx } = useStyles();
 
   const [active, setActive] = useState<MenuKeys>("summary");
+  const { menuKeys, menus } = useMenus();
 
   useAppEffects((action) => {
     if (
@@ -179,12 +203,12 @@ export function DoubleNavbar() {
       case "settings":
         return <UserSettings />;
       default:
-        return <Summary />;
+        return <Stats />;
     }
   };
 
   return (
-    <Navbar width={{ sm: 300 }}>
+    <Navbar width={{ sm: 300 }} hidden={true} hiddenBreakpoint="sm">
       <Navbar.Section grow className={classes.wrapper}>
         <div className={classes.aside}>{mainMenus}</div>
         <div className={classes.main}>{selectComponent(active)}</div>

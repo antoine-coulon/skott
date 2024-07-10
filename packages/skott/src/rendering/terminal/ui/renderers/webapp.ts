@@ -133,9 +133,11 @@ export function renderWebApplication(config: {
   });
 
   app.get("/api/meta", (_, response) => {
-    // When the webapp is registered from the CLI, the only default option is "group"
+    // When the webapp is registered from the CLI, the only default option is "module"
     const meta = {
-      visualization: "group",
+      visualization: {
+        granularity: "module"
+      },
       tracking: dependencyTracking
     };
 

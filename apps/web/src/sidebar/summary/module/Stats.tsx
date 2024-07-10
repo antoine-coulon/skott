@@ -10,8 +10,8 @@ import {
 } from "@mantine/core";
 import { IconRefreshAlert } from "@tabler/icons-react";
 
-import { isJavaScriptModule, isTypeScriptModule } from "../../util";
-import { SkottStructureWithCycles } from "../../skott";
+import { isJavaScriptModule, isTypeScriptModule } from "../../../util";
+import { SkottStructureWithCycles } from "../../../skott";
 import { convertBytesToUserFriendlyUnit, formatForm } from "./formatters";
 import { LanguageRing } from "./LanguageRing";
 import { Dependencies } from "./Dependencies";
@@ -34,7 +34,11 @@ function harmonizeBuiltinDependencyProtocol(dep: string) {
   return dep;
 }
 
-export function Summary() {
+function sortByUsage(a: [string, number], b: [string, number]) {
+  return b[1] - a[1];
+}
+
+export function Stats() {
   const appStore = useAppStore();
   const [summary, setSummary] = React.useState({
     totalBytes: "0",
@@ -77,8 +81,8 @@ export function Summary() {
       numberOfFiles: data.files.length,
       cycles: data.cycles,
       files: filesMap,
-      builtinRegistry,
-      npmRegistry,
+      builtinRegistry: new Map([...builtinRegistry].sort(sortByUsage)),
+      npmRegistry: new Map([...npmRegistry].sort(sortByUsage)),
       totalBytes: convertBytesToUserFriendlyUnit(bytesSize),
     });
   }

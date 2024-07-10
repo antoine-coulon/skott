@@ -8,7 +8,12 @@ import {
   Text,
   Blockquote,
 } from "@mantine/core";
-import { IconFiles, IconHelpCircle, IconInfoCircle } from "@tabler/icons-react";
+import {
+  IconFiles,
+  IconHelpCircle,
+  IconHexagons,
+  IconInfoCircle,
+} from "@tabler/icons-react";
 
 export function Documentation() {
   const [opened, { open, close }] = useDisclosure(false);
@@ -31,6 +36,10 @@ export function Documentation() {
               <List.Item>
                 <IconFiles />
                 File Explorer menu, by using folder and file filters.
+              </List.Item>
+              <List.Item>
+                <IconHexagons />
+                Using groups through <code>`groupBy`</code> API configuration.
               </List.Item>
             </List>
           </Blockquote>

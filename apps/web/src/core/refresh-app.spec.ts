@@ -1,5 +1,5 @@
+import { applicationLifecycleReducers, refreshApp } from "@/core/refresh-app";
 import { toPromise } from "@/core/utils";
-import { globalReducers, refreshApp } from "./refresh-app";
 import { AppState, storeDefaultValue } from "@/store/state";
 import { AppStore } from "@/store/store";
 import { BehaviorSubject } from "rxjs";
@@ -9,7 +9,7 @@ describe("Hot refresh of the application", () => {
   test("Should update the data state with incoming data", async () => {
     const appStore = new AppStore(
       new BehaviorSubject<AppState>(storeDefaultValue),
-      globalReducers
+      applicationLifecycleReducers
     );
 
     const dispatchAction = refreshApp(appStore);
@@ -35,6 +35,13 @@ describe("Hot refresh of the application", () => {
       fetchCycles() {
         return Promise.resolve([]);
       },
+      fetchMeta() {
+        return Promise.resolve({
+          visualization: {
+            granularity: "module",
+          },
+        });
+      },
     });
 
     const { data } = await toPromise(appStore.store$);
@@ -49,11 +56,12 @@ describe("Hot refresh of the application", () => {
           id: "some-file.ts",
         },
       },
+      tracking: storeDefaultValue.data.tracking,
     });
   });
 
   test("Should preserve UI state settled before refresh", async () => {
-    const uiStateToPreserve = {
+    const uiStateToPreserve: AppState["ui"] = {
       ...storeDefaultValue.ui,
       filters: {
         glob: "some-glob/**/*.ts",
@@ -74,7 +82,7 @@ describe("Hot refresh of the application", () => {
         ...storeDefaultValue,
         ui: uiStateToPreserve,
       }),
-      globalReducers
+      applicationLifecycleReducers
     );
 
     const dispatchAction = refreshApp(appStore);
@@ -99,6 +107,13 @@ describe("Hot refresh of the application", () => {
       },
       fetchCycles() {
         return Promise.resolve([]);
+      },
+      fetchMeta() {
+        return Promise.resolve({
+          visualization: {
+            granularity: "group",
+          },
+        });
       },
     });
 

@@ -1,4 +1,5 @@
 import { SkottStructureWithCycles } from "../skott";
+import * as Option from "@effect/data/Option";
 
 export type NetworkLayout = (
   | {
@@ -13,6 +14,9 @@ export type NetworkLayout = (
 ) & { node_spacing: number; smooth_edges: boolean };
 
 export interface UiState {
+  visualization: {
+    granularity: Option.Option<"module" | "group">;
+  };
   filters: {
     glob: string;
   };
@@ -32,7 +36,13 @@ export interface UiState {
   };
 }
 
-export interface DataState extends SkottStructureWithCycles {}
+export interface DataState extends SkottStructureWithCycles {
+  tracking: {
+    builtin: boolean;
+    thirdParty: boolean;
+    typeOnly: boolean;
+  };
+}
 
 export interface AppState {
   data: DataState;
@@ -45,8 +55,16 @@ export const storeDefaultValue = {
     cycles: [],
     files: [],
     graph: {},
+    tracking: {
+      builtin: false,
+      thirdParty: false,
+      typeOnly: false,
+    },
   },
   ui: {
+    visualization: {
+      granularity: Option.none(),
+    },
     filters: {
       glob: "",
     },

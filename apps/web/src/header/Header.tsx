@@ -10,6 +10,7 @@ import {
   useMantineTheme,
   Code,
   Box,
+  MediaQuery,
 } from "@mantine/core";
 import { IconBrandGithub, IconMoonStars, IconSun } from "@tabler/icons-react";
 import GitHubButton from "react-github-btn";
@@ -39,65 +40,67 @@ export default function Header() {
           />
         </Group>
 
-        <Group position="apart">
-          <Button
-            variant="gradient"
-            ml={25}
-            radius="lg"
-            onClick={openGlobalSearch}
-          >
-            <Group position="apart">
-              <Text>Browse files</Text>
-              <Code>CMD + K</Code>
-            </Group>
-          </Button>
-
-          <Button
-            variant="subtle"
-            color={isDarkMode ? "blue" : "dark"}
-            onClick={() => {
-              window.open(
-                "https://github.com/antoine-coulon/skott/issues",
-                "_blank"
-              );
-            }}
-          >
-            <Group position="apart">
-              <Text>Report issues</Text>
-              <ThemeIcon radius="lg" color="dark">
-                <IconBrandGithub />
-              </ThemeIcon>
-            </Group>
-          </Button>
-
-          <Box mt={5} mr={10}>
-            <GitHubButton
-              href="https://github.com/antoine-coulon/skott"
-              data-icon="octicon-star"
-              data-size="large"
-              data-show-count="true"
-              aria-label="Star antoine-coulon/skott on GitHub"
+        <MediaQuery smallerThan="sm" styles={{ display: "none" }}>
+          <Group position="apart">
+            <Button
+              variant="gradient"
+              ml={25}
+              radius="lg"
+              onClick={openGlobalSearch}
             >
-              Star
-            </GitHubButton>
-          </Box>
+              <Group position="apart">
+                <Text>Browse elements</Text>
+                <Code>CMD + K</Code>
+              </Group>
+            </Button>
 
-          <Switch
-            checked={isDarkMode}
-            onChange={() => toggleColorScheme()}
-            size="lg"
-            onLabel={
-              <IconSun color={theme.white} size="1.25rem" stroke={1.5} />
-            }
-            offLabel={
-              <IconMoonStars
-                color={theme.colors.gray[6]}
-                size="1.25rem"
-                stroke={1.5}
-              />
-            }
-          />
-        </Group>
+            <Button
+              variant="subtle"
+              color={isDarkMode ? "blue" : "dark"}
+              onClick={() => {
+                window.open(
+                  "https://github.com/antoine-coulon/skott/issues",
+                  "_blank"
+                );
+              }}
+            >
+              <Group position="apart">
+                <Text>Report issues</Text>
+                <ThemeIcon radius="lg" color="dark">
+                  <IconBrandGithub />
+                </ThemeIcon>
+              </Group>
+            </Button>
+
+            <Box mt={5} mr={10}>
+              <GitHubButton
+                href="https://github.com/antoine-coulon/skott"
+                data-icon="octicon-star"
+                data-size="large"
+                data-show-count="true"
+                aria-label="Star antoine-coulon/skott on GitHub"
+              >
+                Star
+              </GitHubButton>
+            </Box>
+
+            <Switch
+              checked={isDarkMode}
+              onChange={() => toggleColorScheme()}
+              size="lg"
+              onLabel={
+                <IconSun color={theme.white} size="1.25rem" stroke={1.5} />
+              }
+              offLabel={
+                <IconMoonStars
+                  color={theme.colors.gray[6]}
+                  size="1.25rem"
+                  stroke={1.5}
+                />
+              }
+            />
+          </Group>
+        </MediaQuery>
       </Group>
     </MantineHeader>
   );

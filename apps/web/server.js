@@ -964,6 +964,13 @@ const routes = {
   "/analysis": {
     data: fakeSkottData,
   },
+  "/meta": {
+    data: {
+      visualization: {
+        granularity: "group"
+      }
+    }
+  }
 };
 
 const endpoints = Object.keys(routes);
