@@ -1,5 +1,12 @@
 # skott
 
+## 0.35.3
+
+### Patch Changes
+
+- Updated dependencies [[`c2b127c`](https://github.com/antoine-coulon/skott/commit/c2b127c91f60ebc0ba0a3e66552f6d7d0fcc4c71)]:
+  - skott-webapp@2.2.0
+
 ## 0.35.2
 
 ### Patch Changes
