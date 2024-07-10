@@ -1,5 +1,15 @@
 # skott-webapp
 
+## 2.2.0
+
+### Minor Changes
+
+- [#164](https://github.com/antoine-coulon/skott/pull/164) [`c2b127c`](https://github.com/antoine-coulon/skott/commit/c2b127c91f60ebc0ba0a3e66552f6d7d0fcc4c71) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - Introduce Groups visualization feature based on granularity configuration that can either be `module` or `group`.
+
+  When using `group` granularity, the application does not render irrelevant features for an higher-level granularity e.g. File Explorer and File Summary are disabled.
+
+  The `granularity` of the web application rendering can't be modified through the CLI and is still `module` by default. The only way to alter that configuration is to use the [rendering API introduced in 0.34.0](https://github.com/antoine-coulon/skott/blob/00c883744ce9e0ee3ebf7e172053181ba16877ff/packages/skott/CHANGELOG.md#0340) and to provide a meta configuration with the selected granularity.
+
 ## 2.1.1
 
 ### Patch Changes
