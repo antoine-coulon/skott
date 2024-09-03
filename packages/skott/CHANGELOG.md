@@ -1,5 +1,11 @@
 # skott
 
+## 0.35.3
+
+### Patch Changes
+
+- [#173](https://github.com/antoine-coulon/skott/pull/173) [`bc13f35`](https://github.com/antoine-coulon/skott/commit/bc13f352339ba559458eda81fef7eb3b0f925f84) Thanks [@aniravi24](https://github.com/aniravi24)! - Avoid attempting to resolve TypeScript path aliases when no `tsconfig` is found in the working directory when not providing any entrypoint. This also allows the terminal to not be polluted when using CLI `--verbose` mode with `tsconfig` irrelevant resolution errors when not being in a TypeScript workspace.
+
 ## 0.35.2
 
 ### Patch Changes
