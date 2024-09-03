@@ -611,11 +611,15 @@ await Web.renderStandaloneWebApplication(
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/daniel-relay"><img src="https://avatars.githubusercontent.com/u/88200787?v=4?s=100" width="100px;" alt="Daniel Sadilek"/><br /><sub><b>Daniel Sadilek</b></sub></a><br /><a href="https://github.com/antoine-coulon/skott/commits?author=daniel-relay" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://dev.to/antoinecoulon"><img src="https://avatars.githubusercontent.com/u/43391199?v=4?s=100" width="100px;" alt="Antoine Coulon"/><br /><sub><b>Antoine Coulon</b></sub></a><br /><a href="https://github.com/antoine-coulon/skott/commits?author=antoine-coulon" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/tarrsalah"><img src="https://avatars.githubusercontent.com/u/909959?v=4?s=100" width="100px;" alt="Salah Eddine Taouririt"/><br /><sub><b>Salah Eddine Taouririt</b></sub></a><br /><a href="https://github.com/antoine-coulon/skott/commits?author=tarrsalah" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/ACHP"><img src="https://avatars.githubusercontent.com/u/9294168?v=4?s=100" width="100px;" alt="Alexis CHAPPRON"/><br /><sub><b>Alexis CHAPPRON</b></sub></a><br /><a href="https://github.com/antoine-coulon/skott/commits?author=ACHP" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/robertoyoc"><img src="https://avatars.githubusercontent.com/u/16704638?v=4?s=100" width="100px;" alt="Roberto Yoc"/><br /><sub><b>Roberto Yoc</b></sub></a><br /><a href="https://github.com/antoine-coulon/skott/commits?author=robertoyoc" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://www.pedrolamas.com"><img src="https://avatars.githubusercontent.com/u/85504?v=4?s=100" width="100px;" alt="Pedro Lamas"/><br /><sub><b>Pedro Lamas</b></sub></a><br /><a href="https://github.com/antoine-coulon/skott/commits?author=pedrolamas" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/AlexandrHoroshih"><img src="https://avatars.githubusercontent.com/u/32790736?v=4?s=100" width="100px;" alt="Alexander Khoroshikh"/><br /><sub><b>Alexander Khoroshikh</b></sub></a><br /><a href="https://github.com/antoine-coulon/skott/commits?author=AlexandrHoroshih" title="Code">💻</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://aniravi.com"><img src="https://avatars.githubusercontent.com/u/5902976?v=4?s=100" width="100px;" alt="Ani Ravi"/><br /><sub><b>Ani Ravi</b></sub></a><br /><a href="https://github.com/antoine-coulon/skott/commits?author=aniravi24" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
