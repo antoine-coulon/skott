@@ -694,13 +694,21 @@ export class Skott<T> {
   }
 
   private async buildFromRootDirectory(): Promise<void> {
-    const rootTSConfig = await buildPathAliases(
-      this.fileReader,
-      this.config.tsConfigPath,
-      this.#workspaceConfiguration.pathAliases,
-      this.logger
+    const doesTsConfigExist = await pipe(
+      isTypeScriptProject(this.config.tsConfigPath),
+      Effect.provideService(FileReader, this.fileReader),
+      Effect.runPromise
     );
-    this.#workspaceConfiguration.typescript = rootTSConfig;
+
+    if (doesTsConfigExist) {
+      const rootTSConfig = await buildPathAliases(
+        this.fileReader,
+        this.config.tsConfigPath,
+        this.#workspaceConfiguration.pathAliases,
+        this.logger
+      );
+      this.#workspaceConfiguration.typescript = rootTSConfig;
+    }
 
     for await (const rootFile of this.fileReader.readdir(
       this.fileReader.getCurrentWorkingDir(),
