@@ -1,5 +1,5 @@
 // Just for the sake of the example
-import * as _Effect from "@effect/io/Effect";
+import * as _Effect from "effect";
 
 import skott from "../index.js";
 import {

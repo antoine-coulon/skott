@@ -20,6 +20,7 @@ async function _renderTerminalApplication() {
     exitCodeOnCircularDependencies: 1,
     showCircularDependencies: true,
     showUnusedDependencies: true,
+    showUnusedFiles: false,
     watch: true
   });
 }
