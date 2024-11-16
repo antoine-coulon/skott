@@ -38,7 +38,6 @@ export function Dependencies() {
         <Box p="md">
           <Checkbox
             label="Deep dependencies"
-            disabled={state.data.cycles.length === 0}
             radius="md"
             color="cyan"
             checked={network?.dependencies.deep.active ?? false}
