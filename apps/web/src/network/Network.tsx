@@ -27,6 +27,8 @@ import {
   circularNodeOptions,
   computeBuiltinDependencies,
   computeThirdPartyDependencies,
+  deepDependencyEdgeOptions,
+  deepDependencyNodeOptions,
 } from "./dependencies";
 import { ProgressLoader } from "@/network/ProgressLoader";
 import { AppEffects, callUseCase, notify } from "@/store/store";
@@ -56,6 +58,47 @@ export default function GraphNetwork() {
       },
       scale: 1.1,
     });
+  }
+
+  function highlightDeepDependencies(
+    data: SkottStructureWithCycles,
+    nodeId: string,
+    highlighted: boolean
+  ) {
+    const nodeOptions = highlighted ? deepDependencyNodeOptions : defaultNodeOptions;
+    const edgeOptions = highlighted ? deepDependencyEdgeOptions : defaultEdgeOptions;
+
+    const traversedNodeId = new Set<string>()
+
+    function dfs(nodeId: string) {
+      if (traversedNodeId.has(nodeId)) return
+      traversedNodeId.add(nodeId)
+
+      if (!data.graph[nodeId]) return
+      nodesDataset.update({
+        id: nodeId,
+        ...nodeOptions,
+      })
+      for (const childNodeId of data.graph[nodeId].adjacentTo) {
+        nodesDataset.update({
+          id: childNodeId,
+          ...nodeOptions,
+        });
+        edgesDataset.update({
+          id: createEdgeId(nodeId, childNodeId),
+          ...edgeOptions,
+          from: nodeId,
+          to: childNodeId,
+        });
+        dfs(childNodeId)
+      }
+
+    }
+    dfs(nodeId)
+
+    if (!highlighted && data.entrypoint !== "none") {
+      highlightEntrypoint(data.entrypoint);
+    }
   }
 
   function highlightEntrypoint(nodeId: string) {
@@ -155,9 +198,16 @@ export default function GraphNetwork() {
         focusOnNetworkNode(appEvents.payload.nodeId);
         break;
       }
+      case "toggle_deep": {
+        const { ui, data } = appStore.getState();
+        if (ui.network.dependencies.deep.active === false) {
+          highlightDeepDependencies(data, ui.network.selectedNodeId, false);
+          ui.network.selectedNodeId = ''
+        }
+        break;
+      }
       case "toggle_circular": {
         highlightCircularDependencies(dataStore, appEvents.payload.enabled);
-
         break;
       }
       case "toggle_builtin": {
@@ -226,6 +276,21 @@ export default function GraphNetwork() {
       _network.stopSimulation();
     });
 
+
+    _network.on('click', (params) => {
+      const { ui, data } = appStore.getState();
+      if (params.nodes.length > 0) {
+        highlightDeepDependencies(data, ui.network.selectedNodeId, false);
+        const nodeId = params.nodes[0]
+        if (ui.network.dependencies.deep.active) {
+          highlightDeepDependencies(data, nodeId, true);
+          ui.network.selectedNodeId = nodeId
+        } else ui.network.selectedNodeId = ''
+      } else {
+        highlightDeepDependencies(data, ui.network.selectedNodeId, false);
+        ui.network.selectedNodeId = ''
+      }
+    })
     setNetwork(_network);
     reconciliateNetwork(_network);
   }

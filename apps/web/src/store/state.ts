@@ -21,6 +21,7 @@ export interface UiState {
     glob: string;
   };
   network: {
+    selectedNodeId: string,
     dependencies: {
       deep: {
         active: boolean;
@@ -72,6 +73,7 @@ export const storeDefaultValue = {
       glob: "",
     },
     network: {
+      selectedNodeId: '',
       dependencies: {
         deep: {
           active: false

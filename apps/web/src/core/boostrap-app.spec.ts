@@ -81,6 +81,7 @@ describe("Initialization of the application", () => {
       ui: {
         filters: storeDefaultValue.ui.filters,
         network: {
+          selectedNodeId: '',
           dependencies: {
             builtin: {
               active: false,
@@ -174,6 +175,7 @@ describe("Initialization of the application", () => {
         ui: {
           filters: storeDefaultValue.ui.filters,
           network: {
+            selectedNodeId: '',
             dependencies: {
               builtin: {
                 active: false,
