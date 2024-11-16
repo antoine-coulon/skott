@@ -88,6 +88,9 @@ describe("Initialization of the application", () => {
             circular: {
               active: false,
             },
+            deep: {
+              active: false,
+            },
             thirdparty: {
               active: false,
             },
@@ -176,6 +179,9 @@ describe("Initialization of the application", () => {
                 active: false,
               },
               circular: {
+                active: false,
+              },
+              deep: {
                 active: false,
               },
               thirdparty: {

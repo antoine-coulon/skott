@@ -4,6 +4,7 @@ import * as Option from "@effect/data/Option";
 function toggleDependencies(): AppReducer {
   return function (event, state) {
     if (
+      event.action === "toggle_deep" ||
       event.action === "toggle_circular" ||
       event.action === "toggle_builtin" ||
       event.action === "toggle_thirdparty"

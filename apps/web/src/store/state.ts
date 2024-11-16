@@ -22,6 +22,9 @@ export interface UiState {
   };
   network: {
     dependencies: {
+      deep: {
+        active: boolean;
+      };
       circular: {
         active: boolean;
       };
@@ -70,6 +73,9 @@ export const storeDefaultValue = {
     },
     network: {
       dependencies: {
+        deep: {
+          active: false
+        },
         circular: {
           active: false,
         },
