@@ -21,6 +21,24 @@ export const circularEdgeOptions = {
   inherit: false,
 };
 
+export const deepDependencyNodeOptions = {
+  color: {
+    border: "#000000",
+    background: "#73e6ac",
+    highlight: {
+      border: "#000000",
+      background: "#73e6ac",
+    },
+  },
+};
+
+export const deepDependencyEdgeOptions = {
+  color: "#73e6ac",
+  highlight: "#DF0000",
+  hover: "#DF0000",
+  inherit: false,
+};
+
 export const builtinNodeOptions = {
   color: {
     border: "#000000",
