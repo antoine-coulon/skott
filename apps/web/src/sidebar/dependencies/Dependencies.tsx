@@ -40,6 +40,7 @@ export function Dependencies() {
             label="Deep dependencies"
             radius="md"
             color="cyan"
+            disabled={network?.dependencies.circular.active}
             checked={network?.dependencies.deep.active ?? false}
             onChange={() => {
               toggleDepsVisualizationOption("deep");
@@ -49,7 +50,7 @@ export function Dependencies() {
         <Box p="md">
           <Checkbox
             label="Circular dependencies"
-            disabled={state.data.cycles.length === 0}
+            disabled={state.data.cycles.length === 0 || network?.dependencies.deep.active}
             radius="md"
             color="red"
             checked={network?.dependencies.circular.active ?? false}
