@@ -279,16 +279,15 @@ export default function GraphNetwork() {
 
     _network.on('click', (params) => {
       const { ui, data } = appStore.getState();
-      if (params.nodes.length > 0) {
+      if (ui.network.dependencies.deep.active) {
         highlightDeepDependencies(data, ui.network.selectedNodeId, false);
-        const nodeId = params.nodes[0]
-        if (ui.network.dependencies.deep.active) {
+        if (params.nodes.length > 0) {
+          const nodeId = params.nodes[0]
           highlightDeepDependencies(data, nodeId, true);
           ui.network.selectedNodeId = nodeId
-        } else ui.network.selectedNodeId = ''
-      } else {
-        highlightDeepDependencies(data, ui.network.selectedNodeId, false);
-        ui.network.selectedNodeId = ''
+        } else {
+          ui.network.selectedNodeId = ''
+        }
       }
     })
     setNetwork(_network);
