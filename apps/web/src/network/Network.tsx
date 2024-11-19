@@ -193,13 +193,25 @@ export default function GraphNetwork() {
     dataStore: AppState["data"],
     appEvents: AppActions | AppEvents
   ) {
+    const { ui, data } = appStore.getState();
     switch (appEvents.action) {
+      case "select_node": {
+        if (ui.network.dependencies.deep.active) {
+          if (appEvents.payload.nodeId !== appEvents.payload.oldNodeId) {
+            highlightDeepDependencies(data, appEvents.payload.oldNodeId, false);
+            if (appEvents.payload.nodeId !== '') {
+              highlightDeepDependencies(data, appEvents.payload.nodeId, true);
+            }
+          }
+          ui.network.selectedNodeId = appEvents.payload.nodeId
+        }
+        break;
+      }
       case "focus_on_node": {
         focusOnNetworkNode(appEvents.payload.nodeId);
         break;
       }
       case "toggle_deep": {
-        const { ui, data } = appStore.getState();
         if (ui.network.dependencies.deep.active === false) {
           highlightDeepDependencies(data, ui.network.selectedNodeId, false);
           ui.network.selectedNodeId = ''
@@ -278,17 +290,16 @@ export default function GraphNetwork() {
 
 
     _network.on('click', (params) => {
-      const { ui, data } = appStore.getState();
-      if (ui.network.dependencies.deep.active) {
-        highlightDeepDependencies(data, ui.network.selectedNodeId, false);
-        if (params.nodes.length > 0) {
-          const nodeId = params.nodes[0]
-          highlightDeepDependencies(data, nodeId, true);
-          ui.network.selectedNodeId = nodeId
-        } else {
-          ui.network.selectedNodeId = ''
-        }
-      }
+      const { ui } = appStore.getState();
+      appStore.dispatch({
+        action: "select_node",
+        payload: {
+          nodeId: params.nodes.length > 0 ? params.nodes[0] : "",
+          oldNodeId: ui.network.selectedNodeId
+        },
+      }, {
+        notify: true
+      });
     })
     setNetwork(_network);
     reconciliateNetwork(_network);
