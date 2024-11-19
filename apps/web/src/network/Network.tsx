@@ -34,6 +34,7 @@ import { ProgressLoader } from "@/network/ProgressLoader";
 import { AppEffects, callUseCase, notify } from "@/store/store";
 import { updateConfiguration } from "@/core/network/update-configuration";
 import { storeDefaultValue } from "@/store/state";
+import { selectNode } from "@/core/network/select-node";
 
 export default function GraphNetwork() {
   const appStore = useAppStore();
@@ -289,18 +290,7 @@ export default function GraphNetwork() {
     });
 
 
-    _network.on('click', (params) => {
-      const { ui } = appStore.getState();
-      appStore.dispatch({
-        action: "select_node",
-        payload: {
-          nodeId: params.nodes.length > 0 ? params.nodes[0] : "",
-          oldNodeId: ui.network.selectedNodeId
-        },
-      }, {
-        notify: true
-      });
-    })
+    _network.on('click', (params) => selectNode(appStore)(params.nodes))
     setNetwork(_network);
     reconciliateNetwork(_network);
   }
