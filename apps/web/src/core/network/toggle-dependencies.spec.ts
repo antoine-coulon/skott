@@ -8,6 +8,7 @@ import { networkReducers } from "./reducers";
 
 describe("When interacting with network dependencies", () => {
   describe.each([
+    { target: "deep" },
     { target: "circular" },
     { target: "builtin" },
     { target: "thirdparty" },
