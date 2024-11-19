@@ -3,6 +3,19 @@ import * as Option from "@effect/data/Option";
 
 function toggleDependencies(): AppReducer {
   return function (event, state) {
+    if (event.action === "select_node") {
+      return Option.some({
+        data: state.data,
+        ui: {
+          ...state.ui,
+          network: {
+            ...state.ui.network,
+            selectedNodeId: event.payload.nodeId
+          },
+        },
+      });
+    }
+
     if (
       event.action === "toggle_deep" ||
       event.action === "toggle_circular" ||

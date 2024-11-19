@@ -204,7 +204,6 @@ export default function GraphNetwork() {
               highlightDeepDependencies(data, appEvents.payload.nodeId, true);
             }
           }
-          ui.network.selectedNodeId = appEvents.payload.nodeId
         }
         break;
       }
