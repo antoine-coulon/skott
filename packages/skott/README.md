@@ -620,6 +620,7 @@ await Web.renderStandaloneWebApplication(
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://aniravi.com"><img src="https://avatars.githubusercontent.com/u/5902976?v=4?s=100" width="100px;" alt="Ani Ravi"/><br /><sub><b>Ani Ravi</b></sub></a><br /><a href="https://github.com/antoine-coulon/skott/commits?author=aniravi24" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/MengLinMaker"><img src="https://avatars.githubusercontent.com/u/39476147?v=4?s=100" width="100px;" alt="Meng Lin"/><br /><sub><b>Meng Lin</b></sub></a><br /><a href="https://github.com/antoine-coulon/skott/commits?author=MengLinMaker" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
