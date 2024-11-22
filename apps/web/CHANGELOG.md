@@ -1,5 +1,11 @@
 # skott-webapp
 
+## 2.3.0
+
+### Minor Changes
+
+- [#180](https://github.com/antoine-coulon/skott/pull/180) [`93bc556`](https://github.com/antoine-coulon/skott/commit/93bc556e5a0062359225b328e8f355e0d4dd1a07) Thanks [@MengLinMaker](https://github.com/MengLinMaker)! - Add option to highlight "Deep dependencies" when clicking on source files
+
 ## 2.2.0
 
 ### Minor Changes
