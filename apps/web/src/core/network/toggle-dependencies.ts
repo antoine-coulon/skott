@@ -1,7 +1,7 @@
 import { AppStore } from "@/store/store";
 
 export function toggleDependencies(appStore: AppStore) {
-  return function (params: { target: "circular" | "builtin" | "thirdparty" }) {
+  return function (params: { target: "deep" | "circular" | "builtin" | "thirdparty" }) {
     const networkDependency =
       appStore.getState().ui.network.dependencies[params.target];
 

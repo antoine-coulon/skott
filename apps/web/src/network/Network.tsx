@@ -27,11 +27,14 @@ import {
   circularNodeOptions,
   computeBuiltinDependencies,
   computeThirdPartyDependencies,
+  deepDependencyEdgeOptions,
+  deepDependencyNodeOptions,
 } from "./dependencies";
 import { ProgressLoader } from "@/network/ProgressLoader";
 import { AppEffects, callUseCase, notify } from "@/store/store";
 import { updateConfiguration } from "@/core/network/update-configuration";
 import { storeDefaultValue } from "@/store/state";
+import { selectNode } from "@/core/network/select-node";
 
 export default function GraphNetwork() {
   const appStore = useAppStore();
@@ -56,6 +59,47 @@ export default function GraphNetwork() {
       },
       scale: 1.1,
     });
+  }
+
+  function highlightDeepDependencies(
+    data: SkottStructureWithCycles,
+    nodeId: string,
+    highlighted: boolean
+  ) {
+    const nodeOptions = highlighted ? deepDependencyNodeOptions : defaultNodeOptions;
+    const edgeOptions = highlighted ? deepDependencyEdgeOptions : defaultEdgeOptions;
+
+    const traversedNodeId = new Set<string>()
+
+    function dfs(nodeId: string) {
+      if (traversedNodeId.has(nodeId)) return
+      traversedNodeId.add(nodeId)
+
+      if (!data.graph[nodeId]) return
+      nodesDataset.update({
+        id: nodeId,
+        ...nodeOptions,
+      })
+      for (const childNodeId of data.graph[nodeId].adjacentTo) {
+        nodesDataset.update({
+          id: childNodeId,
+          ...nodeOptions,
+        });
+        edgesDataset.update({
+          id: createEdgeId(nodeId, childNodeId),
+          ...edgeOptions,
+          from: nodeId,
+          to: childNodeId,
+        });
+        dfs(childNodeId)
+      }
+
+    }
+    dfs(nodeId)
+
+    if (!highlighted && data.entrypoint !== "none") {
+      highlightEntrypoint(data.entrypoint);
+    }
   }
 
   function highlightEntrypoint(nodeId: string) {
@@ -150,14 +194,32 @@ export default function GraphNetwork() {
     dataStore: AppState["data"],
     appEvents: AppActions | AppEvents
   ) {
+    const { ui, data } = appStore.getState();
     switch (appEvents.action) {
+      case "select_node": {
+        if (ui.network.dependencies.deep.active) {
+          if (appEvents.payload.nodeId !== appEvents.payload.oldNodeId) {
+            highlightDeepDependencies(data, appEvents.payload.oldNodeId, false);
+            if (appEvents.payload.nodeId !== '') {
+              highlightDeepDependencies(data, appEvents.payload.nodeId, true);
+            }
+          }
+        }
+        break;
+      }
       case "focus_on_node": {
         focusOnNetworkNode(appEvents.payload.nodeId);
         break;
       }
+      case "toggle_deep": {
+        if (ui.network.dependencies.deep.active === false) {
+          highlightDeepDependencies(data, ui.network.selectedNodeId, false);
+          ui.network.selectedNodeId = ''
+        }
+        break;
+      }
       case "toggle_circular": {
         highlightCircularDependencies(dataStore, appEvents.payload.enabled);
-
         break;
       }
       case "toggle_builtin": {
@@ -226,6 +288,8 @@ export default function GraphNetwork() {
       _network.stopSimulation();
     });
 
+
+    _network.on('click', (params) => selectNode(appStore)(params.nodes))
     setNetwork(_network);
     reconciliateNetwork(_network);
   }

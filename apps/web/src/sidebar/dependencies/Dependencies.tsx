@@ -24,7 +24,7 @@ export function Dependencies() {
   };
 
   function toggleDepsVisualizationOption(
-    option: "circular" | "thirdparty" | "builtin"
+    option: "deep" | "circular" | "thirdparty" | "builtin"
   ) {
     const invokeUseCase = callUseCase(toggleDependencies);
     invokeUseCase({ target: option });
@@ -37,8 +37,20 @@ export function Dependencies() {
 
         <Box p="md">
           <Checkbox
+            label="Deep dependencies"
+            radius="md"
+            color="cyan"
+            disabled={network?.dependencies.circular.active}
+            checked={network?.dependencies.deep.active ?? false}
+            onChange={() => {
+              toggleDepsVisualizationOption("deep");
+            }}
+          />
+        </Box>
+        <Box p="md">
+          <Checkbox
             label="Circular dependencies"
-            disabled={state.data.cycles.length === 0}
+            disabled={state.data.cycles.length === 0 || network?.dependencies.deep.active}
             radius="md"
             color="red"
             checked={network?.dependencies.circular.active ?? false}

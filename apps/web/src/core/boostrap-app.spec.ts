@@ -81,11 +81,15 @@ describe("Initialization of the application", () => {
       ui: {
         filters: storeDefaultValue.ui.filters,
         network: {
+          selectedNodeId: '',
           dependencies: {
             builtin: {
               active: false,
             },
             circular: {
+              active: false,
+            },
+            deep: {
               active: false,
             },
             thirdparty: {
@@ -171,11 +175,15 @@ describe("Initialization of the application", () => {
         ui: {
           filters: storeDefaultValue.ui.filters,
           network: {
+            selectedNodeId: '',
             dependencies: {
               builtin: {
                 active: false,
               },
               circular: {
+                active: false,
+              },
+              deep: {
                 active: false,
               },
               thirdparty: {
