@@ -1,7 +1,7 @@
 import { createRequire } from "node:module";
 import path from "node:path";
 
-import { pipe, Option } from "effect";
+import { Option, pipe } from "effect";
 import JSON5 from "json5";
 import type { CompilerOptions } from "typescript";
 
@@ -32,9 +32,11 @@ function resolveAliasToRelativePath(
       `Extracting "${moduleDeclaration}" base path using path alias base directory "${baseAliasDirname}"`
     );
 
-    const modulePathWithoutAliasBaseDirname = moduleDeclaration.split(
-      baseAliasDirname.concat("/")
-    )[1];
+    const baseDirWithSlash = baseAliasDirname.concat("/");
+    const startIndex =
+      moduleDeclaration.indexOf(baseDirWithSlash) + baseDirWithSlash.length;
+    const modulePathWithoutAliasBaseDirname =
+      moduleDeclaration.substring(startIndex);
 
     logger.info(
       `Attempt to map alias path to real file-system path.` +
