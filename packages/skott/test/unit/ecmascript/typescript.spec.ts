@@ -1215,6 +1215,46 @@ describe("When traversing a TypeScript project", () => {
             }
           });
         });
+
+        it("should replace only the first occurrence when path alias appears multiple times in import path", async () => {
+          const tsConfig = {
+            compilerOptions: {
+              baseUrl: ".",
+              paths: {
+                components: ["src/components"]
+              }
+            }
+          };
+
+          mountFakeFileSystem({
+            "index.ts": `
+              import { Button } from "components/example/components/Button";
+            `,
+            "src/components/example/components/Button.ts": `
+              export function Button(): string {}
+            `,
+            "tsconfig.json": JSON.stringify(tsConfig)
+          });
+
+          const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+            entrypoint: "index.ts",
+            includeBaseDir: false,
+            trackThirdParty: true
+          });
+
+          expect(graph).to.be.deep.equal({
+            "index.ts": {
+              adjacentTo: ["src/components/example/components/Button.ts"],
+              id: "index.ts",
+              body: fakeNodeBody
+            },
+            "src/components/example/components/Button.ts": {
+              adjacentTo: [],
+              id: "src/components/example/components/Button.ts",
+              body: fakeNodeBody
+            }
+          });
+        });
       });
 
       describe("When providing a base tsconfig extending other configs", () => {
@@ -1339,6 +1379,7 @@ describe("When traversing a TypeScript project", () => {
             `,
             "src/foo.ts": `
                 import './index.js';
+import { Button } from "components/components/Button";
                 export const foo = { doSomething: () => 'Hello, world!' };
             `,
             "src/index.js": `
