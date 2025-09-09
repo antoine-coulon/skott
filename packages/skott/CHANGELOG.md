@@ -1,5 +1,14 @@
 # skott
 
+## 0.35.5
+
+### Patch Changes
+
+- [`f3a256c`](https://github.com/antoine-coulon/skott/commit/f3a256caf031e7181daada827b5d748be1907ac7) Thanks [@ViewableGravy](https://github.com/ViewableGravy)! - Thanks @ViewableGravy! TypeScript path alias resolution was improved when matching path names with multiple occurrences of the same identifier.
+
+- Updated dependencies []:
+  - skott-webapp@2.3.0
+
 ## 0.35.4
 
 ### Patch Changes
