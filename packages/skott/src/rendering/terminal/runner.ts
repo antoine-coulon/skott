@@ -59,7 +59,10 @@ export function makeSkottRunner<T>(
 
     try {
       if (!config.verbose && isFirstRun) {
-        spinner = ora(`Initializing ${kleur.blue().bold("skott")}`).start();
+        spinner = ora({
+          text: `Initializing ${kleur.blue().bold("skott")}`,
+          stream: process.stdout
+        }).start();
       }
 
       isFirstRun = false;
