@@ -31,7 +31,10 @@ export async function renderStaticFile(
     }
 
     try {
-      const spinner = ora("Generating static file").start();
+      const spinner = ora({
+        text: "Generating static file",
+        stream: process.stdout
+      }).start();
       // @ts-ignore - dynamic import that might not be available
       generateStaticFile(graph, staticFileType);
       spinner.stop();
