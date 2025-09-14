@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { Either } from "effect";
+import { Either, Option } from "effect";
 import { expect, test, describe, beforeAll, afterAll } from "vitest";
 
 import {
@@ -57,11 +57,11 @@ describe.sequential("When running skott cli", () => {
             AbortSignal.timeout(5000)
           );
 
-          expect(Either.isRight(result)).toBeTruthy();
+          expect(Either.isLeft(result)).toBeTruthy();
 
-          const right = Either.getOrThrow(result);
+          const option = Either.getLeft(result);
 
-          expect(right).toContain(
+          expect(Option.getOrThrow(option)).toContain(
             // eslint-disable-next-line no-useless-concat
             "`" + o + "`" + " can't be used when using `--displayMode=webapp`"
           );
@@ -76,11 +76,11 @@ describe.sequential("When running skott cli", () => {
           AbortSignal.timeout(5000)
         );
 
-        expect(Either.isRight(result)).toBeTruthy();
+        expect(Either.left(result)).toBeTruthy();
 
-        const right = Either.getOrThrow(result);
+        const option = Either.getLeft(result);
 
-        expect(right).toContain(
+        expect(Option.getOrThrow(option)).toContain(
           "`--showUnusedFiles` can't be used when using providing an entrypoint."
         );
       });
@@ -93,11 +93,11 @@ describe.sequential("When running skott cli", () => {
           AbortSignal.timeout(5000)
         );
 
-        expect(Either.isRight(result)).toBeTruthy();
+        expect(Either.isLeft(result)).toBeTruthy();
 
-        const right = Either.getOrThrow(result);
+        const option = Either.getLeft(result);
 
-        expect(right).toContain(
+        expect(Option.getOrThrow(option)).toContain(
           "`--trackThirdPartyDependencies` must be provided when searching for unused dependencies."
         );
       });
@@ -112,7 +112,7 @@ describe.sequential("When running skott cli", () => {
           AbortSignal.timeout(5000)
         );
 
-        expect(Either.isLeft(result)).toBeTruthy();
+        expect(Either.isRight(result)).toBeTruthy();
       });
     });
   });

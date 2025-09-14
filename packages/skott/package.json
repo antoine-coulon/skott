@@ -62,7 +62,7 @@
     "lodash-es": "^4.17.21",
     "meriyah": "^4.3.7",
     "minimatch": "^9.0.3",
-    "ora": "^6.3.1",
+    "nanospinner": "^1.2.2",
     "parse-gitignore": "^2.0.0",
     "polka": "^0.5.2",
     "sirv": "^2.0.3",

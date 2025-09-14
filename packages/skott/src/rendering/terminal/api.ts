@@ -45,7 +45,7 @@ export function renderTerminalApplication<T>(
   });
 
   if (isTerminalConfigValid._tag === "Left") {
-    console.log(`\n ${kleur.bold().red(isTerminalConfigValid.left)}`);
+    console.error(`\n ${kleur.bold().red(isTerminalConfigValid.left)}`);
     process.exit(1);
   }
 
