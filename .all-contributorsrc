@@ -86,6 +86,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "ViewableGravy",
+      "name": "Lleyton W Morris",
+      "avatar_url": "https://avatars.githubusercontent.com/u/42259073?v=4",
+      "profile": "http://gravy.cc",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
