@@ -114,7 +114,7 @@ export function createHttpApp(port: number) {
             return;
           }
 
-          console.log(
+          console.error(
             `\n ${kleur
               .red()
               .bold(

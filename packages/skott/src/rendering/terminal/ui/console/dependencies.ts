@@ -57,7 +57,7 @@ export async function displayThirdPartyDependencies(
     try {
       const start = performance.now();
       const { thirdParty } = await skottInstance.findUnusedDependencies();
-      const timeTook = `${(performance.now() - start).toFixed(3)}ms`;
+      const timeTaken = `${(performance.now() - start).toFixed(3)}ms`;
 
       const indents = makeIndents(1);
       if (thirdParty.length > 0) {
@@ -80,7 +80,7 @@ export async function displayThirdPartyDependencies(
               )} third-party dependencies (dev/prod) that ${kleur.yellow(
               "might be unused (check message just above)"
             )}`
-          )} (${kleur.bold().magenta(timeTook)}) \n`
+          )} (${kleur.bold().magenta(timeTaken)}) \n`
         );
 
         for (const dep of thirdParty) {
@@ -93,7 +93,7 @@ export async function displayThirdPartyDependencies(
         );
       }
     } catch (e) {
-      console.log(
+      console.error(
         `${kleur.bold().red(
           // @ts-ignore - error is handled by skott
           `\n ✖ Could not search for unused dependencies. Reason: ${e.message} \n`

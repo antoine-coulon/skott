@@ -3,8 +3,7 @@ import path from "node:path";
 import { performance } from "node:perf_hooks";
 
 import kleur from "kleur";
-import type { Ora } from "ora";
-import ora from "ora";
+import { createSpinner, type Spinner } from "nanospinner";
 
 import type { SkottInstance, SkottStructure } from "../../../index.js";
 import type { RuntimeConfig } from "../../config.js";
@@ -55,12 +54,11 @@ export function makeSkottRunner<T>(
 
   return async () => {
     const startTime = performance.now();
-    let spinner: Ora | undefined;
+    let spinner: Spinner | undefined;
 
     try {
       if (!config.verbose && isFirstRun) {
-        spinner = ora({
-          text: `Initializing ${kleur.blue().bold("skott")}`,
+        spinner = createSpinner(`Initializing ${kleur.blue().bold("skott")}`, {
           stream: process.stdout
         }).start();
       }
@@ -69,13 +67,15 @@ export function makeSkottRunner<T>(
 
       const skottResult = await runFromRuntimeConfig<T>(config);
 
-      const timeTook = `${(performance.now() - startTime).toFixed(3)}ms`;
+      const timeTaken = `${(performance.now() - startTime).toFixed(3)}ms`;
 
       if (spinner && isFirstRun) {
-        spinner.text = `Finished Skott initialization (${kleur
-          .magenta()
-          .bold(timeTook)})`;
-        spinner.color = "green";
+        spinner.update({
+          text: `Finished skott initialization (${kleur
+            .magenta()
+            .bold(timeTaken)})`,
+          color: "green"
+        });
       }
 
       spinner?.stop();
@@ -87,9 +87,11 @@ export function makeSkottRunner<T>(
       }
 
       if (error.message) {
-        console.log(`\n ${kleur.bold().red("Error: ".concat(error.message))}`);
+        console.error(
+          `\n ${kleur.bold().red("Error: ".concat(error.message))}`
+        );
       } else {
-        console.log(
+        console.error(
           `\n ${kleur
             .bold()
             .red(
@@ -111,12 +113,12 @@ function displayInitialGetStructureTime(
   startTime: number
 ) {
   const filesWord = files.length > 1 ? "files" : "file";
-  const timeTookStructure = `${(performance.now() - startTime).toFixed(3)}ms`;
+  const timeTakenStructure = `${(performance.now() - startTime).toFixed(3)}ms`;
 
   console.log(
     `\n Processed ${kleur.bold().green(files.length)} ${filesWord} (${kleur
       .magenta()
-      .bold(timeTookStructure)})`
+      .bold(timeTakenStructure)})`
   );
 }
 

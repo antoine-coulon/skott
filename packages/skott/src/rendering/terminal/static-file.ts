@@ -1,7 +1,7 @@
 import { createRequire } from "module";
 
 import kleur from "kleur";
-import ora from "ora";
+import { createSpinner } from "nanospinner";
 
 import type { SkottNode } from "../../graph/node.js";
 
@@ -31,8 +31,7 @@ export async function renderStaticFile(
     }
 
     try {
-      const spinner = ora({
-        text: "Generating static file",
+      const spinner = createSpinner("Generating static file", {
         stream: process.stdout
       }).start();
       // @ts-ignore - dynamic import that might not be available
