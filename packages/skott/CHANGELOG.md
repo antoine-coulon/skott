@@ -1,5 +1,14 @@
 # skott
 
+## 0.35.6
+
+### Patch Changes
+
+- [#190](https://github.com/antoine-coulon/skott/pull/190) [`c3f30ec`](https://github.com/antoine-coulon/skott/commit/c3f30ec25c87c30224d377085b5c38ad90d5d057) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - Ensure skott cli properly manages stdio by removing the ora spinner that was writing to stderr. With this fix, only error logs are written to stderr. Combined with the process’ exit code, this allows tools consuming stderr to correctly determine whether an error occurred.
+
+- Updated dependencies []:
+  - skott-webapp@2.3.0
+
 ## 0.35.5
 
 ### Patch Changes
