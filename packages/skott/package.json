@@ -44,12 +44,12 @@
     "test:integration:watch": "vitest --watch --config=test/vitest.integration.js"
   },
   "dependencies": {
-    "@parcel/watcher": "^2.3.0",
-    "@typescript-eslint/typescript-estree": "7.13.1",
+    "@parcel/watcher": "2.5.4",
+    "@typescript-eslint/typescript-estree": "8.53.0",
     "commander": "^11.0.0",
     "compression": "^1.7.4",
-    "depcheck": "^1.4.3",
-    "digraph-js": "^2.2.3",
+    "depcheck": "1.4.7",
+    "digraph-js": "2.2.4",
     "effect": "3.3.2",
     "estree-walker": "^3.0.3",
     "fp-ts": "2.5.0",
@@ -67,7 +67,7 @@
     "polka": "^0.5.2",
     "sirv": "^2.0.3",
     "skott-webapp": "workspace:^",
-    "typescript": "5.4.5"
+    "typescript": "5.9.3"
   },
   "devDependencies": {
     "@nodesecure/eslint-config": "^1.7.0",
@@ -75,10 +75,10 @@
     "@types/compression": "^1.7.2",
     "@types/ignore-walk": "^4.0.0",
     "@types/lodash-es": "^4.17.12",
-    "@types/node": "^20.11.24",
+    "@types/node": "^25.0.9",
     "@types/polka": "^0.5.4",
-    "@typescript-eslint/eslint-plugin": "^7.10.0",
-    "@typescript-eslint/parser": "^7.10.0",
+    "@typescript-eslint/eslint-plugin": "^8.53.0",
+    "@typescript-eslint/parser": "^8.53.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-import-resolver-typescript": "^3.6.1",
@@ -88,7 +88,7 @@
     "prettier": "^3.0.3",
     "remote-tarball-fetcher": "workspace:*",
     "rimraf": "^5.0.5",
-    "vitest": "1.6.0"
+    "vitest": "3.0.5"
   },
   "files": [
     "dist",
