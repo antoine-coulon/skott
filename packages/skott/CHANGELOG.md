@@ -1,5 +1,14 @@
 # skott
 
+## 0.35.7
+
+### Patch Changes
+
+- [#195](https://github.com/antoine-coulon/skott/pull/195) [`dad66d7`](https://github.com/antoine-coulon/skott/commit/dad66d78afc6a4e8a74c96d0eed685d1f380c1de) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - update core dependencies including typescript, typescript-estree and @parcel/watcher
+
+- Updated dependencies []:
+  - skott-webapp@2.3.0
+
 ## 0.35.6
 
 ### Patch Changes
