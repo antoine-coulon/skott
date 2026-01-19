@@ -11,16 +11,21 @@ jobs:
   version:
     timeout-minutes: 15
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
     steps:
       - name: Checkout code repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Setup node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20
+          registry-url: "https://registry.npmjs.org"
 
       - name: Install pnpm
         run: npm i pnpm@latest -g
@@ -29,7 +34,7 @@ jobs:
         run: pnpm config set store-dir $PNPM_CACHE_FOLDER
 
       - name: Install dependencies
-        run: pnpm install 
+        run: pnpm install
 
       - name: Build monorepo
         run: pnpm -r build
@@ -40,7 +45,7 @@ jobs:
           version: pnpm ci:version
           commit: "chore: update versions"
           title: "chore: update versions"
-          publish: pnpm ci:publish
+          publish: pnpm ci:publish --provenance
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
