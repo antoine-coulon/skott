@@ -7,14 +7,14 @@ env:
   CI: true
   PNPM_CACHE_FOLDER: .pnpm-store
 
+permissions:
+  id-token: write  # Required for OIDC
+  contents: read
+
 jobs:
   version:
     timeout-minutes: 15
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-      id-token: write
     steps:
       - name: Checkout code repository
         uses: actions/checkout@v4
@@ -24,8 +24,8 @@ jobs:
       - name: Setup node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          registry-url: "https://registry.npmjs.org"
+          node-version: 24
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install pnpm
         run: npm i pnpm@latest -g
@@ -45,7 +45,4 @@ jobs:
           version: pnpm ci:version
           commit: "chore: update versions"
           title: "chore: update versions"
-          publish: pnpm ci:publish --provenance
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
+          publish: pnpm ci:publish
