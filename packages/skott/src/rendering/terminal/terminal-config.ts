@@ -3,7 +3,15 @@ import * as D from "io-ts/lib/Decoder.js";
 
 export interface TerminalConfig {
   watch: boolean;
-  displayMode: "raw" | "file-tree" | "graph" | "webapp" | (string & {});
+  displayMode:
+    | "raw"
+    | "file-tree"
+    | "graph"
+    | "webapp"
+    | "md"
+    | "json"
+    | "svg"
+    | "png";
   showCircularDependencies: boolean;
   showUnusedDependencies: boolean;
   showUnusedFiles: boolean;
