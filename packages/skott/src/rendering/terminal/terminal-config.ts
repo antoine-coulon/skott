@@ -21,10 +21,22 @@ export const defaultTerminalConfig: TerminalConfig = {
 
 const terminalSchema = D.struct({
   watch: D.boolean,
-  // Allow any string so that plugin-provided display modes (e.g. "json") are
-  // not rejected at validation time. Unknown modes are forwarded to the
-  // static-file plugin at runtime.
-  displayMode: D.string,
+  displayMode: D.union(
+    D.literal("raw"),
+    D.literal("file-tree"),
+    D.literal("graph"),
+    D.literal("webapp"),
+    /**
+     * Those could be coming from `@skottorg/static-file-plugin`.
+     * We want to allow them since there is no way to register additional display
+     * modes using plugins. This is a workaround to reduce friction but should be
+     * addressed in the future by allowing plugins to register additional display modes.
+     */
+    D.literal("md"),
+    D.literal("json"),
+    D.literal("svg"),
+    D.literal("png")
+  ),
   showCircularDependencies: D.boolean,
   showUnusedDependencies: D.boolean,
   exitCodeOnCircularDependencies: D.number

@@ -14,6 +14,7 @@ export async function renderStaticFile(
   try {
     const require = createRequire(import.meta.url);
     const pluginPath = require.resolve("@skottorg/static-file-plugin");
+
     const { generateStaticFile, supportedStaticFileTypes } = await import(
       pluginPath
     );
