@@ -3,7 +3,7 @@ import * as D from "io-ts/lib/Decoder.js";
 
 export interface TerminalConfig {
   watch: boolean;
-  displayMode: "raw" | "file-tree" | "graph" | "webapp";
+  displayMode: "raw" | "file-tree" | "graph" | "webapp" | (string & {});
   showCircularDependencies: boolean;
   showUnusedDependencies: boolean;
   showUnusedFiles: boolean;
@@ -21,12 +21,10 @@ export const defaultTerminalConfig: TerminalConfig = {
 
 const terminalSchema = D.struct({
   watch: D.boolean,
-  displayMode: D.union(
-    D.literal("raw"),
-    D.literal("file-tree"),
-    D.literal("graph"),
-    D.literal("webapp")
-  ),
+  // Allow any string so that plugin-provided display modes (e.g. "json") are
+  // not rejected at validation time. Unknown modes are forwarded to the
+  // static-file plugin at runtime.
+  displayMode: D.string,
   showCircularDependencies: D.boolean,
   showUnusedDependencies: D.boolean,
   exitCodeOnCircularDependencies: D.number
