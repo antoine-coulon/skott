@@ -3,7 +3,15 @@ import * as D from "io-ts/lib/Decoder.js";
 
 export interface TerminalConfig {
   watch: boolean;
-  displayMode: "raw" | "file-tree" | "graph" | "webapp";
+  displayMode:
+    | "raw"
+    | "file-tree"
+    | "graph"
+    | "webapp"
+    | "md"
+    | "json"
+    | "svg"
+    | "png";
   showCircularDependencies: boolean;
   showUnusedDependencies: boolean;
   showUnusedFiles: boolean;
@@ -25,7 +33,17 @@ const terminalSchema = D.struct({
     D.literal("raw"),
     D.literal("file-tree"),
     D.literal("graph"),
-    D.literal("webapp")
+    D.literal("webapp"),
+    /**
+     * Those could be coming from `@skottorg/static-file-plugin`.
+     * We want to allow them since there is no way to register additional display
+     * modes using plugins. This is a workaround to reduce friction but should be
+     * addressed in the future by allowing plugins to register additional display modes.
+     */
+    D.literal("md"),
+    D.literal("json"),
+    D.literal("svg"),
+    D.literal("png")
   ),
   showCircularDependencies: D.boolean,
   showUnusedDependencies: D.boolean,
