@@ -1,5 +1,14 @@
 # skott
 
+## 0.35.8
+
+### Patch Changes
+
+- [#197](https://github.com/antoine-coulon/skott/pull/197) [`53a9349`](https://github.com/antoine-coulon/skott/commit/53a934986de876f1a5278f567676036e4cfb184c) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - Fix a persisting issue when it comes to generating static files using the @skottorg/static-file-plugin plugin. It is now again possible to generate static files from skott using "md", "json", "svg", "png" `displayMode` options. Example `skott --displayMode=md` to generate a mermaid diagram.
+
+- Updated dependencies []:
+  - skott-webapp@2.3.0
+
 ## 0.35.7
 
 ### Patch Changes
