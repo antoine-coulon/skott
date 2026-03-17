@@ -1,13 +1,16 @@
 # skott
 
+## 0.35.8
+
+### Patch Changes
+
+- [#197](https://github.com/antoine-coulon/skott/pull/197) [`53a9349`](https://github.com/antoine-coulon/skott/commit/53a934986de876f1a5278f567676036e4cfb184c) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - Fix a persisting issue when it comes to generating static files using the @skottorg/static-file-plugin plugin. It is now again possible to generate static files from skott using "md", "json", "svg", "png" `displayMode` options. Example `skott --displayMode=md` to generate a mermaid diagram.
+
 ## 0.35.7
 
 ### Patch Changes
 
 - [#195](https://github.com/antoine-coulon/skott/pull/195) [`dad66d7`](https://github.com/antoine-coulon/skott/commit/dad66d78afc6a4e8a74c96d0eed685d1f380c1de) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - update core dependencies including typescript, typescript-estree and @parcel/watcher
-
-- Updated dependencies []:
-  - skott-webapp@2.3.0
 
 ## 0.35.6
 
@@ -15,17 +18,11 @@
 
 - [#190](https://github.com/antoine-coulon/skott/pull/190) [`c3f30ec`](https://github.com/antoine-coulon/skott/commit/c3f30ec25c87c30224d377085b5c38ad90d5d057) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - Ensure skott cli properly manages stdio by removing the ora spinner that was writing to stderr. With this fix, only error logs are written to stderr. Combined with the process’ exit code, this allows tools consuming stderr to correctly determine whether an error occurred.
 
-- Updated dependencies []:
-  - skott-webapp@2.3.0
-
 ## 0.35.5
 
 ### Patch Changes
 
 - [`f3a256c`](https://github.com/antoine-coulon/skott/commit/f3a256caf031e7181daada827b5d748be1907ac7) Thanks [@ViewableGravy](https://github.com/ViewableGravy)! - Thanks @ViewableGravy! TypeScript path alias resolution was improved when matching path names with multiple occurrences of the same identifier.
-
-- Updated dependencies []:
-  - skott-webapp@2.3.0
 
 ## 0.35.4
 
