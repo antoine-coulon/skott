@@ -117,6 +117,28 @@ describe.sequential("When running skott cli", () => {
     });
   });
 
+  describe("When using non-interactive display modes", () => {
+    const nonInteractiveModes = ["file-tree", "graph", "raw"];
+
+    test.each(nonInteractiveModes)(
+      "Should exit the process without starting a web server for '%s' display mode",
+      async (displayMode) => {
+        /**
+         * If renderWebApplication is ever accidentally invoked for a
+         * non-webapp display mode, the HTTP server keeps the process alive
+         * indefinitely. This test verifies that each non-interactive mode
+         * completes (exits) within the timeout rather than hanging.
+         */
+        const result = await runOneShotSkottCli(
+          [`--displayMode=${displayMode}`, "--exitCodeOnCircularDependencies=0"],
+          useTimeout(5_000 * increaseTimeoutFactor)
+        );
+
+        expect(Either.isRight(result)).toBeTruthy();
+      }
+    );
+  });
+
   describe.sequential(
     "When using watch mode",
     () => {
