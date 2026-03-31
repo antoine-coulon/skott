@@ -1,5 +1,14 @@
 # skott
 
+## 0.35.9
+
+### Patch Changes
+
+- [#201](https://github.com/antoine-coulon/skott/pull/201) [`41e2cdb`](https://github.com/antoine-coulon/skott/commit/41e2cdb5822658abad051bc20eb1136071d2de78) Thanks [@copilot-swe-agent](https://github.com/apps/copilot-swe-agent)! - Upgrade `effect` dependency from pinned `3.3.2` to `^3.20.0` to fix high-severity security vulnerability GHSA-38f7-945m-qr2g (`AsyncLocalStorage` context contamination inside Effect fibers under concurrent RPC load).
+
+- Updated dependencies []:
+  - skott-webapp@2.3.0
+
 ## 0.35.8
 
 ### Patch Changes
