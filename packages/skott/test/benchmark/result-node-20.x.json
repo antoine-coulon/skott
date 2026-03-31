@@ -1,44 +1,44 @@
 {
   "name": "skott_benchmark",
-  "done_at": "2026-03-17T10:38:34.274Z",
-  "git_commit_hash": "8da34cfb8dcbd4e79d591b662fc4251c6b45a450",
-  "git_branch_reference": "fix-static-plugin-usage",
+  "done_at": "2026-03-31T21:27:43.724Z",
+  "git_commit_hash": "bd53de28e70db85bc93cea8bd568f38deefe9728",
+  "git_branch_reference": "copilot/fix-effect-security-issue",
   "results": [
     {
       "name": "knex/knex",
       "rank": 1,
       "samples": [],
-      "totalTime": 8728.897133000004,
-      "min": 1686.5264580000003,
-      "mean": 1745.7794266000008,
-      "max": 1807.9146900000014
+      "totalTime": 8784.095087999991,
+      "min": 1701.9663159999982,
+      "mean": 1756.8190175999982,
+      "max": 1808.6501409999983
     },
     {
       "name": "parcel-bundler/parcel",
       "rank": 3,
       "samples": [],
-      "totalTime": 32921.30800300002,
-      "min": 6453.472443000006,
-      "mean": 6584.261600600004,
-      "max": 6702.227008000002
+      "totalTime": 34068.000334,
+      "min": 6614.313441999999,
+      "mean": 6813.6000668,
+      "max": 6978.5753140000015
     },
     {
       "name": "Effect-TS/effect",
       "rank": 4,
       "samples": [],
-      "totalTime": 95678.514551,
-      "min": 18956.198501999985,
-      "mean": 19135.7029102,
-      "max": 19322.518593000015
+      "totalTime": 96295.74990299999,
+      "min": 19135.763669999986,
+      "mean": 19259.1499806,
+      "max": 19402.615021000034
     },
     {
       "name": "gcanti/fp-ts",
       "rank": 2,
       "samples": [],
-      "totalTime": 21702.699544999923,
-      "min": 4285.831959999981,
-      "mean": 4340.539908999985,
-      "max": 4378.056998000015
+      "totalTime": 21798.51975200005,
+      "min": 4323.381485999969,
+      "mean": 4359.70395040001,
+      "max": 4403.919236999995
     }
   ]
 }
