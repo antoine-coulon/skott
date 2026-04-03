@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@effect/schema": "^0.67.23",
-    "effect": "3.3.2",
+    "effect": "^3.3.2",
     "semver": "^7.5.3",
     "tar": "^6.1.15",
     "unzipper": "^0.10.14"
