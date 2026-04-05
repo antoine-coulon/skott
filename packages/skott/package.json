@@ -45,16 +45,16 @@
     "test:integration:watch": "vitest --watch --config=test/vitest.integration.js"
   },
   "dependencies": {
-    "@parcel/watcher": "2.5.4",
-    "@typescript-eslint/typescript-estree": "8.53.0",
+    "@parcel/watcher": "^2.5.4",
+    "@typescript-eslint/typescript-estree": "^8.53.0",
     "commander": "^11.0.0",
     "compression": "^1.7.4",
-    "depcheck": "1.4.7",
-    "digraph-js": "2.2.4",
+    "depcheck": "^1.4.7",
+    "digraph-js": "^2.2.4",
     "effect": "^3.20.0",
     "estree-walker": "^3.0.3",
-    "fp-ts": "2.5.0",
-    "fs-tree-structure": "workspace:*",
+    "fp-ts": "^2.5.0",
+    "fs-tree-structure": "workspace:^",
     "ignore-walk": "^6.0.3",
     "io-ts": "^2.2.20",
     "is-wsl": "^3.0.0",
@@ -68,7 +68,7 @@
     "polka": "^0.5.2",
     "sirv": "^2.0.3",
     "skott-webapp": "workspace:^",
-    "typescript": "5.9.3"
+    "typescript": "^5.9.3"
   },
   "devDependencies": {
     "@nodesecure/eslint-config": "^1.7.0",
