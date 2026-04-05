@@ -1,5 +1,11 @@
 # remote-tarball-fetcher
 
+## 0.1.2
+
+### Patch Changes
+
+- [#204](https://github.com/antoine-coulon/skott/pull/204) [`4cec74d`](https://github.com/antoine-coulon/skott/commit/4cec74d2f50e23f967ca3d783898572bb394f0f4) Thanks [@yslpn](https://github.com/yslpn)! - Relax runtime dependency ranges to allow compatible updates and security fixes
+
 ## 0.1.1
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # skott
 
+## 0.35.10
+
+### Patch Changes
+
+- [#204](https://github.com/antoine-coulon/skott/pull/204) [`4cec74d`](https://github.com/antoine-coulon/skott/commit/4cec74d2f50e23f967ca3d783898572bb394f0f4) Thanks [@yslpn](https://github.com/yslpn)! - Relax runtime dependency ranges to allow compatible updates and security fixes
+
+- Updated dependencies []:
+  - skott-webapp@2.3.0
+
 ## 0.35.9
 
 ### Patch Changes
