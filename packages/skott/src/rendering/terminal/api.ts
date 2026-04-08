@@ -28,6 +28,7 @@ export function renderTerminalApplication<T>(
   const terminalOptions: TerminalConfig = {
     watch: options.watch ?? defaultTerminalConfig.watch,
     displayMode: options.displayMode ?? defaultTerminalConfig.displayMode,
+    open: options.open ?? defaultTerminalConfig.open,
     exitCodeOnCircularDependencies: options.exitCodeOnCircularDependencies ?? 1,
     showCircularDependencies:
       options.showCircularDependencies ??
