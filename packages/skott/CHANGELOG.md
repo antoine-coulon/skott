@@ -1,5 +1,14 @@
 # skott
 
+## 0.35.11
+
+### Patch Changes
+
+- [#208](https://github.com/antoine-coulon/skott/pull/208) [`bf1b4db`](https://github.com/antoine-coulon/skott/commit/bf1b4db1a1c4b63123e6d8d16df6a86ab67abe7b) Thanks [@copilot-swe-agent](https://github.com/apps/copilot-swe-agent)! - Fix `@skottorg/static-file-plugin` resolution on Windows by converting the resolved path to a `file://` URL using `pathToFileURL` before passing it to dynamic `import()`.
+
+- Updated dependencies []:
+  - skott-webapp@2.3.0
+
 ## 0.35.10
 
 ### Patch Changes
