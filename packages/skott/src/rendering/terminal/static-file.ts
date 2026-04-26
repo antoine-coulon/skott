@@ -1,4 +1,5 @@
 import { createRequire } from "module";
+import { pathToFileURL } from "node:url";
 
 import kleur from "kleur";
 import { createSpinner } from "nanospinner";
@@ -13,7 +14,9 @@ export async function renderStaticFile(
 
   try {
     const require = createRequire(import.meta.url);
-    const pluginPath = require.resolve("@skottorg/static-file-plugin");
+    const pluginPath = pathToFileURL(
+      require.resolve("@skottorg/static-file-plugin")
+    ).href;
 
     const { generateStaticFile, supportedStaticFileTypes } = await import(
       pluginPath
