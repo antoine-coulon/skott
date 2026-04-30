@@ -48,6 +48,7 @@ export function renderWebApplication(config: {
     tracking: SkottConfig<unknown>["dependencyTracking"];
     entrypoint: string | undefined;
     includeBaseDir: boolean;
+    open: boolean;
   };
   watcherEmitter?: EventEmitter;
 }): void {
@@ -145,5 +146,5 @@ export function renderWebApplication(config: {
     response.end(JSON.stringify(meta));
   });
 
-  listen({ autoOpen: true });
+  listen({ autoOpen: config.options.open });
 }

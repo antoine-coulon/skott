@@ -12,6 +12,7 @@ export interface TerminalConfig {
     | "json"
     | "svg"
     | "png";
+  open: boolean;
   showCircularDependencies: boolean;
   showUnusedDependencies: boolean;
   showUnusedFiles: boolean;
@@ -21,6 +22,7 @@ export interface TerminalConfig {
 export const defaultTerminalConfig: TerminalConfig = {
   watch: false,
   displayMode: "raw",
+  open: true,
   showCircularDependencies: false,
   showUnusedDependencies: false,
   showUnusedFiles: false,
@@ -29,6 +31,7 @@ export const defaultTerminalConfig: TerminalConfig = {
 
 const terminalSchema = D.struct({
   watch: D.boolean,
+  open: D.boolean,
   displayMode: D.union(
     D.literal("raw"),
     D.literal("file-tree"),
