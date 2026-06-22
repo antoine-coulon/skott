@@ -1363,6 +1363,62 @@ describe("When traversing a TypeScript project", () => {
             });
           });
         });
+
+        describe("When a tsconfig in a subdirectory uses a relative extends that would loop back to the root config", () => {
+          it("should resolve path aliases from the correct sibling config without infinite loop", async () => {
+            // Reproduces the @vue/tsconfig pattern:
+            //   tsconfig.json           extends ./subpackage/tsconfig.dom.json
+            //   subpackage/tsconfig.dom.json  extends ./tsconfig.json  <-- means its sibling
+            //   subpackage/tsconfig.json      defines the path aliases
+            //
+            // Without the fix, `./tsconfig.json` inside subpackage/tsconfig.dom.json
+            // was resolved against CWD and landed on the root tsconfig, causing an
+            // infinite extends loop. With the fix it resolves to the sibling file.
+            const tsConfigAliases = {
+              compilerOptions: {
+                paths: {
+                  "@path-alias": ["path/alias/index.ts"]
+                }
+              }
+            };
+            const tsConfigDom = {
+              extends: "./tsconfig.json"
+            };
+            const tsConfigRoot = {
+              extends: "./subpackage/tsconfig.dom.json"
+            };
+
+            mountFakeFileSystem({
+              "main/app/index.ts": `
+                import "@path-alias";
+              `,
+              "path/alias/index.ts": `
+                export function something() {}
+              `,
+              "subpackage/tsconfig.json": JSON.stringify(tsConfigAliases),
+              "subpackage/tsconfig.dom.json": JSON.stringify(tsConfigDom),
+              "tsconfig.json": JSON.stringify(tsConfigRoot)
+            });
+
+            const { graph } = await buildSkottProjectUsingInMemoryFileExplorer({
+              trackThirdParty: true,
+              tsConfigPath: "tsconfig.json"
+            });
+
+            expect(graph).to.be.deep.equal({
+              "main/app/index.ts": {
+                adjacentTo: ["path/alias/index.ts"],
+                id: "main/app/index.ts",
+                body: fakeNodeBody
+              },
+              "path/alias/index.ts": {
+                id: "path/alias/index.ts",
+                adjacentTo: [],
+                body: fakeNodeBody
+              }
+            });
+          });
+        });
       });
     });
   });

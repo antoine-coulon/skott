@@ -63,19 +63,25 @@ function isRootAliasSymbol(segment: string): boolean {
   return !segment.includes("/");
 }
 
+interface ReadTSConfigResult {
+  config: SupportedTSConfig;
+  resolvedPath: string;
+}
+
 async function readTSConfig(
   tsConfigPath: string,
   logger: Logger,
   fileReader: FileReader
-): Promise<SupportedTSConfig> {
+): Promise<ReadTSConfigResult> {
   let tsconfig = "";
+  let resolvedPath = "";
 
   try {
-    const localTSConfigPath = path.join(
-      fileReader.getCurrentWorkingDir(),
-      tsConfigPath
-    );
+    const localTSConfigPath = path.isAbsolute(tsConfigPath)
+      ? tsConfigPath
+      : path.join(fileReader.getCurrentWorkingDir(), tsConfigPath);
     tsconfig = await fileReader.read(localTSConfigPath);
+    resolvedPath = localTSConfigPath;
     logger.success(`Successfully found tsconfig: ${localTSConfigPath}`);
   } catch (exception: any) {
     logger.failure(
@@ -93,6 +99,7 @@ async function readTSConfig(
         paths: [fileReader.getCurrentWorkingDir()]
       });
       tsconfig = await fileReader.read(thirdPartyTSConfigPath);
+      resolvedPath = thirdPartyTSConfigPath;
 
       logger.success(
         `Successfully found tsconfig at: ${thirdPartyTSConfigPath}`
@@ -104,19 +111,36 @@ async function readTSConfig(
     }
   }
 
-  return JSON5.parse<SupportedTSConfig>(tsconfig);
+  return { config: JSON5.parse<SupportedTSConfig>(tsconfig), resolvedPath };
 }
 
 export async function buildPathAliases(
   fileReader: FileReader,
   tsConfigPath: string,
   aliasLinks: Map<string, string>,
-  logger: Logger
+  logger: Logger,
+  visitedConfigs: Set<string> = new Set()
 ): Promise<TSConfig> {
   try {
     logger.info(`Reading from tsconfig: ${tsConfigPath}`);
 
-    const tsConfig = await readTSConfig(tsConfigPath, logger, fileReader);
+    const { config: tsConfig, resolvedPath } = await readTSConfig(
+      tsConfigPath,
+      logger,
+      fileReader
+    );
+
+    // Guard against circular extends chains (e.g. caused by skott resolving
+    // a relative path inside a node_modules package against CWD instead of
+    // against the package directory, which can loop back to the root config).
+    if (resolvedPath && visitedConfigs.has(resolvedPath)) {
+      logger.info(`Skipping already-visited tsconfig: ${resolvedPath}`);
+      return {};
+    }
+    if (resolvedPath) {
+      visitedConfigs.add(resolvedPath);
+    }
+
     const baseUrl = tsConfig.compilerOptions?.baseUrl ?? ".";
 
     const paths: Record<string, string[]> =
@@ -154,11 +178,23 @@ export async function buildPathAliases(
     if (extendedTsConfigPath) {
       logger.info(`Found tsconfig extension: ${extendedTsConfigPath}`);
 
+      // Relative extends paths must be resolved relative to the directory of
+      // the tsconfig that declares them, not relative to CWD. Without this,
+      // a package in node_modules that uses a relative extends (e.g.
+      // `@vue/tsconfig/tsconfig.dom.json` extends `./tsconfig.json`) would be
+      // resolved against CWD, looping back to the project root config.
+      const resolvedExtendedPath = extendedTsConfigPath.startsWith(".")
+        ? path.isAbsolute(resolvedPath)
+          ? path.resolve(path.dirname(resolvedPath), extendedTsConfigPath)
+          : path.join(path.dirname(resolvedPath), extendedTsConfigPath)
+        : extendedTsConfigPath;
+
       await buildPathAliases(
         fileReader,
-        extendedTsConfigPath,
+        resolvedExtendedPath,
         aliasLinks,
-        logger
+        logger,
+        visitedConfigs
       );
 
       logger.success(
