@@ -7,7 +7,7 @@ import { isEqual } from "lodash-es";
 
 import * as Option from "@effect/data/Option";
 
-import { AppState, NetworkLayout } from "@/store/state";
+import { NetworkLayout } from "@/store/state";
 import { useAppStore } from "@/store/react-bindings";
 import { AppActions } from "@/store/actions";
 import { AppEvents } from "@/store/events";
@@ -35,6 +35,7 @@ import {
 import { ProgressLoader } from "@/network/ProgressLoader";
 import { AppEffects, callUseCase, notify } from "@/store/store";
 import { updateConfiguration } from "@/core/network/update-configuration";
+import { activeGraphData } from "@/core/network/active-graph";
 import { storeDefaultValue } from "@/store/state";
 import { selectNode } from "@/core/network/select-node";
 
@@ -175,7 +176,9 @@ export default function GraphNetwork() {
   }
 
   function reconciliateNetwork(network: Network) {
-    const { ui, data } = appStore.getState();
+    const state = appStore.getState();
+    const { ui } = state;
+    const data = activeGraphData(state);
 
     if (ui.network.dependencies.circular.active) {
       highlightCircularDependencies(data, true);
@@ -192,11 +195,10 @@ export default function GraphNetwork() {
     }
   }
 
-  function networkUIReducer(
-    dataStore: AppState["data"],
-    appEvents: AppActions | AppEvents
-  ) {
-    const { ui, data } = appStore.getState();
+  function networkUIReducer(appEvents: AppActions | AppEvents) {
+    const state = appStore.getState();
+    const { ui } = state;
+    const data = activeGraphData(state);
     switch (appEvents.action) {
       case "select_node": {
         if (ui.network.dependencies.deep.active) {
@@ -221,16 +223,16 @@ export default function GraphNetwork() {
         break;
       }
       case "toggle_circular": {
-        highlightCircularDependencies(dataStore, appEvents.payload.enabled);
+        highlightCircularDependencies(data, appEvents.payload.enabled);
         break;
       }
       case "toggle_builtin": {
-        toggleDependencies(dataStore, "builtin", appEvents.payload.enabled);
+        toggleDependencies(data, "builtin", appEvents.payload.enabled);
         network?.stabilize();
         break;
       }
       case "toggle_thirdparty": {
-        toggleDependencies(dataStore, "third_party", appEvents.payload.enabled);
+        toggleDependencies(data, "third_party", appEvents.payload.enabled);
         network?.stabilize();
         break;
       }
@@ -357,9 +359,7 @@ export default function GraphNetwork() {
   React.useEffect(() => {
     const appEventsSubscription = appStore.events$
       .pipe(tap(destroyOnCancel), delay(150))
-      .subscribe((appEvent) =>
-        networkUIReducer(appStore.getState().data, appEvent)
-      );
+      .subscribe((appEvent) => networkUIReducer(appEvent));
 
     return () => {
       appEventsSubscription.unsubscribe();
