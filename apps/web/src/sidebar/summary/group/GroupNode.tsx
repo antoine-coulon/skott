@@ -23,14 +23,13 @@ function AdjacentNode({
   direction: "upstream" | "downstream";
 }) {
   return (
-    <Flex>
+    <Flex style={{ minWidth: 0 }}>
       {adjacentId === id ? (
         <>
           <IconRefreshAlert color="red" />
           <Text
-            style={{
-              marginTop: "0.2rem",
-            }}
+            truncate
+            style={{ marginTop: "0.2rem", minWidth: 0 }}
             color="red"
             size="sm"
           >
@@ -45,12 +44,7 @@ function AdjacentNode({
             <IconCornerLeftUp color="teal" />
           )}
 
-          <Text
-            style={{
-              marginTop: "0.2rem",
-            }}
-            size="sm"
-          >
+          <Text truncate style={{ marginTop: "0.2rem", minWidth: 0 }} size="sm">
             {adjacentId}
           </Text>
         </>
@@ -110,7 +104,7 @@ export function GroupNode({
   return (
     <Box>
       <Flex p="xs" justify="space-between" align="center">
-        <Text weight="bolder" size="sm">
+        <Text weight="bolder" size="sm" truncate mr="xs" style={{ flex: 1, minWidth: 0 }}>
           {id}
         </Text>
 

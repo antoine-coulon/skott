@@ -17,6 +17,8 @@ import {
   IconHierarchy,
 } from "@tabler/icons-react";
 
+import * as Option from "@effect/data/Option";
+
 import {
   isSelectorAvailable,
   useAppEffects,
@@ -137,10 +139,10 @@ function useMenus() {
   }
 
   const visualization = selector.value.granularity;
-  const hasGroupedGraph =
-    isSelectorAvailable(groupedGraphSelector) &&
-    groupedGraphSelector.value !== undefined &&
-    Object.keys(groupedGraphSelector.value).length > 0;
+  const hasGroupedGraph = Option.exists(
+    Option.flatMap(groupedGraphSelector, Option.fromNullable),
+    (groupedGraph) => Object.keys(groupedGraph).length > 0
+  );
 
   const filteredMenus = staticMenus.filter((menu) => {
     if (menu.key === "file_explorer") {

@@ -59,13 +59,16 @@ export function GroupedGraphDocumentation() {
 }
 
 export function Groups() {
-  const maybeGraph = useStoreSelect("data", "graph");
+  const maybeGroupedGraph = Option.flatMap(
+    useStoreSelect("data", "groupedGraph"),
+    Option.fromNullable
+  );
 
-  if (Option.isNone(maybeGraph)) {
+  if (Option.isNone(maybeGroupedGraph)) {
     return null;
   }
 
-  const rawGraph = maybeGraph.value;
+  const rawGraph = maybeGroupedGraph.value;
   const digraph = DiGraph.fromRaw(rawGraph);
 
   return (
