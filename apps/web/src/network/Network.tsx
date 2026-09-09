@@ -5,6 +5,8 @@ import { DataSet } from "vis-data";
 import { Edge, Network, Node } from "vis-network";
 import { isEqual } from "lodash-es";
 
+import * as Option from "@effect/data/Option";
+
 import { AppState, NetworkLayout } from "@/store/state";
 import { useAppStore } from "@/store/react-bindings";
 import { AppActions } from "@/store/actions";
@@ -300,14 +302,23 @@ export default function GraphNetwork() {
     if (networkContainerRef.current) {
       subscription = appStore.store$
         .pipe(
-          map(({ data }) => data),
+          map(({ data, ui }) => {
+            const granularity = ui.visualization.granularity;
+            const grouped =
+              Option.isSome(granularity) &&
+              granularity.value === "group" &&
+              data.groupedGraph !== undefined;
+
+            return grouped
+              ? { nodes: Object.values(data.groupedGraph!), entrypoint: "none" }
+              : { nodes: Object.values(data.graph), entrypoint: data.entrypoint };
+          }),
           distinctUntilChanged(isEqual)
         )
-        .subscribe((data) => {
-          const { graphNodes, graphEdges } = makeNodesAndEdges(
-            Object.values(data.graph),
-            { entrypoint: data.entrypoint }
-          );
+        .subscribe(({ nodes, entrypoint }) => {
+          const { graphNodes, graphEdges } = makeNodesAndEdges(nodes, {
+            entrypoint,
+          });
 
           setNodesDataset(new DataSet(graphNodes));
           setEdgesDataset(new DataSet(graphEdges));

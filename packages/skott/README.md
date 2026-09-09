@@ -468,6 +468,39 @@ groupedGraph["feature-a"];
 // { id: "feature-a", adjacentTo: ["core", ...], body: { size, files, ... } }
 ```
 
+#### Visualize the grouped graph in the web application
+
+The grouped graph can also be explored visually. Provide `groupBy` in the runtime
+configuration and boot the web application with `visualization.granularity: "group"`.
+You can then switch between the module-level and grouped views anytime from the
+**Grouped graph** panel in the sidebar.
+
+```js
+import { defaultConfig } from "skott";
+import { Web } from "skott/rendering";
+
+await Web.renderWebApplication(
+  {
+    ...defaultConfig,
+    groupBy: (path) => {
+      if (path.includes("src/core")) return "core";
+      if (path.includes("src/feature-a")) return "feature-a";
+      return undefined;
+    }
+  },
+  {
+    visualization: { granularity: "group" },
+    watch: false,
+    port: 1111,
+    open: true
+  }
+);
+```
+
+Rendering the grouped view keeps the visualization light on large graphs: only the
+architecture blocks are drawn, not every underlying module. A full example is
+available in [`examples/grouped-graph.ts`](./examples/grouped-graph.ts).
+
 ### Explore workspace content
 
 Let's suppose we're currently using pnpm workspaces and we have the following workspace:
@@ -566,6 +599,10 @@ await Web.renderWebApplication(
   }
 );
 ```
+
+> `visualization.granularity` accepts `"module"` (file-level graph) or `"group"`
+> (architecture blocks, requires the `groupBy` runtime option). See
+> [Visualize the grouped graph in the web application](#visualize-the-grouped-graph-in-the-web-application).
 
 2. using `renderStandaloneWebApplication` that takes a factory function that 
 provides the skott instance, allowing to have a better control over

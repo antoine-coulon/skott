@@ -1,11 +1,15 @@
-import { useStoreSelect } from "@/store/react-bindings";
+import {
+  isSelectorAvailable,
+  useAppStore,
+  useStoreSelect,
+} from "@/store/react-bindings";
+import { callUseCase } from "@/store/store";
+import { setGranularity } from "@/core/network/set-granularity";
 import * as Option from "@effect/data/Option";
 import {
   ActionIcon,
   Blockquote,
   Box,
-  Button,
-  Divider,
   Flex,
   Modal,
   Navbar,
@@ -14,11 +18,7 @@ import {
   Text,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import {
-  IconCirclePlus,
-  IconHelpCircle,
-  IconInfoCircle,
-} from "@tabler/icons-react";
+import { IconHelpCircle, IconInfoCircle } from "@tabler/icons-react";
 
 export function GroupedGraphDocumentation() {
   const [opened, { open, close }] = useDisclosure(false);
@@ -58,10 +58,25 @@ export function GroupedGraphDocumentation() {
 }
 
 export function CustomGroupsPlayground() {
-  const maybeGraph = useStoreSelect("data", "graph");
+  const state = useAppStore().getState();
+  const visualizationSelector = useStoreSelect("ui", "visualization");
 
-  if (Option.isNone(maybeGraph)) {
+  if (!isSelectorAvailable(visualizationSelector)) {
     return null;
+  }
+
+  const groupedGraph = state.data.groupedGraph;
+  const hasGroupedGraph =
+    groupedGraph !== undefined && Object.keys(groupedGraph).length > 0;
+
+  const granularity = visualizationSelector.value.granularity;
+  const isGrouped =
+    Option.isSome(granularity) && granularity.value === "group";
+
+  function toggleGroupedGraph() {
+    callUseCase(setGranularity)({
+      granularity: isGrouped ? "module" : "group",
+    });
   }
 
   return (
@@ -76,26 +91,13 @@ export function CustomGroupsPlayground() {
             <Switch
               w="100%"
               size="md"
-              checked={false}
+              checked={isGrouped}
+              disabled={!hasGroupedGraph}
+              onChange={toggleGroupedGraph}
               labelPosition="left"
               label="Visualize"
             />
-            or... no grouped graph found
-          </Flex>
-        </Box>
-        <Divider mt="lg" />
-        <Box>
-          <Flex p="sm" justify="space-between" align="center" direction="row">
-            <Text size="md">Dynamic Groups</Text>
-            <GroupedGraphDocumentation />
-          </Flex>
-          <Flex p="sm" justify="center" align="center" direction="row">
-            <Button
-              rightIcon={<IconCirclePlus stroke={1.5} />}
-              variant="gradient"
-            >
-              Create dynamic group
-            </Button>
+            {hasGroupedGraph ? null : "or... no grouped graph found"}
           </Flex>
         </Box>
       </Navbar.Section>

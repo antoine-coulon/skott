@@ -14,6 +14,7 @@ import {
   IconSettings,
   IconRefreshAlert,
   IconAB2,
+  IconHierarchy,
 } from "@tabler/icons-react";
 
 import {
@@ -29,6 +30,7 @@ import { FileExplorer } from "./file-explorer/FileExplorer";
 import { InteractivePlayground } from "./InteractivePlayground";
 import { UserSettings } from "./UserSettings";
 import { Dependencies } from "./dependencies/Dependencies";
+import { CustomGroupsPlayground } from "./groups-playground/Playground";
 import { Summary } from "@/sidebar/Summary";
 
 const useStyles = createStyles((theme) => ({
@@ -103,6 +105,11 @@ const staticMenus = [
     key: "graph_configuration",
   },
   {
+    icon: IconHierarchy,
+    label: "Grouped graph",
+    key: "grouped_graph",
+  },
+  {
     icon: IconRefreshAlert,
     label: "Circular dependencies (work in progress)",
     key: "circular",
@@ -123,16 +130,25 @@ type MenuKeys = (typeof staticMenus)[number]["key"];
 
 function useMenus() {
   const selector = useStoreSelect("ui", "visualization");
+  const groupedGraphSelector = useStoreSelect("data", "groupedGraph");
 
   if (!isSelectorAvailable(selector)) {
     return { menus: [], menuKeys: [] };
   }
 
   const visualization = selector.value.granularity;
+  const hasGroupedGraph =
+    isSelectorAvailable(groupedGraphSelector) &&
+    groupedGraphSelector.value !== undefined &&
+    Object.keys(groupedGraphSelector.value).length > 0;
 
   const filteredMenus = staticMenus.filter((menu) => {
     if (menu.key === "file_explorer") {
       return visualization._tag === "Some" && visualization.value === "module";
+    }
+
+    if (menu.key === "grouped_graph") {
+      return hasGroupedGraph;
     }
 
     return true;
@@ -147,7 +163,8 @@ const isFeatureDisabled = (section: MenuKeys) =>
   section !== "file_explorer" &&
   section !== "summary" &&
   section !== "dependencies" &&
-  section !== "graph_configuration";
+  section !== "graph_configuration" &&
+  section !== "grouped_graph";
 
 export function DoubleNavbar() {
   const { classes, cx } = useStyles();
@@ -198,6 +215,8 @@ export function DoubleNavbar() {
         return <FileExplorer />;
       case "dependencies":
         return <Dependencies />;
+      case "grouped_graph":
+        return <CustomGroupsPlayground />;
       case "interactive_playground":
         return <InteractivePlayground />;
       case "settings":
