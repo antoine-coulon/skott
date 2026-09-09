@@ -20,6 +20,7 @@ import { updateConfiguration } from "@/core/network/update-configuration";
 import { useStoreSelect } from "@/store/react-bindings";
 import { NetworkLayout, storeDefaultValue } from "@/store/state";
 import { Documentation } from "@/sidebar/graph-configuration/Documentation";
+import { GroupedGraphControl } from "@/sidebar/groups-playground/Playground";
 
 const availableLayouts = ["cluster", "hierarchical"] as const;
 const hierarchicalDirections = ["UD", "DU", "LR", "RL"] as const;
@@ -210,6 +211,11 @@ export function GraphConfiguration() {
           <Text>Graph configuration</Text>
           <Documentation />
         </Group>
+
+        <Box mr="md" ml="md">
+          <GroupedGraphControl />
+          <Divider mt="lg" />
+        </Box>
 
         <FormProvider form={form}>
           <form onSubmit={form.onSubmit(dispatchConfiguration)}>

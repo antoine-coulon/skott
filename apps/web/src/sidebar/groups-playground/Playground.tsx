@@ -12,8 +12,6 @@ import {
   Box,
   Flex,
   Modal,
-  Navbar,
-  ScrollArea,
   Switch,
   Text,
 } from "@mantine/core";
@@ -57,7 +55,7 @@ export function GroupedGraphDocumentation() {
   );
 }
 
-export function CustomGroupsPlayground() {
+export function GroupedGraphControl() {
   const state = useAppStore().getState();
   const visualizationSelector = useStoreSelect("ui", "visualization");
 
@@ -80,27 +78,26 @@ export function CustomGroupsPlayground() {
   }
 
   return (
-    <ScrollArea.Autosize mah="90vh" mx="auto">
-      <Navbar.Section>
-        <Box>
-          <Flex p="sm" justify="space-between" align="center" direction="row">
-            <Text size="md">Grouped Graph</Text>
-            <GroupedGraphDocumentation />
-          </Flex>
-          <Flex p="sm" justify="center" align="center" direction="row">
-            <Switch
-              w="100%"
-              size="md"
-              checked={isGrouped}
-              disabled={!hasGroupedGraph}
-              onChange={toggleGroupedGraph}
-              labelPosition="left"
-              label="Visualize"
-            />
-            {hasGroupedGraph ? null : "or... no grouped graph found"}
-          </Flex>
-        </Box>
-      </Navbar.Section>
-    </ScrollArea.Autosize>
+    <Box>
+      <Flex justify="space-between" align="center" direction="row">
+        <Text size="sm">Grouped graph</Text>
+        <GroupedGraphDocumentation />
+      </Flex>
+      <Flex mt="md" justify="center" align="center" direction="row">
+        <Switch
+          w="100%"
+          checked={isGrouped}
+          disabled={!hasGroupedGraph}
+          onChange={toggleGroupedGraph}
+          labelPosition="left"
+          label="Visualize"
+        />
+        {hasGroupedGraph ? null : (
+          <Text size="xs" c="dimmed">
+            no grouped graph found
+          </Text>
+        )}
+      </Flex>
+    </Box>
   );
 }
