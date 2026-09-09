@@ -8,11 +8,8 @@ import {
 } from "@mantine/core";
 import {
   IconFiles,
-  IconDeviceDesktopAnalytics,
   IconClipboardData,
   IconVectorTriangle,
-  IconSettings,
-  IconRefreshAlert,
   IconAB2,
 } from "@tabler/icons-react";
 
@@ -22,12 +19,9 @@ import {
   useStoreSelect,
 } from "@/store/react-bindings";
 
-import { Circular } from "./Circular";
 import { GraphConfiguration } from "./graph-configuration/GraphConfiguration";
 import { Stats } from "./summary/module/Stats";
 import { FileExplorer } from "./file-explorer/FileExplorer";
-import { InteractivePlayground } from "./InteractivePlayground";
-import { UserSettings } from "./UserSettings";
 import { Dependencies } from "./dependencies/Dependencies";
 import { Summary } from "@/sidebar/Summary";
 
@@ -102,21 +96,6 @@ const staticMenus = [
     label: "Graph Configuration",
     key: "graph_configuration",
   },
-  {
-    icon: IconRefreshAlert,
-    label: "Circular dependencies (work in progress)",
-    key: "circular",
-  },
-  {
-    icon: IconDeviceDesktopAnalytics,
-    label: "Interactive Playground (work in progress)",
-    key: "interactive_playground",
-  },
-  {
-    icon: IconSettings,
-    label: "User Settings (work in progress)",
-    key: "settings",
-  },
 ] as const;
 
 type MenuKeys = (typeof staticMenus)[number]["key"];
@@ -143,12 +122,6 @@ function useMenus() {
   return { menus: filteredMenus, menuKeys };
 }
 
-const isFeatureDisabled = (section: MenuKeys) =>
-  section !== "file_explorer" &&
-  section !== "summary" &&
-  section !== "dependencies" &&
-  section !== "graph_configuration";
-
 export function DoubleNavbar() {
   const { classes, cx } = useStyles();
 
@@ -173,8 +146,6 @@ export function DoubleNavbar() {
       key={link.key}
     >
       <UnstyledButton
-        disabled={isFeatureDisabled(link.key)}
-        opacity={isFeatureDisabled(link.key) ? 0.5 : 1}
         variant="light"
         onClick={() => setActive(link.key)}
         className={cx(classes.mainLink, {
@@ -188,8 +159,6 @@ export function DoubleNavbar() {
 
   const selectComponent = (active: MenuKeys) => {
     switch (active) {
-      case "circular":
-        return <Circular />;
       case "graph_configuration":
         return <GraphConfiguration />;
       case "summary":
@@ -198,10 +167,6 @@ export function DoubleNavbar() {
         return <FileExplorer />;
       case "dependencies":
         return <Dependencies />;
-      case "interactive_playground":
-        return <InteractivePlayground />;
-      case "settings":
-        return <UserSettings />;
       default:
         return <Stats />;
     }
