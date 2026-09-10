@@ -4,6 +4,7 @@ import { NinjaKeys } from "ninja-keys";
 
 import { useAppStore } from "@/store/react-bindings";
 import { notify } from "@/store/store";
+import { activeGraph } from "@/core/network/active-graph";
 
 export default function GlobalSearch() {
   const appStore = useAppStore();
@@ -21,9 +22,9 @@ export default function GlobalSearch() {
       }
     });
 
-    const dataStoreSubscription = appStore.store$.subscribe(({ data }) => {
+    const dataStoreSubscription = appStore.store$.subscribe((state) => {
       if (containerRef.current) {
-        containerRef.current.data = Object.values(data.graph)
+        containerRef.current.data = Object.values(activeGraph(state))
           .map((value) => ({
             id: value.id,
             title: value.id,
