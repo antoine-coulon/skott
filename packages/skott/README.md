@@ -471,9 +471,8 @@ groupedGraph["feature-a"];
 #### Visualize the grouped graph in the web application
 
 The grouped graph can also be explored visually. Provide `groupBy` in the runtime
-configuration and boot the web application with `visualization.granularity: "group"`.
-You can then switch between the module-level and grouped views anytime from the
-**Grouped graph** panel in the sidebar.
+configuration and the web application renders the grouped visualization
+automatically — grouping is implicit in the `groupBy` opt-in, there is no toggle.
 
 ```js
 import { defaultConfig } from "skott";
@@ -600,8 +599,8 @@ await Web.renderWebApplication(
 );
 ```
 
-> `visualization.granularity` accepts `"module"` (file-level graph) or `"group"`
-> (architecture blocks, requires the `groupBy` runtime option). See
+> The web application renders architecture blocks instead of individual modules
+> whenever a `groupBy` runtime option is provided. See
 > [Visualize the grouped graph in the web application](#visualize-the-grouped-graph-in-the-web-application).
 
 2. using `renderStandaloneWebApplication` that takes a factory function that 

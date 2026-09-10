@@ -1,10 +1,9 @@
 /**
  * Visualize a GROUPED module graph in the skott web application.
  *
- * `groupBy` collapses the file-level graph into links between architecture blocks,
- * and `visualization.granularity: "group"` boots the web application straight into
- * that grouped view. You can then toggle between the module-level and grouped
- * views anytime from the "Grouped graph" panel in the sidebar.
+ * `groupBy` collapses the file-level graph into links between architecture blocks.
+ * Providing it is enough: the web application renders the grouped visualization
+ * automatically, there is no toggle.
  *
  * Rendering the grouped view keeps the visualization light on large graphs: only
  * the architecture blocks are drawn, not every underlying module.
