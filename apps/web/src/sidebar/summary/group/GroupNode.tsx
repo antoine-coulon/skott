@@ -156,7 +156,7 @@ export function GroupNode({
                     />
                   }
                 >
-                  Toggle direct children dependencies
+                  Direct dependencies
                 </Menu.Item>
 
                 <Menu.Item
@@ -172,7 +172,7 @@ export function GroupNode({
                     deepParentsHandlers.close();
                   }}
                 >
-                  Toggle deep children dependencies
+                  Deep dependencies
                 </Menu.Item>
               </>
             ) : null}
@@ -193,7 +193,7 @@ export function GroupNode({
                 deepChildrenHandlers.close();
               }}
             >
-              Toggle deep parent dependencies
+              Deep dependents
             </Menu.Item>
           </Menu.Dropdown>
         </Menu>
