@@ -11,12 +11,14 @@ import React from "react";
 import { useAppEffects, useAppStore } from "@/store/react-bindings";
 import { AppState } from "@/store/state";
 import { notify } from "@/store/store";
+import { activeGraph } from "@/core/network/active-graph";
 
 const makeProgressContext = (state: AppState) => {
-  const nodesSize = state.data.files.length;
-  const edgesSize = Object.values(state.data.graph).reduce(
-    (numberOfEdges, nodeBody) => {
-      return numberOfEdges + nodeBody.adjacentTo.length;
+  const graph = activeGraph(state);
+  const nodesSize = Object.keys(graph).length;
+  const edgesSize = Object.values(graph).reduce(
+    (numberOfEdges, node) => {
+      return numberOfEdges + node.adjacentTo.length;
     },
     0
   );
@@ -48,7 +50,8 @@ export function ProgressLoader() {
 
   useAppEffects((store) => {
     if (
-      appStore.getState().data.files.length <= minimumDataSizeForProgressBar
+      Object.keys(activeGraph(appStore.getState())).length <=
+      minimumDataSizeForProgressBar
     ) {
       return;
     }

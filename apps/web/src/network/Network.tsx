@@ -5,8 +5,6 @@ import { DataSet } from "vis-data";
 import { Edge, Network, Node } from "vis-network";
 import { isEqual } from "lodash-es";
 
-import * as Option from "@effect/data/Option";
-
 import { NetworkLayout } from "@/store/state";
 import { useAppStore } from "@/store/react-bindings";
 import { AppActions } from "@/store/actions";
@@ -35,7 +33,7 @@ import {
 import { ProgressLoader } from "@/network/ProgressLoader";
 import { AppEffects, callUseCase, notify } from "@/store/store";
 import { updateConfiguration } from "@/core/network/update-configuration";
-import { activeGraphData } from "@/core/network/active-graph";
+import { activeGraph, activeGraphData } from "@/core/network/active-graph";
 import { storeDefaultValue } from "@/store/state";
 import { selectNode } from "@/core/network/select-node";
 
@@ -304,16 +302,14 @@ export default function GraphNetwork() {
     if (networkContainerRef.current) {
       subscription = appStore.store$
         .pipe(
-          map(({ data, ui }) => {
-            const granularity = ui.visualization.granularity;
-            const grouped =
-              Option.isSome(granularity) &&
-              granularity.value === "group" &&
-              data.groupedGraph !== undefined;
+          map((state) => {
+            const graph = activeGraph(state);
+            const isModuleGraph = graph === state.data.graph;
 
-            return grouped
-              ? { nodes: Object.values(data.groupedGraph!), entrypoint: "none" }
-              : { nodes: Object.values(data.graph), entrypoint: data.entrypoint };
+            return {
+              nodes: Object.values(graph),
+              entrypoint: isModuleGraph ? state.data.entrypoint : "none",
+            };
           }),
           distinctUntilChanged(isEqual)
         )
