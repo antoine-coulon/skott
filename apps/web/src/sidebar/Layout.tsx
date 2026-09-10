@@ -45,6 +45,8 @@ const useStyles = createStyles((theme) => ({
 
   main: {
     flex: 1,
+    minWidth: 0,
+    overflowX: "auto",
     backgroundColor:
       theme.colorScheme === "dark"
         ? theme.colors.dark[6]
