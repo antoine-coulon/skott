@@ -9,8 +9,4 @@ export type NetworkActions =
   | {
       action: "update_configuration";
       payload: NetworkLayout;
-    }
-  | {
-      action: "set_granularity";
-      payload: { granularity: "module" | "group" };
     };

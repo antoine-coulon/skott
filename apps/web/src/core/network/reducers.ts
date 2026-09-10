@@ -41,19 +41,6 @@ function toggleDependencies(): AppReducer {
       });
     }
 
-    if (event.action === "set_granularity") {
-      return Option.some({
-        data: state.data,
-        ui: {
-          ...state.ui,
-          visualization: {
-            ...state.ui.visualization,
-            granularity: Option.some(event.payload.granularity),
-          },
-        },
-      });
-    }
-
     if (event.action === "update_configuration") {
       return Option.some({
         data: state.data,

@@ -8,6 +8,15 @@ export function bootstrapApp(store: AppStore) {
   return async function (client: SkottHttpClient) {
     return Promise.all([client.fetchAnalysis(), client.fetchMeta()])
       .then(([analysisReport, meta]) => {
+        /**
+         * Grouping is implicit: providing a `groupBy` runtime configuration
+         * yields a grouped graph, which puts the app in grouped visualization.
+         * There is no user-facing toggle.
+         */
+        const hasGroupedGraph =
+          analysisReport.groupedGraph !== undefined &&
+          Object.keys(analysisReport.groupedGraph).length > 0;
+
         const appStateValue: AppState = {
           data: {
             ...storeDefaultValue.data,
@@ -18,7 +27,7 @@ export function bootstrapApp(store: AppStore) {
           ui: {
             ...storeDefaultValue.ui,
             visualization: {
-              granularity: Option.some(meta.visualization.granularity),
+              granularity: Option.some(hasGroupedGraph ? "group" : "module"),
             },
           },
         };
