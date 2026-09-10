@@ -1,4 +1,4 @@
-import { ActionIcon, Box, Flex, Menu, Text } from "@mantine/core";
+import { ActionIcon, Box, Flex, Menu, Text, Tooltip } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 
 import {
@@ -104,9 +104,17 @@ export function GroupNode({
   return (
     <Box>
       <Flex p="xs" justify="space-between" align="center">
-        <Text weight="bolder" size="sm" truncate mr="xs" style={{ flex: 1, minWidth: 0 }}>
-          {id}
-        </Text>
+        <Tooltip label={id} openDelay={300} withinPortal multiline>
+          <Text
+            weight="bolder"
+            size="sm"
+            truncate
+            mr="xs"
+            style={{ flex: 1, minWidth: 0 }}
+          >
+            {id}
+          </Text>
+        </Tooltip>
 
         <Menu
           transitionProps={{ transition: "pop-top-right" }}
