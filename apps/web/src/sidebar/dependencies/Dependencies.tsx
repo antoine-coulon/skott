@@ -37,7 +37,7 @@ export function Dependencies() {
 
         <Box p="md">
           <Checkbox
-            label="Deep dependencies"
+            label="Highlight deep deps on click"
             radius="md"
             color="cyan"
             disabled={network?.dependencies.circular.active}
