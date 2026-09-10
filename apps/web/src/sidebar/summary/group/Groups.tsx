@@ -10,7 +10,6 @@ import {
   Modal,
   Navbar,
   Paper,
-  ScrollArea,
   Text,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
@@ -72,16 +71,25 @@ export function Groups() {
   const digraph = DiGraph.fromRaw(rawGraph);
 
   return (
-    <ScrollArea.Autosize mah="90vh" mx="auto">
+    <Box
+      style={{
+        height: "calc(100vh - 60px)",
+        overflowY: "auto",
+        overflowX: "hidden",
+      }}
+    >
       <Navbar.Section>
         <Box p="md">
           <Paper withBorder py={5} my={10}>
             <Flex p="sm" justify="space-between" align="center" direction="row">
-              <Text> Groups visualization</Text>
+              <Text truncate mr="sm" style={{ flex: 1, minWidth: 0 }}>
+                Groups visualization
+              </Text>
               <Badge
                 variant="gradient"
                 gradient={{ from: "indigo", to: "blue" }}
                 size="lg"
+                style={{ flexShrink: 0 }}
               >
                 {Object.keys(rawGraph).length}
               </Badge>
@@ -102,6 +110,6 @@ export function Groups() {
           })}
         </Box>
       </Navbar.Section>
-    </ScrollArea.Autosize>
+    </Box>
   );
 }
