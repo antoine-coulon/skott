@@ -1,0 +1,44 @@
+{
+  "name": "skott_benchmark",
+  "done_at": "2026-09-10T10:04:22.956Z",
+  "git_commit_hash": "ecdbbb86c555e2e8a2de2501d41107d355b4e010",
+  "git_branch_reference": "feat/webapp-grouped-graph-toggle",
+  "results": [
+    {
+      "name": "knex/knex",
+      "rank": 1,
+      "samples": [],
+      "totalTime": 8501.272354000004,
+      "min": 1649.87241,
+      "mean": 1700.254470800001,
+      "max": 1717.890827000003
+    },
+    {
+      "name": "parcel-bundler/parcel",
+      "rank": 3,
+      "samples": [],
+      "totalTime": 31536.32632600001,
+      "min": 6185.140324000007,
+      "mean": 6307.2652652000015,
+      "max": 6472.210097000003
+    },
+    {
+      "name": "Effect-TS/effect",
+      "rank": 4,
+      "samples": [],
+      "totalTime": 85929.18390300003,
+      "min": 17107.782139000017,
+      "mean": 17185.836780600006,
+      "max": 17329.313055000006
+    },
+    {
+      "name": "gcanti/fp-ts",
+      "rank": 2,
+      "samples": [],
+      "totalTime": 18703.068876999954,
+      "min": 3716.1697239999776,
+      "mean": 3740.613775399991,
+      "max": 3790.630889000022
+    }
+  ]
+}
