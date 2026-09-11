@@ -1,5 +1,15 @@
 # skott-webapp
 
+## 2.4.0
+
+### Minor Changes
+
+- [#212](https://github.com/antoine-coulon/skott/pull/212) [`11c661a`](https://github.com/antoine-coulon/skott/commit/11c661aad119ad33847dc08e6bcdf9b1287936b0) Thanks [@antoine-coulon](https://github.com/antoine-coulon)! - Grouped graph visualization in the web application.
+
+  When a `groupBy` runtime config is provided, the app now renders the grouped graph (architecture blocks) instead of the file-level graph implicitly. Dependency highlights (direct/deep dependencies, deep dependents, circular, built-in, third-party) act on the grouped graph, and the Groups summary reflects it too.
+
+  Also in this release: the initial render no longer blocks on cycle detection.
+
 ## 2.3.0
 
 ### Minor Changes
