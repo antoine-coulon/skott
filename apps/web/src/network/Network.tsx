@@ -353,6 +353,29 @@ export default function GraphNetwork() {
   }, [nodesDataset, edgesDataset, graphConfig]);
 
   React.useEffect(() => {
+    const container = networkContainerRef.current;
+    if (!network || !container) return;
+
+    // Debounce so a drag's stream of resize ticks collapses into one redraw
+    // (autoResize is off). No fit(), so the camera stays put — the canvas just
+    // grows/shrinks to the new area once motion settles.
+    let timeout: ReturnType<typeof setTimeout>;
+    const observer = new ResizeObserver(() => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        network.setSize("100%", "100%");
+        network.redraw();
+      }, 100);
+    });
+    observer.observe(container);
+
+    return () => {
+      clearTimeout(timeout);
+      observer.disconnect();
+    };
+  }, [network]);
+
+  React.useEffect(() => {
     const appEventsSubscription = appStore.events$
       .pipe(tap(destroyOnCancel), delay(150))
       .subscribe((appEvent) => networkUIReducer(appEvent));

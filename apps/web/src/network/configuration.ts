@@ -124,6 +124,10 @@ const layoutConfigs = {
 };
 
 export const networkOptions = {
+  // vis-network's default autoResize repaints on every container size tick,
+  // which flickers while the sidebar is being dragged. We drive a single
+  // debounced redraw ourselves instead (see GraphNetwork).
+  autoResize: false,
   nodes: {
     margin: {
       top: 10,
