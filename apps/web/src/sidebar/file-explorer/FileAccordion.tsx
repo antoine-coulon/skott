@@ -107,9 +107,9 @@ function File({
       mb={5}
       pr={0}
     >
-      <Flex align="center">
+      <Flex align="center" style={{ flex: 1, minWidth: 0 }}>
         {getLanguageIcon(name)}
-        <Text truncate="end" maw={150} ml={10}>
+        <Text ml={10} style={{ minWidth: 0 }}>
           {name}
         </Text>
       </Flex>
@@ -189,13 +189,13 @@ function Folder({
             }
           }}
         >
-          <Flex align={"center"}>
+          <Flex align={"center"} sx={{ minWidth: 0 }}>
             {openedFolders.has(fileId) ? (
               <Image src={"./opened_folder.svg"} width={20} fit="contain" />
             ) : (
               <Image src={"./folder.svg"} width={20} fit="contain" />
             )}
-            <Text truncate="end" ml={5}>
+            <Text ml={5} sx={{ minWidth: 0 }}>
               {name}
             </Text>
           </Flex>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
   createStyles,
   Navbar,
@@ -25,9 +25,31 @@ import { FileExplorer } from "./file-explorer/FileExplorer";
 import { Dependencies } from "./dependencies/Dependencies";
 import { Summary } from "@/sidebar/Summary";
 
+const MIN_WIDTH = 260;
+const DEFAULT_WIDTH = 340;
+
 const useStyles = createStyles((theme) => ({
   wrapper: {
     display: "flex",
+    position: "relative",
+    height: "100%",
+  },
+
+  resizeHandle: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    width: rem(5),
+    height: "100%",
+    cursor: "col-resize",
+    zIndex: 10,
+    userSelect: "none",
+    "&:hover, &:active": {
+      backgroundColor: theme.fn.variant({
+        variant: "light",
+        color: theme.primaryColor,
+      }).background,
+    },
   },
 
   aside: {
@@ -46,6 +68,7 @@ const useStyles = createStyles((theme) => ({
   main: {
     flex: 1,
     minWidth: 0,
+    overflow: "hidden",
     backgroundColor:
       theme.colorScheme === "dark"
         ? theme.colors.dark[6]
@@ -127,7 +150,23 @@ export function DoubleNavbar() {
   const { classes, cx } = useStyles();
 
   const [active, setActive] = useState<MenuKeys>("summary");
+  const [width, setWidth] = useState(DEFAULT_WIDTH);
   const { menuKeys, menus } = useMenus();
+
+  const startResize = useCallback((event: React.MouseEvent) => {
+    event.preventDefault();
+    const onMove = (e: MouseEvent) => {
+      // ponytail: navbar is pinned to the left edge, so width = pointer X
+      // (naturally capped at the viewport, since the pointer can't leave it).
+      setWidth(Math.max(MIN_WIDTH, e.clientX));
+    };
+    const onUp = () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  }, []);
 
   useAppEffects((action) => {
     if (
@@ -174,10 +213,11 @@ export function DoubleNavbar() {
   };
 
   return (
-    <Navbar width={{ sm: 340 }} hidden={true} hiddenBreakpoint="sm">
+    <Navbar width={{ base: width }} hidden={true} hiddenBreakpoint="sm">
       <Navbar.Section grow className={classes.wrapper}>
         <div className={classes.aside}>{mainMenus}</div>
         <div className={classes.main}>{selectComponent(active)}</div>
+        <div className={classes.resizeHandle} onMouseDown={startResize} />
       </Navbar.Section>
     </Navbar>
   );

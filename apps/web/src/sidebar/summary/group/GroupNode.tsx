@@ -28,7 +28,6 @@ function AdjacentNode({
         <>
           <IconRefreshAlert color="red" />
           <Text
-            truncate
             style={{ marginTop: "0.2rem", minWidth: 0 }}
             color="red"
             size="sm"
@@ -44,7 +43,7 @@ function AdjacentNode({
             <IconCornerLeftUp color="teal" />
           )}
 
-          <Text truncate style={{ marginTop: "0.2rem", minWidth: 0 }} size="sm">
+          <Text style={{ marginTop: "0.2rem", minWidth: 0 }} size="sm">
             {adjacentId}
           </Text>
         </>
@@ -108,7 +107,6 @@ export function GroupNode({
           <Text
             weight="bolder"
             size="sm"
-            truncate
             mr="xs"
             style={{ flex: 1, minWidth: 0 }}
           >
