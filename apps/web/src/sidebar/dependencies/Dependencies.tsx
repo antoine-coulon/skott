@@ -1,4 +1,5 @@
 import { toggleDependencies } from "@/core/network/toggle-dependencies";
+import { activeGraph } from "@/core/network/active-graph";
 import { useAppStore, useStoreSelect } from "@/store/react-bindings";
 import { callUseCase } from "@/store/store";
 import { Box, Checkbox, Navbar, ScrollArea } from "@mantine/core";
@@ -13,12 +14,13 @@ export function Dependencies() {
   }
 
   const network = maybeNetwork.value;
+  const graph = activeGraph(state);
 
   const { hasThirdParty, hasBuiltin } = {
-    hasThirdParty: Object.values(state.data.graph).some(
+    hasThirdParty: Object.values(graph).some(
       (node) => node.body.thirdPartyDependencies.length > 0
     ),
-    hasBuiltin: Object.values(state.data.graph).some(
+    hasBuiltin: Object.values(graph).some(
       (node) => node.body.builtinDependencies.length > 0
     ),
   };
@@ -37,7 +39,7 @@ export function Dependencies() {
 
         <Box p="md">
           <Checkbox
-            label="Deep dependencies"
+            label="Highlight deep deps on click"
             radius="md"
             color="cyan"
             disabled={network?.dependencies.circular.active}

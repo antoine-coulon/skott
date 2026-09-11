@@ -6,12 +6,37 @@ import { describe, expect, test } from "vitest";
 import { bootstrapApp } from "@/core/bootstrap-app";
 import * as Option from "@effect/data/Option";
 
+const moduleGraph = {
+  "some-file.ts": {
+    adjacentTo: [],
+    body: {
+      size: 0,
+      builtinDependencies: [],
+      thirdPartyDependencies: [],
+    },
+    id: "some-file.ts",
+  },
+};
+
 describe("Initialization of the application", () => {
-  test("Should populate store with initially fetched values", async () => {
+  test("Should populate store and group when a grouped graph is provided", async () => {
     const appStore = new AppStore(
       new BehaviorSubject<AppState>(storeDefaultValue),
       [],
     );
+
+    const groupedGraph = {
+      group: {
+        adjacentTo: [],
+        body: {
+          size: 0,
+          files: ["some-file.ts"],
+          builtinDependencies: [],
+          thirdPartyDependencies: [],
+        },
+        id: "group",
+      },
+    };
 
     const dispatchAction = bootstrapApp(appStore);
 
@@ -20,18 +45,8 @@ describe("Initialization of the application", () => {
         return Promise.resolve({
           entrypoint: "some-file.ts",
           files: ["some-file.ts"],
-          graph: {
-            "some-file.ts": {
-              adjacentTo: [],
-              body: {
-                size: 0,
-                builtinDependencies: [],
-                thirdPartyDependencies: [],
-              },
-              id: "some-file.ts",
-            },
-          },
-          groupedGraph: {},
+          graph: moduleGraph,
+          groupedGraph,
         });
       },
 
@@ -60,18 +75,8 @@ describe("Initialization of the application", () => {
         cycles: [["some-file.ts", "another-file.ts"]],
         entrypoint: "some-file.ts",
         files: ["some-file.ts"],
-        graph: {
-          "some-file.ts": {
-            adjacentTo: [],
-            body: {
-              size: 0,
-              builtinDependencies: [],
-              thirdPartyDependencies: [],
-            },
-            id: "some-file.ts",
-          },
-        },
-        groupedGraph: {},
+        graph: moduleGraph,
+        groupedGraph,
         tracking: {
           builtin: true,
           thirdParty: true,
@@ -105,8 +110,8 @@ describe("Initialization of the application", () => {
     });
   });
 
-  describe("When meta does not provide tracking", () => {
-    test("Should populate store with initially fetched values", async () => {
+  describe("When no grouped graph is provided", () => {
+    test("Should stay in module view and fall back on default tracking", async () => {
       const appStore = new AppStore(
         new BehaviorSubject<AppState>(storeDefaultValue),
         [],
@@ -119,17 +124,7 @@ describe("Initialization of the application", () => {
           return Promise.resolve({
             entrypoint: "some-file.ts",
             files: ["some-file.ts"],
-            graph: {
-              "some-file.ts": {
-                adjacentTo: [],
-                body: {
-                  size: 0,
-                  builtinDependencies: [],
-                  thirdPartyDependencies: [],
-                },
-                id: "some-file.ts",
-              },
-            },
+            graph: moduleGraph,
             groupedGraph: {},
           });
         },
@@ -141,7 +136,7 @@ describe("Initialization of the application", () => {
         fetchMeta() {
           return Promise.resolve({
             visualization: {
-              granularity: "group",
+              granularity: "module",
             },
           });
         },
@@ -154,17 +149,7 @@ describe("Initialization of the application", () => {
           cycles: [["some-file.ts", "another-file.ts"]],
           entrypoint: "some-file.ts",
           files: ["some-file.ts"],
-          graph: {
-            "some-file.ts": {
-              adjacentTo: [],
-              body: {
-                size: 0,
-                builtinDependencies: [],
-                thirdPartyDependencies: [],
-              },
-              id: "some-file.ts",
-            },
-          },
+          graph: moduleGraph,
           groupedGraph: {},
           tracking: {
             builtin: false,
@@ -193,7 +178,7 @@ describe("Initialization of the application", () => {
             layout: storeDefaultValue.ui.network.layout,
           },
           visualization: {
-            granularity: Option.some("group"),
+            granularity: Option.some("module"),
           },
         },
       });

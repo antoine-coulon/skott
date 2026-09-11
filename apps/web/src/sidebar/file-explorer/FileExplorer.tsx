@@ -58,7 +58,7 @@ export function FileExplorer() {
   });
 
   return (
-    <ScrollArea.Autosize mah="90vh" mx="auto">
+    <ScrollArea h="100%" type="auto">
       <Navbar.Section>
         <Box p="md">
           <TextInput
@@ -92,6 +92,6 @@ export function FileExplorer() {
 
         <FileExplorerAccordion />
       </Navbar.Section>
-    </ScrollArea.Autosize>
+    </ScrollArea>
   );
 }

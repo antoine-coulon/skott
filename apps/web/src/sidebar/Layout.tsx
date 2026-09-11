@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
   createStyles,
   Navbar,
@@ -8,11 +8,8 @@ import {
 } from "@mantine/core";
 import {
   IconFiles,
-  IconDeviceDesktopAnalytics,
   IconClipboardData,
   IconVectorTriangle,
-  IconSettings,
-  IconRefreshAlert,
   IconAB2,
 } from "@tabler/icons-react";
 
@@ -22,18 +19,37 @@ import {
   useStoreSelect,
 } from "@/store/react-bindings";
 
-import { Circular } from "./Circular";
 import { GraphConfiguration } from "./graph-configuration/GraphConfiguration";
 import { Stats } from "./summary/module/Stats";
 import { FileExplorer } from "./file-explorer/FileExplorer";
-import { InteractivePlayground } from "./InteractivePlayground";
-import { UserSettings } from "./UserSettings";
 import { Dependencies } from "./dependencies/Dependencies";
 import { Summary } from "@/sidebar/Summary";
+
+const MIN_WIDTH = 260;
+const DEFAULT_WIDTH = 340;
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
     display: "flex",
+    position: "relative",
+    height: "100%",
+  },
+
+  resizeHandle: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    width: rem(5),
+    height: "100%",
+    cursor: "col-resize",
+    zIndex: 10,
+    userSelect: "none",
+    "&:hover, &:active": {
+      backgroundColor: theme.fn.variant({
+        variant: "light",
+        color: theme.primaryColor,
+      }).background,
+    },
   },
 
   aside: {
@@ -51,6 +67,8 @@ const useStyles = createStyles((theme) => ({
 
   main: {
     flex: 1,
+    minWidth: 0,
+    overflow: "hidden",
     backgroundColor:
       theme.colorScheme === "dark"
         ? theme.colors.dark[6]
@@ -102,21 +120,6 @@ const staticMenus = [
     label: "Graph Configuration",
     key: "graph_configuration",
   },
-  {
-    icon: IconRefreshAlert,
-    label: "Circular dependencies (work in progress)",
-    key: "circular",
-  },
-  {
-    icon: IconDeviceDesktopAnalytics,
-    label: "Interactive Playground (work in progress)",
-    key: "interactive_playground",
-  },
-  {
-    icon: IconSettings,
-    label: "User Settings (work in progress)",
-    key: "settings",
-  },
 ] as const;
 
 type MenuKeys = (typeof staticMenus)[number]["key"];
@@ -143,17 +146,27 @@ function useMenus() {
   return { menus: filteredMenus, menuKeys };
 }
 
-const isFeatureDisabled = (section: MenuKeys) =>
-  section !== "file_explorer" &&
-  section !== "summary" &&
-  section !== "dependencies" &&
-  section !== "graph_configuration";
-
 export function DoubleNavbar() {
   const { classes, cx } = useStyles();
 
   const [active, setActive] = useState<MenuKeys>("summary");
+  const [width, setWidth] = useState(DEFAULT_WIDTH);
   const { menuKeys, menus } = useMenus();
+
+  const startResize = useCallback((event: React.MouseEvent) => {
+    event.preventDefault();
+    const onMove = (e: MouseEvent) => {
+      // ponytail: navbar is pinned to the left edge, so width = pointer X
+      // (naturally capped at the viewport, since the pointer can't leave it).
+      setWidth(Math.max(MIN_WIDTH, e.clientX));
+    };
+    const onUp = () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  }, []);
 
   useAppEffects((action) => {
     if (
@@ -173,8 +186,6 @@ export function DoubleNavbar() {
       key={link.key}
     >
       <UnstyledButton
-        disabled={isFeatureDisabled(link.key)}
-        opacity={isFeatureDisabled(link.key) ? 0.5 : 1}
         variant="light"
         onClick={() => setActive(link.key)}
         className={cx(classes.mainLink, {
@@ -188,8 +199,6 @@ export function DoubleNavbar() {
 
   const selectComponent = (active: MenuKeys) => {
     switch (active) {
-      case "circular":
-        return <Circular />;
       case "graph_configuration":
         return <GraphConfiguration />;
       case "summary":
@@ -198,20 +207,17 @@ export function DoubleNavbar() {
         return <FileExplorer />;
       case "dependencies":
         return <Dependencies />;
-      case "interactive_playground":
-        return <InteractivePlayground />;
-      case "settings":
-        return <UserSettings />;
       default:
         return <Stats />;
     }
   };
 
   return (
-    <Navbar width={{ sm: 300 }} hidden={true} hiddenBreakpoint="sm">
+    <Navbar width={{ base: width }} hidden={true} hiddenBreakpoint="sm">
       <Navbar.Section grow className={classes.wrapper}>
         <div className={classes.aside}>{mainMenus}</div>
         <div className={classes.main}>{selectComponent(active)}</div>
+        <div className={classes.resizeHandle} onMouseDown={startResize} />
       </Navbar.Section>
     </Navbar>
   );

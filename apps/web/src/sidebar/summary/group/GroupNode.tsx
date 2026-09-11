@@ -1,4 +1,4 @@
-import { ActionIcon, Box, Flex, Menu, Text } from "@mantine/core";
+import { ActionIcon, Box, Flex, Menu, Text, Tooltip } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 
 import {
@@ -23,14 +23,12 @@ function AdjacentNode({
   direction: "upstream" | "downstream";
 }) {
   return (
-    <Flex>
+    <Flex style={{ minWidth: 0 }}>
       {adjacentId === id ? (
         <>
           <IconRefreshAlert color="red" />
           <Text
-            style={{
-              marginTop: "0.2rem",
-            }}
+            style={{ marginTop: "0.2rem", minWidth: 0 }}
             color="red"
             size="sm"
           >
@@ -45,12 +43,7 @@ function AdjacentNode({
             <IconCornerLeftUp color="teal" />
           )}
 
-          <Text
-            style={{
-              marginTop: "0.2rem",
-            }}
-            size="sm"
-          >
+          <Text style={{ marginTop: "0.2rem", minWidth: 0 }} size="sm">
             {adjacentId}
           </Text>
         </>
@@ -110,9 +103,16 @@ export function GroupNode({
   return (
     <Box>
       <Flex p="xs" justify="space-between" align="center">
-        <Text weight="bolder" size="sm">
-          {id}
-        </Text>
+        <Tooltip label={id} openDelay={300} withinPortal multiline>
+          <Text
+            weight="bolder"
+            size="sm"
+            mr="xs"
+            style={{ flex: 1, minWidth: 0 }}
+          >
+            {id}
+          </Text>
+        </Tooltip>
 
         <Menu
           transitionProps={{ transition: "pop-top-right" }}
@@ -154,7 +154,7 @@ export function GroupNode({
                     />
                   }
                 >
-                  Toggle direct children dependencies
+                  Direct dependencies
                 </Menu.Item>
 
                 <Menu.Item
@@ -170,7 +170,7 @@ export function GroupNode({
                     deepParentsHandlers.close();
                   }}
                 >
-                  Toggle deep children dependencies
+                  Deep dependencies
                 </Menu.Item>
               </>
             ) : null}
@@ -191,7 +191,7 @@ export function GroupNode({
                 deepChildrenHandlers.close();
               }}
             >
-              Toggle deep parent dependencies
+              Deep dependents
             </Menu.Item>
           </Menu.Dropdown>
         </Menu>
