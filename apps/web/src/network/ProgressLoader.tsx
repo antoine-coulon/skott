@@ -26,7 +26,7 @@ const makeProgressContext = (state: AppState) => {
   const messages = {
     size_warning:
       `Graph contains ${nodesSize} nodes and ${edgesSize} edges.` +
-      ` Rendering will be slow and will block the main thread. Consider using a smaller dataset.` +
+      ` Rendering will be slow and will block the main thread. Consider using a smaller dataset or leveraging the "groupBy" API to group nodes.` +
       ` "Improve Spacing" option was automatically disabled to improve loading time, but node spacing won't be optimal.`,
     documentation_info:
       "Check the documentation from Graph Configuration menu to customize the visualization.",
