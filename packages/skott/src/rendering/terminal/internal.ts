@@ -21,6 +21,7 @@ export type CliParameterOptions = {
   includeBaseDir: boolean;
   incremental: boolean;
   manifest: string;
+  open: boolean;
   showCircularDependencies: boolean;
   showUnusedDependencies: boolean;
   showUnusedFiles: boolean;

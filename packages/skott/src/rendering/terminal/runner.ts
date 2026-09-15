@@ -184,7 +184,8 @@ export async function runTerminal<T>(
       options: {
         entrypoint: runtimeConfig.entrypoint,
         includeBaseDir: runtimeConfig.includeBaseDir,
-        tracking: runtimeConfig.dependencyTracking
+        tracking: runtimeConfig.dependencyTracking,
+        open: terminalOptions.open
       },
       watcherEmitter
     });

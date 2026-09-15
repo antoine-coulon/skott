@@ -18,6 +18,7 @@ async function _renderTerminalApplication() {
   await Terminal.renderTerminalApplication(defaultConfig, {
     displayMode: "graph",
     exitCodeOnCircularDependencies: 1,
+    open: true,
     showCircularDependencies: true,
     showUnusedDependencies: true,
     showUnusedFiles: false,

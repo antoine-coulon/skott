@@ -170,6 +170,11 @@ cli
     "Watch for changes depending on the provided '--cwd' or defaults to process.cwd() and re-run the analysis when a supported file is added/deleted/modified",
     false
   )
+  .option(
+    "--open",
+    "Automatically open the web application in the default browser when using '--displayMode=webapp' (use --no-open to disable)",
+    true
+  )
   .argument("[entrypoint]", "optional entrypoint file to use")
   .usage(
     trimMargin("|")(`
